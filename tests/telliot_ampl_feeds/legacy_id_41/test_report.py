@@ -4,6 +4,7 @@ from telliot_ampl_feeds.scripts import report_uspce
 from telliot_ampl_feeds.scripts.report_uspce import report
 
 
+@pytest.mark.skip('making reporter')
 @pytest.mark.asyncio
 async def test_report_uspce(cfg, master, oracle):
     """Test submitting USPCE value to TellorX oracle."""
