@@ -4,11 +4,10 @@ from typing import Optional
 
 from telliot.apps.telliot_config import TelliotConfig
 from telliot.contract.contract import Contract
-from telliot.contract.gas import fetch_gas_price
-from telliot.queries.legacy_query import LegacyRequest
 from telliot.utils.abi import rinkeby_tellor_master
 from telliot.utils.abi import rinkeby_tellor_oracle
-from telliot.utils.response import ResponseStatus
+from telliot_ampl_feeds.feeds.uspce import uspce_feed
+from telliot_feed_examples.reporters.interval import IntervalReporter
 
 
 def get_cfg() -> TelliotConfig:
@@ -63,85 +62,20 @@ def get_oracle(cfg: TelliotConfig) -> Optional[Contract]:
     return oracle
 
 
-def parse_user_val() -> int:
-    """Parse USPCE value from user input."""
-    print("Enter USPCE value (example: 13659.3:")
-
-    uspce = None
-
-    while uspce is None:
-        inpt = input()
-
-        try:
-            inpt = int(float(inpt) * 1000000)  # type: ignore
-        except ValueError:
-            print("Invalid input. Enter int or float.")
-            continue
-
-        print(f"Submitting value: {inpt}\nPress [ENTER] to confirm.")
-        _ = input()
-
-        uspce = inpt
-
-    return uspce
-
-
-async def report(
-    cfg: TelliotConfig, master: Contract, oracle: Contract
-) -> ResponseStatus:
-    """Submit USPCE value to TellorX oracle."""
-
-    gas_price = await fetch_gas_price()  # TODO clarify gas price units
-    user = master.node.web3.eth.account.from_key(cfg.main.private_key).address
-    print("User:", user)
-
-    balance, status = await master.read("balanceOf", _user=user)
-    print("Current balance:", balance / 1e18)  # type: ignore
-
-    is_staked, status = await master.read("getStakerInfo", _staker=user)
-    print(is_staked)
-
-    if is_staked is not None and is_staked[0] == 0:
-        _, status = await master.write_with_retry(
-            func_name="depositStake", gas_price=gas_price, extra_gas_price=20, retries=2
-        )
-
-    q = LegacyRequest(legacy_id=41)
-    usr_input = parse_user_val()
-    value = q.value_type.encode(usr_input)
-
-    query_data = q.query_data
-    query_id = q.query_id
-
-    value_count, status = await oracle.read(
-        func_name="getTimestampCountById", _queryId=query_id
-    )
-
-    _, status = await oracle.write_with_retry(
-        func_name="submitValue",
-        gas_price=gas_price,
-        extra_gas_price=40,
-        retries=5,
-        _queryId=query_id,
-        _value=value,
-        _nonce=value_count,
-        _queryData=query_data,
-    )
-
-    return status
-
-
 if __name__ == "__main__":
     cfg = get_cfg()
-    # if not cfg:
-    #     return ResponseStatus(ok=False, error="Could not get default configs.", e=None)
 
     master = get_master(cfg)
     oracle = get_oracle(cfg)
 
-    # if not master or not oracle:
-    #     return ResponseStatus(
-    #         ok=False, error="Could not connect to master or oracle contract", e=None
-    #     )
+    rinkeby_endpoint = cfg.get_endpoint()
 
-    _ = asyncio.run(report(cfg, master, oracle))  # type: ignore
+    uspce_reporter = IntervalReporter(
+        endpoint=rinkeby_endpoint,
+        private_key=cfg.main.private_key,
+        master=master,
+        oracle=oracle,
+        datafeeds=[uspce_feed],
+    )
+
+    _ = asyncio.run(uspce_reporter.report_once())  # type: ignore
