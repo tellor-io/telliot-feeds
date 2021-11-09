@@ -86,7 +86,7 @@ def parse_user_val() -> int:
     return uspce
 
 
-async def submit(
+async def report(
     cfg: TelliotConfig, master: Contract, oracle: Contract
 ) -> ResponseStatus:
     """Submit USPCE value to TellorX oracle."""
@@ -144,4 +144,4 @@ if __name__ == "__main__":
     #         ok=False, error="Could not connect to master or oracle contract", e=None
     #     )
 
-    _ = asyncio.run(submit(cfg, master, oracle))  # type: ignore
+    _ = asyncio.run(report(cfg, master, oracle))  # type: ignore
