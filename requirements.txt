@@ -1,5 +1,5 @@
 requests==2.26.0
-telliot-core==0.0.2
 web3==5.23.1
 setuptools==57.0.0
 pydantic==1.8.2
+telliot-core
