@@ -18,8 +18,29 @@ from telliot_core.utils.response import ResponseStatus
 
 from telliot_ampl_feeds.config import AMPLConfig
 
+import datetime
+import time
+
 
 T = TypeVar("T")
+
+
+def get_yesterday_start_end() -> Tuple[datetime.datetime, datetime.datetime]:
+    '''Get start and end times of yesterday in UTC.'''
+    today = datetime.datetime.utcnow().date()
+    yesterday_date = today - datetime.timedelta(days=1)
+    yesterday_start = datetime.datetime(
+        year=yesterday_date.year,
+        month=yesterday_date.month,
+        day=yesterday_date.day
+    )
+    yesterday_end = datetime.datetime.combine(yesterday_start, datetime.time.max)
+    return yesterday_start, yesterday_end
+
+    
+def to_unix_milli(dt: datetime.datetime) -> int:
+    '''Convert datetime to UNIX milliseconds.'''
+    return int(time.mktime(dt.timetuple()) * 1000)
 
 
 async def get_float_from_api(
@@ -64,9 +85,16 @@ class AnyBlockSource(DataSource[float]):
     ) -> OptionalDataPoint[float]:
         """Update current value with time-stamped value."""
 
+        yesterday_start, yesterday_end = get_yesterday_start_end()
+        start_milli = to_unix_milli(yesterday_start)
+        end_milli = to_unix_milli(yesterday_end)
+
         url = (
             "https://api.anyblock.tools/market/AMPL_USD_via_ALL/daily-volume"
-            + "?roundDay=false&debug=false&access_token="
+            + "?roundDay=false"
+            + f"&start={start_milli}"
+            + f"&end={end_milli}"
+            + "&debug=false&access_token="
             + self.api_key
         )
         params = ["overallVWAP"]
