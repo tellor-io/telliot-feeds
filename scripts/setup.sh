@@ -1,4 +1,4 @@
-cd ..
+cd ~/telliot-feed-examples/
 
 # install python 3.8
 sudo apt-get update
