@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from telliot.datasource import DataSource
-from telliot.types.datapoint import DataPoint
-from telliot.types.datapoint import datetime_now_utc
+from telliot_core.datasource import DataSource
+from telliot_core.types.datapoint import DataPoint
+from telliot_core.types.datapoint import datetime_now_utc
 
 
 @dataclass

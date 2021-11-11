@@ -11,10 +11,10 @@ from typing import Tuple
 from typing import TypeVar
 
 import requests
-from telliot.datasource import DataSource
-from telliot.types.datapoint import datetime_now_utc
-from telliot.types.datapoint import OptionalDataPoint
-from telliot.utils.response import ResponseStatus
+from telliot_core.datasource import DataSource
+from telliot_core.types.datapoint import datetime_now_utc
+from telliot_core.types.datapoint import OptionalDataPoint
+from telliot_core.utils.response import ResponseStatus
 
 from telliot_ampl_feeds.config import AMPLConfig
 

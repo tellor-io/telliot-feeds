@@ -3,10 +3,10 @@ from dataclasses import field
 from typing import Any
 from urllib.parse import urlencode
 
-from telliot.pricing.price_service import WebPriceService
-from telliot.pricing.price_source import PriceSource
-from telliot.types.datapoint import datetime_now_utc
-from telliot.types.datapoint import OptionalDataPoint
+from telliot_core.pricing.price_service import WebPriceService
+from telliot_core.pricing.price_source import PriceSource
+from telliot_core.types.datapoint import datetime_now_utc
+from telliot_core.types.datapoint import OptionalDataPoint
 
 # Coinbase API uses the 'id' field from /coins/list.
 # Using a manual mapping for now.

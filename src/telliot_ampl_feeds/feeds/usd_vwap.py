@@ -1,6 +1,6 @@
 """Example datafeed used by AMPLUSDVWAPReporter."""
-from telliot.datafeed import DataFeed
-from telliot.queries.legacy_query import LegacyRequest
+from telliot_core.datafeed import DataFeed
+from telliot_core.queries.legacy_query import LegacyRequest
 
 from telliot_ampl_feeds.config import AMPLConfig
 from telliot_ampl_feeds.sources.usd_vwap import AMPLUSDVWAPSource

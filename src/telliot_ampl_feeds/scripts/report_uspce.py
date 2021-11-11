@@ -2,10 +2,10 @@
 import asyncio
 from typing import Optional
 
-from telliot.apps.telliot_config import TelliotConfig
-from telliot.contract.contract import Contract
-from telliot.utils.abi import rinkeby_tellor_master
-from telliot.utils.abi import rinkeby_tellor_oracle
+from telliot_core.apps.telliot_config import TelliotConfig
+from telliot_core.contract.contract import Contract
+from telliot_core.utils.abi import rinkeby_tellor_master
+from telliot_core.utils.abi import rinkeby_tellor_oracle
 from telliot_ampl_feeds.feeds.uspce import uspce_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
 

@@ -1,6 +1,6 @@
 """Example datafeed used by BTCUSDReporter."""
-from telliot.datafeed import DataFeed
-from telliot.queries.coin_price import CoinPrice
+from telliot_core.datafeed import DataFeed
+from telliot_core.queries.coin_price import CoinPrice
 
 from telliot_feed_examples.sources.bittrex import BittrexPriceSource
 from telliot_feed_examples.sources.coinbase import CoinbasePriceSource

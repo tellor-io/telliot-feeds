@@ -8,11 +8,11 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
-from telliot.contract.contract import Contract
-from telliot.contract.gas import fetch_gas_price
-from telliot.datafeed import DataFeed
-from telliot.model.endpoints import RPCEndpoint
-from telliot.utils.response import ResponseStatus
+from telliot_core.contract.contract import Contract
+from telliot_core.contract.gas import fetch_gas_price
+from telliot_core.datafeed import DataFeed
+from telliot_core.model.endpoints import RPCEndpoint
+from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
 

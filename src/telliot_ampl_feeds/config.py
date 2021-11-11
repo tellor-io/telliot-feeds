@@ -5,9 +5,9 @@ from pathlib import Path
 from typing import Optional
 from typing import Union
 
-from telliot.apps.config import ConfigFile
-from telliot.apps.config import ConfigOptions
-from telliot.model.base import Base
+from telliot_core.apps.config import ConfigFile
+from telliot_core.apps.config import ConfigOptions
+from telliot_core.model.base import Base
 
 
 @dataclass

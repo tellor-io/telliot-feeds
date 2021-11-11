@@ -2,10 +2,10 @@
 import os
 
 import pytest
-from telliot.apps.telliot_config import TelliotConfig
-from telliot.contract.contract import Contract
-from telliot.utils.abi import rinkeby_tellor_master
-from telliot.utils.abi import rinkeby_tellor_oracle
+from telliot_core.apps.telliot_config import TelliotConfig
+from telliot_core.contract.contract import Contract
+from telliot_core.utils.abi import rinkeby_tellor_master
+from telliot_core.utils.abi import rinkeby_tellor_oracle
 
 
 @pytest.fixture(scope="session", autouse=True)
