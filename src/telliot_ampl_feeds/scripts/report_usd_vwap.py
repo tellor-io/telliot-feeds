@@ -1,7 +1,7 @@
 """Submits AMPL/USD/VWAP to TellorX on Rinkeby fifteen minutes
 past each midnight."""
 import asyncio
-from datetime import datetime
+# from datetime import datetime
 from typing import Optional
 
 from telliot_core.apps.telliot_config import TelliotConfig
