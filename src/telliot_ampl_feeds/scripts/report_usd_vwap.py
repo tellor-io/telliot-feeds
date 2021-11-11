@@ -81,10 +81,10 @@ if __name__ == "__main__":
         datafeeds=[ampl_usd_vwap_feed],
     )
 
-    # Report once UTC midnight passes
-    last_day = datetime.utcnow().day
-    while True:
-        day = datetime.utcnow().day
-        if day != last_day:
-            last_day = day
-            _ = asyncio.run(uspce_reporter.report_once())  # type: ignore
+    # # Report once UTC midnight passes
+    # last_day = datetime.utcnow().day
+    # while True:
+    #     day = datetime.utcnow().day
+    #     if day != last_day:
+    #         last_day = day
+    _ = asyncio.run(uspce_reporter.report_once())  # type: ignore

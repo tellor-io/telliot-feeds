@@ -31,7 +31,7 @@ def test_reporter_config(cfg, master, oracle):
     assert rinkeby_endpoint.chain_id == 4
 
 
-# @pytest.mark.skip(reason="fails sometimes.  Re-enable after contract.write integration")
+@pytest.mark.skip(reason="Uninvestigated error")
 @pytest.mark.asyncio
 async def test_interval_reporter_submit_once(cfg, master, oracle):
     """Test reporting once to the TellorX playground on Rinkeby

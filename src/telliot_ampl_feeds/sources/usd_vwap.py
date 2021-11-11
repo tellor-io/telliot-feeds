@@ -219,6 +219,7 @@ class AMPLUSDVWAPSource(DataSource[float]):
             Current time-stamped value
         """
         updates = await self.update_sources()
+        print(updates)
 
         prices = [v for v, _ in updates if v is not None]
 
