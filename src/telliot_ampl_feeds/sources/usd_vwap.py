@@ -1,5 +1,7 @@
 import asyncio
+import datetime
 import statistics
+import time
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
@@ -18,28 +20,23 @@ from telliot_core.utils.response import ResponseStatus
 
 from telliot_ampl_feeds.config import AMPLConfig
 
-import datetime
-import time
-
 
 T = TypeVar("T")
 
 
 def get_yesterday_start_end() -> Tuple[datetime.datetime, datetime.datetime]:
-    '''Get start and end times of yesterday in UTC.'''
+    """Get start and end times of yesterday in UTC."""
     today = datetime.datetime.utcnow().date()
     yesterday_date = today - datetime.timedelta(days=1)
     yesterday_start = datetime.datetime(
-        year=yesterday_date.year,
-        month=yesterday_date.month,
-        day=yesterday_date.day
+        year=yesterday_date.year, month=yesterday_date.month, day=yesterday_date.day
     )
     yesterday_end = datetime.datetime.combine(yesterday_start, datetime.time.max)
     return yesterday_start, yesterday_end
 
-    
+
 def to_unix_milli(dt: datetime.datetime) -> int:
-    '''Convert datetime to UNIX milliseconds.'''
+    """Convert datetime to UNIX milliseconds."""
     return int(time.mktime(dt.timetuple()) * 1000)
 
 

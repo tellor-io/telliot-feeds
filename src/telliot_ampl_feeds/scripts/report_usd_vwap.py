@@ -1,7 +1,7 @@
 """Submits AMPL/USD/VWAP to TellorX on Rinkeby fifteen minutes
 past each midnight."""
-"""Submits three month rolling average of the USPCE to TellorX on Rinkeby."""
 import asyncio
+from datetime import datetime
 from typing import Optional
 
 from telliot_core.apps.telliot_config import TelliotConfig
@@ -11,8 +11,6 @@ from telliot_core.utils.abi import rinkeby_tellor_oracle
 
 from telliot_ampl_feeds.feeds.usd_vwap import ampl_usd_vwap_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
-
-from datetime import datetime
 
 
 def get_cfg() -> TelliotConfig:
