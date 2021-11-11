@@ -1,15 +1,15 @@
 cd ..
 
-# # install python 3.8
-# sudo apt-get update
-# sudo apt-get install python3.8 python3-pip
+# install python 3.8
+sudo apt-get update
+sudo apt-get install python3.8 python3-pip
 
-# # setup virtual environment
-# python3.8 -m venv env
-# source env/bin/activate
+# setup virtual environment
+python3.8 -m venv env
+source env/bin/activate
 
-# # install dependencies
-# pip install -r requirements-dev.txt
+# install dependencies
+pip install -r requirements-dev.txt
 
 # generate default Telliot configs
 python scripts/get_default_configs.py
