@@ -8,6 +8,4 @@ pytest-asyncio
 pre-commit
 mypy
 mypy-extensions
-types-requests
-types-PyYAML
 tox

@@ -1,9 +1,4 @@
-click==8.0.1
-databases==0.5.2
-fastapi==0.68.1
-pydantic==1.8.2
-PyYAML==5.4.1
 requests==2.26.0
-SQLAlchemy==1.4.23
+telliot-core==0.0.2
 web3==5.23.1
 setuptools==57.0.0
