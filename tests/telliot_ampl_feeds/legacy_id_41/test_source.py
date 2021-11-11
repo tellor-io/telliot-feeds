@@ -1,10 +1,9 @@
-import os
 from datetime import datetime
 
 import pytest
 
-from telliot_ampl_feeds.sources.uspce import USPCESource
 from telliot_ampl_feeds.sources import uspce
+from telliot_ampl_feeds.sources.uspce import USPCESource
 
 
 @pytest.mark.asyncio
@@ -16,7 +15,6 @@ async def test_uspce_source():
     ampl_source = USPCESource()
 
     value, timestamp = await ampl_source.fetch_new_datapoint()
-    print(value)
 
     assert isinstance(value, int)
     assert isinstance(timestamp, datetime)

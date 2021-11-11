@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from telliot_core.datasource import DataSource
 from telliot_core.types.datapoint import DataPoint
 from telliot_core.types.datapoint import datetime_now_utc
@@ -6,7 +7,7 @@ from telliot_core.types.datapoint import datetime_now_utc
 
 @dataclass
 class USPCESource(DataSource[float]):
-    '''DataSource for USPCE manually-entered data.'''
+    """DataSource for USPCE manually-entered data."""
 
     def parse_user_val(test_input: str) -> int:
         """Parse USPCE value from user input."""

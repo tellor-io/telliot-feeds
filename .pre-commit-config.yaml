@@ -1,0 +1,37 @@
+exclude: '.git|.tox|docs|tox.ini'
+default_stages: [commit]
+fail_fast: true
+
+repos:
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.4.0
+    hooks:
+    - id: interrogate
+      name: Check for docstrings
+      args: [-vv, -i, --fail-under=50]
+  - repo: https://github.com/asottile/reorder_python_imports
+    rev: v2.6.0
+    hooks:
+      - id: reorder-python-imports
+        name: Reorder Python imports (pysigner, tests)
+        args: ["--application-directories=.:pysigner:tests"]
+  - repo: https://github.com/psf/black
+    rev: 21.7b0
+    hooks:
+      - id: black
+      #args: [--line-length, '75']
+  - repo: https://github.com/PyCQA/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-bugbear
+          - flake8-implicit-str-concat
+        args: ["--ignore=ISC003,W503", --max-line-length, '90', src]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: detect-private-key
+      - id: fix-byte-order-marker
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
