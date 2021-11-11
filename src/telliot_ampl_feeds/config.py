@@ -37,3 +37,7 @@ class AMPLConfig(Base):
             config_dir=self.config_dir,
         )
         self.main = main_file.get_config()  # type: ignore
+
+
+if __name__ == "__main__":
+    _ = AMPLConfig()
