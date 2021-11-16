@@ -18,7 +18,7 @@ from web3.datastructures import AttributeDict
 
 
 class IntervalReporter:
-    """Submits the price of BTC to the TellorX playground
+    """Reports values from given datafeeds to a TellorX Oracle
     every 10 seconds."""
 
     def __init__(
@@ -37,7 +37,7 @@ class IntervalReporter:
         self.datafeeds = datafeeds
 
     async def report_once(
-        self, name: str = "", retries: int = 0
+        self, retries: int = 0
     ) -> List[Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]]:
         """Submit value once"""
         status = ResponseStatus()
@@ -66,14 +66,14 @@ class IntervalReporter:
                 status.e = read_status.e
                 transaction_receipts.append((None, status))
 
-            elif time.time() < last_timestamp + 43200:
+            elif time.time() < last_timestamp + 43200: # 43200 is 12 hours in seconds
                 status.ok = False
                 status.error = f"your address at {user} is currently in reporter lock"
                 transaction_receipts.append((None, status))
 
             else:
 
-                print(is_staked[0])
+                print('stake status:', is_staked[0])
 
                 # Status 1: staked
                 if is_staked[0] == 1:
@@ -86,14 +86,13 @@ class IntervalReporter:
 
                     for datafeed in self.datafeeds:
 
-                        datapoint = datafeed.source.latest
-                        v, t = datapoint
+                        latest_data = datafeed.source.latest
 
-                        if v is not None:
+                        if latest_data is not None:
                             query = datafeed.query
 
                             if query:
-                                value = query.value_type.encode(v)
+                                value = query.value_type.encode(latest_data)
                                 query_id = query.query_id
                                 query_data = query.query_data
                                 extra_gas_price = 20
@@ -158,15 +157,14 @@ class IntervalReporter:
         return transaction_receipts
 
     async def report(self, name: str = "") -> None:
-        """Update all off-chain values (BTC/USD) & store those values locally."""
-        """Submit latest BTC/USD values to the Tellor oracle."""
+        """Submit latest values to the TellorX oracle every 10 seconds."""
 
         while True:
             _ = await self.report_once(name)
             await asyncio.sleep(10)
 
     def run(self) -> None:
-        """Used by telliot CLI to update & submit BTC/USD price data to Tellor Oracle."""
+        """Used by telliot CLI to update & submit data to TellorX Oracle."""
 
         # Create coroutines to run concurrently.
         loop = asyncio.get_event_loop()

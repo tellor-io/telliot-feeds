@@ -90,9 +90,7 @@ async def reporter_submit_once(cfg, master, oracle, feed):
         datafeeds=[feed],
     )
 
-    tx_receipts = await reporter.report_once(
-        name="BTC USD Median Price Feed", retries=3
-    )
+    tx_receipts = await reporter.report_once(retries=3)
 
     assert tx_receipts is not None
 
