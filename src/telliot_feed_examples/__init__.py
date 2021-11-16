@@ -4,3 +4,5 @@ from telliot_core.plugin.registry import PluginRegistry
 
 registry = PluginRegistry()
 # registry.register_feed(btc_usd_median_feed)
+
+__version__ = "0.0.1"

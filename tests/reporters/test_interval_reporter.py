@@ -3,9 +3,9 @@ Tests covering the IntervalReporter class from
 telliot's reporters subpackage.
 """
 import pytest
-
 from telliot_feed_examples.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
+
 from tests.conftest import reporter_submit_once
 
 # Tellor playground contract used for test
@@ -38,7 +38,7 @@ async def test_interval_reporter_submit_once(cfg, master, oracle):
     """Test reporting once to the TellorX playground on Rinkeby
     with three retries."""
 
-    reporter_submit_once(cfg, master, oracle, btc_usd_median_feed)
+    await reporter_submit_once(cfg, master, oracle, btc_usd_median_feed)
 
 
 # TODO: choose datafeeds in reporters config

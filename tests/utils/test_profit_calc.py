@@ -2,8 +2,7 @@
 Test covering Pytelliot EVM contract connection utils.
 """
 import pytest
-
-from telliot_feed_examples.reporters.profitcalc import profitable
+from telliot_feed_examples.utils.profitcalc import profitable
 
 
 @pytest.fixture

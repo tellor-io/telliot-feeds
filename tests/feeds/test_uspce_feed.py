@@ -1,6 +1,5 @@
 import yaml
-
-from telliot_ampl_feeds.feeds.uspce import uspce_feed
+from telliot_feed_examples.feeds.uspce_feed import uspce_feed
 
 
 def test_manual_uspce_feed():
