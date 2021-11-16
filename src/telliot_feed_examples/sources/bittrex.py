@@ -63,6 +63,8 @@ class BittrexPriceService(WebPriceService):
 
 @dataclass
 class BittrexPriceSource(PriceSource):
+    asset: str = ""
+    currency: str = ""
     service: BittrexPriceService = field(
         default_factory=BittrexPriceService, init=False
     )

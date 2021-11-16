@@ -55,7 +55,7 @@ class PriceAggregator(DataSource[float], ABC):
             datapoints = await asyncio.gather(
                 *[source.fetch_new_datapoint() for source in sources]
             )
-            return datapoints
+            return datapoints  # type: ignore # TODO: haven't investigated this type error
 
         inputs = await gather_inputs()
 

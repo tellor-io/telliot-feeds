@@ -52,7 +52,9 @@ class IntervalReporter:
 
         if (not read_status.ok) or (is_staked is None):
             status.ok = False
-            status.error = "unable to read reporters staker status: " + read_status.error  # type: ignore # error won't be none # noqa: E501
+            status.error = (
+                "unable to read reporters staker status: " + read_status.error
+            )  # error won't be none # noqa: E501
             status.e = read_status.e
             transaction_receipts.append((None, status))
 
@@ -107,7 +109,10 @@ class IntervalReporter:
                                 )
 
                                 if not read_status.ok:
-                                    status.error = "unable to retrieve timestampCount: " + read_status.error  # type: ignore # error won't be none # noqa: E501
+                                    status.error = (
+                                        "unable to retrieve timestampCount: "
+                                        + read_status.error
+                                    )  # error won't be none # noqa: E501
                                     status.e = read_status.e
                                     transaction_receipts.append((None, status))
 
@@ -150,7 +155,9 @@ class IntervalReporter:
                             retries=retries,
                         )
                         if not write_status.ok:
-                            status.error = "unable to stake deposit: " + write_status.error  # type: ignore # error won't be none # noqa: E501
+                            status.error = (
+                                "unable to stake deposit: " + write_status.error
+                            )  # error won't be none # noqa: E501
                             status.e = write_status.e
                             transaction_receipts.append((None, status))
                     # Statuses 2, 4, and 5: stake transition
@@ -161,11 +168,11 @@ class IntervalReporter:
 
         return transaction_receipts
 
-    async def report(self, name: str = "") -> None:
+    async def report(self) -> None:
         """Submit latest values to the TellorX oracle every 10 seconds."""
 
         while True:
-            _ = await self.report_once(name)
+            _ = await self.report_once()
             await asyncio.sleep(10)
 
     def run(self) -> None:

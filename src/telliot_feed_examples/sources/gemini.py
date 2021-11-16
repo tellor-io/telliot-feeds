@@ -63,4 +63,6 @@ class GeminiPriceService(WebPriceService):
 
 @dataclass
 class GeminiPriceSource(PriceSource):
+    asset: str = ""
+    currency: str = ""
     service: GeminiPriceService = field(default_factory=GeminiPriceService, init=False)
