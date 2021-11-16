@@ -12,6 +12,8 @@ from telliot_core.utils.abi import rinkeby_tellor_oracle
 from telliot_ampl_feeds.feeds.usd_vwap import ampl_usd_vwap_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
 
+from datetime import datetime
+
 
 def get_cfg() -> TelliotConfig:
     """Get rinkeby endpoint from config
@@ -81,10 +83,10 @@ if __name__ == "__main__":
         datafeeds=[ampl_usd_vwap_feed],
     )
 
-    # # Report once UTC midnight passes
-    # last_day = datetime.utcnow().day
-    # while True:
-    #     day = datetime.utcnow().day
-    #     if day != last_day:
-    #         last_day = day
-    _ = asyncio.run(uspce_reporter.report_once())  # type: ignore
+    # Report once UTC midnight passes
+    last_day = datetime.utcnow().day
+    while True:
+        day = datetime.utcnow().day
+        if day != last_day:
+            last_day = day
+            _ = asyncio.run(uspce_reporter.report_once())  # type: ignore
