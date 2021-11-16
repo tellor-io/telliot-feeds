@@ -3,16 +3,16 @@ import os
 import time
 
 import pytest
-from src.telliot_ampl_feeds.feeds.uspce import uspce_feed
+from telliot_ampl_feeds.feeds.uspce import uspce_feed
 
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.contract.contract import Contract
 from telliot_core.utils.abi import rinkeby_tellor_master
 from telliot_core.utils.abi import rinkeby_tellor_oracle
 from web3.datastructures import AttributeDict
-from src.telliot_ampl_feeds.sources import uspce
+from telliot_ampl_feeds.sources import uspce
 
-from src.telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.reporters.interval import IntervalReporter
 
 
 @pytest.fixture(scope="session", autouse=True)
