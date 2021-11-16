@@ -1,5 +1,4 @@
-"""Submits AMPL/USD/VWAP to TellorX on Rinkeby fifteen minutes
-past each midnight."""
+"""Submits legacy query values to TellorX on Rinkeby."""
 import asyncio
 from typing import Optional
 
@@ -8,10 +7,12 @@ from telliot_core.contract.contract import Contract
 from telliot_core.utils.abi import rinkeby_tellor_master
 from telliot_core.utils.abi import rinkeby_tellor_oracle
 
-from telliot_ampl_feeds.feeds.usd_vwap import ampl_usd_vwap_feed
-from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.feeds.btc_usd_feed import btc_usd_median_feed
+from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feed_examples.feeds.eth_jpy_feed import eth_jpy_median_feed
+from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 
-# from datetime import datetime
+from telliot_feed_examples.reporters.interval import IntervalReporter
 
 
 def get_cfg() -> TelliotConfig:
@@ -66,6 +67,40 @@ def get_oracle(cfg: TelliotConfig) -> Optional[Contract]:
     return oracle
 
 
+datafeed_lookup = {
+    1: eth_usd_median_feed,
+    2: btc_usd_median_feed,
+    50: trb_usd_median_feed,
+    59: eth_jpy_median_feed,
+}
+
+
+def get_user_choices():
+    print('Enter legacy query ids to select datafeeds (example: "1, 50"):\n')
+
+    good_input = False
+    while not good_input:
+        selected = input()
+        try:
+            # Parse user input
+            selected = [int(s.strip()) for s in selected.split(',')]
+            good_input = True
+        except ValueError:
+            print(
+                '''Invalid user input. \
+                Enter integers separated by commas (example: "2, 50, 59").'''
+            )
+
+    selected_datafeeds = []
+    msg = "Reporting values for the following legacy query ids:\n"
+    for legacy_id in selected:
+        if legacy_id in datafeed_lookup:
+            selected_datafeeds.append(datafeed_lookup[legacy_id])
+            msg += f"{legacy_id}\n"
+
+    return selected_datafeeds
+
+
 if __name__ == "__main__":
     cfg = get_cfg()
 
@@ -74,18 +109,14 @@ if __name__ == "__main__":
 
     rinkeby_endpoint = cfg.get_endpoint()
 
-    uspce_reporter = IntervalReporter(
+    datafeeds = get_user_choices()
+
+    legacy_price_reporter = IntervalReporter(
         endpoint=rinkeby_endpoint,
         private_key=cfg.main.private_key,
         master=master,
         oracle=oracle,
-        datafeeds=[ampl_usd_vwap_feed],
+        datafeeds=datafeeds,
     )
 
-    # # Report once UTC midnight passes
-    # last_day = datetime.utcnow().day
-    # while True:
-    #     day = datetime.utcnow().day
-    #     if day != last_day:
-    #         last_day = day
-    _ = asyncio.run(uspce_reporter.report_once())  # type: ignore
+    _ = asyncio.run(legacy_price_reporter.report_once())  # type: ignore
