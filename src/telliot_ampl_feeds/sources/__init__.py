@@ -1,1 +1,0 @@
-"""Telliot AMPL sources"""

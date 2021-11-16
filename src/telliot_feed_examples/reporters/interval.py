@@ -58,22 +58,27 @@ class IntervalReporter:
 
         else:
 
-            last_timestamp, read_status = await self.oracle.read("getReporterLastTimestamp", _reporter=user) 
+            last_timestamp, read_status = await self.oracle.read(
+                "getReporterLastTimestamp", _reporter=user
+            )
 
             if last_timestamp is None:
                 status.ok = False
-                status.error = "unable to retrieve reporter's last report timestamp:" + read_status.error
+                status.error = (
+                    "unable to retrieve reporter's last report timestamp:"
+                    + read_status.error
+                )
                 status.e = read_status.e
                 transaction_receipts.append((None, status))
 
-            elif time.time() < last_timestamp + 43200: # 43200 is 12 hours in seconds
+            elif time.time() < last_timestamp + 43200:  # 43200 is 12 hours in seconds
                 status.ok = False
                 status.error = f"your address at {user} is currently in reporter lock"
                 transaction_receipts.append((None, status))
 
             else:
 
-                print('stake status:', is_staked[0])
+                print("stake status:", is_staked[0])
 
                 # Status 1: staked
                 if is_staked[0] == 1:

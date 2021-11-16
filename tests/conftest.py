@@ -3,16 +3,14 @@ import os
 import time
 
 import pytest
-from telliot_ampl_feeds.feeds.uspce import uspce_feed
-
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.contract.contract import Contract
 from telliot_core.utils.abi import rinkeby_tellor_master
 from telliot_core.utils.abi import rinkeby_tellor_oracle
-from web3.datastructures import AttributeDict
-from telliot_ampl_feeds.sources import uspce
-
+from telliot_feed_examples.feeds.uspce_feed import uspce_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.sources import uspce
+from web3.datastructures import AttributeDict
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -68,6 +66,7 @@ def oracle(cfg):
     oracle.connect()
     return oracle
 
+
 async def reporter_submit_once(cfg, master, oracle, feed):
     """Test reporting once to the TellorX playground on Rinkeby
     with three retries."""
@@ -79,7 +78,9 @@ async def reporter_submit_once(cfg, master, oracle, feed):
         uspce.input = lambda: "123.456"
 
     user = rinkeby_endpoint.web3.eth.account.from_key(cfg.main.private_key).address
-    last_timestamp, read_status = await oracle.read("getReporterLastTimestamp", _reporter=user) 
+    last_timestamp, read_status = await oracle.read(
+        "getReporterLastTimestamp", _reporter=user
+    )
     assert read_status.ok
 
     reporter = IntervalReporter(
@@ -95,13 +96,13 @@ async def reporter_submit_once(cfg, master, oracle, feed):
     assert tx_receipts is not None
 
     for receipt, status in tx_receipts:
-        #reporter should exit if address is in reporter lock
+        # reporter should exit if address is in reporter lock
         if time.time() < last_timestamp + 43200:
             assert receipt is None
             assert not status.ok
             assert "reporter lock" in status.error
 
-        #if reporter is not in lock, should submit
+        # if reporter is not in lock, should submit
         else:
             assert isinstance(receipt, AttributeDict)
             assert receipt.to == oracle.address
