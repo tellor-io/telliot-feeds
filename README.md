@@ -44,4 +44,3 @@
     ```
 2. enter a value (example: 1234.1234)
 3. press `[ENTER]` to confirm
-
