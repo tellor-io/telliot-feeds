@@ -4,6 +4,7 @@
 from datetime import datetime
 
 import pytest
+
 from telliot_feed_examples.sources.bittrex import BittrexPriceService
 from telliot_feed_examples.sources.coinbase import CoinbasePriceService
 from telliot_feed_examples.sources.coingecko import CoinGeckoPriceService

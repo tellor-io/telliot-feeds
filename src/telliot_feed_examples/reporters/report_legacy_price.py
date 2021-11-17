@@ -8,6 +8,7 @@ from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.utils.abi import rinkeby_tellor_master
 from telliot_core.utils.abi import rinkeby_tellor_oracle
+
 from telliot_feed_examples.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feed_examples.feeds.eth_jpy_feed import eth_jpy_median_feed
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed

@@ -1,2 +1,0 @@
-telliot-core==0.0.2
-pydantic==1.8.2

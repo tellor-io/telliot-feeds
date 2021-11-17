@@ -17,6 +17,7 @@ from telliot_core.datasource import DataSource
 from telliot_core.types.datapoint import datetime_now_utc
 from telliot_core.types.datapoint import OptionalDataPoint
 from telliot_core.utils.response import ResponseStatus
+
 from telliot_feed_examples.config.ampl import AMPLConfig
 
 
