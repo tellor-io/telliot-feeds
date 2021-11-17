@@ -1,1 +1,0 @@
-"""AMPL/USD/VWAP plugins."""

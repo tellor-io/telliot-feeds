@@ -50,6 +50,8 @@ class CoinbasePriceService(WebPriceService):
 
 @dataclass
 class CoinbasePriceSource(PriceSource):
+    asset: str = ""
+    currency: str = ""
     service: CoinbasePriceService = field(
         default_factory=CoinbasePriceService, init=False
     )
