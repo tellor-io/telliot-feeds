@@ -9,7 +9,7 @@ from telliot_core.types.datapoint import datetime_now_utc
 class USPCESource(DataSource[float]):
     """DataSource for USPCE manually-entered data."""
 
-    def parse_user_val(test_input: str) -> int:
+    def parse_user_val(test_input: str) -> float:
         """Parse USPCE value from user input."""
         # This arg is to avoid a TypeError when the default
         # input() method is overriden in test_source.py.
@@ -25,9 +25,9 @@ class USPCESource(DataSource[float]):
             inpt = input()
 
             try:
-                inpt = int(float(inpt) * 1000000)  # type: ignore
+                inpt = float(inpt)  # type: ignore
             except ValueError:
-                print("Invalid input. Enter int or float.")
+                print("Invalid input. Enter decimal value (float).")
                 continue
 
             print(f"Submitting value: {inpt}\nPress [ENTER] to confirm.")
