@@ -15,7 +15,7 @@ from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
 
 
-def get_cfg() -> TelliotConfig:
+def get_rinkeby_config() -> TelliotConfig:
     """Get rinkeby endpoint from config
 
     If environment variables are defined, they will override the values in config files
@@ -102,7 +102,7 @@ def get_user_choices() -> List[DataFeed]:
 
 
 if __name__ == "__main__":
-    cfg = get_cfg()
+    cfg = get_rinkeby_config()
 
     master = get_master(cfg)
     oracle = get_oracle(cfg)
