@@ -10,7 +10,7 @@ from telliot_core.types.datapoint import OptionalDataPoint
 
 # Coinbase API uses the 'id' field from /coins/list.
 # Using a manual mapping for now.
-coingecko_coin_id = {"btc": "bitcoin"}
+coingecko_coin_id = {"btc": "bitcoin", "eth": "ethereum", "trb": "tellor"}
 
 
 class CoinGeckoPriceService(WebPriceService):
