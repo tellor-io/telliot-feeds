@@ -1,4 +1,3 @@
--r requirements.txt
 mkdocs-material
 mkdocstrings
 pytest
@@ -8,4 +7,6 @@ pytest-asyncio
 pre-commit
 mypy
 mypy-extensions
+types-requests
+types-PyYAML
 tox
