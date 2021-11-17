@@ -99,7 +99,7 @@ class IntervalReporter:
                             query = datafeed.query
 
                             if query:
-                                value = query.value_type.encode(latest_data)
+                                value = query.value_type.encode(latest_data[0])
                                 query_id = query.query_id
                                 query_data = query.query_data
                                 extra_gas_price = 20

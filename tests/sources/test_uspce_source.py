@@ -15,6 +15,6 @@ async def test_uspce_source():
 
     value, timestamp = await ampl_source.fetch_new_datapoint()
 
-    assert isinstance(value, int)
+    assert isinstance(value, float)
     assert isinstance(timestamp, datetime)
     assert value > 0
