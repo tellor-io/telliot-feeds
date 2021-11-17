@@ -10,8 +10,8 @@ from telliot_core.types.datapoint import OptionalDataPoint
 
 
 # Hardcoded supported assets & currencies
-binance_assets = {'ETH'}
-binance_currencies = {'USDT', "USDC"}
+binance_assets = {"ETH"}
+binance_currencies = {"USDT", "USDC"}
 
 
 class BinancePriceService(WebPriceService):
@@ -35,10 +35,9 @@ class BinancePriceService(WebPriceService):
         if currency not in binance_currencies:
             raise Exception(f"Currency not supported: {currency}")
 
-        url_params = urlencode({
-            "symbol": f"{asset}{currency}",
-            "interval": "1d",
-            "limit": 1})
+        url_params = urlencode(
+            {"symbol": f"{asset}{currency}", "interval": "1d", "limit": 1}
+        )
 
         request_url = f"/api/v1/klines?{url_params}"
 
@@ -65,6 +64,8 @@ class BinancePriceService(WebPriceService):
 
 @dataclass
 class BinancePriceSource(PriceSource):
+    asset: str = ""
+    currency: str = ""
     service: BinancePriceService = field(
         default_factory=BinancePriceService, init=False
     )

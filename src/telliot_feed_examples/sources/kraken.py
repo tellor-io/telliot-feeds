@@ -10,8 +10,8 @@ from telliot_core.types.datapoint import OptionalDataPoint
 
 
 # Hardcoded supported assets & currencies
-kraken_assets = {'ETH'}
-kraken_currencies = {'USD'}
+kraken_assets = {"ETH"}
+kraken_currencies = {"USD"}
 
 
 class KrakenPriceService(WebPriceService):
@@ -62,6 +62,6 @@ class KrakenPriceService(WebPriceService):
 
 @dataclass
 class KrakenPriceSource(PriceSource):
-    service: KrakenPriceService = field(
-        default_factory=KrakenPriceService, init=False
-    )
+    asset: str = ""
+    currency: str = ""
+    service: KrakenPriceService = field(default_factory=KrakenPriceService, init=False)

@@ -1,7 +1,6 @@
 import statistics
 
 import pytest
-
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 
 

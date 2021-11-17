@@ -9,8 +9,8 @@ from telliot_core.types.datapoint import OptionalDataPoint
 
 
 # Hardcoded supported assets & currencies
-bitfinex_assets = {'ETH'}
-bitfinex_currencies = {'JPY'}
+bitfinex_assets = {"ETH"}
+bitfinex_currencies = {"JPY"}
 
 
 class BitfinexPriceService(WebPriceService):
@@ -59,6 +59,8 @@ class BitfinexPriceService(WebPriceService):
 
 @dataclass
 class BitfinexPriceSource(PriceSource):
+    asset: str = ""
+    currency: str = ""
     service: BitfinexPriceService = field(
         default_factory=BitfinexPriceService, init=False
     )

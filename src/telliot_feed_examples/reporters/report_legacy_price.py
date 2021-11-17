@@ -1,17 +1,17 @@
 """Submits legacy query values to TellorX on Rinkeby."""
 import asyncio
+from typing import List
 from typing import Optional
 
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.contract.contract import Contract
+from telliot_core.datafeed import DataFeed
 from telliot_core.utils.abi import rinkeby_tellor_master
 from telliot_core.utils.abi import rinkeby_tellor_oracle
-
 from telliot_feed_examples.feeds.btc_usd_feed import btc_usd_median_feed
-from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.eth_jpy_feed import eth_jpy_median_feed
+from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
-
 from telliot_feed_examples.reporters.interval import IntervalReporter
 
 
@@ -40,7 +40,7 @@ def get_master(cfg: TelliotConfig) -> Optional[Contract]:
     endpoint.connect()
     master = Contract(
         address="0x657b95c228A5de81cdc3F85be7954072c08A6042",
-        abi=rinkeby_tellor_master,  # type: ignore
+        abi=rinkeby_tellor_master,
         node=endpoint,
         private_key=cfg.main.private_key,
     )
@@ -59,7 +59,7 @@ def get_oracle(cfg: TelliotConfig) -> Optional[Contract]:
         endpoint.connect()
     oracle = Contract(
         address="0x07b521108788C6fD79F471D603A2594576D47477",
-        abi=rinkeby_tellor_oracle,  # type: ignore
+        abi=rinkeby_tellor_oracle,
         node=endpoint,
         private_key=cfg.main.private_key,
     )
@@ -68,14 +68,14 @@ def get_oracle(cfg: TelliotConfig) -> Optional[Contract]:
 
 
 datafeed_lookup = {
-    1: eth_usd_median_feed,
-    2: btc_usd_median_feed,
-    50: trb_usd_median_feed,
-    59: eth_jpy_median_feed,
+    "1": eth_usd_median_feed,
+    "2": btc_usd_median_feed,
+    "50": trb_usd_median_feed,
+    "59": eth_jpy_median_feed,
 }
 
 
-def get_user_choices():
+def get_user_choices() -> List[DataFeed]:
     print('Enter legacy query ids to select datafeeds (example: "1, 50"):\n')
 
     good_input = False
@@ -83,12 +83,12 @@ def get_user_choices():
         selected = input()
         try:
             # Parse user input
-            selected = [int(s.strip()) for s in selected.split(',')]
+            selected = [s.strip() for s in selected.split(",")]  # type: ignore
             good_input = True
         except ValueError:
             print(
-                '''Invalid user input. \
-                Enter integers separated by commas (example: "2, 50, 59").'''
+                """Invalid user input. \
+                Enter integers separated by commas (example: "2, 50, 59")."""
             )
 
     selected_datafeeds = []
@@ -119,4 +119,4 @@ if __name__ == "__main__":
         datafeeds=datafeeds,
     )
 
-    _ = asyncio.run(legacy_price_reporter.report_once())  # type: ignore
+    _ = asyncio.run(legacy_price_reporter.report_once())

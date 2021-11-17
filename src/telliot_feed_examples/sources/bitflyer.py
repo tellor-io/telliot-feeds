@@ -10,8 +10,8 @@ from telliot_core.types.datapoint import OptionalDataPoint
 
 
 # Hardcoded supported assets & currencies
-bitflyer_assets = {'ETH'}
-bitflyer_currencies = {'JPY'}
+bitflyer_assets = {"ETH"}
+bitflyer_currencies = {"JPY"}
 
 
 class BitflyerPriceService(WebPriceService):
@@ -63,6 +63,8 @@ class BitflyerPriceService(WebPriceService):
 
 @dataclass
 class BitflyerPriceSource(PriceSource):
+    asset: str = ""
+    currency: str = ""
     service: BitflyerPriceService = field(
         default_factory=BitflyerPriceService, init=False
     )

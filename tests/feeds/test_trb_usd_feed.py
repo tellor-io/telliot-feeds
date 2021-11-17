@@ -1,7 +1,6 @@
 import statistics
 
 import pytest
-
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 
 

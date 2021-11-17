@@ -63,6 +63,8 @@ class CoinGeckoPriceService(WebPriceService):
 
 @dataclass
 class CoinGeckoPriceSource(PriceSource):
+    asset: str = ""
+    currency: str = ""
     service: CoinGeckoPriceService = field(
         default_factory=CoinGeckoPriceService, init=False
     )
