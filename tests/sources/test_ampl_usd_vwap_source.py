@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 
 import pytest
+
 from telliot_feed_examples.config.ampl import AMPLConfig
 from telliot_feed_examples.sources.ampl_usd_vwap import AMPLUSDVWAPSource
 from telliot_feed_examples.sources.ampl_usd_vwap import AnyBlockSource

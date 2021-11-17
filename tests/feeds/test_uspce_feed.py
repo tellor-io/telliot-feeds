@@ -1,4 +1,5 @@
 import yaml
+
 from telliot_feed_examples.feeds.uspce_feed import uspce_feed
 
 

@@ -1,6 +1,6 @@
 import pytest
-from telliot_feed_examples.feeds.uspce_feed import uspce_feed
 
+from telliot_feed_examples.feeds.uspce_feed import uspce_feed
 from tests.conftest import reporter_submit_once
 
 

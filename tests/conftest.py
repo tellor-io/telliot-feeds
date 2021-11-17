@@ -6,10 +6,11 @@ import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.contract.contract import Contract
 from telliot_core.directory.tellorx import tellor_directory
+from web3.datastructures import AttributeDict
+
 from telliot_feed_examples.feeds.uspce_feed import uspce_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.sources import uspce
-from web3.datastructures import AttributeDict
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -78,7 +79,9 @@ async def reporter_submit_once(rinkeby_cfg, master, oracle, feed):
         # Override Python built-in input method
         uspce.input = lambda: "123.456"
 
-    user = rinkeby_endpoint.web3.eth.account.from_key(rinkeby_cfg.main.private_key).address
+    user = rinkeby_endpoint.web3.eth.account.from_key(
+        rinkeby_cfg.main.private_key
+    ).address
     last_timestamp, read_status = await oracle.read(
         "getReporterLastTimestamp", _reporter=user
     )
