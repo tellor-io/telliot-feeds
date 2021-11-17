@@ -31,7 +31,7 @@
     ```
 7. generate default AMPL configs:
     ```
-    python src/telliot_ampl_feeds/config.py
+    python src/telliot_feed_examples/config.py
     ```
 8. add your private key to `~/telliot/main.yaml`
 9. add your node api key to `~/telliot/endpoints.yaml`
