@@ -47,7 +47,6 @@ class IntervalReporter:
             Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]
         ] = []
 
-        
         user = self.endpoint.web3.eth.account.from_key(self.private_key).address
         is_staked, read_status = await self.master.read("getStakerInfo", _staker=user)
 

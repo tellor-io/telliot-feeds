@@ -2,22 +2,22 @@
 
 A simple interface for interacting with telliot example feed functionality.
 """
-import click
+import asyncio
+from typing import Tuple
 
+import click
 from telliot_core.apps.telliot_config import TelliotConfig
-from telliot_core.directory.tellorx import tellor_directory
 from telliot_core.contract.contract import Contract
+from telliot_core.directory.tellorx import tellor_directory
+from telliot_core.model.endpoints import RPCEndpoint
+
 from telliot_feed_examples.feeds.uspce_feed import uspce_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
-import asyncio
-
 from telliot_feed_examples.reporters.report_legacy_price import get_user_choices
 
 
-def get_tellor_contracts():
-    """ Get Contract objects per telliot configuration
-
-    """
+def get_tellor_contracts() -> Tuple[TelliotConfig, Contract, Contract, RPCEndpoint]:
+    """Get Contract objects per telliot configuration"""
 
     cfg = TelliotConfig()
 
@@ -54,7 +54,7 @@ def main() -> None:
 
 @main.group()
 def report() -> None:
-    """Report """
+    """Report"""
     pass
 
 
@@ -71,7 +71,7 @@ def legacyid() -> None:
         private_key=cfg.main.private_key,
         master=master,
         oracle=oracle,
-        datafeeds=legacy_feeds
+        datafeeds=legacy_feeds,
     )
 
     receipts_statuses = asyncio.run(legacy_reporter.report_once())
@@ -81,12 +81,11 @@ def legacyid() -> None:
             print(status.error)
 
 
-
 @report.command()
 def uspce() -> None:
     """Report USPCE"""
 
-    print('Reporting USPCE')
+    print("Reporting USPCE")
     cfg, master, oracle, endpoint = get_tellor_contracts()
 
     uspce_reporter = IntervalReporter(
