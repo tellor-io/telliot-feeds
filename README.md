@@ -1,46 +1,41 @@
-# telliot-feed-examples
+# Telliot Feed Examples
 
-## Setup
+## Project documentation:
 
-1. navigate to your home directory:
-    ```
-    cd ~/
-    ```
-2. get the code:
-    ```
-    git clone https://github.com/tellor-io/telliot-feed-examples.git
-    ```
-3. install python 3.8
-    - if using ubuntu 18 or 20:
-    ```
-    sudo apt-get update
-    sudo apt-get install python3.8 python3-pip
-    ```
-4. create virtual environment:
-    ```
-    python3 -m venv env
-    source env/bin/activate
-    ```
-5. install dependencies:
-    ```
-    pip3 install -r requirements-dev.txt
-    ```
-6. generate default `telliot` configs:
-    ```
-    telliot config init
-    ```
-7. generate default AMPL configs:
+- [Telliot Feed Examples](https://tellor-io.github.io/telliot-feed-examples/)
+
+## Installation and Configuration:
+
+- [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)
+
+## Report legacy ID 41 on Rinkeby
+1. Make sure that Telliot is configured for Rinkeby (`chain_id=4`)
+
+2. Report using the CLI:
+   ```
+   telliot-examples report uspce
+   ```
+3. Enter value when prompted.
+
+## AMPL Feed Examples
+
+First, make sure you have the required configurations:
+
+1. Generate default AMPL configs:
     ```
     python src/telliot_feed_examples/config.py
     ```
-8. add your private key to `~/telliot/main.yaml`
-9. add your node api key to `~/telliot/endpoints.yaml`
-10. add your AMPL api keys to `~/telliot/ampl.yaml`
+2. Add AMPL api keys (BraveNewCoin/Rapid & AnyBlock) to `~/telliot/ampl.yaml`
 
-### Report legacy id 41 on Rinkeby
-1. run bash script:
+### Report legacy ID 10 once
+1. Report using the CLI:
     ```
-    source scripts/report_id_41.sh
+    telliot report legacyid
     ```
-2. enter a value (example: 1234.1234)
-3. press `[ENTER]` to confirm
+2. When prompted, type `10` and press [ENTER].
+
+### Report legacy ID 10 each day after midnight UTC
+1. Run a script:
+    ```
+    python scripts/report_usd_vwap.py
+    ```

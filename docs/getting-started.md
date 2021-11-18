@@ -1,10 +1,18 @@
 # Getting Started
 
+Installation of Telliot Feed Examples requires that Python 3.8 or greater is already
+installed on your system.
+
+## Install Telliot Feed Examples
+
+You can install Telliot Feed Examples and all of it's dependencies
+(including `telliot-core`) through the command line:
+
+    pip install telliot-feed-examples
 
 ## Telliot Configuration
 
-After installation of the `telliot-core` or any telliot data feeds,
-Telliot must be personalized to use your own private keys and endpoints.
+After installation, Telliot must be personalized to use your own private keys and endpoints.
 
 First, create the default configuration files:
 

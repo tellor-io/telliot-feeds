@@ -1,7 +1,7 @@
-site_name: Telliot Plugins/Examples Documentation
+site_name: Telliot Feed Examples Documentation
 
 # Project information
-site_name: Telliot Plugins/Examples Documentation
+site_name: Telliot Feed Examples Documentation
 site_url: https://tellor-io.github.io/telliot-feed-examples/
 site_author: Tellor Development Community
 site_description: >-
@@ -13,7 +13,7 @@ repo_url: https://github.com/tellor-io/telliot-feed-examples
 edit_uri: ""
 
 # Copyright
-copyright: Copyright (c) 2020-, Tellor Development Community
+copyright: Copyright (c) 2021-, Tellor Development Community
 
 
 theme:

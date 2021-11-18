@@ -7,7 +7,7 @@ is already installed on the system.*
 
 Clone the repository to a local working directory:
 
-    git clone https://github.com/tellor-io/telliot-core.git
+    git clone https://github.com/tellor-io/telliot-feed-examples.git
 
 Create and activate a [virtual environment](https://docs.python.org/3/library/venv.html).  In this example, the virtual environment is 
 located in a subfolder called `tenv`:
@@ -57,7 +57,7 @@ Check style (you may need run this step several times):
 
 Once all those pass, you're ready to make a pull request to the project's main branch.
 
-Link any related issues, tag desired reviewers, and watch the [#telliot-core](https://discord.gg/URXVQdGjAT) channel in the
+Link any related issues, tag desired reviewers, and watch the [#telliot-feed-examples](https://discord.gg/URXVQdGjAT) channel in the
 community discord for updates.
 
 
