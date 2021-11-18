@@ -8,14 +8,12 @@ from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.directory.tellorx import tellor_directory
 
+from telliot_feed_examples.feeds.ampl_usd_vwap_feed import ampl_usd_vwap_feed
 from telliot_feed_examples.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feed_examples.feeds.eth_jpy_feed import eth_jpy_median_feed
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
-
-# from telliot_core.utils.abi import rinkeby_tellor_master
-# from telliot_core.utils.abi import rinkeby_tellor_oracle
 
 
 def get_rinkeby_config() -> TelliotConfig:
@@ -82,13 +80,14 @@ def get_oracle(cfg: TelliotConfig) -> Optional[Contract]:
 datafeed_lookup = {
     "1": eth_usd_median_feed,
     "2": btc_usd_median_feed,
+    "10": ampl_usd_vwap_feed,
     "50": trb_usd_median_feed,
     "59": eth_jpy_median_feed,
 }
 
 
 def get_user_choices() -> List[DataFeed]:
-    print('Enter legacy query ids to select datafeeds (example: "1, 50"):\n')
+    print('Enter one or more legacy query ids to select datafeeds (example: "1, 50"):')
 
     good_input = False
     while not good_input:
