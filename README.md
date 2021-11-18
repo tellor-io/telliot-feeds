@@ -8,20 +8,36 @@
 
 - [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)
 
-## Report legacy id 41 on Rinkeby
-
-To report the legacy request id 41 price on Rinkeby:
-
+## Report legacy ID 41 on Rinkeby
 1. Make sure that Telliot is configured for Rinkeby (`chain_id=4`)
 
-2. Enter the command line:
+2. Report using the CLI:
+   ```
+   telliot-examples report uspce
+   ```
+3. Enter value when prompted.
 
-   telliot-examples report legacyid 41
+## AMPL Feed Examples
 
-## AMPLE Feed Example
+First, make sure you have the required configurations:
 
 1. Generate default AMPL configs:
-
+    ```
     python src/telliot_feed_examples/config.py
+    ```
+2. Add AMPL api keys (BraveNewCoin/Rapid & AnyBlock) to `~/telliot/ampl.yaml`
 
-2. Add your AMPL api keys to `~/telliot/ampl.yaml`
+### Report legacy ID 10 once
+1. Report using the CLI:
+    ```
+    telliot report legacyid
+    ```
+2. When prompted, type `10` and press [ENTER].
+
+### Report legacy ID 10 each day after midnight UTC
+1. Run a script:
+    ```
+    python scripts/report_usd_vwap.py
+    ```
+
+
