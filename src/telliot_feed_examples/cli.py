@@ -25,7 +25,7 @@ def get_tellor_contracts() -> Tuple[TelliotConfig, Contract, Contract, RPCEndpoi
     endpoint = cfg.get_endpoint()
     endpoint.connect()
     oracle = Contract(
-        address=tellor_oracle.address,  # "0x07b521108788C6fD79F471D603A2594576D47477",
+        address=tellor_oracle.address,
         abi=tellor_oracle.abi,
         node=endpoint,
         private_key=cfg.main.private_key,
@@ -48,23 +48,27 @@ def get_tellor_contracts() -> Tuple[TelliotConfig, Contract, Contract, RPCEndpoi
 
 @click.group()
 def main() -> None:
-    """telliot command line interface"""
+    """Telliot command line interface"""
     pass
 
 
 @main.group()
 def report() -> None:
-    """Report"""
+    """Report values to Tellor oracle"""
     pass
 
 
 @report.command()
 def legacyid() -> None:
-    "Report any active legacy query ID."
+    "Report active legacy query IDs."
 
     cfg, master, oracle, endpoint = get_tellor_contracts()
 
     legacy_feeds = get_user_choices()
+
+    if not legacy_feeds:
+        click.echo("Given legacy id(s) not supported.")
+        return
 
     legacy_reporter = IntervalReporter(
         endpoint=endpoint,
@@ -83,9 +87,9 @@ def legacyid() -> None:
 
 @report.command()
 def uspce() -> None:
-    """Report USPCE"""
+    """Report USPCE value"""
 
-    print("Reporting USPCE")
+    click.echo("Reporting USPCE (legacy ID 41)")
     cfg, master, oracle, endpoint = get_tellor_contracts()
 
     uspce_reporter = IntervalReporter(
@@ -96,9 +100,11 @@ def uspce() -> None:
         datafeeds=[uspce_feed],
     )
 
-    tx_receipts = asyncio.run(uspce_reporter.report_once())
+    receipts_statuses = asyncio.run(uspce_reporter.report_once())
 
-    print(tx_receipts)
+    for _, status in receipts_statuses:
+        if not status.ok:
+            click.echo(status.error)
 
 
 if __name__ == "__main__":
