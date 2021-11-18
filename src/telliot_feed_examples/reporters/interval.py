@@ -67,7 +67,7 @@ class IntervalReporter:
             if last_timestamp is None:
                 status.ok = False
                 status.error = (
-                    "unable to retrieve reporter's last report timestamp:"
+                    "Unable to retrieve reporter's last report timestamp:"
                     + read_status.error
                 )
                 status.e = read_status.e
@@ -75,12 +75,12 @@ class IntervalReporter:
 
             elif time.time() < last_timestamp + 43200:  # 43200 is 12 hours in seconds
                 status.ok = False
-                status.error = f"your address at {user} is currently in reporter lock"
+                status.error = f"Address {user} is currently in reporter lock"
                 transaction_receipts.append((None, status))
 
             else:
 
-                print("stake status:", is_staked[0])
+                # print("stake status:", is_staked[0])
 
                 # Status 1: staked
                 if is_staked[0] == 1:
@@ -110,7 +110,7 @@ class IntervalReporter:
 
                                 if not read_status.ok:
                                     status.error = (
-                                        "unable to retrieve timestampCount: "
+                                        "Unable to retrieve timestampCount: "
                                         + read_status.error
                                     )  # error won't be none # noqa: E501
                                     status.e = read_status.e
@@ -142,7 +142,7 @@ class IntervalReporter:
                 else:
                     # Status 3: disputed
                     if is_staked[0] == 3:
-                        status.error = f"you were disputed at {user}; to continue reporting, switch to new address"  # noqa: E501
+                        status.error = f"Addess {user} disputed. Switch address to continue reporting."  # noqa: E501
                         status.e = None
                         transaction_receipts.append((None, status))
 
@@ -156,13 +156,13 @@ class IntervalReporter:
                         )
                         if not write_status.ok:
                             status.error = (
-                                "unable to stake deposit: " + write_status.error
+                                "Unable to stake deposit: " + write_status.error
                             )  # error won't be none # noqa: E501
                             status.e = write_status.e
                             transaction_receipts.append((None, status))
                     # Statuses 2, 4, and 5: stake transition
                     else:
-                        status.error = f"your reporters at {user} is locked in dispute or for withdrawal"  # noqa: E501
+                        status.error = f"Address {user} is locked in dispute or for withdrawal."  # noqa: E501
                         status.e = None
                         transaction_receipts.append((None, status))
 
