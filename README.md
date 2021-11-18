@@ -39,5 +39,3 @@ First, make sure you have the required configurations:
     ```
     python scripts/report_usd_vwap.py
     ```
-
-
