@@ -82,7 +82,7 @@ def legacyid() -> None:
 
     for _, status in receipts_statuses:
         if not status.ok:
-            print(status.error)
+            click.echo(status.error)
 
 
 @report.command()
