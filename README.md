@@ -34,7 +34,7 @@ First, make sure you have the required configurations:
 
 1. Report using the CLI:
     ```
-    telliot report legacyid
+    telliot-examples report legacyid
     ```
 2. When prompted, type `10` and press [ENTER].
 
