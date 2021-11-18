@@ -11,6 +11,8 @@ from telliot_feed_examples.feeds.uspce_feed import uspce_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
 import asyncio
 
+from telliot_feed_examples.reporters.report_legacy_price import get_user_choices
+
 
 def get_tellor_contracts():
     """ Get Contract objects per telliot configuration
@@ -57,6 +59,30 @@ def report() -> None:
 
 
 @report.command()
+def legacyid() -> None:
+    "Report any active legacy query ID."
+
+    cfg, master, oracle, endpoint = get_tellor_contracts()
+
+    legacy_feeds = get_user_choices()
+
+    legacy_reporter = IntervalReporter(
+        endpoint=endpoint,
+        private_key=cfg.main.private_key,
+        master=master,
+        oracle=oracle,
+        datafeeds=legacy_feeds
+    )
+
+    receipts_statuses = asyncio.run(legacy_reporter.report_once())
+
+    for _, status in receipts_statuses:
+        if not status.ok:
+            print(status.error)
+
+
+
+@report.command()
 def uspce() -> None:
     """Report USPCE"""
 
@@ -71,7 +97,9 @@ def uspce() -> None:
         datafeeds=[uspce_feed],
     )
 
-    _ = asyncio.run(uspce_reporter.report_once())
+    tx_receipts = asyncio.run(uspce_reporter.report_once())
+
+    print(tx_receipts)
 
 
 if __name__ == "__main__":
