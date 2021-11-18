@@ -6,8 +6,9 @@ from typing import Optional
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
-from telliot_core.utils.abi import rinkeby_tellor_master
-from telliot_core.utils.abi import rinkeby_tellor_oracle
+# from telliot_core.utils.abi import rinkeby_tellor_master
+# from telliot_core.utils.abi import rinkeby_tellor_oracle
+from telliot_core.directory.tellorx import tellor_directory
 
 from telliot_feed_examples.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feed_examples.feeds.eth_jpy_feed import eth_jpy_median_feed
@@ -38,10 +39,14 @@ def get_master(cfg: TelliotConfig) -> Optional[Contract]:
         print("Could not connect to master contract.")
         return None
 
+    tellor_master_rinkeby = tellor_directory.find(
+        org="tellor", name="master", chain_id=4
+    )
+
     endpoint.connect()
     master = Contract(
         address="0x657b95c228A5de81cdc3F85be7954072c08A6042",
-        abi=rinkeby_tellor_master,
+        abi=tellor_master_rinkeby,
         node=endpoint,
         private_key=cfg.main.private_key,
     )
@@ -58,9 +63,14 @@ def get_oracle(cfg: TelliotConfig) -> Optional[Contract]:
 
     if endpoint:
         endpoint.connect()
+
+    tellor_oracle_rinkeby = tellor_directory.find(
+        org="tellor", name="master", chain_id=4
+    )
+
     oracle = Contract(
         address="0x07b521108788C6fD79F471D603A2594576D47477",
-        abi=rinkeby_tellor_oracle,
+        abi=tellor_oracle_rinkeby,
         node=endpoint,
         private_key=cfg.main.private_key,
     )
