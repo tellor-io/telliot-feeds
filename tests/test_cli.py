@@ -1,9 +1,11 @@
 """
 Unit tests covering telliot_core CLI commands.
 """
-from click.testing import CliRunner
-from telliot_feed_examples.cli import main
 import pytest
+
+from telliot_feed_examples.cli import main
+
+# from click.testing import CliRunner
 
 
 @pytest.mark.skip("TODO after telliot-core cli output cleaned up.")
@@ -19,4 +21,3 @@ def test_cmd_legacyid():
     # TODO: uncomment after pr is merged:
     # https://github.com/tellor-io/telliot-core/pull/149
     pass
-
