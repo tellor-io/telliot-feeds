@@ -25,5 +25,3 @@ To report the legacy request id 41 price on Rinkeby:
     python src/telliot_feed_examples/config.py
 
 2. Add your AMPL api keys to `~/telliot/ampl.yaml`
-
-
