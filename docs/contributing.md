@@ -16,7 +16,7 @@ located in a subfolder called `tenv`:
 
     ```
     python3 -m venv tenv
-    tenv tutorial_env/bin/activate
+    source tenv/bin/activate
     ```
 
 === "Windows"
