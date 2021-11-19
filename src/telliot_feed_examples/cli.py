@@ -16,6 +16,32 @@ from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.report_legacy_price import get_user_choices
 
 
+report_command_options = [
+    click.option('--private-key', '-pk', 'private_key', help="override the config's private key"),
+    click.option('--chain-id', '-c', 'chain_id', help="override the config's chain id")
+]
+
+def check_report_flags(cfg, kwargs):
+
+    if kwargs['private_key'] is not None:
+        private_key = kwargs['private_key']
+    else:
+        private_key = cfg.main.private_key
+
+    return private_key
+    # if kwargs['chain_id'] is not None:
+    #     chain_id = kwargs['chain_id']
+    # else:
+    #     chain_id = cfg.main.chain_id
+
+
+def add_options(options):
+    def _add_options(func):
+        for option in reversed(options):
+            func = option(func)
+        return func
+    return _add_options
+
 def get_tellor_contracts() -> Tuple[TelliotConfig, Contract, Contract, RPCEndpoint]:
     """Get Contract objects per telliot configuration"""
 
@@ -53,16 +79,19 @@ def main() -> None:
 
 
 @main.group()
-def report() -> None:
+def report(**kwargs) -> None:
     """Report values to Tellor oracle"""
     pass
 
 
 @report.command()
+@add_options(report_command_options)
 def legacyid() -> None:
     "Report active legacy query IDs."
 
     cfg, master, oracle, endpoint = get_tellor_contracts()
+
+    private_key = check_report_flags(cfg)
 
     legacy_feeds = get_user_choices()
 
@@ -72,7 +101,7 @@ def legacyid() -> None:
 
     legacy_reporter = IntervalReporter(
         endpoint=endpoint,
-        private_key=cfg.main.private_key,
+        private_key=private_key,
         master=master,
         oracle=oracle,
         datafeeds=legacy_feeds,
@@ -86,15 +115,18 @@ def legacyid() -> None:
 
 
 @report.command()
-def uspce() -> None:
+@add_options(report_command_options)
+def uspce(**kwargs) -> None:
     """Report USPCE value"""
 
     click.echo("Reporting USPCE (legacy ID 41)")
     cfg, master, oracle, endpoint = get_tellor_contracts()
 
+    private_key = check_report_flags(cfg, kwargs)
+
     uspce_reporter = IntervalReporter(
         endpoint=endpoint,
-        private_key=cfg.main.private_key,
+        private_key=private_key,
         master=master,
         oracle=oracle,
         datafeeds=[uspce_feed],
