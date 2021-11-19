@@ -449,6 +449,22 @@
 <p>Installation of Telliot Feed Examples requires that Python 3.8 or greater is already
 installed on your system.</p>
 <h2 id="install-telliot-feed-examples">Install Telliot Feed Examples<a class="headerlink" href="#install-telliot-feed-examples" title="Permanent link">&para;</a></h2>
+<p><em>Optional</em>: Create and activate a <a href="https://docs.python.org/3/library/venv.html">virtual environment</a>.<br />
+In this example, the virtual environment is located in a subfolder called <code>tenv</code>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Linux</label><label for="__tabbed_1_2">Windows</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>python3 -m venv tenv
+source tenv/bin/activate
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>py -m venv tenv
+tenv\Scripts\activate
+</code></pre></div>
+</div>
+</div>
+</div>
 <p>You can install Telliot Feed Examples and all of it's dependencies
 (including <code>telliot-core</code>) through the command line:</p>
 <div class="highlight"><pre><span></span><code>pip install telliot-feed-examples
