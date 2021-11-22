@@ -11,8 +11,10 @@ from telliot_core.utils.abi import rinkeby_tellor_oracle
 
 from telliot_feed_examples.feeds.usd_vwap import ampl_usd_vwap_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.utils.log import get_logger
 
-# from datetime import datetime
+
+logger = get_logger(__name__)
 
 
 def get_cfg() -> TelliotConfig:
@@ -34,7 +36,7 @@ def get_master(cfg: TelliotConfig) -> Optional[Contract]:
     """Helper function for connecting to a contract at an address"""
     endpoint = cfg.get_endpoint()
     if not endpoint:
-        print("Could not connect to master contract.")
+        logger.critical("Could not connect to master contract.")
         return None
 
     endpoint.connect()
@@ -52,7 +54,7 @@ def get_oracle(cfg: TelliotConfig) -> Optional[Contract]:
     """Helper function for connecting to a contract at an address"""
     endpoint = cfg.get_endpoint()
     if not endpoint:
-        print("Could not connect to master contract.")
+        logger.critical("Could not connect to master contract.")
         return None
 
     if endpoint:

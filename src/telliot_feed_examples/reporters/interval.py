@@ -16,6 +16,11 @@ from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
+from telliot_feed_examples.utils.log import get_logger
+
+
+logger = get_logger(__name__)
+
 
 class IntervalReporter:
     """Reports values from given datafeeds to a TellorX Oracle
@@ -80,7 +85,7 @@ class IntervalReporter:
 
             else:
 
-                # print("stake status:", is_staked[0])
+                logger.info(f"stake status: {is_staked[0]}")
 
                 # Status 1: staked
                 if is_staked[0] == 1:
@@ -130,15 +135,15 @@ class IntervalReporter:
                                 transaction_receipts.append((tx_receipt, status))
 
                             else:
-                                print(
+                                logger.warning(
                                     f"Skipping submission for {repr(datafeed)}, "
                                     f"no query for datafeed."
-                                )  # TODO logging
+                                )
                         else:
-                            print(
+                            logger.warning(
                                 f"Skipping submission for {repr(datafeed)}, "
                                 f"datafeed value not updated."
-                            )  # TODO logging
+                            )
                 else:
                     # Status 3: disputed
                     if is_staked[0] == 3:

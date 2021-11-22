@@ -14,6 +14,10 @@ from telliot_core.model.endpoints import RPCEndpoint
 from telliot_feed_examples.feeds.uspce_feed import uspce_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.report_legacy_price import get_user_choices
+from telliot_feed_examples.utils.log import get_logger
+
+
+logger = get_logger(__name__)
 
 
 report_command_options = [
@@ -111,7 +115,8 @@ def legacyid() -> None:
 
     for _, status in receipts_statuses:
         if not status.ok:
-            click.echo(status.error)
+            logger.error(status)
+            # click.echo(status.error)
 
 
 @report.command()
@@ -136,7 +141,8 @@ def uspce(**kwargs) -> None:
 
     for _, status in receipts_statuses:
         if not status.ok:
-            click.echo(status.error)
+            logger.error(status)
+            # click.echo(status.error)
 
 
 if __name__ == "__main__":

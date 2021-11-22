@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import statistics
 from abc import ABC
 from dataclasses import dataclass
@@ -13,7 +12,10 @@ from telliot_core.pricing.price_source import PriceSource
 from telliot_core.types.datapoint import datetime_now_utc
 from telliot_core.types.datapoint import OptionalDataPoint
 
-logger = logging.getLogger(__name__)
+from telliot_feed_examples.utils.log import get_logger
+
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -81,11 +83,13 @@ class PriceAggregator(DataSource[float], ABC):
                 prices.append(v)
 
         # Run the algorithm on all valid prices
-        print(f"Running {self.algorithm} on {prices}")
+        logger.info(f"Running {self.algorithm} on {prices}")
         result = self._algorithm(prices)
         datapoint = (result, datetime_now_utc())
         self.store_datapoint(datapoint)
 
-        print("Feed Price: {} reported at time {}".format(datapoint[0], datapoint[1]))
+        logger.info(
+            "Feed Price: {} reported at time {}".format(datapoint[0], datapoint[1])
+        )
 
         return datapoint
