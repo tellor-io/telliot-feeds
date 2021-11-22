@@ -1,7 +1,27 @@
 import logging
+import pathlib
 import sys
+from pathlib import Path
 
+from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.utils.home import default_homedir
+
+
+cfg = TelliotConfig()
+
+
+def default_logsdir() -> pathlib.Path:
+    """Return default logs directory, creating it if necessary
+
+    Returns:
+        pathlib.Path : Path to logs directory
+    """
+    logsdir = Path(default_homedir() / ("logs"))
+    logsdir = logsdir.resolve().absolute()
+    if not logsdir.is_dir():
+        logsdir.mkdir()
+
+    return logsdir
 
 
 def get_logger(name: str) -> logging.Logger:
@@ -13,9 +33,9 @@ def get_logger(name: str) -> logging.Logger:
     """
     logger = logging.getLogger(name)
 
-    logger.setLevel(level=logging.INFO)
+    logger.setLevel(level=cfg.main.loglevel)
 
-    logs_file = default_homedir() / ("telliot-feed-examples.log")
+    logs_file = default_logsdir() / ("telliot-feed-examples.log")
     logs_file = logs_file.resolve().absolute()
 
     output_file_handler = logging.FileHandler(logs_file)
