@@ -9,6 +9,11 @@ from telliot_core.pricing.price_source import PriceSource
 from telliot_core.types.datapoint import datetime_now_utc
 from telliot_core.types.datapoint import OptionalDataPoint
 
+from telliot_feed_examples.utils.log import get_logger
+
+
+logger = get_logger(__name__)
+
 
 class BittrexQuote(BaseModel):
     Bid: float
@@ -46,7 +51,7 @@ class BittrexPriceService(WebPriceService):
         d = self.get_url(request_url)
 
         if "error" in d:
-            print(d)  # TODO: Log
+            logger.error(d)
             return None, None
 
         else:
@@ -57,7 +62,7 @@ class BittrexPriceService(WebPriceService):
                 else:
                     return None, None
             else:
-                print(r.message)
+                logger.error(r.message)
                 return None, None
 
 

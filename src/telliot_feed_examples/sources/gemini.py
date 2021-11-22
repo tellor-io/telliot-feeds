@@ -9,6 +9,11 @@ from telliot_core.pricing.price_source import PriceSource
 from telliot_core.types.datapoint import datetime_now_utc
 from telliot_core.types.datapoint import OptionalDataPoint
 
+from telliot_feed_examples.utils.log import get_logger
+
+
+logger = get_logger(__name__)
+
 
 class GeminiPriceResponse(BaseModel):
     bid: float
@@ -47,9 +52,8 @@ class GeminiPriceService(WebPriceService):
         request_url = "/v1/pubticker/{}{}".format(asset.lower(), currency.lower())
 
         d = self.get_url(request_url)
-        # print(d)
         if "error" in d:
-            print(d)  # TODO: Log
+            logger.error(d)
             return None, None
 
         else:
@@ -58,6 +62,7 @@ class GeminiPriceService(WebPriceService):
             if r.last is not None:
                 return r.last, datetime_now_utc()
             else:
+                logger.error(r)
                 return None, None
 
 

@@ -14,6 +14,10 @@ from telliot_feed_examples.feeds.eth_jpy_feed import eth_jpy_median_feed
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.utils.log import get_logger
+
+
+logger = get_logger(__name__)
 
 
 def get_rinkeby_config() -> TelliotConfig:
@@ -35,7 +39,7 @@ def get_master(cfg: TelliotConfig) -> Optional[Contract]:
     """Helper function for connecting to a contract at an address"""
     endpoint = cfg.get_endpoint()
     if not endpoint:
-        print("Could not connect to master contract.")
+        logger.critical("Could not connect to master contract.")
         return None
 
     tellor_master_rinkeby = tellor_directory.find(
@@ -57,7 +61,7 @@ def get_oracle(cfg: TelliotConfig) -> Optional[Contract]:
     """Helper function for connecting to a contract at an address"""
     endpoint = cfg.get_endpoint()
     if not endpoint:
-        print("Could not connect to master contract.")
+        logger.critical("Could not connect to master contract.")
         return None
 
     if endpoint:
@@ -97,7 +101,7 @@ def get_user_choices() -> List[DataFeed]:
             selected = [s.strip() for s in selected.split(",")]  # type: ignore
             good_input = True
         except ValueError:
-            print(
+            logger.info(
                 """Invalid user input. \
                 Enter integers separated by commas (example: "2, 50, 59")."""
             )

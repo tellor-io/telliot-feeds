@@ -8,6 +8,11 @@ from telliot_core.pricing.price_source import PriceSource
 from telliot_core.types.datapoint import datetime_now_utc
 from telliot_core.types.datapoint import OptionalDataPoint
 
+from telliot_feed_examples.utils.log import get_logger
+
+
+logger = get_logger(__name__)
+
 
 # Hardcoded supported assets & currencies
 bitflyer_assets = {"ETH"}
@@ -43,7 +48,7 @@ class BitflyerPriceService(WebPriceService):
         d = self.get_url(request_url)
 
         if "error" in d:
-            print(d)  # TODO: Log
+            logger.error(d)
             return None, None
 
         elif "response" in d:
@@ -53,7 +58,7 @@ class BitflyerPriceService(WebPriceService):
                 price = float(response["ltp"])
             except KeyError as e:
                 msg = f"Error parsing Coingecko API response: KeyError: {e}"
-                print(msg)
+                logger.critical(msg)
 
         else:
             raise Exception("Invalid response from get_url")
