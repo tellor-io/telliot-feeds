@@ -4,6 +4,11 @@ from telliot_core.datasource import DataSource
 from telliot_core.types.datapoint import DataPoint
 from telliot_core.types.datapoint import datetime_now_utc
 
+from telliot_feed_examples.utils.log import get_logger
+
+
+logger = get_logger(__name__)
+
 
 @dataclass
 class USPCESource(DataSource[float]):
@@ -48,6 +53,6 @@ class USPCESource(DataSource[float]):
         datapoint = (uspce, datetime_now_utc())
         self.store_datapoint(datapoint)
 
-        print(f"USPCE {datapoint[0]} retrieved at time {datapoint[1]}")
+        logger.info(f"USPCE {datapoint[0]} retrieved at time {datapoint[1]}")
 
         return datapoint

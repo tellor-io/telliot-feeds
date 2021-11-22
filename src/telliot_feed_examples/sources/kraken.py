@@ -8,6 +8,11 @@ from telliot_core.pricing.price_source import PriceSource
 from telliot_core.types.datapoint import datetime_now_utc
 from telliot_core.types.datapoint import OptionalDataPoint
 
+from telliot_feed_examples.utils.log import get_logger
+
+
+logger = get_logger(__name__)
+
 
 # Hardcoded supported assets & currencies
 kraken_assets = {"ETH"}
@@ -42,7 +47,7 @@ class KrakenPriceService(WebPriceService):
         d = self.get_url(request_url)
 
         if "error" in d:
-            print(d)  # TODO: Log
+            logger.error(d)
             return None, None
 
         elif "response" in d:
@@ -52,7 +57,7 @@ class KrakenPriceService(WebPriceService):
                 price = float(response["result"][f"X{asset}Z{currency}"]["c"][0])
             except KeyError as e:
                 msg = f"Error parsing Kraken API response: KeyError: {e}"
-                print(msg)
+                logger.critical(msg)
 
         else:
             raise Exception("Invalid response from get_url")

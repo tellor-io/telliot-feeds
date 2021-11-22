@@ -7,6 +7,11 @@ from telliot_core.pricing.price_source import PriceSource
 from telliot_core.types.datapoint import datetime_now_utc
 from telliot_core.types.datapoint import OptionalDataPoint
 
+from telliot_feed_examples.utils.log import get_logger
+
+
+logger = get_logger(__name__)
+
 
 class CoinbasePriceService(WebPriceService):
     """Coinbase Price Service"""
@@ -31,14 +36,14 @@ class CoinbasePriceService(WebPriceService):
 
         d = self.get_url(request_url)
         if "error" in d:
-            print(d)  # TODO: Log
+            logger.error(d)
             return None, None
 
         elif "response" in d:
             response = d["response"]
 
             if "message" in response:
-                print("API ERROR ({}): {}".format(self.name, response["message"]))
+                logger.error(f"API ERROR ({self.name}): {response['message']}")
                 return None, None
 
         else:

@@ -19,8 +19,10 @@ from telliot_core.types.datapoint import OptionalDataPoint
 from telliot_core.utils.response import ResponseStatus
 
 from telliot_feed_examples.config.ampl import AMPLConfig
+from telliot_feed_examples.utils.log import get_logger
 
 
+logger = get_logger(__name__)
 T = TypeVar("T")
 
 
@@ -219,7 +221,6 @@ class AMPLUSDVWAPSource(DataSource[float]):
             Current time-stamped value
         """
         updates = await self.update_sources()
-        print(updates)
 
         prices = [v for v, _ in updates if v is not None]
 
@@ -228,7 +229,7 @@ class AMPLUSDVWAPSource(DataSource[float]):
         datapoint = (result, datetime_now_utc())
         self.store_datapoint(datapoint)
 
-        print(
+        logger.info(
             "AMPL/USD/VWAP {} retrieved at time {}".format(datapoint[0], datapoint[1])
         )
 
