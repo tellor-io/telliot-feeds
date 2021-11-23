@@ -77,6 +77,7 @@ def get_tellor_contracts(
 @click.pass_context
 def cli(ctx: Context, private_key: str, chain_id: int) -> None:
     """Telliot command line interface"""
+    ctx.ensure_object(dict)
     ctx.obj["PRIVATE_KEY"] = private_key
     ctx.obj["CHAIN_ID"] = chain_id
 
