@@ -12,13 +12,11 @@
 
 ### Report legacy ID 41 on Rinkeby
 
-1. Make sure that Telliot is configured for Rinkeby (`chain_id=4`)
-
-2. Report using the CLI:
+1. Report using the CLI:
    ```
-   telliot-examples report uspce
+   telliot-examples report --legacy-id 41
    ```
-3. Enter value when prompted.
+2. Enter value when prompted.
 
 ### AMPL Feed Examples
 
@@ -34,13 +32,5 @@ First, make sure you have the required configurations:
 
 1. Report using the CLI:
     ```
-    telliot-examples report legacyid
-    ```
-2. When prompted, type `10` and press [ENTER].
-
-#### Report legacy ID 10 each day after midnight UTC
-
-1. Run a script:
-    ```
-    python scripts/report_usd_vwap.py
+    telliot-examples report -lid 10
     ```
