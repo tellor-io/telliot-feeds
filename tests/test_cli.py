@@ -3,7 +3,7 @@ Unit tests covering telliot_core CLI commands.
 """
 import pytest
 
-from telliot_feed_examples.cli import cli
+# from telliot_feed_examples.cli import cli
 
 # from click.testing import CliRunner
 

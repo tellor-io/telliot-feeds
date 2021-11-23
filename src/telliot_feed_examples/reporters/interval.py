@@ -154,7 +154,7 @@ class IntervalReporter:
 
                     # Status 0: not yet staked
                     elif is_staked[0] == 0:
-                        logger.info('Depositing stake.')
+                        logger.info("Depositing stake.")
                         _, write_status = await self.master.write_with_retry(
                             func_name="depositStake",
                             gas_price=gas_price_gwei,
