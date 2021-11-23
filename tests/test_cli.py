@@ -3,7 +3,7 @@ Unit tests covering telliot_core CLI commands.
 """
 import pytest
 
-from telliot_feed_examples.cli import main
+from telliot_feed_examples.cli import cli
 
 # from click.testing import CliRunner
 
@@ -11,7 +11,7 @@ from telliot_feed_examples.cli import main
 @pytest.mark.skip("TODO after telliot-core cli output cleaned up.")
 def test_cmd_legacyid():
     """Test telliot_core CLI command: report."""
-    main.input = lambda: "1234.1234"
+    # cli.input = lambda: "1234.1234"
     # runner = CliRunner()
     # result = runner.invoke(main, ["report", "legacyid"])
 
