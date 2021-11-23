@@ -53,6 +53,7 @@ class IntervalReporter:
         ] = []
 
         user = self.endpoint.web3.eth.account.from_key(self.private_key).address
+        logger.info(f"Reporting with account: {user}")
         is_staked, read_status = await self.master.read("getStakerInfo", _staker=user)
 
         if (not read_status.ok) or (is_staked is None):
@@ -153,6 +154,7 @@ class IntervalReporter:
 
                     # Status 0: not yet staked
                     elif is_staked[0] == 0:
+                        logger.info('Depositing stake.')
                         _, write_status = await self.master.write_with_retry(
                             func_name="depositStake",
                             gas_price=gas_price_gwei,
@@ -163,6 +165,7 @@ class IntervalReporter:
                             status.error = (
                                 "Unable to stake deposit: " + write_status.error
                             )  # error won't be none # noqa: E501
+                            logger.error(status.error)
                             status.e = write_status.e
                             transaction_receipts.append((None, status))
                     # Statuses 2, 4, and 5: stake transition
