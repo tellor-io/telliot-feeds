@@ -11,9 +11,8 @@ from telliot_core.contract.contract import Contract
 from telliot_core.directory.tellorx import tellor_directory
 from telliot_core.model.endpoints import RPCEndpoint
 
-from telliot_feed_examples.feeds.uspce_feed import uspce_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
-from telliot_feed_examples.reporters.report_legacy_id import LEGACY_DATAFEEDS
+from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -97,8 +96,10 @@ def report(ctx, legacy_id: str) -> None:
 
     # Ensure valid legacy id
     if legacy_id not in LEGACY_DATAFEEDS:
-        click.echo(f"Invalid legacy ID. Valid choices: {LEGACY_DATAFEEDS.keys()}")
+        click.echo(f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}")
         return
+
+    click.echo(f"Reporting legacy ID: {legacy_id}")
     
     private_key = ctx.obj["PRIVATE_KEY"]
     chain_id = ctx.obj["CHAIN_ID"]
