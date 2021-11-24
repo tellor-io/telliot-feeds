@@ -5,6 +5,7 @@ import pytest
 
 # from telliot_feed_examples.reporters.interval import IntervalReporter
 
+
 @pytest.mark.skip("update to test IntervalReporter ensure_profitable method")
 @pytest.fixture
 @pytest.mark.asyncio

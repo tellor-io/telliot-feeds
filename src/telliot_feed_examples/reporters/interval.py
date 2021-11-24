@@ -43,7 +43,11 @@ class IntervalReporter:
         logger.info(f"Reporting with account: {self.user}")
 
     async def ensure_staked(self, gas_price_gwei: int) -> Tuple[bool, ResponseStatus]:
-        """Make sure the current user is staked."""
+        """Make sure the current user is staked
+
+        Returns a bool signifying whether the current address is
+        staked. If the address is not initially, it attempts to stake with
+        the address's funds."""
         status = ResponseStatus()
 
         staker_info, read_status = await self.master.read(
@@ -97,7 +101,11 @@ class IntervalReporter:
             return False, status
 
     async def check_reporter_lock(self) -> Tuple[bool, ResponseStatus]:
-        """Make sure reporter's not locked."""
+        """Ensure enough time has passed since last report
+
+        Returns a bool signifying whether a given address is in a
+        reporter lock or not (TellorX oracle users cannot submit
+        multiple times within 12 hours)."""
         status = ResponseStatus()
 
         last_timestamp, read_status = await self.oracle.read(
@@ -124,7 +132,10 @@ class IntervalReporter:
     async def ensure_profitable(
         self, gas_price_gwei: int
     ) -> Tuple[bool, ResponseStatus]:
-        """Make sure the submission would be profitable."""
+        """Estimate profitability
+
+        Returns a bool signifying whether submitting for a given
+        queryID would generate a net profit."""
         status = ResponseStatus()
         # Get current tips and time-based reward for given queryID
         rewards, read_status = await self.oracle.read(
@@ -160,7 +171,12 @@ class IntervalReporter:
     async def report_once(
         self,
     ) -> Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]:
-        """Submit value once"""
+        """Report query value once
+
+        This method checks to see if a user is able to submit
+        values to the TellorX oracle, given their staker status
+        and last submission time. Also, this method does not
+        submit values if doing so won't make a profit."""
         # TODO: use maxGas var passed from CLI
         gas_price_gwei = await fetch_gas_price()
 
@@ -182,6 +198,7 @@ class IntervalReporter:
 
         status = ResponseStatus()
 
+        # Update value
         await self.datafeed.source.fetch_new_datapoint()
         latest_data = self.datafeed.source.latest
 
@@ -211,6 +228,7 @@ class IntervalReporter:
             status.e = read_status.e
             return None, status
 
+        # Submit value
         tx_receipt, status = await self.oracle.write_with_retry(
             func_name="submitValue",
             gas_price=gas_price_gwei,
