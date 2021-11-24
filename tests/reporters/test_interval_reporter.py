@@ -22,7 +22,7 @@ def test_reporter_config(rinkeby_cfg, master, oracle):
         private_key=rinkeby_cfg.main.private_key,
         master=master,
         oracle=oracle,
-        datafeeds=[btc_usd_median_feed],
+        datafeed=btc_usd_median_feed,
     )
 
     assert rinkeby_endpoint.network == "rinkeby"
