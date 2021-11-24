@@ -126,12 +126,36 @@ class IntervalReporter:
     ) -> Tuple[bool, ResponseStatus]:
         """Make sure the submission would be profitable."""
         status = ResponseStatus()
+        # Get current tips and time-based reward for given queryID
+        rewards, read_status = await self.oracle.read(
+            "getCurrentReward", _queryId=self.datafeed.query.query_id
+        )
 
-        # contract getter calls
-        # is_profitable function imported and used on fetched vals
-        print(gas_price_gwei)
-        profitable = True
-        return profitable, status
+        if (not read_status.ok) or (rewards is None):
+            status.ok = False
+            status.error = (
+                "Unable to retrieve queryID's current rewards:" + read_status.error
+            )
+            logger.error(status.error)
+            status.e = read_status.e
+            return False, status
+
+        tips, tb_reward = rewards
+        gas = 500000  # Taken from telliot-core contract write, TODO: optimize
+
+        logger.info(
+            f"""
+            current tips: {tips}
+            current tb_reward: {tb_reward}
+            gas: {gas}
+            gas_price_gwei: {gas_price_gwei}
+            """
+        )
+
+        profit = tb_reward + tips - (gas * gas_price_gwei)
+        logger.info(f"Estimated profit: {profit}")
+
+        return profit > 0, status
 
     async def report_once(
         self,
