@@ -180,7 +180,8 @@ class IntervalReporter:
         )
 
         profit = tb_reward + tips - (gas * gas_price_gwei)
-        logger.info(f"Estimated profit: {profit}")
+        profit = round((profit / price_eth_usd) / 1e18, 2)
+        logger.info(f"Estimated profit: ${profit}")
 
         return profit > 0, status
 
