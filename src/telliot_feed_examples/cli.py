@@ -93,8 +93,9 @@ def cli(ctx: Context, private_key: str, chain_id: int) -> None:
     nargs=1,
     type=str,
 )
+@click.option("--submit-once/--submit-continuous", default=False)
 @click.pass_context
-def report(ctx: Context, legacy_id: str) -> None:
+def report(ctx: Context, legacy_id: str, submit_once: bool) -> None:
     """Report values to Tellor oracle"""
 
     # Ensure valid legacy id
@@ -126,7 +127,10 @@ def report(ctx: Context, legacy_id: str) -> None:
         datafeed=chosen_feed,
     )
 
-    _, _ = asyncio.run(legacy_reporter.report_once())
+    if submit_once:
+        _, _ = asyncio.run(legacy_reporter.report_once())
+    else:
+        _, _ = asyncio.run(legacy_reporter.report())
 
 
 if __name__ == "__main__":
