@@ -93,9 +93,18 @@ def cli(ctx: Context, private_key: str, chain_id: int) -> None:
     nargs=1,
     type=str,
 )
+@click.option(
+    "--max-gas-price",
+    "-mgp",
+    "max_gas_price",
+    help="maximum gas price used by reporter",
+    nargs=1,
+    type=int,
+    default=0,
+)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.pass_context
-def report(ctx: Context, legacy_id: str, submit_once: bool) -> None:
+def report(ctx: Context, legacy_id: str, max_gas_price: int, submit_once: bool) -> None:
     """Report values to Tellor oracle"""
 
     # Ensure valid legacy id
@@ -125,6 +134,7 @@ def report(ctx: Context, legacy_id: str, submit_once: bool) -> None:
         master=master,
         oracle=oracle,
         datafeed=chosen_feed,
+        max_gas_price=max_gas_price,
     )
 
     if submit_once:
