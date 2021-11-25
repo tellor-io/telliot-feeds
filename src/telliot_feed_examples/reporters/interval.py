@@ -127,6 +127,7 @@ class IntervalReporter:
                 return True, status
 
             self.last_submission_timestamp = last_timestamp
+            logger.info(f"Last submission timestamp: {self.last_submission_timestamp}")
 
         if time.time() < self.last_submission_timestamp + 43200:  # 12 hours in seconds
             status.ok = False
@@ -258,21 +259,8 @@ class IntervalReporter:
         return tx_receipt, status
 
     async def report(self) -> None:
-        """Submit latest values to the TellorX oracle every 10 seconds."""
+        """Submit latest values to the TellorX oracle every 12 hours."""
 
         while True:
-            _ = await self.report_once()
+            _, _ = await self.report_once()
             await asyncio.sleep(10)
-
-    def run(self) -> None:
-        """Used by telliot CLI to update & submit data to TellorX Oracle."""
-
-        # Create coroutines to run concurrently.
-        loop = asyncio.get_event_loop()
-        _ = loop.create_task(self.report())
-
-        # Blocking loop.
-        try:
-            loop.run_forever()
-        except (KeyboardInterrupt, SystemExit):
-            loop.close()
