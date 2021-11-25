@@ -15,6 +15,7 @@ from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
+from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -160,7 +161,13 @@ class IntervalReporter:
             status.e = read_status.e
             return False, status
 
+        # Convert rewards to eth
+        await eth_usd_median_feed.source.fetch_new_datapoint()
+        price_eth_usd = eth_usd_median_feed.source.latest[0]
         tips, tb_reward = rewards
+        tips = tips / price_eth_usd
+        tb_reward = tb_reward / price_eth_usd
+
         gas = 500000  # Taken from telliot-core contract write, TODO: optimize
 
         logger.info(
