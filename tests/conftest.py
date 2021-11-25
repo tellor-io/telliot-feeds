@@ -92,21 +92,18 @@ async def reporter_submit_once(rinkeby_cfg, master, oracle, feed):
         private_key=rinkeby_cfg.main.private_key,
         master=master,
         oracle=oracle,
-        datafeeds=[feed],
+        datafeed=feed,
     )
 
-    tx_receipts = await reporter.report_once(retries=3)
+    tx_receipt, status = await reporter.report_once()
 
-    assert tx_receipts is not None
+    # no tx receipt returned if address is in reporter lock
+    if time.time() < last_timestamp + 43200:
+        assert tx_receipt is None
+        assert not status.ok
+        assert "reporter lock" in status.error
 
-    for receipt, status in tx_receipts:
-        # reporter should exit if address is in reporter lock
-        if time.time() < last_timestamp + 43200:
-            assert receipt is None
-            assert not status.ok
-            assert "reporter lock" in status.error
-
-        # if reporter is not in lock, should submit
-        else:
-            assert isinstance(receipt, AttributeDict)
-            assert receipt.to == oracle.address
+    # if reporter is not in lock, should have submitted
+    else:
+        assert isinstance(tx_receipt, AttributeDict)
+        assert tx_receipt.to == oracle.address
