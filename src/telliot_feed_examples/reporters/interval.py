@@ -39,6 +39,7 @@ class IntervalReporter:
         self.oracle = oracle
         self.datafeed = datafeed
         self.user = self.endpoint.web3.eth.account.from_key(private_key).address
+        self.last_submission_timestamp = 0
 
         logger.info(f"Reporting with account: {self.user}")
 
@@ -108,21 +109,26 @@ class IntervalReporter:
         multiple times within 12 hours)."""
         status = ResponseStatus()
 
-        last_timestamp, read_status = await self.oracle.read(
-            "getReporterLastTimestamp", _reporter=self.user
-        )
-
-        if (not read_status.ok) or (last_timestamp is None):
-            status.ok = False
-            status.error = (
-                "Unable to retrieve reporter's last report timestamp:"
-                + read_status.error
+        # Save last submission timestamp to reduce web3 calls
+        if self.last_submission_timestamp == 0:
+            last_timestamp, read_status = await self.oracle.read(
+                "getReporterLastTimestamp", _reporter=self.user
             )
-            logger.error(status.error)
-            status.e = read_status.e
-            return True, status
 
-        if time.time() < last_timestamp + 43200:  # 43200 is 12 hours in seconds
+            # Log web3 errors
+            if (not read_status.ok) or (last_timestamp is None):
+                status.ok = False
+                status.error = (
+                    "Unable to retrieve reporter's last report timestamp:"
+                    + read_status.error
+                )
+                logger.error(status.error)
+                status.e = read_status.e
+                return True, status
+
+            self.last_submission_timestamp = last_timestamp
+
+        if time.time() < self.last_submission_timestamp + 43200:  # 12 hours in seconds
             status.ok = False
             status.error = f"Address {self.user} is currently in reporter lock"
             return True, status
@@ -137,11 +143,13 @@ class IntervalReporter:
         Returns a bool signifying whether submitting for a given
         queryID would generate a net profit."""
         status = ResponseStatus()
+
         # Get current tips and time-based reward for given queryID
         rewards, read_status = await self.oracle.read(
             "getCurrentReward", _queryId=self.datafeed.query.query_id
         )
 
+        # Log web3 errors
         if (not read_status.ok) or (rewards is None):
             status.ok = False
             status.error = (
@@ -177,19 +185,16 @@ class IntervalReporter:
         values to the TellorX oracle, given their staker status
         and last submission time. Also, this method does not
         submit values if doing so won't make a profit."""
+
+        reporter_locked, status = await self.check_reporter_lock()
+        if reporter_locked:
+            return None, status
+
         # TODO: use maxGas var passed from CLI
         gas_price_gwei = await fetch_gas_price()
 
-        # TODO: save current reporter staked as class attr
-        # to reduce web3 calls
         staked, status = await self.ensure_staked(gas_price_gwei)
         if not staked:
-            return None, status
-
-        # TODO: save last_timestamp as class attr
-        # to reduce web3 calls
-        reporter_locked, status = await self.check_reporter_lock()
-        if reporter_locked:
             return None, status
 
         profitable, status = await self.ensure_profitable(gas_price_gwei)
@@ -220,6 +225,7 @@ class IntervalReporter:
             func_name="getTimestampCountById", _queryId=query_id
         )
 
+        # Log web3 errors
         if not read_status.ok:
             status.error = (
                 "Unable to retrieve timestampCount: " + read_status.error
@@ -239,6 +245,15 @@ class IntervalReporter:
             _nonce=timestamp_count,
             _queryData=query_data,
         )
+
+        if status.ok and not status.error:
+            # Reset previous submission timestamp
+            self.last_submission_timestamp = 0
+            tx_hash = tx_receipt["transactionHash"].hex()
+            # Point to relevant explorer
+            logger.info(f"View reported data: \n{self.endpoint.explorer}/tx/{tx_hash}")
+        else:
+            logger.error(status)
 
         return tx_receipt, status
 

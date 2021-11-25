@@ -126,14 +126,7 @@ def report(ctx: Context, legacy_id: str) -> None:
         datafeed=chosen_feed,
     )
 
-    tx_receipt, status = asyncio.run(legacy_reporter.report_once())
-
-    if status.ok:
-        tx_hash = tx_receipt["transactionHash"].hex()  # type: ignore
-        # Point to relevant explorer
-        logger.info(f"View reported data: \n{endpoint.explorer}/tx/{tx_hash}")
-    else:
-        logger.error(status.error)
+    _, _ = asyncio.run(legacy_reporter.report_once())
 
 
 if __name__ == "__main__":
