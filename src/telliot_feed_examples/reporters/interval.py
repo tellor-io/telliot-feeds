@@ -15,6 +15,7 @@ from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
+from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -32,6 +33,7 @@ class IntervalReporter:
         master: Contract,
         oracle: Contract,
         datafeed: DataFeed[Any],
+        max_gas_price: int = 0,
     ) -> None:
 
         self.endpoint = endpoint
@@ -40,6 +42,7 @@ class IntervalReporter:
         self.datafeed = datafeed
         self.user = self.endpoint.web3.eth.account.from_key(private_key).address
         self.last_submission_timestamp = 0
+        self.max_gas_price = max_gas_price
 
         logger.info(f"Reporting with account: {self.user}")
 
@@ -132,6 +135,8 @@ class IntervalReporter:
         if time.time() < self.last_submission_timestamp + 43200:  # 12 hours in seconds
             status.ok = False
             status.error = f"Address {self.user} is currently in reporter lock"
+            # TODO: Don't log frequent repeat messages
+            logger.error(status.error)
             return True, status
 
         return False, status
@@ -160,7 +165,13 @@ class IntervalReporter:
             status.e = read_status.e
             return False, status
 
+        # Convert rewards to eth
+        await eth_usd_median_feed.source.fetch_new_datapoint()
+        price_eth_usd = eth_usd_median_feed.source.latest[0]
         tips, tb_reward = rewards
+        tips = tips / price_eth_usd
+        tb_reward = tb_reward / price_eth_usd
+
         gas = 500000  # Taken from telliot-core contract write, TODO: optimize
 
         logger.info(
@@ -173,9 +184,30 @@ class IntervalReporter:
         )
 
         profit = tb_reward + tips - (gas * gas_price_gwei)
-        logger.info(f"Estimated profit: {profit}")
+        profit = round((profit / price_eth_usd) / 1e18, 2)
+        logger.info(f"Estimated profit: ${profit}")
 
         return profit > 0, status
+
+    async def enforce_gas_price_limit(
+        self, gas_price_gwei: int
+    ) -> Tuple[bool, ResponseStatus]:
+        """Ensure estimated gas price isn't above threshold.
+
+        Returns a bool signifying whether the estimated gas price
+        is under the maximum threshold chosen by the user."""
+        status = ResponseStatus()
+
+        if (self.max_gas_price != 0) and (gas_price_gwei > self.max_gas_price):
+            status.ok = False
+            status.error = f"""
+            Estimated gas price is above threshold.
+            ({gas_price_gwei} > {self.max_gas_price})
+            """
+            logger.error(status.error)
+            return False, status
+
+        return True, status
 
     async def report_once(
         self,
@@ -191,8 +223,13 @@ class IntervalReporter:
         if reporter_locked:
             return None, status
 
-        # TODO: use maxGas var passed from CLI
         gas_price_gwei = await fetch_gas_price()
+
+        gas_price_below_limit, status = await self.enforce_gas_price_limit(
+            gas_price_gwei
+        )
+        if not gas_price_below_limit:
+            return None, status
 
         staked, status = await self.ensure_staked(gas_price_gwei)
         if not staked:
