@@ -102,9 +102,24 @@ def cli(ctx: Context, private_key: str, chain_id: int) -> None:
     type=int,
     default=0,
 )
+@click.option(
+    "--profit",
+    "-p",
+    "profit_percent",
+    help="lower threshold (inclusive) for expected percent profit",
+    nargs=1,
+    type=float,
+    default=0.0,
+)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.pass_context
-def report(ctx: Context, legacy_id: str, max_gas_price: int, submit_once: bool) -> None:
+def report(
+    ctx: Context,
+    legacy_id: str,
+    max_gas_price: int,
+    submit_once: bool,
+    profit_percent: float,
+) -> None:
     """Report values to Tellor oracle"""
 
     # Ensure valid legacy id
@@ -114,13 +129,16 @@ def report(ctx: Context, legacy_id: str, max_gas_price: int, submit_once: bool) 
         )
         return
 
-    click.echo(f"Reporting legacy ID: {legacy_id}")
-
     private_key = ctx.obj["PRIVATE_KEY"]
     chain_id = ctx.obj["CHAIN_ID"]
     endpoint = cfg.get_endpoint()
 
+    click.echo(f"Reporting legacy ID: {legacy_id}")
     click.echo(f"Current chain ID: {chain_id}")
+    if profit_percent == 0.0:
+        click.echo("Reporter not enforcing profit threshold.")
+    else:
+        click.echo(f"Lower bound for expected percent profit: {profit_percent}%")
 
     master, oracle = get_tellor_contracts(
         private_key=private_key, endpoint=endpoint, chain_id=chain_id
@@ -134,6 +152,7 @@ def report(ctx: Context, legacy_id: str, max_gas_price: int, submit_once: bool) 
         master=master,
         oracle=oracle,
         datafeed=chosen_feed,
+        profit_threshold=profit_percent,
         max_gas_price=max_gas_price,
     )
 
