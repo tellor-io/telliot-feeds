@@ -61,7 +61,7 @@ class IntervalReporter:
         if (not read_status.ok) or (staker_info is None):
             status.ok = False
             status.error = (
-                "unable to read reporters staker status: " + read_status.error
+                "Unable to read reporters staker status: " + read_status.error
             )  # error won't be none # noqa: E501
             status.e = read_status.e
             return False, status
@@ -92,14 +92,16 @@ class IntervalReporter:
 
         # Status 3: disputed
         if staker_info[0] == 3:
-            status.error = f"Addess {self.user} disputed. Switch address to continue reporting."  # noqa: E501
+            status.error = "Current addess disputed. Switch address to continue reporting."  # noqa: E501
             logger.error(status.error)
             status.e = None
             return False, status
 
         # Statuses 2, 4, and 5: stake transition
         else:
-            status.error = f"Address {self.user} is locked in dispute or for withdrawal."  # noqa: E501
+            status.error = (
+                "Current address is locked in dispute or for withdrawal."  # noqa: E501
+            )
             logger.error(status.error)
             status.e = None
             return False, status
@@ -134,7 +136,7 @@ class IntervalReporter:
 
         if time.time() < self.last_submission_timestamp + 43200:  # 12 hours in seconds
             status.ok = False
-            status.error = f"Address {self.user} is currently in reporter lock"
+            status.error = "Current address is in reporter lock."
             # TODO: Don't log frequent repeat messages
             logger.error(status.error)
             return True, status
@@ -187,7 +189,13 @@ class IntervalReporter:
         profit = round((profit / price_eth_usd) / 1e18, 2)
         logger.info(f"Estimated profit: ${profit}")
 
-        return profit > 0, status
+        if not profit > 0:
+            status.ok = False
+            status.error = "Estimated profitability below threshold."
+            logger.error(status.error)
+            return False, status
+
+        return True, status
 
     async def enforce_gas_price_limit(
         self, gas_price_gwei: int
@@ -200,10 +208,7 @@ class IntervalReporter:
 
         if (self.max_gas_price != 0) and (gas_price_gwei > self.max_gas_price):
             status.ok = False
-            status.error = f"""
-            Estimated gas price is above threshold.
-            ({gas_price_gwei} > {self.max_gas_price})
-            """
+            status.error = "Estimated gas price is above maximum gas price."
             logger.error(status.error)
             return False, status
 

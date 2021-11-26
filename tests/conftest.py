@@ -1,6 +1,5 @@
 """Pytest Fixtures used for testing Pytelliot"""
 import os
-import time
 
 import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
@@ -69,6 +68,15 @@ def oracle(rinkeby_cfg):
     return oracle
 
 
+EXPECTED_ERRORS = {
+    "Current addess disputed. Switch address to continue reporting.",
+    "Current address is locked in dispute or for withdrawal.",
+    "Current address is in reporter lock.",
+    "Estimated profitability below threshold.",
+    "Estimated gas price is above maximum gas price.",
+}
+
+
 async def reporter_submit_once(rinkeby_cfg, master, oracle, feed):
     """Test reporting once to the TellorX playground on Rinkeby
     with three retries."""
@@ -97,13 +105,13 @@ async def reporter_submit_once(rinkeby_cfg, master, oracle, feed):
 
     tx_receipt, status = await reporter.report_once()
 
-    # no tx receipt returned if address is in reporter lock
-    if time.time() < last_timestamp + 43200:
-        assert tx_receipt is None
-        assert not status.ok
-        assert "reporter lock" in status.error
-
-    # if reporter is not in lock, should have submitted
-    else:
+    # Reporter submitted
+    if tx_receipt is not None and status.ok:
         assert isinstance(tx_receipt, AttributeDict)
         assert tx_receipt.to == oracle.address
+    # Reporter did not submit
+    else:
+        assert not tx_receipt
+        assert not status.ok
+        assert status.error in EXPECTED_ERRORS
+        print(status.error)
