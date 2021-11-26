@@ -16,6 +16,7 @@ from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -33,6 +34,7 @@ class IntervalReporter:
         master: Contract,
         oracle: Contract,
         datafeed: DataFeed[Any],
+        profit_threshold: float = 0.0,
         max_gas_price: int = 0,
     ) -> None:
 
@@ -42,6 +44,7 @@ class IntervalReporter:
         self.datafeed = datafeed
         self.user = self.endpoint.web3.eth.account.from_key(private_key).address
         self.last_submission_timestamp = 0
+        self.profit_threshold = profit_threshold
         self.max_gas_price = max_gas_price
 
         logger.info(f"Reporting with account: {self.user}")
@@ -152,6 +155,10 @@ class IntervalReporter:
         queryID would generate a net profit."""
         status = ResponseStatus()
 
+        # Don't check profitability if not specified by user
+        if self.profit_threshold == 0.0:
+            return True, status
+
         # Get current tips and time-based reward for given queryID
         rewards, read_status = await self.oracle.read(
             "getCurrentReward", _queryId=self.datafeed.query.query_id
@@ -167,29 +174,36 @@ class IntervalReporter:
             status.e = read_status.e
             return False, status
 
-        # Convert rewards to eth
-        await eth_usd_median_feed.source.fetch_new_datapoint()
+        # Fetch token prices in USD
+        price_feeds = [eth_usd_median_feed, trb_usd_median_feed]
+        _ = await asyncio.gather(
+            *[feed.source.fetch_new_datapoint() for feed in price_feeds]
+        )
         price_eth_usd = eth_usd_median_feed.source.latest[0]
+        price_trb_usd = trb_usd_median_feed.source.latest[0]
+
         tips, tb_reward = rewards
-        tips = tips / price_eth_usd
-        tb_reward = tb_reward / price_eth_usd
-
         gas = 500000  # Taken from telliot-core contract write, TODO: optimize
-
         logger.info(
             f"""
-            current tips: {tips}
+            current tips: {tips} (half will be burned)
             current tb_reward: {tb_reward}
             gas: {gas}
             gas_price_gwei: {gas_price_gwei}
             """
         )
 
-        profit = tb_reward + tips - (gas * gas_price_gwei)
-        profit = round((profit / price_eth_usd) / 1e18, 2)
-        logger.info(f"Estimated profit: ${profit}")
+        revenue = tb_reward + tips / 2  # Half of tips are burned
+        rev_usd = revenue / 1e18 * price_trb_usd
+        costs = gas * gas_price_gwei
+        costs_usd = costs / 1e9 * price_eth_usd
+        profit_usd = rev_usd - costs_usd
+        logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
 
-        if not profit > 0:
+        percent_profit = ((profit_usd) / costs_usd) * 100
+        logger.info(f"Estimated percent profit: {round(percent_profit, 2)}%")
+
+        if not percent_profit >= self.profit_threshold:
             status.ok = False
             status.error = "Estimated profitability below threshold."
             logger.error(status.error)
