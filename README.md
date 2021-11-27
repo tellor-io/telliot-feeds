@@ -8,6 +8,10 @@
 
 - [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)
 
+## Usage:
+
+- [Usage](https://tellor-io.github.io/telliot-feed-examples/usage/)
+
 ## Examples
 
 ### Report legacy ID 41 on Rinkeby
