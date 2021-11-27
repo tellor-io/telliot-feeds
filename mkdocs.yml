@@ -66,6 +66,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting started: getting-started.md
+  - Usage: usage.md
   - Contributing:
       - Developer's Guide: contributing.md
       - Documentation: documentation.md
