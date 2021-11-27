@@ -36,5 +36,5 @@ First, make sure you have the required configurations:
 
 1. Report using the CLI:
     ```
-    telliot-examples report -lid 10
+    telliot-examples report -lid 10 --submit-once
     ```
