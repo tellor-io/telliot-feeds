@@ -131,6 +131,9 @@ def report(
 
     private_key = ctx.obj["PRIVATE_KEY"]
     chain_id = ctx.obj["CHAIN_ID"]
+    cfg.main.private_key = private_key
+    cfg.main.chain_id = chain_id
+
     endpoint = cfg.get_endpoint()
 
     click.echo(f"Reporting legacy ID: {legacy_id}")
