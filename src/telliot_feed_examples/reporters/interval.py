@@ -267,11 +267,10 @@ class IntervalReporter:
         await self.datafeed.source.fetch_new_datapoint()
         latest_data = self.datafeed.source.latest
 
-        if latest_data is None:
-            logger.warning(
-                f"Skipping submission for {repr(self.datafeed)}, "
-                f"datafeed value not updated."
-            )
+        if latest_data[0] is None:
+            status.ok = False
+            status.error = "Unable to retrieve updated datafeed value."
+            logger.error(status.error)
             return None, status
 
         query = self.datafeed.query
