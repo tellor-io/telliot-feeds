@@ -4,7 +4,9 @@ import os
 import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.contract.contract import Contract
+from telliot_core.datasource import DataSource
 from telliot_core.directory.tellorx import tellor_directory
+from telliot_core.types.datapoint import OptionalDataPoint
 from web3.datastructures import AttributeDict
 
 from telliot_feed_examples.feeds.uspce_feed import uspce_feed
@@ -74,6 +76,7 @@ EXPECTED_ERRORS = {
     "Current address is in reporter lock.",
     "Estimated profitability below threshold.",
     "Estimated gas price is above maximum gas price.",
+    "Unable to retrieve updated datafeed value.",
 }
 
 
@@ -115,3 +118,16 @@ async def reporter_submit_once(rinkeby_cfg, master, oracle, feed):
         assert not status.ok
         assert status.error in EXPECTED_ERRORS
         print(status.error)
+
+
+@pytest.fixture(scope="session")
+def bad_source():
+    """Used for testing no updated value for datafeeds."""
+
+    class BadSource(DataSource[float]):
+        """Source that does not return an updated DataPoint."""
+
+        async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
+            return None, None
+
+    return BadSource()

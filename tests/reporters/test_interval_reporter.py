@@ -3,6 +3,7 @@ Tests covering the IntervalReporter class from
 telliot's reporters subpackage.
 """
 import pytest
+from telliot_core.utils.response import ResponseStatus
 
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
@@ -80,6 +81,31 @@ async def test_ensure_profitable(eth_usd_reporter):
     assert not profitable
     assert not status.ok
     assert status.error == "Estimated profitability below threshold."
+
+
+@pytest.mark.asyncio
+async def test_no_updated_value(eth_usd_reporter, bad_source):
+    """Test handling for no updated value returned from datasource."""
+    r = eth_usd_reporter
+
+    # Clear latest datapoint
+    r.datafeed.source._history.clear()
+
+    # Replace PriceAggregator's sources with test source that
+    # returns no updated DataPoint
+    r.datafeed.source.sources = [bad_source]
+
+    # Override reporter lock status
+    async def passing():
+        return False, ResponseStatus()
+
+    r.check_reporter_lock = passing
+
+    tx_receipt, status = await r.report_once()
+
+    assert not tx_receipt
+    assert not status.ok
+    assert status.error == "Unable to retrieve updated datafeed value."
 
 
 @pytest.mark.asyncio
