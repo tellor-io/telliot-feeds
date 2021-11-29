@@ -9,6 +9,17 @@ from telliot_core.utils.home import default_homedir
 
 cfg = TelliotConfig()
 
+class DuplicateFilter(logging.Filter):
+    """A logger filter for preventing flood of duplicate log messages"""
+
+    def filter(self, record):
+        """does not print a second consecutive log of the same message"""
+        # add other fields if you need more granular comparison, depends on your app
+        current_log = (record.module, record.levelno, record.msg)
+        if current_log != getattr(self, "last_log", None):
+            self.last_log = current_log
+            return True
+        return False
 
 def default_logsdir() -> pathlib.Path:
     """Return default logs directory, creating it if necessary
@@ -49,5 +60,6 @@ def get_logger(name: str) -> logging.Logger:
 
     logger.addHandler(output_file_handler)
     logger.addHandler(stdout_handler)
+    logger.addFilter(DuplicateFilter())
 
     return logger
