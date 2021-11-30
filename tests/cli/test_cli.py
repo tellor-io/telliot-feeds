@@ -1,11 +1,9 @@
 """
 Unit tests covering telliot_core CLI commands.
 """
-import pytest
+from click.testing import CliRunner
 
 from telliot_feed_examples.cli import cli
-
-from click.testing import CliRunner
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 
 
@@ -20,6 +18,7 @@ def test_cmd_report():
     assert expected in result.output
 
     # TODO: test successful reporting and all other option flags
+
 
 def test_cmd_tip():
     """Test CLI tip command"""
