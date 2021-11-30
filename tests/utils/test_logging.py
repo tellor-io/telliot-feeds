@@ -38,7 +38,7 @@ def test_reocurring_messages() -> None:
             num_lines_before += 1
 
     for _ in range(5):
-        logger.info("Address not yet staked. Depositing stake.")
+        logger.info("testttt")
 
     num_lines_after = 0
     with open(os.path.join(expected_log_file), "r") as f:
