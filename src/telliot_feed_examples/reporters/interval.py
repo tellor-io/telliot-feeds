@@ -197,7 +197,7 @@ class IntervalReporter:
             """
         )
 
-        revenue = tb_reward + tips / 2  # Half of tips are burned
+        revenue = tb_reward + tips
         rev_usd = revenue / 1e18 * price_trb_usd
         costs = gas * gas_price_gwei
         costs_usd = costs / 1e9 * price_eth_usd
