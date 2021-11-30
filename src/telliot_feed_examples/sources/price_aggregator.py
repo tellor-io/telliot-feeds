@@ -44,6 +44,13 @@ class PriceAggregator(DataSource[float], ABC):
         elif self.algorithm == "mean":
             self._algorithm = statistics.mean
 
+    def __str__(self) -> str:
+        """Human-readable representation."""
+        asset = self.asset.upper()
+        currency = self.currency.upper()
+        symbol = asset + "/" + currency
+        return f"PriceAggregator {symbol} {self.algorithm}"
+
     async def update_sources(self) -> List[OptionalDataPoint[float]]:
         """Update data feed sources
 
@@ -81,6 +88,10 @@ class PriceAggregator(DataSource[float], ABC):
             # Check for valid answers
             if v is not None:
                 prices.append(v)
+
+        if not prices:
+            logger.warning(f"No prices retrieved for {self}.")
+            return None, None
 
         # Run the algorithm on all valid prices
         logger.info(f"Running {self.algorithm} on {prices}")

@@ -224,6 +224,10 @@ class AMPLUSDVWAPSource(DataSource[float]):
 
         prices = [v for v, _ in updates if v is not None]
 
+        if not prices:
+            logger.warning("No prices retrieved for AMPL/USD/VWAP Source.")
+            return None, None
+
         # Get median price
         result = statistics.median(prices)
         datapoint = (result, datetime_now_utc())
