@@ -74,16 +74,6 @@ def get_tellor_contracts(
     default=cfg.main.chain_id,
     type=int,
 )
-@click.pass_context
-def cli(ctx: Context, private_key: str, chain_id: int) -> None:
-    """Telliot command line interface"""
-    ctx.ensure_object(dict)
-    ctx.obj["PRIVATE_KEY"] = private_key
-    ctx.obj["CHAIN_ID"] = chain_id
-
-
-# Report subcommand options
-@cli.command()
 @click.option(
     "--legacy-id",
     "-lid",
@@ -93,6 +83,29 @@ def cli(ctx: Context, private_key: str, chain_id: int) -> None:
     nargs=1,
     type=str,
 )
+@click.pass_context
+def cli(
+    ctx: Context,
+    private_key: str,
+    chain_id: int,
+    legacy_id: str,
+) -> None:
+    """Telliot command line interface"""
+    # Ensure valid legacy id
+    if legacy_id not in LEGACY_DATAFEEDS:
+        click.echo(
+            f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
+        )
+        return
+
+    ctx.ensure_object(dict)
+    ctx.obj["PRIVATE_KEY"] = private_key
+    ctx.obj["CHAIN_ID"] = chain_id
+    ctx.obj["LEGACY_ID"] = legacy_id
+
+
+# Report subcommand options
+@cli.command()
 @click.option(
     "--max-gas-price",
     "-mgp",
@@ -115,22 +128,15 @@ def cli(ctx: Context, private_key: str, chain_id: int) -> None:
 @click.pass_context
 def report(
     ctx: Context,
-    legacy_id: str,
     max_gas_price: int,
     submit_once: bool,
     profit_percent: float,
 ) -> None:
     """Report values to Tellor oracle"""
 
-    # Ensure valid legacy id
-    if legacy_id not in LEGACY_DATAFEEDS:
-        click.echo(
-            f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
-        )
-        return
-
     private_key = ctx.obj["PRIVATE_KEY"]
     chain_id = ctx.obj["CHAIN_ID"]
+    legacy_id = ctx.obj["LEGACY_ID"]
     cfg.main.private_key = private_key
     cfg.main.chain_id = chain_id
 
@@ -163,6 +169,56 @@ def report(
         _, _ = asyncio.run(legacy_reporter.report_once())
     else:
         _, _ = asyncio.run(legacy_reporter.report())
+
+
+@cli.command()
+@click.option(
+    "--amount-trb",
+    "-trb",
+    "amount_trb",
+    help="amount to tip in TRB for a query ID",
+    nargs=1,
+    type=float,
+    required=True,
+)
+@click.pass_context
+def tip(
+    ctx: Context,
+    amount_trb: float,
+) -> None:
+    """Tip TRB for a selected query ID"""
+    legacy_id = ctx.obj["LEGACY_ID"]
+
+    click.echo(f"Tipping {round(amount_trb, 2)} TRB for legacy ID {legacy_id}.")
+
+    endpoint = cfg.get_endpoint()
+
+    _, oracle = get_tellor_contracts(
+        private_key=cfg.main.private_key, endpoint=endpoint, chain_id=cfg.main.chain_id
+    )
+
+    chosen_feed = LEGACY_DATAFEEDS[legacy_id]
+    tip = int(amount_trb * 1e18)
+
+    tx_receipt, status = asyncio.run(
+        oracle.write_with_retry(
+            func_name="tipQuery",
+            gas_price="3",
+            extra_gas_price=20,
+            retries=2,
+            _queryId=chosen_feed.query.query_id,
+            _queryData=chosen_feed.query.query_data,
+            _tip=tip,
+        )
+    )
+
+    if status.ok and not status.error:
+        click.echo("Success!")
+        tx_hash = tx_receipt["transactionHash"].hex()
+        # Point to relevant explorer
+        logger.info(f"View tip: \n{endpoint.explorer}/tx/{tx_hash}")
+    else:
+        logger.error(status)
 
 
 if __name__ == "__main__":
