@@ -100,7 +100,7 @@ class IntervalReporter:
 
         # Status 3: disputed
         if staker_info[0] == 3:
-            status.error = "Current addess disputed. Switch address to continue reporting."  # noqa: E501
+            status.error = "Current address disputed. Switch address to continue reporting."  # noqa: E501
             logger.error(status.error)
             status.e = None
             return False, status
