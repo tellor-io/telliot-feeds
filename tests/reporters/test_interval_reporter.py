@@ -109,6 +109,23 @@ async def test_no_updated_value(eth_usd_reporter, bad_source):
 
 
 @pytest.mark.asyncio
+async def test_fetch_gas_price(eth_usd_reporter):
+    """Test retrieving custom gas price from eth gas station."""
+    r = eth_usd_reporter
+
+    assert r.gas_price_speed == "fast"
+
+    r.gas_price_speed = "safeLow"
+
+    assert r.gas_price_speed != "fast"
+
+    gas_price = await r.fetch_gas_price()
+
+    assert isinstance(gas_price, int)
+    assert gas_price > 0
+
+
+@pytest.mark.asyncio
 async def test_interval_reporter_submit_once(rinkeby_cfg, master, oracle):
     """Test reporting once to the TellorX playground on Rinkeby
     with three retries."""
