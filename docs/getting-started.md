@@ -101,3 +101,19 @@ endpoints:
 
 ```
 
+### AMPL Configuration File
+
+Generate default AMPL configs from the repository's home directory:
+```
+python3 src/telliot_feed_examples/config.py
+```
+
+After, add AMPL api keys (BraveNewCoin/Rapid & AnyBlock) to `~/telliot/ampl.yaml`
+
+*Example `ampl.yaml` file:*
+```yaml
+type: AMPLConfigOptions
+anyblock_api_key: 'abc123fakeapikey'
+rapid_api_key: 'abc123fakeapikey'
+
+```
