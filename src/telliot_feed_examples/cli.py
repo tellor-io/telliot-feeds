@@ -116,6 +116,18 @@ def cli(
     default=0,
 )
 @click.option(
+    "--gas-price-speed",
+    "-gps",
+    "gas_price_speed",
+    help="gas price speed for eth gas station API",
+    nargs=1,
+    type=click.Choice(
+        ["safeLow", "average", "fast", "fastest"],
+        case_sensitive=True,
+    ),
+    default="fast",
+)
+@click.option(
     "--profit",
     "-p",
     "profit_percent",
@@ -129,6 +141,7 @@ def cli(
 def report(
     ctx: Context,
     max_gas_price: int,
+    gas_price_speed: str,
     submit_once: bool,
     profit_percent: float,
 ) -> None:
@@ -142,12 +155,16 @@ def report(
 
     endpoint = cfg.get_endpoint()
 
+    # Print user settings to console
     click.echo(f"Reporting legacy ID: {legacy_id}")
     click.echo(f"Current chain ID: {chain_id}")
     if profit_percent == 0.0:
         click.echo("Reporter not enforcing profit threshold.")
     else:
         click.echo(f"Lower bound for expected percent profit: {profit_percent}%")
+    if max_gas_price != 0:
+        click.echo(f"Reporter will use a maximum gas price of {max_gas_price} gwei.")
+    click.echo(f"Selected gas price speed: {gas_price_speed}")
 
     master, oracle = get_tellor_contracts(
         private_key=private_key, endpoint=endpoint, chain_id=chain_id
@@ -163,6 +180,7 @@ def report(
         datafeed=chosen_feed,
         profit_threshold=profit_percent,
         max_gas_price=max_gas_price,
+        gas_price_speed=gas_price_speed,
     )
 
     if submit_once:

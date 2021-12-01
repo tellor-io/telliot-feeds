@@ -1,6 +1,6 @@
 """Example datafeed used by BTCUSDReporter."""
 from telliot_core.datafeed import DataFeed
-from telliot_core.queries.coin_price import CoinPrice
+from telliot_core.queries.legacy_query import LegacyRequest
 
 from telliot_feed_examples.sources.bittrex import BittrexPriceSource
 from telliot_feed_examples.sources.coinbase import CoinbasePriceSource
@@ -9,7 +9,7 @@ from telliot_feed_examples.sources.gemini import GeminiPriceSource
 from telliot_feed_examples.sources.price_aggregator import PriceAggregator
 
 btc_usd_median_feed = DataFeed(
-    query=CoinPrice(coin="btc", currency="usd", price_type="current"),
+    query=LegacyRequest(legacy_id=2),
     source=PriceAggregator(
         asset="btc",
         currency="usd",
