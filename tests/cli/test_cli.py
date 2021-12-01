@@ -26,7 +26,7 @@ def test_cmd_tip():
     trb = "0.00001"
     result = runner.invoke(cli, ["-lid", "1", "tip", "--amount-trb", trb])
 
-    expected1 = "Tipping 0.0 TRB for legacy ID 1."
+    expected1 = "Tipping 1e-05 TRB for legacy ID 1."
     expected2 = "Success!"
 
     assert expected1 in result.output

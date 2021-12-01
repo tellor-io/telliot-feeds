@@ -207,7 +207,7 @@ def tip(
     """Tip TRB for a selected query ID"""
     legacy_id = ctx.obj["LEGACY_ID"]
 
-    click.echo(f"Tipping {round(amount_trb, 2)} TRB for legacy ID {legacy_id}.")
+    click.echo(f"Tipping {amount_trb} TRB for legacy ID {legacy_id}.")
 
     endpoint = cfg.get_endpoint()
 
