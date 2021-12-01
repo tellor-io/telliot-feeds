@@ -1,8 +1,9 @@
-from web3.datastructures import AttributeDict
-import pytest 
-from telliot_feed_examples.utils.oracle_write import tip_query
-from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
+import pytest
 from telliot_core.utils.response import ResponseStatus
+from web3.datastructures import AttributeDict
+
+from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feed_examples.utils.oracle_write import tip_query
 
 
 @pytest.mark.asyncio

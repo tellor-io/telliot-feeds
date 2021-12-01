@@ -1,10 +1,11 @@
-from telliot_core.contract.contract import Contract
-from typing import Tuple
-from typing import Optional
 from typing import Any
-from web3.datastructures import AttributeDict
+from typing import Optional
+from typing import Tuple
+
+from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.utils.response import ResponseStatus
+from web3.datastructures import AttributeDict
 
 
 async def tip_query(
