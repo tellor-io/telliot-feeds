@@ -17,17 +17,16 @@ def test_cmd_report():
     expected = f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
     assert expected in result.output
 
-    # TODO: test successful reporting and all other option flags
-
 
 def test_cmd_tip():
     """Test CLI tip command"""
     runner = CliRunner()
     trb = "0.00001"
-    result = runner.invoke(cli, ["-lid", "1", "tip", "--amount-trb", trb])
+    result = runner.invoke(cli, ["-lid", "1", "tip", "--amount-usd", trb])
 
-    expected1 = "Tipping 1e-05 TRB for legacy ID 1."
-    expected2 = "Success!"
+    expected = "Error: No such option: --amount-usd Did you mean --amount-trb?"
 
-    assert expected1 in result.output
-    assert expected2 in result.output
+    assert expected in result.output
+
+
+# TODO: test successful CLI runs and all option flags

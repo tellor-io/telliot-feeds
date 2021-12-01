@@ -15,6 +15,7 @@ from telliot_core.model.endpoints import RPCEndpoint
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.utils.log import get_logger
+from telliot_feed_examples.utils.oracle_write import tip_query
 
 
 logger = get_logger(__name__)
@@ -219,18 +220,14 @@ def tip(
     tip = int(amount_trb * 1e18)
 
     tx_receipt, status = asyncio.run(
-        oracle.write_with_retry(
-            func_name="tipQuery",
-            gas_price="3",
-            extra_gas_price=20,
-            retries=2,
-            _queryId=chosen_feed.query.query_id,
-            _queryData=chosen_feed.query.query_data,
-            _tip=tip,
+        tip_query(
+            oracle=oracle,
+            datafeed=chosen_feed,
+            tip=tip,
         )
     )
 
-    if status.ok and not status.error:
+    if status.ok and not status.error and tx_receipt:
         click.echo("Success!")
         tx_hash = tx_receipt["transactionHash"].hex()
         # Point to relevant explorer
