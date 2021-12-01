@@ -9,7 +9,7 @@ from typing import Optional
 from typing import Tuple
 
 from telliot_core.contract.contract import Contract
-from telliot_core.contract.gas import fetch_gas_price
+from telliot_core.contract.gas import ethgasstation
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import ResponseStatus
@@ -34,6 +34,7 @@ class IntervalReporter:
         master: Contract,
         oracle: Contract,
         datafeed: DataFeed[Any],
+        gas_price_speed: str = "fast",
         profit_threshold: float = 0.0,
         max_gas_price: int = 0,
     ) -> None:
@@ -46,6 +47,7 @@ class IntervalReporter:
         self.last_submission_timestamp = 0
         self.profit_threshold = profit_threshold
         self.max_gas_price = max_gas_price
+        self.gas_price_speed = gas_price_speed
 
         logger.info(f"Reporting with account: {self.user}")
 
@@ -143,7 +145,6 @@ class IntervalReporter:
         if time.time() < self.last_submission_timestamp + 43200:  # 12 hours in seconds
             status.ok = False
             status.error = "Current address is in reporter lock."
-            # TODO: Don't log frequent repeat messages
             logger.error(status.error)
             return True, status
 
@@ -231,6 +232,10 @@ class IntervalReporter:
 
         return True, status
 
+    async def fetch_gas_price(self) -> int:
+        """Fetch gas price from ethgasstation in gwei."""
+        return await ethgasstation(style=self.gas_price_speed)  # type: ignore
+
     async def report_once(
         self,
     ) -> Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]:
@@ -245,7 +250,7 @@ class IntervalReporter:
         if reporter_locked:
             return None, status
 
-        gas_price_gwei = await fetch_gas_price()
+        gas_price_gwei = await self.fetch_gas_price()
 
         gas_price_below_limit, status = await self.enforce_gas_price_limit(
             gas_price_gwei
