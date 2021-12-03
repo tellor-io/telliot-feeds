@@ -34,6 +34,7 @@ class IntervalReporter:
         master: Contract,
         oracle: Contract,
         datafeed: DataFeed[Any],
+        gas_price: Optional[int] = None,
         gas_price_speed: str = "fast",
         profit_threshold: float = 0.0,
         max_gas_price: int = 0,
@@ -48,6 +49,7 @@ class IntervalReporter:
         self.profit_threshold = profit_threshold
         self.max_gas_price = max_gas_price
         self.gas_price_speed = gas_price_speed
+        self.gas_price = gas_price
 
         logger.info(f"Reporting with account: {self.user}")
 
@@ -250,13 +252,16 @@ class IntervalReporter:
         if reporter_locked:
             return None, status
 
-        gas_price_gwei = await self.fetch_gas_price()
+        # Custom gas price overrides other gas price settings
+        gas_price_gwei = self.gas_price
+        if gas_price_gwei is None:
+            gas_price_gwei = await self.fetch_gas_price()
 
-        gas_price_below_limit, status = await self.enforce_gas_price_limit(
-            gas_price_gwei
-        )
-        if not gas_price_below_limit:
-            return None, status
+            gas_price_below_limit, status = await self.enforce_gas_price_limit(
+                gas_price_gwei
+            )
+            if not gas_price_below_limit:
+                return None, status
 
         staked, status = await self.ensure_staked(gas_price_gwei)
         if not staked:
