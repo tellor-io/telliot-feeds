@@ -101,7 +101,7 @@ class IntervalReporter:
         # Status 3: disputed
         if staker_info[0] == 3:
             status.error = "Current address disputed. Switch address to continue reporting."  # noqa: E501
-            logger.error(status.error)
+            logger.info(status.error)
             status.e = None
             return False, status
 
@@ -110,7 +110,7 @@ class IntervalReporter:
             status.error = (
                 "Current address is locked in dispute or for withdrawal."  # noqa: E501
             )
-            logger.error(status.error)
+            logger.info(status.error)
             status.e = None
             return False, status
 
@@ -145,7 +145,7 @@ class IntervalReporter:
         if time.time() < self.last_submission_timestamp + 43200:  # 12 hours in seconds
             status.ok = False
             status.error = "Current address is in reporter lock."
-            logger.error(status.error)
+            logger.info(status.error)
             return True, status
 
         return False, status
@@ -210,7 +210,7 @@ class IntervalReporter:
         if not percent_profit >= self.profit_threshold:
             status.ok = False
             status.error = "Estimated profitability below threshold."
-            logger.error(status.error)
+            logger.info(status.error)
             return False, status
 
         return True, status
