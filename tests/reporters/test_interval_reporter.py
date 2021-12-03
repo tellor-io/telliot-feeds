@@ -20,6 +20,7 @@ def eth_usd_reporter(rinkeby_cfg, master, oracle):
         master=master,
         oracle=oracle,
         datafeed=eth_usd_median_feed,
+        gas_price=10,
     )
     return r
 
@@ -27,7 +28,9 @@ def eth_usd_reporter(rinkeby_cfg, master, oracle):
 @pytest.mark.asyncio
 async def test_ensure_staked(eth_usd_reporter):
     """Test staking status of reporter."""
-    staked, status = await eth_usd_reporter.ensure_staked(gas_price_gwei=10)
+    gp = eth_usd_reporter.gas_price
+
+    staked, status = await eth_usd_reporter.ensure_staked(gas_price_gwei=gp)
 
     assert staked
     assert status.ok
@@ -67,16 +70,17 @@ async def test_enforce_gas_price_limit(eth_usd_reporter):
 async def test_ensure_profitable(eth_usd_reporter):
     """Test profitability check."""
     r = eth_usd_reporter
+    gp = r.gas_price
 
     assert r.profit_threshold == 0
 
-    profitable, status = await r.ensure_profitable(gas_price_gwei=10)
+    profitable, status = await r.ensure_profitable(gas_price_gwei=gp)
 
     assert profitable
     assert status.ok
 
     r.profit_threshold = 1e10
-    profitable, status = await r.ensure_profitable(gas_price_gwei=10)
+    profitable, status = await r.ensure_profitable(gas_price_gwei=gp)
 
     assert not profitable
     assert not status.ok

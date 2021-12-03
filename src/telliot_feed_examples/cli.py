@@ -111,7 +111,7 @@ def cli(
     "--max-gas-price",
     "-mgp",
     "max_gas_price",
-    help="maximum gas price used by reporter",
+    help="maximum gas price used by eth gas station",
     nargs=1,
     type=int,
     default=0,
@@ -129,6 +129,15 @@ def cli(
     default="fast",
 )
 @click.option(
+    "--gas-price",
+    "-gp",
+    "gas_price",
+    help="use custom gas price (overrides eth gas station estimate)",
+    nargs=1,
+    type=int,
+    required=False,
+)
+@click.option(
     "--profit",
     "-p",
     "profit_percent",
@@ -141,6 +150,7 @@ def cli(
 @click.pass_context
 def report(
     ctx: Context,
+    gas_price: int,
     max_gas_price: int,
     gas_price_speed: str,
     submit_once: bool,
@@ -159,14 +169,23 @@ def report(
     # Print user settings to console
     click.echo(f"Reporting legacy ID: {legacy_id}")
     click.echo(f"Current chain ID: {chain_id}")
+
     if profit_percent == 0.0:
         click.echo("Reporter not enforcing profit threshold.")
     else:
         click.echo(f"Lower bound for expected percent profit: {profit_percent}%")
-    if max_gas_price != 0:
-        click.echo(f"Reporter will use a maximum gas price of {max_gas_price} gwei.")
-    click.echo(f"Selected gas price speed: {gas_price_speed}")
 
+    # Gas price overrides other gas price settings
+    if not gas_price:
+        if max_gas_price != 0:
+            click.echo(
+                f"Reporter will use a maximum gas price of {max_gas_price} gwei."
+            )
+        click.echo(f"Selected gas price speed: {gas_price_speed}")
+    else:
+        click.echo(f"Using custom gas price: {gas_price}")
+
+    # return
     master, oracle = get_tellor_contracts(
         private_key=private_key, endpoint=endpoint, chain_id=chain_id
     )
@@ -180,6 +199,7 @@ def report(
         oracle=oracle,
         datafeed=chosen_feed,
         profit_threshold=profit_percent,
+        gas_price=gas_price,
         max_gas_price=max_gas_price,
         gas_price_speed=gas_price_speed,
     )
