@@ -13,9 +13,15 @@ from telliot_feed_examples.utils.log import get_logger
 
 logger = get_logger(__name__)
 
-# Coinbase API uses the 'id' field from /coins/list.
+# CoinGecko API uses the 'id' field from /coins/list.
+# Coingecko API Token List: https://www.coingecko.com/en/api/documentation
 # Using a manual mapping for now.
-coingecko_coin_id = {"btc": "bitcoin", "eth": "ethereum", "trb": "tellor"}
+coingecko_coin_id = {
+    "btc": "bitcoin",
+    "eth": "ethereum",
+    "trb": "tellor",
+    "wampl": "wrapped-ampleforth",
+}
 
 
 class CoinGeckoPriceService(WebPriceService):
