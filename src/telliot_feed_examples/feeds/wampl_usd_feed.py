@@ -8,8 +8,8 @@ from telliot_feed_examples.sources.price_aggregator import PriceAggregator
 
 wampl_usd_median_feed = DataFeed(
     query=SpotPrice(
-        asset='wampl',
-        currency='usd',
+        asset="wampl",
+        currency="usd",
     ),
     source=PriceAggregator(
         asset="wampl",

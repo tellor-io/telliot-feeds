@@ -3,7 +3,6 @@ from dataclasses import field
 from typing import Any
 
 import requests
-
 from telliot_core.pricing.price_service import WebPriceService
 from telliot_core.pricing.price_source import PriceSource
 from telliot_core.types.datapoint import datetime_now_utc
@@ -46,15 +45,17 @@ class LiveCoinWatchPriceService(WebPriceService):
         data = '{"currency":"' + currency + '","code":"' + asset + '","meta":false}'
         request_url = "/coins/single"
         headers = {
-            'content-type': 'application/json',
-            'x-api-key': '8c0752b1-1547-41ec-a558-fff37883361e',
+            "content-type": "application/json",
+            "x-api-key": "8c0752b1-1547-41ec-a558-fff37883361e",
         }
 
         request_url = self.url + request_url
 
         with requests.Session() as s:
             try:
-                r = s.post(request_url, timeout=self.timeout, headers=headers, data=data)
+                r = s.post(
+                    request_url, timeout=self.timeout, headers=headers, data=data
+                )
                 json_data = r.json()
                 d = {"response": json_data}
 

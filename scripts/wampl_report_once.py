@@ -12,7 +12,6 @@ from telliot_feed_examples.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-
 if __name__ == "__main__":
     cfg = TelliotConfig()
 
@@ -20,7 +19,7 @@ if __name__ == "__main__":
 
     master, oracle = get_tellor_contracts(
         private_key=cfg.main.private_key,
-        chain_id=cfg.main.chain_id, # 4: rinkeby
+        chain_id=cfg.main.chain_id,  # 4: rinkeby
         endpoint=rinkeby_endpoint,
     )
 
@@ -30,7 +29,7 @@ if __name__ == "__main__":
         master=master,
         oracle=oracle,
         datafeed=wampl_usd_median_feed,
-        profit_threshold=0, # does not check profit
+        profit_threshold=0,  # does not check profit
         gas_price=3,
     )
 
