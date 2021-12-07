@@ -64,11 +64,7 @@ cfg = TelliotConfig()
 )
 @click.pass_context
 def cli(
-    ctx: Context,
-    private_key: str,
-    chain_id: int,
-    legacy_id: str,
-    gas_limit: int
+    ctx: Context, private_key: str, chain_id: int, legacy_id: str, gas_limit: int
 ) -> None:
     """Telliot command line interface"""
     # Ensure valid legacy id
@@ -185,7 +181,7 @@ def report(
         gas_price=gas_price,
         max_gas_price=max_gas_price,
         gas_price_speed=gas_price_speed,
-        gas=gas_limit,
+        gas_limit=gas_limit,
     )
 
     if submit_once:
