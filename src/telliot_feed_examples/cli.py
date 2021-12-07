@@ -53,12 +53,22 @@ cfg = TelliotConfig()
     nargs=1,
     type=str,
 )
+@click.option(
+    "--gas-limit",
+    "-gl",
+    "gas_limit",
+    help="use custom gas limit",
+    nargs=1,
+    type=int,
+    default=500000,
+)
 @click.pass_context
 def cli(
     ctx: Context,
     private_key: str,
     chain_id: int,
     legacy_id: str,
+    gas_limit: int
 ) -> None:
     """Telliot command line interface"""
     # Ensure valid legacy id
@@ -72,6 +82,7 @@ def cli(
     ctx.obj["PRIVATE_KEY"] = private_key
     ctx.obj["CHAIN_ID"] = chain_id
     ctx.obj["LEGACY_ID"] = legacy_id
+    ctx.obj["GAS_LIMIT"] = gas_limit
 
 
 # Report subcommand options
@@ -107,15 +118,6 @@ def cli(
     required=False,
 )
 @click.option(
-    "--gas",
-    "-g",
-    "custom_gas",
-    help="use custom gas",
-    nargs=1,
-    type=int,
-    default=500000,
-)
-@click.option(
     "--profit",
     "-p",
     "profit_percent",
@@ -129,7 +131,6 @@ def cli(
 def report(
     ctx: Context,
     gas_price: int,
-    custom_gas: int,
     max_gas_price: int,
     gas_price_speed: str,
     submit_once: bool,
@@ -140,6 +141,7 @@ def report(
     private_key = ctx.obj["PRIVATE_KEY"]
     chain_id = ctx.obj["CHAIN_ID"]
     legacy_id = ctx.obj["LEGACY_ID"]
+    gas_limit = ctx.obj["GAS_LIMIT"]
     cfg.main.private_key = private_key
     cfg.main.chain_id = chain_id
 
@@ -164,7 +166,7 @@ def report(
     else:
         click.echo(f"Gas price: {gas_price}")
 
-    click.echo(f"Gas: {custom_gas}")
+    click.echo(f"Gas Limit: {gas_limit}")
 
     # return
     master, oracle = get_tellor_contracts(
@@ -183,7 +185,7 @@ def report(
         gas_price=gas_price,
         max_gas_price=max_gas_price,
         gas_price_speed=gas_price_speed,
-        gas=custom_gas,
+        gas=gas_limit,
     )
 
     if submit_once:

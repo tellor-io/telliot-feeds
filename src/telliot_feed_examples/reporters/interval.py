@@ -38,7 +38,7 @@ class IntervalReporter:
         gas_price_speed: str = "fast",
         profit_threshold: float = 0.0,
         max_gas_price: int = 0,
-        gas: int = 500000,
+        gas_limit: int = 500000,
     ) -> None:
 
         self.endpoint = endpoint
@@ -51,7 +51,7 @@ class IntervalReporter:
         self.max_gas_price = max_gas_price
         self.gas_price_speed = gas_price_speed
         self.gas_price = gas_price
-        self.gas = gas
+        self.gas_limit = gas_limit
 
         logger.info(f"Reporting with account: {self.user}")
 
@@ -195,14 +195,14 @@ class IntervalReporter:
             f"""
             current tips: {tips / 1e18} TRB
             current tb_reward: {tb_reward / 1e18} TRB
-            gas: {self.gas}
+            gas_limit: {self.gas_limit}
             gas_price_gwei: {gas_price_gwei}
             """
         )
 
         revenue = tb_reward + tips
         rev_usd = revenue / 1e18 * price_trb_usd
-        costs = self.gas * gas_price_gwei
+        costs = self.gas_limit * gas_price_gwei
         costs_usd = costs / 1e9 * price_eth_usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")

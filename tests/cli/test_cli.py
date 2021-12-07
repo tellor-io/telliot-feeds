@@ -22,19 +22,19 @@ def test_custom_gas_flag():
     """Test using a custom gas."""
     # Test incorrect command invocation
     runner = CliRunner()
-    result = runner.invoke(cli, ["-lid", "1", "report", "--ges"])
+    result = runner.invoke(cli, ["-lid", "1", "--ges-limit", "report"])
 
     assert result.exit_code == 2
 
-    expected = "Error: No such option: --ges (Possible options: --gas, -gps)"
+    expected = "Error: No such option: --ges-limit Did you mean --gas-limit?"
     assert expected in result.output
 
     # Test incorrect type
-    result = runner.invoke(cli, ["-lid", "1", "report", "-g", "blah"])
+    result = runner.invoke(cli, ["-lid", "1", "-gl", "blah", "report"])
 
     assert result.exit_code == 2
 
-    expected = "Error: Invalid value for '--gas' / '-g': 'blah' is not a valid integer."
+    expected = "Error: Invalid value for '--gas-limit' / '-gl': 'blah' is not a valid integer."
     assert expected in result.output
 
 
