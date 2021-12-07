@@ -3,17 +3,14 @@
 A simple interface for interacting with telliot example feed functionality.
 """
 import asyncio
-from typing import Tuple
 
 import click
 from click.core import Context
 from telliot_core.apps.telliot_config import TelliotConfig
-from telliot_core.contract.contract import Contract
-from telliot_core.directory.tellorx import tellor_directory
-from telliot_core.model.endpoints import RPCEndpoint
 
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.utils.contract import get_tellor_contracts
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
@@ -23,34 +20,6 @@ logger = get_logger(__name__)
 
 # Get default configs from ~/telliot/
 cfg = TelliotConfig()
-
-
-def get_tellor_contracts(
-    private_key: str, chain_id: int, endpoint: RPCEndpoint
-) -> Tuple[Contract, Contract]:
-    """Get Contract objects per telliot configuration and
-    CLI flag options."""
-    endpoint.connect()
-
-    tellor_oracle = tellor_directory.find(chain_id=chain_id, name="oracle")[0]
-    oracle = Contract(
-        address=tellor_oracle.address,
-        abi=tellor_oracle.abi,
-        node=endpoint,
-        private_key=private_key,
-    )
-    oracle.connect()
-
-    tellor_master = tellor_directory.find(chain_id=chain_id, name="master")[0]
-    master = Contract(
-        address=tellor_master.address,
-        abi=tellor_master.abi,
-        node=endpoint,
-        private_key=private_key,
-    )
-    master.connect()
-
-    return master, oracle
 
 
 # Main CLI options
@@ -84,12 +53,18 @@ def get_tellor_contracts(
     nargs=1,
     type=str,
 )
+@click.option(
+    "--gas-limit",
+    "-gl",
+    "gas_limit",
+    help="use custom gas limit",
+    nargs=1,
+    type=int,
+    default=500000,
+)
 @click.pass_context
 def cli(
-    ctx: Context,
-    private_key: str,
-    chain_id: int,
-    legacy_id: str,
+    ctx: Context, private_key: str, chain_id: int, legacy_id: str, gas_limit: int
 ) -> None:
     """Telliot command line interface"""
     # Ensure valid legacy id
@@ -103,6 +78,7 @@ def cli(
     ctx.obj["PRIVATE_KEY"] = private_key
     ctx.obj["CHAIN_ID"] = chain_id
     ctx.obj["LEGACY_ID"] = legacy_id
+    ctx.obj["GAS_LIMIT"] = gas_limit
 
 
 # Report subcommand options
@@ -161,6 +137,7 @@ def report(
     private_key = ctx.obj["PRIVATE_KEY"]
     chain_id = ctx.obj["CHAIN_ID"]
     legacy_id = ctx.obj["LEGACY_ID"]
+    gas_limit = ctx.obj["GAS_LIMIT"]
     cfg.main.private_key = private_key
     cfg.main.chain_id = chain_id
 
@@ -183,7 +160,9 @@ def report(
             )
         click.echo(f"Selected gas price speed: {gas_price_speed}")
     else:
-        click.echo(f"Using custom gas price: {gas_price}")
+        click.echo(f"Gas price: {gas_price}")
+
+    click.echo(f"Gas Limit: {gas_limit}")
 
     # return
     master, oracle = get_tellor_contracts(
@@ -202,6 +181,7 @@ def report(
         gas_price=gas_price,
         max_gas_price=max_gas_price,
         gas_price_speed=gas_price_speed,
+        gas_limit=gas_limit,
     )
 
     if submit_once:
