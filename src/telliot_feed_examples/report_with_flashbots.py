@@ -1,22 +1,23 @@
 import asyncio
+import os
 
+from dotenv import find_dotenv
+from dotenv import load_dotenv
+from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
-from web3.middleware import construct_sign_and_send_raw_middleware
 from flashbots import flashbot
 from flashbots.types import SignTx
-from web3 import Web3, HTTPProvider
-from web3.exceptions import TimeExhausted
-from web3.middleware import geth_poa_middleware
-from eth_account.account import Account
-
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.contract.contract import Contract
 from telliot_core.queries.legacy_query import LegacyRequest
+from web3 import HTTPProvider
+from web3 import Web3
+from web3.exceptions import TimeExhausted
+from web3.middleware import construct_sign_and_send_raw_middleware
+from web3.middleware import geth_poa_middleware
 
-from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.abi import gorli_playground_abi
-from dotenv import load_dotenv, find_dotenv
-import os
+from telliot_feed_examples.utils.log import get_logger
 
 
 load_dotenv(find_dotenv())
@@ -24,7 +25,7 @@ logger = get_logger(__name__)
 
 # Get configs
 cfg = TelliotConfig()
-ETH_ACCOUNT_SIGNATURE: LocalAccount = Account.from_key(os.getenv('SIG_ADDR'))
+ETH_ACCOUNT_SIGNATURE: LocalAccount = Account.from_key(os.getenv("SIG_ADDR"))
 ETH_ACCOUNT_FROM: LocalAccount = Account.from_key(cfg.main.private_key)
 endpoint = cfg.get_endpoint()
 
@@ -34,7 +35,7 @@ w3.middleware_onion.inject(geth_poa_middleware, layer=0)  # only for POA chains
 w3.middleware_onion.add(construct_sign_and_send_raw_middleware(ETH_ACCOUNT_FROM))
 flashbot(w3, ETH_ACCOUNT_SIGNATURE)
 endpoint._web3 = w3
-print('Flashbot connected to goerli relay')
+print("Flashbot connected to goerli relay")
 
 playground = Contract(
     address="0x3477EB82263dabb59AC0CAcE47a61292f28A2eA7",  # Gorli playground addr
@@ -46,24 +47,25 @@ playground.connect()
 
 # Submit value
 query = LegacyRequest(legacy_id=99)
-timestamp_count, status = asyncio.run(playground.read(
-    func_name="getNewValueCountbyQueryId",
-    _queryId=query.query_id
-))
-print('Timestamp count:', timestamp_count)
+timestamp_count, status = asyncio.run(
+    playground.read(func_name="getNewValueCountbyQueryId", _queryId=query.query_id)
+)
+print("Timestamp count:", timestamp_count)
 
 acc = endpoint.web3.eth.account.from_key(cfg.main.private_key)
 acc_nonce = endpoint.web3.eth.get_transaction_count(acc.address)
 
-tx_hash, status = asyncio.run(playground.write(
-    func_name="submitValue",
-    gas_price="3",
-    acc_nonce=acc_nonce,
-    _queryId=query.query_id,
-    _value=query.value_type.encode(420.0),
-    _nonce=timestamp_count,
-    _queryData=query.query_data,
-))
+tx_hash, status = asyncio.run(
+    playground.write(
+        func_name="submitValue",
+        gas_price="3",
+        acc_nonce=acc_nonce,
+        _queryId=query.query_id,
+        _value=query.value_type.encode(420.0),
+        _nonce=timestamp_count,
+        _queryData=query.query_data,
+    )
+)
 logger.info(
     f"""View reported data: \n
     {endpoint.explorer}/tx/{tx_hash.hex()}
@@ -110,10 +112,7 @@ tx_signed = acc.sign_transaction(built_tx)
 # Assemble bundle
 bundle = [
     #  some transaction
-    {
-        "signer": ETH_ACCOUNT_FROM,
-        "transaction": signed_tx
-    },
+    {"signer": ETH_ACCOUNT_FROM, "transaction": signed_tx},
     # the bribe
     {
         "signed_transaction": signed_transaction.rawTransaction,
@@ -128,7 +127,8 @@ result = w3.flashbots.send_bundle(bundle, target_block_number=block + 3)  # type
 while True:
     try:
         w3.eth.waitForTransactionReceipt(
-            signed_transaction.hash, timeout=1, poll_latency=0.1)
+            signed_transaction.hash, timeout=1, poll_latency=0.1
+        )
         break
 
     except TimeExhausted:
