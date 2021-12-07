@@ -107,6 +107,15 @@ def cli(
     required=False,
 )
 @click.option(
+    "--gas",
+    "-g",
+    "custom_gas",
+    help="use custom gas",
+    nargs=1,
+    type=int,
+    default=500000,
+)
+@click.option(
     "--profit",
     "-p",
     "profit_percent",
@@ -120,6 +129,7 @@ def cli(
 def report(
     ctx: Context,
     gas_price: int,
+    custom_gas: int,
     max_gas_price: int,
     gas_price_speed: str,
     submit_once: bool,
@@ -152,7 +162,9 @@ def report(
             )
         click.echo(f"Selected gas price speed: {gas_price_speed}")
     else:
-        click.echo(f"Using custom gas price: {gas_price}")
+        click.echo(f"Gas price: {gas_price}")
+
+    click.echo(f"Gas: {custom_gas}")
 
     # return
     master, oracle = get_tellor_contracts(
@@ -171,6 +183,7 @@ def report(
         gas_price=gas_price,
         max_gas_price=max_gas_price,
         gas_price_speed=gas_price_speed,
+        gas=custom_gas,
     )
 
     if submit_once:

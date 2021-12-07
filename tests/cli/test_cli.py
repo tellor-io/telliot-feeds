@@ -18,6 +18,26 @@ def test_cmd_report():
     assert expected in result.output
 
 
+def test_custom_gas_flag():
+    """Test using a custom gas."""
+    # Test incorrect command invocation
+    runner = CliRunner()
+    result = runner.invoke(cli, ["-lid", "1", "report", "--ges"])
+
+    assert result.exit_code == 2
+
+    expected = "Error: No such option: --ges (Possible options: --gas, -gps)"
+    assert expected in result.output
+
+    # Test incorrect type
+    result = runner.invoke(cli, ["-lid", "1", "report", "-g", "blah"])
+
+    assert result.exit_code == 2
+
+    expected = "Error: Invalid value for '--gas' / '-g': 'blah' is not a valid integer."
+    assert expected in result.output
+
+
 def test_cmd_tip():
     """Test CLI tip command"""
     runner = CliRunner()
