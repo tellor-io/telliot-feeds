@@ -193,8 +193,8 @@ class IntervalReporter:
         tips, tb_reward = rewards
         logger.info(
             f"""
-            current tips: {tips}
-            current tb_reward: {tb_reward}
+            current tips: {tips / 1e18} TRB
+            current tb_reward: {tb_reward / 1e18} TRB
             gas: {self.gas}
             gas_price_gwei: {gas_price_gwei}
             """
