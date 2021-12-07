@@ -1,9 +1,9 @@
 """Helper functions for TellorX contracts."""
+from typing import Tuple
+
 from telliot_core.contract.contract import Contract
 from telliot_core.directory.tellorx import tellor_directory
 from telliot_core.model.endpoints import RPCEndpoint
-
-from typing import Tuple
 
 
 def get_tellor_contracts(
