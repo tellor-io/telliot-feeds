@@ -7,6 +7,8 @@ import asyncio
 import click
 from click.core import Context
 from telliot_core.apps.telliot_config import TelliotConfig
+from telliot_core.model.endpoints import RPCEndpoint
+from typing_extensions import Required
 
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.reporters.interval import IntervalReporter
@@ -62,9 +64,23 @@ cfg = TelliotConfig()
     type=int,
     default=500000,
 )
+@click.option(
+    "--rpc-url",
+    "-rpc",
+    "rpc_url",
+    help="override the config RPC url. requires also overriding the chain ID",
+    nargs=1,
+    type=str,
+    required=False,
+)
 @click.pass_context
 def cli(
-    ctx: Context, private_key: str, chain_id: int, legacy_id: str, gas_limit: int
+    ctx: Context,
+    private_key: str,
+    chain_id: int,
+    legacy_id: str,
+    gas_limit: int,
+    rpc_url: str,
 ) -> None:
     """Telliot command line interface"""
     # Ensure valid legacy id
@@ -79,6 +95,7 @@ def cli(
     ctx.obj["CHAIN_ID"] = chain_id
     ctx.obj["LEGACY_ID"] = legacy_id
     ctx.obj["GAS_LIMIT"] = gas_limit
+    ctx.obj["RPC_URL"] = rpc_url
 
 
 # Report subcommand options
@@ -138,10 +155,19 @@ def report(
     chain_id = ctx.obj["CHAIN_ID"]
     legacy_id = ctx.obj["LEGACY_ID"]
     gas_limit = ctx.obj["GAS_LIMIT"]
+    override_rpc_url = ctx.obj["RPC_URL"]
     cfg.main.private_key = private_key
     cfg.main.chain_id = chain_id
 
     endpoint = cfg.get_endpoint()
+
+    if ctx.obj["RPC_URL"] is not None:
+        endpoint.url = ctx.obj["RPC_URL"]
+        endpoint.connect()
+        if endpoint.web3.eth.chain_id != cfg.main.chain_id:
+            logger.error(
+                f"Error: the provided RPC url does not point to the configured chain id"
+            )
 
     # Print user settings to console
     click.echo(f"Reporting legacy ID: {legacy_id}")
@@ -182,6 +208,7 @@ def report(
         max_gas_price=max_gas_price,
         gas_price_speed=gas_price_speed,
         gas_limit=gas_limit,
+        override_rpc_url=override_rpc_url,
     )
 
     if submit_once:
@@ -211,6 +238,14 @@ def tip(
     click.echo(f"Tipping {amount_trb} TRB for legacy ID {legacy_id}.")
 
     endpoint = cfg.get_endpoint()
+
+    if ctx.obj["RPC_URL"] is not None and ctx.obj["CHAIN_ID"] is not None:
+        endpoint.url = ctx.obj["RPC_URL"]
+        endpoint.connect()
+        if endpoint.web3.eth.chain_id != cfg.main.chain_id:
+            logger.error(
+                f"Error: the provided RPC url does not point to the configured chain id"
+            )
 
     _, oracle = get_tellor_contracts(
         private_key=cfg.main.private_key, endpoint=endpoint, chain_id=cfg.main.chain_id

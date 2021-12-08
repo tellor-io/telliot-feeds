@@ -34,6 +34,7 @@ class IntervalReporter:
         master: Contract,
         oracle: Contract,
         datafeed: DataFeed[Any],
+        override_rpc_url: Optional[str],
         gas_price: Optional[int] = None,
         gas_price_speed: str = "fast",
         profit_threshold: float = 0.0,
@@ -52,6 +53,7 @@ class IntervalReporter:
         self.gas_price_speed = gas_price_speed
         self.gas_price = gas_price
         self.gas_limit = gas_limit
+        self.override_rpc_url = override_rpc_url
 
         logger.info(f"Reporting with account: {self.user}")
 
