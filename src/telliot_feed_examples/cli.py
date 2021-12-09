@@ -67,7 +67,7 @@ cfg = TelliotConfig()
 @click.option(
     "--rpc-url",
     "-rpc",
-    "rpc_url",
+    "override_rpc_url",
     help="override the config RPC url. requires also overriding the chain ID",
     nargs=1,
     type=str,
@@ -80,7 +80,7 @@ def cli(
     chain_id: int,
     legacy_id: str,
     gas_limit: int,
-    rpc_url: str,
+    override_rpc_url: str,
 ) -> None:
     """Telliot command line interface"""
     # Ensure valid legacy id
@@ -95,7 +95,7 @@ def cli(
     ctx.obj["CHAIN_ID"] = chain_id
     ctx.obj["LEGACY_ID"] = legacy_id
     ctx.obj["GAS_LIMIT"] = gas_limit
-    ctx.obj["RPC_URL"] = rpc_url
+    ctx.obj["RPC_URL"] = override_rpc_url
 
 
 # Report subcommand options
@@ -164,14 +164,15 @@ def report(
     if ctx.obj["RPC_URL"] is not None:
         endpoint.url = ctx.obj["RPC_URL"]
         endpoint.connect()
-        if endpoint.web3.eth.chain_id != cfg.main.chain_id:
-            logger.error(
-                f"Error: the provided RPC url does not point to the configured chain id"
-            )
+        cfg.main.chain_id = endpoint.web3.eth.chain_id
+        # cfg.get_endpoint()
+            # logger.error(
+            #     f"Error: the provided RPC url does not point to the configured chain id"
+            # )
 
     # Print user settings to console
     click.echo(f"Reporting legacy ID: {legacy_id}")
-    click.echo(f"Current chain ID: {chain_id}")
+    click.echo(f"Current chain ID: {cfg.main.chain_id}")
 
     if profit_percent == 0.0:
         click.echo("Reporter not enforcing profit threshold.")
@@ -192,7 +193,7 @@ def report(
 
     # return
     master, oracle = get_tellor_contracts(
-        private_key=private_key, endpoint=endpoint, chain_id=chain_id
+        private_key=private_key, endpoint=endpoint, chain_id=cfg.main.chain_id
     )
 
     chosen_feed = LEGACY_DATAFEEDS[legacy_id]
@@ -239,7 +240,7 @@ def tip(
 
     endpoint = cfg.get_endpoint()
 
-    if ctx.obj["RPC_URL"] is not None and ctx.obj["CHAIN_ID"] is not None:
+    if ctx.obj["RPC_URL"] is not None:
         endpoint.url = ctx.obj["RPC_URL"]
         endpoint.connect()
         if endpoint.web3.eth.chain_id != cfg.main.chain_id:
