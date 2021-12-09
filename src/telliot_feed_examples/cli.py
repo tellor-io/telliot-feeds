@@ -52,6 +52,7 @@ cfg = TelliotConfig()
     required=True,
     nargs=1,
     type=str,
+    default=1,  # ETH/USD spot price
 )
 @click.option(
     "--gas-limit",
