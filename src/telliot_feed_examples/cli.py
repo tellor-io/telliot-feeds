@@ -159,8 +159,8 @@ def report(
 
     endpoint = cfg.get_endpoint()
 
-    if ctx.obj["RPC_URL"] is not None:
-        endpoint.url = ctx.obj["RPC_URL"]
+    if override_rpc_url is not None:
+        endpoint.url = override_rpc_url
         endpoint.connect()
         cfg.main.chain_id = endpoint.web3.eth.chain_id
 
@@ -203,7 +203,6 @@ def report(
         max_gas_price=max_gas_price,
         gas_price_speed=gas_price_speed,
         gas_limit=gas_limit,
-        override_rpc_url=override_rpc_url,
     )
 
     if submit_once:

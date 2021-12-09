@@ -103,8 +103,8 @@ async def reporter_submit_once(rinkeby_cfg, master, oracle, feed):
         private_key=rinkeby_cfg.main.private_key,
         master=master,
         oracle=oracle,
-        datafeed=feed
-        )
+        datafeed=feed,
+    )
 
     tx_receipt, status = await reporter.report_once()
 
