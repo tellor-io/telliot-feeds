@@ -45,16 +45,6 @@ cfg = TelliotConfig()
     type=int,
 )
 @click.option(
-    "--legacy-id",
-    "-lid",
-    "legacy_id",
-    help="report to a legacy ID",
-    required=True,
-    nargs=1,
-    type=str,
-    default=1,  # ETH/USD spot price
-)
-@click.option(
     "--gas-limit",
     "-gl",
     "gas_limit",
@@ -64,26 +54,26 @@ cfg = TelliotConfig()
     default=500000,
 )
 @click.pass_context
-def cli(
-    ctx: Context, private_key: str, chain_id: int, legacy_id: str, gas_limit: int
-) -> None:
+def cli(ctx: Context, private_key: str, chain_id: int, gas_limit: int) -> None:
     """Telliot command line interface"""
-    # Ensure valid legacy id
-    if legacy_id not in LEGACY_DATAFEEDS:
-        click.echo(
-            f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
-        )
-        return
-
     ctx.ensure_object(dict)
     ctx.obj["PRIVATE_KEY"] = private_key
     ctx.obj["CHAIN_ID"] = chain_id
-    ctx.obj["LEGACY_ID"] = legacy_id
     ctx.obj["GAS_LIMIT"] = gas_limit
 
 
 # Report subcommand options
 @cli.command()
+@click.option(
+    "--legacy-id",
+    "-lid",
+    "legacy_id",
+    help="report to a legacy ID",
+    required=True,
+    nargs=1,
+    type=str,
+    default=1,  # ETH/USD spot price
+)
 @click.option(
     "--max-gas-price",
     "-mgp",
@@ -127,6 +117,7 @@ def cli(
 @click.pass_context
 def report(
     ctx: Context,
+    legacy_id: str,
     gas_price: int,
     max_gas_price: int,
     gas_price_speed: str,
@@ -134,10 +125,15 @@ def report(
     profit_percent: float,
 ) -> None:
     """Report values to Tellor oracle"""
+    # Ensure valid legacy id
+    if legacy_id not in LEGACY_DATAFEEDS:
+        click.echo(
+            f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
+        )
+        return
 
     private_key = ctx.obj["PRIVATE_KEY"]
     chain_id = ctx.obj["CHAIN_ID"]
-    legacy_id = ctx.obj["LEGACY_ID"]
     gas_limit = ctx.obj["GAS_LIMIT"]
     cfg.main.private_key = private_key
     cfg.main.chain_id = chain_id
@@ -193,6 +189,16 @@ def report(
 
 @cli.command()
 @click.option(
+    "--legacy-id",
+    "-lid",
+    "legacy_id",
+    help="report to a legacy ID",
+    required=True,
+    nargs=1,
+    type=str,
+    default=1,  # ETH/USD spot price
+)
+@click.option(
     "--amount-trb",
     "-trb",
     "amount_trb",
@@ -204,10 +210,16 @@ def report(
 @click.pass_context
 def tip(
     ctx: Context,
+    legacy_id: str,
     amount_trb: float,
 ) -> None:
     """Tip TRB for a selected query ID"""
-    legacy_id = ctx.obj["LEGACY_ID"]
+    # Ensure valid legacy id
+    if legacy_id not in LEGACY_DATAFEEDS:
+        click.echo(
+            f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
+        )
+        return
 
     click.echo(f"Tipping {amount_trb} TRB for legacy ID {legacy_id}.")
 

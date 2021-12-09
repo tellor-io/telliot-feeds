@@ -10,9 +10,9 @@ from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 def test_cmd_report():
     """Test report command."""
     runner = CliRunner()
-    result = runner.invoke(cli, ["--legacy-id", "1234", "report"])
+    result = runner.invoke(cli, ["report", "--legacy-id", "1234"])
 
-    assert result.exit_code == 1
+    assert result.exit_code == 0
 
     expected = f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
     assert expected in result.output
@@ -22,7 +22,7 @@ def test_custom_gas_flag():
     """Test using a custom gas."""
     # Test incorrect command invocation
     runner = CliRunner()
-    result = runner.invoke(cli, ["-lid", "1", "--ges-limit", "report"])
+    result = runner.invoke(cli, ["--ges-limit", "report"])
 
     assert result.exit_code == 2
 
@@ -30,7 +30,7 @@ def test_custom_gas_flag():
     assert expected in result.output
 
     # Test incorrect type
-    result = runner.invoke(cli, ["-lid", "1", "-gl", "blah", "report"])
+    result = runner.invoke(cli, ["-gl", "blah", "report"])
 
     assert result.exit_code == 2
 
@@ -44,7 +44,7 @@ def test_cmd_tip():
     """Test CLI tip command"""
     runner = CliRunner()
     trb = "0.00001"
-    result = runner.invoke(cli, ["-lid", "1", "tip", "--amount-usd", trb])
+    result = runner.invoke(cli, ["tip", "--amount-usd", trb])
 
     expected = "Error: No such option: --amount-usd Did you mean --amount-trb?"
 
