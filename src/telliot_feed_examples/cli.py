@@ -7,8 +7,6 @@ import asyncio
 import click
 from click.core import Context
 from telliot_core.apps.telliot_config import TelliotConfig
-from telliot_core.model.endpoints import RPCEndpoint
-from typing_extensions import Required
 
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.reporters.interval import IntervalReporter
@@ -165,10 +163,6 @@ def report(
         endpoint.url = ctx.obj["RPC_URL"]
         endpoint.connect()
         cfg.main.chain_id = endpoint.web3.eth.chain_id
-        # cfg.get_endpoint()
-            # logger.error(
-            #     f"Error: the provided RPC url does not point to the configured chain id"
-            # )
 
     # Print user settings to console
     click.echo(f"Reporting legacy ID: {legacy_id}")
@@ -243,10 +237,7 @@ def tip(
     if ctx.obj["RPC_URL"] is not None:
         endpoint.url = ctx.obj["RPC_URL"]
         endpoint.connect()
-        if endpoint.web3.eth.chain_id != cfg.main.chain_id:
-            logger.error(
-                f"Error: the provided RPC url does not point to the configured chain id"
-            )
+        cfg.main.chain_id = endpoint.web3.eth.chain_id
 
     _, oracle = get_tellor_contracts(
         private_key=cfg.main.private_key, endpoint=endpoint, chain_id=cfg.main.chain_id

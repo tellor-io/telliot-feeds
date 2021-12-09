@@ -83,7 +83,7 @@ def test_rpc_override():
         ],
     )
 
-    assert 'Current chain ID: 5' in result.output
+    assert "Current chain ID: 5" in result.output
 
 
 # TODO: test successful CLI runs and all option flags
