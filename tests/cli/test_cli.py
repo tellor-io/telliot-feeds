@@ -51,4 +51,39 @@ def test_cmd_tip():
     assert expected in result.output
 
 
+def test_rpc_override():
+    """Test the CLI option to override the RPC url provided in configs"""
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "-lid",
+            "1",
+            "--rpc-ur",
+            "wss://rinkeby.infura.io/ws/v3/1a09c4705f114af2997548dd901d655b",
+            "report",
+            "--submit-once",
+        ],
+    )
+
+    expected = "Error: No such option: --rpc-ur (Possible options: --rpc-url, -rpc)"
+
+    assert expected in result.output
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "-lid",
+            "1",
+            "--rpc-url",
+            "wss://goerli.infura.io/ws/v3/1a09c4705f114af2997548dd901d655b",
+            "report",
+            "--submit-once",
+        ],
+    )
+
+    assert "Current chain ID: 5" in result.output
+
+
 # TODO: test successful CLI runs and all option flags
