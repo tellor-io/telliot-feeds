@@ -66,7 +66,7 @@ cfg = TelliotConfig()
     "--rpc-url",
     "-rpc",
     "override_rpc_url",
-    help="override the config RPC url. requires also overriding the chain ID",
+    help="override the config RPC url",
     nargs=1,
     type=str,
     required=False,
