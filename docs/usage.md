@@ -20,7 +20,7 @@ Usage: telliot-examples [OPTIONS] COMMAND [ARGS]...
 Options:
   -pk, --private-key TEXT   override the config's private key
   -cid, --chain-id INTEGER  override the config's chain ID
-  -lid, --legacy-id TEXT    report to a legacy ID  [required]
+  -rpc, --rpc-url TEXT      override the config RPC url
   --help                    Show this message and exit.
 
 Commands:
@@ -48,9 +48,13 @@ Usage: telliot-examples report [OPTIONS]
   Report values to Tellor oracle
 
 Options:
-  -mgp, --max-gas-price INTEGER   maximum gas price used by reporter
+  -lid, --legacy-id TEXT          report to a legacy ID  [required]
+  -gl, --gas-limit INTEGER        use custom gas limit
+  -mgp, --max-gas-price INTEGER   maximum gas price used by eth gas station
   -gps, --gas-price-speed [safeLow|average|fast|fastest]
                                   gas price speed for eth gas station API
+  -gp, --gas-price INTEGER        use custom gas price (overrides eth gas
+                                  station estimate)
   -p, --profit FLOAT              lower threshold (inclusive) for expected
                                   percent profit
   --submit-once / --submit-continuous
