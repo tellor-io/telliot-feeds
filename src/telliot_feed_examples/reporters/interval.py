@@ -87,6 +87,7 @@ class IntervalReporter:
 
             _, write_status = await self.master.write_with_retry(
                 func_name="depositStake",
+                gas_limit=350000,
                 gas_price=gas_price_gwei,
                 extra_gas_price=20,
                 retries=5,
