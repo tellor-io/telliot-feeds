@@ -21,7 +21,7 @@ async def tip_query(
     reporters to report relevant data."""
     tx_receit, status = await oracle.write_with_retry(
         func_name="tipQuery",
-        gas_limit=350000,
+        # gas_limit=350000,  # TODO: uncomment when new core release
         gas_price=gas_price,
         extra_gas_price=20,
         retries=retries,
