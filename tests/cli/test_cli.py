@@ -22,7 +22,7 @@ def test_custom_gas_flag():
     """Test using a custom gas."""
     # Test incorrect command invocation
     runner = CliRunner()
-    result = runner.invoke(cli, ["--ges-limit", "report"])
+    result = runner.invoke(cli, ["report", "--ges-limit", "250000"])
 
     assert result.exit_code == 2
 
@@ -30,7 +30,7 @@ def test_custom_gas_flag():
     assert expected in result.output
 
     # Test incorrect type
-    result = runner.invoke(cli, ["-gl", "blah", "report"])
+    result = runner.invoke(cli, ["report", "-gl", "blah"])
 
     assert result.exit_code == 2
 
@@ -57,8 +57,6 @@ def test_rpc_override():
     result = runner.invoke(
         cli,
         [
-            "-lid",
-            "1",
             "--rpc-ur",
             "wss://rinkeby.infura.io/ws/v3/1a09c4705f114af2997548dd901d655b",
             "report",
@@ -74,8 +72,6 @@ def test_rpc_override():
     result = runner.invoke(
         cli,
         [
-            "-lid",
-            "1",
             "--rpc-url",
             "wss://goerli.infura.io/ws/v3/1a09c4705f114af2997548dd901d655b",
             "report",

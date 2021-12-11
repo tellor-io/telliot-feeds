@@ -45,15 +45,6 @@ cfg = TelliotConfig()
     type=int,
 )
 @click.option(
-    "--gas-limit",
-    "-gl",
-    "gas_limit",
-    help="use custom gas limit",
-    nargs=1,
-    type=int,
-    default=500000,
-)
-@click.option(
     "--rpc-url",
     "-rpc",
     "override_rpc_url",
@@ -67,14 +58,12 @@ def cli(
     ctx: Context,
     private_key: str,
     chain_id: int,
-    gas_limit: int,
     override_rpc_url: str,
 ) -> None:
     """Telliot command line interface"""
     ctx.ensure_object(dict)
     ctx.obj["PRIVATE_KEY"] = private_key
     ctx.obj["CHAIN_ID"] = chain_id
-    ctx.obj["GAS_LIMIT"] = gas_limit
     ctx.obj["RPC_URL"] = override_rpc_url
 
 
@@ -89,6 +78,15 @@ def cli(
     nargs=1,
     type=str,
     default=1,  # ETH/USD spot price
+)
+@click.option(
+    "--gas-limit",
+    "-gl",
+    "gas_limit",
+    help="use custom gas limit",
+    nargs=1,
+    type=int,
+    default=350000,
 )
 @click.option(
     "--max-gas-price",
@@ -134,6 +132,7 @@ def cli(
 def report(
     ctx: Context,
     legacy_id: str,
+    gas_limit: int,
     gas_price: int,
     max_gas_price: int,
     gas_price_speed: str,
@@ -150,7 +149,6 @@ def report(
 
     private_key = ctx.obj["PRIVATE_KEY"]
     chain_id = ctx.obj["CHAIN_ID"]
-    gas_limit = ctx.obj["GAS_LIMIT"]
     override_rpc_url = ctx.obj["RPC_URL"]
     cfg.main.private_key = private_key
     cfg.main.chain_id = chain_id
@@ -183,7 +181,6 @@ def report(
 
     click.echo(f"Gas Limit: {gas_limit}")
 
-    # return
     master, oracle = get_tellor_contracts(
         private_key=private_key, endpoint=endpoint, chain_id=cfg.main.chain_id
     )
