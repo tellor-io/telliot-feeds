@@ -87,6 +87,7 @@ class IntervalReporter:
 
             _, write_status = await self.master.write_with_retry(
                 func_name="depositStake",
+                gas_limit=350000,
                 gas_price=gas_price_gwei,
                 extra_gas_price=20,
                 retries=5,
@@ -308,6 +309,7 @@ class IntervalReporter:
         tx_receipt, status = await self.oracle.write_with_retry(
             func_name="submitValue",
             gas_price=gas_price_gwei,
+            gas_limit=self.gas_limit,
             extra_gas_price=extra_gas_price,
             retries=5,
             _queryId=query_id,
