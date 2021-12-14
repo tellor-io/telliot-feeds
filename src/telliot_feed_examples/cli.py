@@ -45,6 +45,31 @@ cfg = TelliotConfig()
     type=int,
 )
 @click.option(
+    "--rpc-url",
+    "-rpc",
+    "override_rpc_url",
+    help="override the config RPC url",
+    nargs=1,
+    type=str,
+    required=False,
+)
+@click.pass_context
+def cli(
+    ctx: Context,
+    private_key: str,
+    chain_id: int,
+    override_rpc_url: str,
+) -> None:
+    """Telliot command line interface"""
+    ctx.ensure_object(dict)
+    ctx.obj["PRIVATE_KEY"] = private_key
+    ctx.obj["CHAIN_ID"] = chain_id
+    ctx.obj["RPC_URL"] = override_rpc_url
+
+
+# Report subcommand options
+@cli.command()
+@click.option(
     "--legacy-id",
     "-lid",
     "legacy_id",
@@ -52,6 +77,7 @@ cfg = TelliotConfig()
     required=True,
     nargs=1,
     type=str,
+    default=1,  # ETH/USD spot price
 )
 @click.option(
     "--gas-limit",
@@ -60,29 +86,8 @@ cfg = TelliotConfig()
     help="use custom gas limit",
     nargs=1,
     type=int,
-    default=500000,
+    default=350000,
 )
-@click.pass_context
-def cli(
-    ctx: Context, private_key: str, chain_id: int, legacy_id: str, gas_limit: int
-) -> None:
-    """Telliot command line interface"""
-    # Ensure valid legacy id
-    if legacy_id not in LEGACY_DATAFEEDS:
-        click.echo(
-            f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
-        )
-        return
-
-    ctx.ensure_object(dict)
-    ctx.obj["PRIVATE_KEY"] = private_key
-    ctx.obj["CHAIN_ID"] = chain_id
-    ctx.obj["LEGACY_ID"] = legacy_id
-    ctx.obj["GAS_LIMIT"] = gas_limit
-
-
-# Report subcommand options
-@cli.command()
 @click.option(
     "--max-gas-price",
     "-mgp",
@@ -126,6 +131,8 @@ def cli(
 @click.pass_context
 def report(
     ctx: Context,
+    legacy_id: str,
+    gas_limit: int,
     gas_price: int,
     max_gas_price: int,
     gas_price_speed: str,
@@ -133,19 +140,29 @@ def report(
     profit_percent: float,
 ) -> None:
     """Report values to Tellor oracle"""
+    # Ensure valid legacy id
+    if legacy_id not in LEGACY_DATAFEEDS:
+        click.echo(
+            f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
+        )
+        return
 
     private_key = ctx.obj["PRIVATE_KEY"]
     chain_id = ctx.obj["CHAIN_ID"]
-    legacy_id = ctx.obj["LEGACY_ID"]
-    gas_limit = ctx.obj["GAS_LIMIT"]
+    override_rpc_url = ctx.obj["RPC_URL"]
     cfg.main.private_key = private_key
     cfg.main.chain_id = chain_id
 
     endpoint = cfg.get_endpoint()
 
+    if override_rpc_url is not None:
+        endpoint.url = override_rpc_url
+        endpoint.connect()
+        cfg.main.chain_id = endpoint.web3.eth.chain_id
+
     # Print user settings to console
     click.echo(f"Reporting legacy ID: {legacy_id}")
-    click.echo(f"Current chain ID: {chain_id}")
+    click.echo(f"Current chain ID: {cfg.main.chain_id}")
 
     if profit_percent == 0.0:
         click.echo("Reporter not enforcing profit threshold.")
@@ -164,9 +181,8 @@ def report(
 
     click.echo(f"Gas Limit: {gas_limit}")
 
-    # return
     master, oracle = get_tellor_contracts(
-        private_key=private_key, endpoint=endpoint, chain_id=chain_id
+        private_key=private_key, endpoint=endpoint, chain_id=cfg.main.chain_id
     )
 
     chosen_feed = LEGACY_DATAFEEDS[legacy_id]
@@ -192,6 +208,16 @@ def report(
 
 @cli.command()
 @click.option(
+    "--legacy-id",
+    "-lid",
+    "legacy_id",
+    help="report to a legacy ID",
+    required=True,
+    nargs=1,
+    type=str,
+    default=1,  # ETH/USD spot price
+)
+@click.option(
     "--amount-trb",
     "-trb",
     "amount_trb",
@@ -203,14 +229,25 @@ def report(
 @click.pass_context
 def tip(
     ctx: Context,
+    legacy_id: str,
     amount_trb: float,
 ) -> None:
     """Tip TRB for a selected query ID"""
-    legacy_id = ctx.obj["LEGACY_ID"]
+    # Ensure valid legacy id
+    if legacy_id not in LEGACY_DATAFEEDS:
+        click.echo(
+            f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
+        )
+        return
 
     click.echo(f"Tipping {amount_trb} TRB for legacy ID {legacy_id}.")
 
     endpoint = cfg.get_endpoint()
+
+    if ctx.obj["RPC_URL"] is not None:
+        endpoint.url = ctx.obj["RPC_URL"]
+        endpoint.connect()
+        cfg.main.chain_id = endpoint.web3.eth.chain_id
 
     _, oracle = get_tellor_contracts(
         private_key=cfg.main.private_key, endpoint=endpoint, chain_id=cfg.main.chain_id
