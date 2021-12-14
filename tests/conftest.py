@@ -2,10 +2,9 @@
 import os
 
 import pytest
+from telliot_core.apps.core import TelliotCore
 from telliot_core.apps.telliot_config import TelliotConfig
-from telliot_core.contract.contract import Contract
 from telliot_core.datasource import DataSource
-from telliot_core.directory.tellorx import tellor_directory
 from telliot_core.types.datapoint import OptionalDataPoint
 from web3.datastructures import AttributeDict
 
@@ -38,36 +37,22 @@ def rinkeby_cfg():
     return cfg
 
 
-@pytest.fixture(scope="session")
-def master(rinkeby_cfg):
-    """Helper function for connecting to a contract at an address"""
-    tellor_master = tellor_directory.find(chain_id=4, name="master")[0]
-    endpoint = rinkeby_cfg.get_endpoint()
-    endpoint.connect()
-    master = Contract(
-        address=tellor_master.address,  # "0x657b95c228A5de81cdc3F85be7954072c08A6042",
-        abi=tellor_master.abi,
-        node=endpoint,
-        private_key=rinkeby_cfg.main.private_key,
-    )
-    master.connect()
-    return master
+@pytest.fixture()
+def rinkeby_core(rinkeby_cfg):
 
+    app = TelliotCore(config=rinkeby_cfg)
 
-@pytest.fixture(scope="session", autouse=True)
-def oracle(rinkeby_cfg):
-    """Helper function for connecting to a contract at an address"""
-    tellor_oracle = tellor_directory.find(chain_id=4, name="oracle")[0]
-    endpoint = rinkeby_cfg.get_endpoint()
-    endpoint.connect()
-    oracle = Contract(
-        address=tellor_oracle.address,  # "0x07b521108788C6fD79F471D603A2594576D47477",
-        abi=tellor_oracle.abi,
-        node=endpoint,
-        private_key=rinkeby_cfg.main.private_key,
-    )
-    oracle.connect()
-    return oracle
+    # Replace staker private key
+    staker = app.get_default_staker()
+    if os.getenv("PRIVATE_KEY", None):
+        staker.private_key = rinkeby_cfg.main.private_key
+        staker.address = "0x8D8D2006A485FA4a75dFD8Da8f63dA31401B8fA2"
+
+    app.connect()
+    yield app
+
+    # Destroy app instance after test
+    TelliotCore.destroy()
 
 
 EXPECTED_ERRORS = {
@@ -80,29 +65,29 @@ EXPECTED_ERRORS = {
 }
 
 
-async def reporter_submit_once(rinkeby_cfg, master, oracle, feed):
+async def reporter_submit_once(rinkeby_core, feed):
     """Test reporting once to the TellorX playground on Rinkeby
     with three retries."""
 
-    rinkeby_endpoint = rinkeby_cfg.get_endpoint()
+    rinkeby_endpoint = rinkeby_core.config.get_endpoint()
 
     if feed == uspce_feed:
         # Override Python built-in input method
         uspce.input = lambda: "123.456"
 
-    user = rinkeby_endpoint.web3.eth.account.from_key(
-        rinkeby_cfg.main.private_key
-    ).address
-    last_timestamp, read_status = await oracle.read(
+    private_key = rinkeby_core.get_default_staker().private_key
+
+    user = rinkeby_endpoint.web3.eth.account.from_key(private_key).address
+    last_timestamp, read_status = await rinkeby_core.tellorx.oracle.read(
         "getReporterLastTimestamp", _reporter=user
     )
     assert read_status.ok
 
     reporter = IntervalReporter(
         endpoint=rinkeby_endpoint,
-        private_key=rinkeby_cfg.main.private_key,
-        master=master,
-        oracle=oracle,
+        private_key=private_key,
+        master=rinkeby_core.tellorx.master,
+        oracle=rinkeby_core.tellorx.oracle,
         datafeed=feed,
     )
 
@@ -111,7 +96,7 @@ async def reporter_submit_once(rinkeby_cfg, master, oracle, feed):
     # Reporter submitted
     if tx_receipt is not None and status.ok:
         assert isinstance(tx_receipt, AttributeDict)
-        assert tx_receipt.to == oracle.address
+        assert tx_receipt.to == rinkeby_core.tellorx.oracle.address
     # Reporter did not submit
     else:
         assert not tx_receipt

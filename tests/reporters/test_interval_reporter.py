@@ -11,14 +11,15 @@ from tests.conftest import reporter_submit_once
 
 
 @pytest.fixture
-def eth_usd_reporter(rinkeby_cfg, master, oracle):
+def eth_usd_reporter(rinkeby_core):
     """Returns an instance of an IntervalReporter using
     the ETH/USD median datafeed."""
+    private_key = rinkeby_core.get_default_staker().private_key
     r = IntervalReporter(
-        endpoint=rinkeby_cfg.get_endpoint(),
-        private_key=rinkeby_cfg.main.private_key,
-        master=master,
-        oracle=oracle,
+        endpoint=rinkeby_core.config.get_endpoint(),
+        private_key=private_key,
+        master=rinkeby_core.tellorx.master,
+        oracle=rinkeby_core.tellorx.oracle,
         datafeed=eth_usd_median_feed,
         gas_price=10,
     )
@@ -130,8 +131,8 @@ async def test_fetch_gas_price(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_interval_reporter_submit_once(rinkeby_cfg, master, oracle):
+async def test_interval_reporter_submit_once(rinkeby_core):
     """Test reporting once to the TellorX playground on Rinkeby
     with three retries."""
 
-    await reporter_submit_once(rinkeby_cfg, master, oracle, eth_usd_median_feed)
+    await reporter_submit_once(rinkeby_core, eth_usd_median_feed)

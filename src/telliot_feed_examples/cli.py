@@ -6,20 +6,51 @@ import asyncio
 
 import click
 from click.core import Context
-from telliot_core.apps.telliot_config import TelliotConfig
+from telliot_core.apps.core import TelliotCore
 
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.reporters.interval import IntervalReporter
-from telliot_feed_examples.utils.contract import get_tellor_contracts
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
-
 
 logger = get_logger(__name__)
 
 
-# Get default configs from ~/telliot/
-cfg = TelliotConfig()
+def get_app(ctx: click.Context) -> TelliotCore:
+    """Get an app configured using CLI context"""
+
+    app = TelliotCore.get() or TelliotCore()
+
+    # Apply the CHAIN_ID flag
+    chain_id = ctx.obj["CHAIN_ID"]
+    if chain_id is not None:
+        assert app.config
+        app.config.main.chain_id = chain_id
+
+    # Apply the PRIVATE_KEY flag
+    # Note: Ideally, the PRIVATE KEY flag is deprecated and replaced with the "staker tag"
+    # provided by the user in stakers.yaml
+    # This temporary hack will override the private key and address of the default staker.
+    default_staker = app.get_default_staker()
+    default_staker.private_key = ctx.obj["PRIVATE_KEY"]
+    default_staker.address = "0x0"
+
+    # Apply the RPC_URL FLAG
+    # Again, this is kinda hacky, because the RPC URL flag does not specify
+    # an entire endpoint including exporer, etc.
+    # But we'll just get the current endpoint and overwrite the URL.
+    # We should prob delete this flag.
+    app.endpoint.url = ctx.obj["RPC_URL"]
+
+    # Finally, tell the app to connect
+    _ = app.connect()
+    # Forcibly update the chain_id because it might have changed above
+    app.config.main.chain_id = app.endpoint.web3.eth.chain_id
+
+    assert app.config
+    assert app.tellorx
+
+    return app
 
 
 # Main CLI options
@@ -31,7 +62,6 @@ cfg = TelliotConfig()
     help="override the config's private key",
     required=False,
     nargs=1,
-    default=cfg.main.private_key,
     type=str,
 )
 @click.option(
@@ -41,7 +71,6 @@ cfg = TelliotConfig()
     help="override the config's chain ID",
     required=False,
     nargs=1,
-    default=cfg.main.chain_id,
     type=int,
 )
 @click.option(
@@ -147,22 +176,11 @@ def report(
         )
         return
 
-    private_key = ctx.obj["PRIVATE_KEY"]
-    chain_id = ctx.obj["CHAIN_ID"]
-    override_rpc_url = ctx.obj["RPC_URL"]
-    cfg.main.private_key = private_key
-    cfg.main.chain_id = chain_id
-
-    endpoint = cfg.get_endpoint()
-
-    if override_rpc_url is not None:
-        endpoint.url = override_rpc_url
-        endpoint.connect()
-        cfg.main.chain_id = endpoint.web3.eth.chain_id
+    core = get_app(ctx)  # Initialize telliot core app using CLI context
 
     # Print user settings to console
     click.echo(f"Reporting legacy ID: {legacy_id}")
-    click.echo(f"Current chain ID: {cfg.main.chain_id}")
+    click.echo(f"Current chain ID: {core.config.main.chain_id}")
 
     if profit_percent == 0.0:
         click.echo("Reporter not enforcing profit threshold.")
@@ -181,17 +199,13 @@ def report(
 
     click.echo(f"Gas Limit: {gas_limit}")
 
-    master, oracle = get_tellor_contracts(
-        private_key=private_key, endpoint=endpoint, chain_id=cfg.main.chain_id
-    )
-
     chosen_feed = LEGACY_DATAFEEDS[legacy_id]
 
     legacy_reporter = IntervalReporter(
-        endpoint=endpoint,
-        private_key=private_key,
-        master=master,
-        oracle=oracle,
+        endpoint=core.endpoint,
+        private_key=core.get_default_staker().private_key,
+        master=core.tellorx.master,
+        oracle=core.tellorx.oracle,
         datafeed=chosen_feed,
         profit_threshold=profit_percent,
         gas_price=gas_price,
@@ -233,6 +247,9 @@ def tip(
     amount_trb: float,
 ) -> None:
     """Tip TRB for a selected query ID"""
+
+    core = get_app(ctx)  # Initialize telliot core app using CLI context
+
     # Ensure valid legacy id
     if legacy_id not in LEGACY_DATAFEEDS:
         click.echo(
@@ -242,23 +259,12 @@ def tip(
 
     click.echo(f"Tipping {amount_trb} TRB for legacy ID {legacy_id}.")
 
-    endpoint = cfg.get_endpoint()
-
-    if ctx.obj["RPC_URL"] is not None:
-        endpoint.url = ctx.obj["RPC_URL"]
-        endpoint.connect()
-        cfg.main.chain_id = endpoint.web3.eth.chain_id
-
-    _, oracle = get_tellor_contracts(
-        private_key=cfg.main.private_key, endpoint=endpoint, chain_id=cfg.main.chain_id
-    )
-
     chosen_feed = LEGACY_DATAFEEDS[legacy_id]
     tip = int(amount_trb * 1e18)
 
     tx_receipt, status = asyncio.run(
         tip_query(
-            oracle=oracle,
+            oracle=core.tellorx.oracle,
             datafeed=chosen_feed,
             tip=tip,
         )
@@ -268,7 +274,7 @@ def tip(
         click.echo("Success!")
         tx_hash = tx_receipt["transactionHash"].hex()
         # Point to relevant explorer
-        logger.info(f"View tip: \n{endpoint.explorer}/tx/{tx_hash}")
+        logger.info(f"View tip: \n{core.endpoint.explorer}/tx/{tx_hash}")
     else:
         logger.error(status)
 
