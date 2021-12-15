@@ -55,7 +55,7 @@ print("Timestamp count:", timestamp_count)
 acc = endpoint.web3.eth.account.from_key(cfg.main.private_key)
 acc_nonce = endpoint.web3.eth.get_transaction_count(acc.address)
 
-tx_hash, status = asyncio.run(
+tx_receipt, status = asyncio.run(
     playground.write(
         func_name="submitValue",
         gas_price="3",
@@ -66,9 +66,12 @@ tx_hash, status = asyncio.run(
         _queryData=query.query_data,
     )
 )
+print(status)
+# print(tx_receipt)
+tx_hash = tx_receipt['transactionHash'].hex()
 logger.info(
     f"""View reported data: \n
-    {endpoint.explorer}/tx/{tx_hash.hex()}
+    {endpoint.explorer}/tx/{tx_hash}
     """
 )
 
@@ -76,14 +79,14 @@ print("Setting up flashbots request")
 
 # Build bribe
 nonce = w3.eth.get_transaction_count(ETH_ACCOUNT_FROM.address)
-bribe = w3.toWei("0.5", "ether")
+bribe = w3.toWei("0.01", "ether")
 
 signed_tx: SignTx = {
     "to": ETH_ACCOUNT_FROM.address,
     "value": bribe,
     "nonce": nonce + 1,
-    "gasPrice": 0,
-    "gas": 25000,
+    "gasPrice": 100,
+    "gas": 41000,
 }
 
 signed_transaction = ETH_ACCOUNT_FROM.sign_transaction(signed_tx)  # type: ignore
@@ -103,50 +106,39 @@ built_tx = transaction.buildTransaction(
         "from": acc.address,
         "nonce": acc_nonce,
         "gas": gas_limit,
-        "gasPrice": endpoint.web3.toWei("3", "gwei"),
+        "gasPrice": endpoint.web3.toWei("300", "gwei"),
         "chainId": endpoint.chain_id,
     }
 )
-tx_signed = acc.sign_transaction(built_tx)
+import json
+print(json.dumps(built_tx, indent=4))
+# submit_tx_signed = acc.sign_transaction(built_tx)
 
 # Assemble bundle
 bundle = [
     #  some transaction
-    {"signer": ETH_ACCOUNT_FROM, "transaction": signed_tx},
+    {"signer": ETH_ACCOUNT_FROM, "transaction": built_tx},
     # the bribe
-    {
-        "signed_transaction": signed_transaction.rawTransaction,
-    },
+    {"signed_transaction": signed_transaction.rawTransaction},
 ]
 
 # Send bundle
-block = w3.eth.block_number + 3
-result = w3.flashbots.send_bundle(bundle, target_block_number=block + 3)  # type: ignore
+block = w3.eth.block_number
+wait_blocks = 10
+result = w3.flashbots.send_bundle(bundle, target_block_number=block + wait_blocks)  # type: ignore
 
+print('Waiting for mined tx...')
 # Wait for the transaction to get mined
 while True:
     try:
         w3.eth.waitForTransactionReceipt(
-            signed_transaction.hash, timeout=1, poll_latency=0.1
+            signed_transaction.hash, timeout=360, poll_latency=0.1
         )
         break
 
     except TimeExhausted:
-        if w3.eth.blockNumber >= (block + 3):
+        if w3.eth.blockNumber >= (block + wait_blocks):
             print("ERROR: transaction was not mined")
             exit(1)
 
 print(f"transaction confirmed at block {w3.eth.block_number}")
-
-# print('Waiting for receipts')
-# result.wait()
-# receipts = result.receipts()
-# block_number = receipts[0].blockNumber
-
-# print(receipts)
-
-# logger.info(
-#     f"""View reported data: \n
-#     {endpoint.explorer}/tx/{tx_hash.hex()}
-#     """
-# )
