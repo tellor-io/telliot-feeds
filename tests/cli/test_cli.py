@@ -1,6 +1,8 @@
 """
 Unit tests covering telliot_core CLI commands.
 """
+import os
+
 import pytest
 from click.testing import CliRunner
 
@@ -12,9 +14,9 @@ from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 def test_get_app():
     """Test instantiating TelliotCore app using click Context."""
     ctx = {
-        "CHAIN_ID": None,
-        "RPC_URL": None,
-        "PRIVATE_KEY": None,
+        "CHAIN_ID": 4,  # Rinkeby testnet
+        "RPC_URL": os.getenv("NODE_URL", None),
+        "PRIVATE_KEY": os.getenv("PRIVATE_KEY", None),
     }
     core = get_app(ctx)
 
