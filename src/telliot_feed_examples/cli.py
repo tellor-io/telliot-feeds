@@ -159,7 +159,7 @@ def cli(
     help="lower threshold (inclusive) for expected percent profit",
     nargs=1,
     type=float,
-    default=0.0,
+    default=100.0,
 )
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.pass_context
