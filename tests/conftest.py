@@ -40,18 +40,18 @@ def rinkeby_cfg():
 @pytest.fixture()
 def rinkeby_core(rinkeby_cfg):
 
-    app = TelliotCore(config=rinkeby_cfg)
+    app = TelliotCore.get() or TelliotCore(config=rinkeby_cfg)
 
     # Replace staker private key
     staker = app.get_default_staker()
     if os.getenv("PRIVATE_KEY", None):
-        staker.private_key = rinkeby_cfg.main.private_key
+        staker.private_key = os.getenv("PRIVATE_KEY", None)
         staker.address = "0x8D8D2006A485FA4a75dFD8Da8f63dA31401B8fA2"
 
     app.connect()
     yield app
 
-    # Destroy app instance after test
+    # Destroy app instance after test (not working)
     TelliotCore.destroy()
 
 

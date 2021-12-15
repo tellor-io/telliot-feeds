@@ -27,6 +27,13 @@ def get_app(ctx: click.Context) -> TelliotCore:
         assert app.config
         app.config.main.chain_id = chain_id
 
+    # Apply the RPC_URL FLAG
+    # Again, this is kinda hacky, because the RPC URL flag does not specify
+    # an entire endpoint including exporer, etc.
+    # But we'll just get the current endpoint and overwrite the URL.
+    # We should prob delete this flag.
+    app.endpoint.url = ctx.obj["RPC_URL"]
+
     # Apply the PRIVATE_KEY flag
     # Note: Ideally, the PRIVATE KEY flag is deprecated and replaced with the "staker tag"
     # provided by the user in stakers.yaml
@@ -35,17 +42,15 @@ def get_app(ctx: click.Context) -> TelliotCore:
     default_staker.private_key = ctx.obj["PRIVATE_KEY"]
     default_staker.address = "0x0"
 
-    # Apply the RPC_URL FLAG
-    # Again, this is kinda hacky, because the RPC URL flag does not specify
-    # an entire endpoint including exporer, etc.
-    # But we'll just get the current endpoint and overwrite the URL.
-    # We should prob delete this flag.
-    app.endpoint.url = ctx.obj["RPC_URL"]
-
     # Finally, tell the app to connect
     _ = app.connect()
+
+    # Now overriding RPC URL is getting *really* ugly...
     # Forcibly update the chain_id because it might have changed above
     app.config.main.chain_id = app.endpoint.web3.eth.chain_id
+    # This can throw everything out of sync.  We don't know if there is a staker
+    # for the particular chain ID In fact, there is not normally one for the
+    # goerly endpoint used in the test.
 
     assert app.config
     assert app.tellorx
