@@ -1,6 +1,7 @@
 """
 Unit tests covering telliot_core CLI commands.
 """
+import pytest
 from click.testing import CliRunner
 
 from telliot_feed_examples.cli import cli
@@ -51,6 +52,7 @@ def test_cmd_tip():
     assert expected in result.output
 
 
+@pytest.mark.skip("Not possible with new telliot core")
 def test_rpc_override():
     """Test the CLI option to override the RPC url provided in configs"""
     runner = CliRunner()
