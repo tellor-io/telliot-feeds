@@ -5,7 +5,21 @@ import pytest
 from click.testing import CliRunner
 
 from telliot_feed_examples.cli import cli
+from telliot_feed_examples.cli import get_app
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
+
+
+def test_get_app():
+    """Test instantiating TelliotCore app using click Context."""
+    ctx = {
+        "CHAIN_ID": None,
+        "RPC_URL": None,
+        "PRIVATE_KEY": None,
+    }
+    core = get_app(ctx)
+
+    assert core.config
+    assert core.tellorx
 
 
 def test_cmd_report():

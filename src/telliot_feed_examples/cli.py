@@ -3,6 +3,8 @@
 A simple interface for interacting with telliot example feed functionality.
 """
 import asyncio
+from typing import Any
+from typing import Mapping
 
 import click
 from click.core import Context
@@ -16,13 +18,13 @@ from telliot_feed_examples.utils.oracle_write import tip_query
 logger = get_logger(__name__)
 
 
-def get_app(ctx: click.Context) -> TelliotCore:
+def get_app(obj: Mapping[str, Any]) -> TelliotCore:
     """Get an app configured using CLI context"""
 
     app = TelliotCore.get() or TelliotCore()
 
     # Apply the CHAIN_ID flag
-    chain_id = ctx.obj["CHAIN_ID"]
+    chain_id = obj["CHAIN_ID"]
     if chain_id is not None:
         assert app.config
         app.config.main.chain_id = chain_id
@@ -32,16 +34,16 @@ def get_app(ctx: click.Context) -> TelliotCore:
     # an entire endpoint including exporer, etc.
     # But we'll just get the current endpoint and overwrite the URL.
     # We should prob delete this flag.
-    if ctx.obj["RPC_URL"] is not None:
-        app.endpoint.url = ctx.obj["RPC_URL"]
+    if obj["RPC_URL"] is not None:
+        app.endpoint.url = obj["RPC_URL"]
 
     # Apply the PRIVATE_KEY flag
     # Note: Ideally, the PRIVATE KEY flag is deprecated and replaced with the "staker tag"
     # provided by the user in stakers.yaml
     # This temporary hack will override the private key and address of the default staker.
-    if ctx.obj["PRIVATE_KEY"] is not None:
+    if obj["PRIVATE_KEY"] is not None:
         default_staker = app.get_default_staker()
-        default_staker.private_key = ctx.obj["PRIVATE_KEY"]
+        default_staker.private_key = obj["PRIVATE_KEY"]
         default_staker.address = "0x0"
 
     # Finally, tell the app to connect
@@ -183,7 +185,7 @@ def report(
         )
         return
 
-    core = get_app(ctx)  # Initialize telliot core app using CLI context
+    core = get_app(ctx.obj)  # Initialize telliot core app using CLI context
 
     # Print user settings to console
     click.echo(f"Reporting legacy ID: {legacy_id}")
@@ -255,7 +257,7 @@ def tip(
 ) -> None:
     """Tip TRB for a selected query ID"""
 
-    core = get_app(ctx)  # Initialize telliot core app using CLI context
+    core = get_app(ctx.obj)  # Initialize telliot core app using CLI context
 
     # Ensure valid legacy id
     if legacy_id not in LEGACY_DATAFEEDS:
