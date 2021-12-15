@@ -32,15 +32,17 @@ def get_app(ctx: click.Context) -> TelliotCore:
     # an entire endpoint including exporer, etc.
     # But we'll just get the current endpoint and overwrite the URL.
     # We should prob delete this flag.
-    app.endpoint.url = ctx.obj["RPC_URL"]
+    if ctx.obj["RPC_URL"] is not None:
+        app.endpoint.url = ctx.obj["RPC_URL"]
 
     # Apply the PRIVATE_KEY flag
     # Note: Ideally, the PRIVATE KEY flag is deprecated and replaced with the "staker tag"
     # provided by the user in stakers.yaml
     # This temporary hack will override the private key and address of the default staker.
-    default_staker = app.get_default_staker()
-    default_staker.private_key = ctx.obj["PRIVATE_KEY"]
-    default_staker.address = "0x0"
+    if ctx.obj["PRIVATE_KEY"] is not None:
+        default_staker = app.get_default_staker()
+        default_staker.private_key = ctx.obj["PRIVATE_KEY"]
+        default_staker.address = "0x0"
 
     # Finally, tell the app to connect
     _ = app.connect()
