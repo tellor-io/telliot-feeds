@@ -10,8 +10,6 @@ ohm_eth_median_feed = DataFeed(
         asset="ohm",
         currency="usd",
         algorithm="median",
-        sources=[
-            CoinGeckoPriceSource(asset="ohm", currency="usd")
-        ],
+        sources=[CoinGeckoPriceSource(asset="ohm", currency="usd")],
     ),
 )
