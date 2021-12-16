@@ -6,8 +6,9 @@ from tests.conftest import reporter_submit_once
 
 @pytest.mark.asyncio
 async def test_fetch_price():
-    result = await ohm_eth_median_feed.source.fetch_new_datapoint()
-    print(result)
+    (value, ts) = await ohm_eth_median_feed.source.fetch_new_datapoint()
+    assert value > 0
+    print(value)
 
 
 def test_query_info():
@@ -24,7 +25,7 @@ def test_query_info():
     )
 
 
-@pytest.mark.skip("temp")
+@pytest.mark.skip("Fails when reporter is in lock")
 @pytest.mark.asyncio
 async def test_ohm_eth_reporter_submit_once(rinkeby_core):
     """Test reporting AMPL/USD/VWAP to the TellorX Oracle on Rinkeby."""

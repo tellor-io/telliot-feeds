@@ -8,8 +8,8 @@ ohm_eth_median_feed = DataFeed(
     query=SpotPrice(asset="OHM", currency="ETH"),
     source=PriceAggregator(
         asset="ohm",
-        currency="usd",
+        currency="eth",
         algorithm="median",
-        sources=[CoinGeckoPriceSource(asset="ohm", currency="usd")],
+        sources=[CoinGeckoPriceSource(asset="ohm", currency="eth")],
     ),
 )
