@@ -12,6 +12,7 @@ from telliot_core.contract.contract import Contract
 from telliot_core.contract.gas import ethgasstation
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
+from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
@@ -280,14 +281,17 @@ class IntervalReporter:
         latest_data = self.datafeed.source.latest
 
         if latest_data[0] is None:
-            status.ok = False
-            status.error = "Unable to retrieve updated datafeed value."
-            logger.error(status.error)
-            return None, status
+            msg = "Unable to retrieve updated datafeed value."
+            return None, error_status(msg, log=logger.info)
 
         query = self.datafeed.query
 
-        value = query.value_type.encode(latest_data[0])
+        try:
+            value = query.value_type.encode(latest_data[0])
+        except Exception as e:
+            msg = f"Error encoding response value {latest_data[0]}"
+            return None, error_status(msg, e=e, log=logger.error)
+
         query_id = query.query_id
         query_data = query.query_data
         extra_gas_price = 20

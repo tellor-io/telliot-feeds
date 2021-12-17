@@ -15,7 +15,12 @@ logger = get_logger(__name__)
 
 # Coinbase API uses the 'id' field from /coins/list.
 # Using a manual mapping for now.
-coingecko_coin_id = {"btc": "bitcoin", "eth": "ethereum", "trb": "tellor"}
+coingecko_coin_id = {
+    "btc": "bitcoin",
+    "eth": "ethereum",
+    "trb": "tellor",
+    "ohm": "olympus",
+}
 
 
 class CoinGeckoPriceService(WebPriceService):

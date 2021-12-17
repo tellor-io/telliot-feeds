@@ -1,10 +1,27 @@
 """
 Unit tests covering telliot_core CLI commands.
 """
+import os
+
+import pytest
 from click.testing import CliRunner
 
 from telliot_feed_examples.cli import cli
+from telliot_feed_examples.cli import get_app
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
+
+
+def test_get_app():
+    """Test instantiating TelliotCore app using click Context."""
+    ctx = {
+        "CHAIN_ID": 4,  # Rinkeby testnet
+        "RPC_URL": os.getenv("NODE_URL", None),
+        "PRIVATE_KEY": os.getenv("PRIVATE_KEY", None),
+    }
+    core = get_app(ctx)
+
+    assert core.config
+    assert core.tellorx
 
 
 def test_cmd_report():
@@ -51,6 +68,7 @@ def test_cmd_tip():
     assert expected in result.output
 
 
+@pytest.mark.skip("Not possible with new telliot core")
 def test_rpc_override():
     """Test the CLI option to override the RPC url provided in configs"""
     runner = CliRunner()

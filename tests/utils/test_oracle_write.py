@@ -7,11 +7,11 @@ from telliot_feed_examples.utils.oracle_write import tip_query
 
 
 @pytest.mark.asyncio
-async def test_tip_query(oracle):
+async def test_tip_query(rinkeby_core):
     """Test tipping ETH/USD price."""
     tip = int(0.00001 * 1e18)
     tx_receipt, status = await tip_query(
-        oracle=oracle,
+        oracle=rinkeby_core.tellorx.oracle,
         datafeed=eth_usd_median_feed,
         tip=tip,
     )
