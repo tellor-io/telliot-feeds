@@ -5,19 +5,57 @@ A simple interface for interacting with telliot example feed functionality.
 import asyncio
 from typing import Any
 from typing import Mapping
+from typing import Optional
 
 import click
 from click.core import Context
 from telliot_core.apps.core import TelliotCore
 
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
-from telliot_feed_examples.flashbots import flashbot
 from telliot_feed_examples.reporters.interval import IntervalReporter
-from telliot_feed_examples.reporters.flashbot import FlashbotReporter
+from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
+
 logger = get_logger(__name__)
+
+
+def parse_profit_input(expected_profit: str) -> Optional[float]:
+    """Parses user input expected profit and ensures 
+    the input is either a float or the string 'YOLO'."""
+    if expected_profit == "YOLO":
+        return expected_profit
+    else:
+        try:
+            return float(expected_profit)
+        except ValueError:
+            click.echo("Not a valid profit input. Enter float or the string, 'YOLO'")
+
+
+def print_reporter_settings(
+    using_flashbots: bool,
+    legacy_id: str,
+    gas_limit: int,
+    priority_fee: float,
+    expected_profit: str,
+    chain_id: int,
+) -> None:
+    """Print user settings to console."""
+
+    if using_flashbots:
+        click.echo(f"\n⚡🤖⚡ Reporting through Flashbots relay ⚡🤖⚡")
+
+    click.echo(f"Reporting legacy ID: {legacy_id}")
+    click.echo(f"Current chain ID: {chain_id}")
+
+    if expected_profit == "YOLO":
+        click.echo("🍜🍜🍜 Reporter not enforcing profit threshold! 🍜🍜🍜")
+    else:
+        click.echo(f"Expected percent profit: {expected_profit}%")
+
+    click.echo(f"Priority fee (gwei): {priority_fee}")
+    click.echo(f"Gas Limit: {gas_limit}\n")
 
 
 def get_app(obj: Mapping[str, Any]) -> TelliotCore:
@@ -25,39 +63,29 @@ def get_app(obj: Mapping[str, Any]) -> TelliotCore:
 
     app = TelliotCore.get() or TelliotCore()
 
-    # Apply the CHAIN_ID flag
-    chain_id = obj["CHAIN_ID"]
-    if chain_id is not None:
-        assert app.config
-        app.config.main.chain_id = chain_id
-    
-    # Apply the FLASHBOTS_RELAY flag
-    flashbots_relay = obj["FLASHBOTS_RELAY"]
-    if flashbots_relay is not None:
-        assert app.config
-        if flashbots_relay == "mainnet":
-            app.config.main.chain_id = 1
-        if flashbots_relay == "testnet":
-            app.config.main.chain_id = 5
-
-    # Apply the PRIVATE_KEY flag
-    # Note: Ideally, the PRIVATE KEY flag is deprecated and replaced with the "staker tag"
-    # provided by the user in stakers.yaml
-    # This temporary hack will override the private key and address of the default staker.
-    if obj["PRIVATE_KEY"] is not None:
+    # Replace default staker
+    staker_tag = obj["STAKER_TAG"]
+    if staker_tag is not None:
+        staker = app.config.stakers.find(tag=staker_tag)[0]
         default_staker = app.get_default_staker()
-        default_staker.private_key = obj["PRIVATE_KEY"]
-        default_staker.address = "0x0"
+        default_staker.private_key = staker.private_key
+        default_staker.address = staker.address
+        default_staker.chain_id = staker.chain_id
+        default_staker.tag = staker.tag
 
-    # Finally, tell the app to connect
+        app.config.main.chain_id = staker.chain_id
+
+        # TODO: there should be a cleaner way to choose
+        # the staker (some method in telliot-core)
+
     _ = app.connect()
 
-    # Now overriding RPC URL is getting *really* ugly...
-    # Forcibly update the chain_id because it might have changed above
-    app.config.main.chain_id = app.endpoint.web3.eth.chain_id
-    # This can throw everything out of sync.  We don't know if there is a staker
-    # for the particular chain ID In fact, there is not normally one for the
-    # goerli endpoint used in the test.
+    # Ensure chain id compatible with flashbots relay
+    if obj["USING_FLASHBOTS"]:
+        assert app.config
+        # Only supports mainnet
+        assert app.config.main.chain_id == 1
+        assert app.endpoint.web3.eth.chain_id == 1
 
     assert app.config
     assert app.tellorx
@@ -68,58 +96,31 @@ def get_app(obj: Mapping[str, Any]) -> TelliotCore:
 # Main CLI options
 @click.group()
 @click.option(
-    "--private-key",  # flag option 1
-    "-pk",  # flag option 2
-    "private_key",  # variable name of user input
-    help="override the config's private key",
+    "--staker-tag",
+    "-st",
+    "staker_tag",
+    help="use specific staker by tag",
     required=False,
     nargs=1,
     type=str,
 )
 @click.option(
-    "--chain-id",
-    "-cid",
-    "chain_id",
-    help="override the config's chain ID",
-    required=False,
-    nargs=1,
-    type=int,
-)
-@click.option(
-    "--rpc-url",
-    "-rpc",
-    "override_rpc_url",
-    help="override the config RPC url",
-    nargs=1,
-    type=str,
-    required=False,
-)
-@click.option(
-    "--flashbots",
-    "-fb",
-    "flashbots_relay",
-    help="use flashbots relay to submit values",
-    nargs=1,
-    type=click.Choice(
-        ["mainnet", "testnet"],
-        case_sensitive=True,
-    ),
-    required=False
+    "--flashbots/--no-flashbots",
+    "-fb/-nfb",
+    "using_flashbots",
+    type=bool,
+    default=False,
 )
 @click.pass_context
 def cli(
     ctx: Context,
-    private_key: str,
-    chain_id: int,
-    override_rpc_url: str,
-    flashbots_relay: str,
+    staker_tag: str,
+    using_flashbots: bool,
 ) -> None:
     """Telliot command line interface"""
     ctx.ensure_object(dict)
-    ctx.obj["PRIVATE_KEY"] = private_key
-    ctx.obj["CHAIN_ID"] = chain_id
-    ctx.obj["RPC_URL"] = override_rpc_url
-    ctx.obj["FLASHBOTS_RELAY"] = flashbots_relay
+    ctx.obj["STAKER_TAG"] = staker_tag
+    ctx.obj["USING_FLASHBOTS"] = using_flashbots
 
 
 # Report subcommand options
@@ -159,7 +160,7 @@ def cli(
     help="lower threshold (inclusive) for expected percent profit",
     nargs=1,
     # User can omit profitability checks by specifying "YOLO"
-    type=click.Choice([float, "YOLO"]),
+    type=str,
     default=100.0,
 )
 @click.option("--submit-once/--submit-continuous", default=False)
@@ -169,27 +170,28 @@ def report(
     legacy_id: str,
     gas_limit: int,
     priority_fee: float,
-    expected_profit: float,
+    expected_profit: str,
     submit_once: bool,
 ) -> None:
     """Report values to Tellor oracle"""
-    core = get_app(ctx.obj)  # Initialize telliot core app using CLI context
+    # Ensure valid user input for expected profit
+    expected_profit = parse_profit_input(expected_profit)
+    if expected_profit is None:
+        return
 
-    # Print user settings to console
-    flashbots_relay = ctx.obj["FLASHBOTS_RELAY"]
-    if flashbots_relay is not None:
-        click.echo(f"Using flashbots relay on {flashbots_relay}")
+    # Initialize telliot core app using CLI context
+    core = get_app(ctx.obj)
 
-    click.echo(f"Reporting legacy ID: {legacy_id}")
-    click.echo(f"Current chain ID: {core.config.main.chain_id}")
+    using_flashbots = ctx.obj["USING_FLASHBOTS"]
 
-    if expected_profit == "YOLO":
-        click.echo("🍜🍜🍜 Reporter not enforcing profit threshold! 🍜🍜🍜")
-    else:
-        click.echo(f"Expected percent profit: {expected_profit}%")
-
-    click.echo(f"Priority fee: {priority_fee}")
-    click.echo(f"Gas Limit: {gas_limit}")
+    print_reporter_settings(
+        using_flashbots=using_flashbots,
+        legacy_id=legacy_id,
+        gas_limit=gas_limit,
+        priority_fee=priority_fee,
+        expected_profit=expected_profit,
+        chain_id=core.config.main.chain_id
+    )
 
     chosen_feed = LEGACY_DATAFEEDS[legacy_id]
 
@@ -199,16 +201,13 @@ def report(
         "master": core.tellorx.master,
         "oracle": core.tellorx.oracle,
         "datafeed": chosen_feed,
-        "profit_threshold": expected_profit,
+        "expected_profit": expected_profit,
         "gas_limit": gas_limit,
         "priority_fee": priority_fee,
     }
 
-    if flashbots_relay is not None:
-        reporter = FlashbotsReporter(
-            **common_reporter_kwargs,
-            relay=flashbots_relay
-        )
+    if using_flashbots:
+        reporter = FlashbotsReporter(**common_reporter_kwargs)
     else:
         reporter = IntervalReporter(**common_reporter_kwargs)
 
@@ -226,8 +225,8 @@ def report(
     help="report to a legacy ID",
     required=True,
     nargs=1,
-    type=str,
-    default=1,  # ETH/USD spot price
+    type=click.Choice(["1", "2", "10", "41", "50", "59"]),
+    default="1",  # ETH/USD spot price
 )
 @click.option(
     "--amount-trb",
