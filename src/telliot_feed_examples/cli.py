@@ -9,9 +9,11 @@ from typing import Mapping
 import click
 from click.core import Context
 from telliot_core.apps.core import TelliotCore
+from telliot_feed_examples import flashbots
 
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
-from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.flashbots import flashbot
+from telliot_feed_examples.reporters.interval import FlashbotsReporter, IntervalReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
@@ -28,14 +30,15 @@ def get_app(obj: Mapping[str, Any]) -> TelliotCore:
     if chain_id is not None:
         assert app.config
         app.config.main.chain_id = chain_id
-
-    # Apply the RPC_URL FLAG
-    # Again, this is kinda hacky, because the RPC URL flag does not specify
-    # an entire endpoint including exporer, etc.
-    # But we'll just get the current endpoint and overwrite the URL.
-    # We should prob delete this flag.
-    if obj["RPC_URL"] is not None:
-        app.endpoint.url = obj["RPC_URL"]
+    
+    # Apply the FLASHBOTS_RELAY flag
+    flashbots_relay = obj["FLASHBOTS_RELAY"]
+    if flashbots_relay is not None:
+        assert app.config
+        if flashbots_relay == "mainnet":
+            app.config.main.chain_id = 1
+        if flashbots_relay == "testnet":
+            app.config.main.chain_id = 5
 
     # Apply the PRIVATE_KEY flag
     # Note: Ideally, the PRIVATE KEY flag is deprecated and replaced with the "staker tag"
@@ -54,7 +57,7 @@ def get_app(obj: Mapping[str, Any]) -> TelliotCore:
     app.config.main.chain_id = app.endpoint.web3.eth.chain_id
     # This can throw everything out of sync.  We don't know if there is a staker
     # for the particular chain ID In fact, there is not normally one for the
-    # goerly endpoint used in the test.
+    # goerli endpoint used in the test.
 
     assert app.config
     assert app.tellorx
@@ -91,18 +94,32 @@ def get_app(obj: Mapping[str, Any]) -> TelliotCore:
     type=str,
     required=False,
 )
+@click.option(
+    "--flashbots",
+    "-fb",
+    "flashbots_relay",
+    help="use flashbots relay to submit values",
+    nargs=1,
+    type=click.Choice(
+        ["mainnet", "testnet"],
+        case_sensitive=True,
+    ),
+    required=False
+)
 @click.pass_context
 def cli(
     ctx: Context,
     private_key: str,
     chain_id: int,
     override_rpc_url: str,
+    flashbots_relay: str,
 ) -> None:
     """Telliot command line interface"""
     ctx.ensure_object(dict)
     ctx.obj["PRIVATE_KEY"] = private_key
     ctx.obj["CHAIN_ID"] = chain_id
     ctx.obj["RPC_URL"] = override_rpc_url
+    ctx.obj["FLASHBOTS_RELAY"] = flashbots_relay
 
 
 # Report subcommand options
@@ -114,8 +131,8 @@ def cli(
     help="report to a legacy ID",
     required=True,
     nargs=1,
-    type=str,
-    default=1,  # ETH/USD spot price
+    type=click.Choice(["1", "2", "10", "41", "50", "59"]),
+    default="1",  # ETH/USD spot price
 )
 @click.option(
     "--gas-limit",
@@ -124,45 +141,25 @@ def cli(
     help="use custom gas limit",
     nargs=1,
     type=int,
-    default=350000,
+    default=300000,
 )
 @click.option(
-    "--max-gas-price",
-    "-mgp",
-    "max_gas_price",
-    help="maximum gas price used by eth gas station",
+    "--priority-fee",
+    "-pf",
+    "priority_fee",
+    help="use custom priority fee (gwei)",
     nargs=1,
-    type=int,
-    default=0,
-)
-@click.option(
-    "--gas-price-speed",
-    "-gps",
-    "gas_price_speed",
-    help="gas price speed for eth gas station API",
-    nargs=1,
-    type=click.Choice(
-        ["safeLow", "average", "fast", "fastest"],
-        case_sensitive=True,
-    ),
-    default="fast",
-)
-@click.option(
-    "--gas-price",
-    "-gp",
-    "gas_price",
-    help="use custom gas price (overrides eth gas station estimate)",
-    nargs=1,
-    type=int,
-    required=False,
+    type=float,
+    default=2.5,
 )
 @click.option(
     "--profit",
     "-p",
-    "profit_percent",
+    "profit",
     help="lower threshold (inclusive) for expected percent profit",
     nargs=1,
-    type=float,
+    # User can omit profitability checks by specifying "YOLO"
+    type=click.Choice([float, "YOLO"]),
     default=100.0,
 )
 @click.option("--submit-once/--submit-continuous", default=False)
@@ -178,14 +175,11 @@ def report(
     profit_percent: float,
 ) -> None:
     """Report values to Tellor oracle"""
-    # Ensure valid legacy id
-    if legacy_id not in LEGACY_DATAFEEDS:
-        click.echo(
-            f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
-        )
-        return
-
     core = get_app(ctx.obj)  # Initialize telliot core app using CLI context
+
+    flashbots_relay = ctx.obj["FLASHBOTS_RELAY"]
+    if flashbots_relay is not None:
+        click.echo(f"***** Using flashbots relay on {flashbots_relay} *****")
 
     # Print user settings to console
     click.echo(f"Reporting legacy ID: {legacy_id}")
@@ -210,23 +204,31 @@ def report(
 
     chosen_feed = LEGACY_DATAFEEDS[legacy_id]
 
-    legacy_reporter = IntervalReporter(
-        endpoint=core.endpoint,
-        private_key=core.get_default_staker().private_key,
-        master=core.tellorx.master,
-        oracle=core.tellorx.oracle,
-        datafeed=chosen_feed,
-        profit_threshold=profit_percent,
-        gas_price=gas_price,
-        max_gas_price=max_gas_price,
-        gas_price_speed=gas_price_speed,
-        gas_limit=gas_limit,
-    )
+    common_reporter_kwargs = {
+        "endpoint": core.endpoint,
+        "private_key": core.get_default_staker().private_key,
+        "master": core.tellorx.master,
+        "oracle": core.tellorx.oracle,
+        "datafeed": chosen_feed,
+        "profit_threshold": profit_percent,
+        "gas_price": gas_price,
+        "max_gas_price": max_gas_price,
+        "gas_price_speed": gas_price_speed,
+        "gas_limit": gas_limit,
+    }
+
+    if flashbots_relay is not None:
+        reporter = FlashbotsReporter(
+            **common_reporter_kwargs,
+            relay=flashbots_relay
+        )
+    else:
+        reporter = IntervalReporter(**common_reporter_kwargs)
 
     if submit_once:
-        _, _ = asyncio.run(legacy_reporter.report_once())
+        _, _ = asyncio.run(reporter.report_once())
     else:
-        _, _ = asyncio.run(legacy_reporter.report())
+        _, _ = asyncio.run(reporter.report())
 
 
 @cli.command()
