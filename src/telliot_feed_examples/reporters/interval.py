@@ -51,7 +51,7 @@ class IntervalReporter:
         gas_price_speed: str = "fast",
         profit_threshold: float = 0.0,
         max_gas_price: int = 0,
-        gas_limit: int = 500000,
+        gas_limit: int = 350000,
     ) -> None:
 
         self.endpoint = endpoint
@@ -80,10 +80,7 @@ class IntervalReporter:
         assert flashbots_uri == "https://relay.flashbots.net"
 
         flashbot(self.endpoint._web3, self.signature, flashbots_uri)
-
-        logger.info("Flashbot set up")
-
-
+        logger.info("Flashbots connection set up")
 
 
     async def ensure_staked(self, gas_price_gwei: int) -> Tuple[bool, ResponseStatus]:
@@ -225,11 +222,12 @@ class IntervalReporter:
         tips, tb_reward = rewards
         logger.info(
             f"""
-            current tips: {tips / 1e18} TRB
-            current tb_reward: {tb_reward / 1e18} TRB
-            gas_limit: {self.gas_limit}
+            tips: {tips / 1e18} TRB
+            time-based reward: {tb_reward / 1e18} TRB
+            gas: {self.gas_limit}
             priority fee: {gas_price_gwei}
-            next base fee: {base_fee}
+            base fee: {base_fee}
+            max fee: {max_fee}
             """
         )
 
@@ -290,10 +288,8 @@ class IntervalReporter:
             return None, status
 
         # Custom gas price overrides other gas price settings
-        gas_price_gwei = self.gas_price
-        # if gas_price_gwei is None:
-            # gas_price_gwei = await self.fetch_gas_price()
-        gp_info = await self.fetch_gas_price()
+        if priority_fee is None or max_fee is None:
+            gp_info = await self.fetch_gas_price()
         print(gp_info)
         gas_price_gwei = gp_info[0].FastGasPrice
 

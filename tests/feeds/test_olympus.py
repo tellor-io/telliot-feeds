@@ -1,6 +1,6 @@
 import pytest
 
-from telliot_feed_examples.olympus import ohm_eth_median_feed
+from telliot_feed_examples.feeds.olympus import ohm_eth_median_feed
 from tests.conftest import reporter_submit_once
 
 
