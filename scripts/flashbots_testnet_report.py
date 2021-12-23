@@ -1,3 +1,6 @@
+# Majority of this code from web3-flashbots:
+# https://github.com/flashbots/web3-flashbots
+
 """
 Minimal viable example of flashbots usage with dynamic fee transactions.
 """
@@ -37,6 +40,7 @@ async def main() -> None:
     w3 = Web3(HTTPProvider(env("PROVIDER")))
     if chain_id == 5:
         w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    # Goerli endpoint: https://relay-goerli.flashbots.net
     endpoint = env("FLASHBOTS_HTTP_PROVIDER_URI") if chain_id == 5 else get_default_endpoint()
     flashbot(w3, signature, endpoint)
 

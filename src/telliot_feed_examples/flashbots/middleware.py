@@ -1,3 +1,9 @@
+# Majority of this code from web3-flashbots:
+# https://github.com/flashbots/web3-flashbots
+
+# EIP-1559 subbport by @lekhovitsky
+# https://github.com/lekhovitsky
+
 from typing import Callable
 from web3 import Web3
 from web3.middleware import Middleware

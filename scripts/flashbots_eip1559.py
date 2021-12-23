@@ -1,3 +1,6 @@
+# Majority of this code from web3-flashbots:
+# https://github.com/flashbots/web3-flashbots
+
 """
 Minimal viable example of flashbots usage with dynamic fee transactions.
 """

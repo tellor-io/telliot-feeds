@@ -235,7 +235,7 @@ class IntervalReporter:
 
         revenue = tb_reward + tips
         rev_usd = revenue / 1e18 * price_trb_usd
-        costs = self.gas_limit * (gas_price_gwei + base_fee)
+        costs = self.gas_limit * gas_price_gwei
         costs_usd = costs / 1e9 * price_eth_usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
@@ -298,11 +298,11 @@ class IntervalReporter:
         gas_price_gwei = gp_info[0].FastGasPrice
 
 
-        # gas_price_below_limit, status = await self.enforce_gas_price_limit(
-        #     gas_price_gwei
-        # )
-        # if not gas_price_below_limit:
-        #     return None, status
+        gas_price_below_limit, status = await self.enforce_gas_price_limit(
+            gas_price_gwei
+        )
+        if not gas_price_below_limit:
+            return None, status
 
         staked, status = await self.ensure_staked(gas_price_gwei)
         if not staked:
@@ -310,8 +310,8 @@ class IntervalReporter:
 
         next_base_fee = gp_info[0].suggestBaseFee
         profitable, status = await self.ensure_profitable(gas_price_gwei, next_base_fee)
-        # if not profitable:
-            # return None, status
+        if not profitable:
+            return None, status
 
         status = ResponseStatus()
 
@@ -333,7 +333,6 @@ class IntervalReporter:
 
         query_id = query.query_id
         query_data = query.query_data
-        extra_gas_price = 20
 
         timestamp_count, read_status = await self.oracle.read(
             func_name="getTimestampCountById", _queryId=query_id
@@ -348,18 +347,6 @@ class IntervalReporter:
             status.e = read_status.e
             return None, status
 
-        # Submit value
-        # tx_receipt, status = await self.oracle.write_with_retry(
-        #     func_name="submitValue",
-        #     gas_price=gas_price_gwei,
-        #     gas_limit=self.gas_limit,
-        #     extra_gas_price=extra_gas_price,
-        #     retries=5,
-        #     _queryId=query_id,
-        #     _value=value,
-        #     _nonce=timestamp_count,
-        #     _queryData=query_data,
-        # )
         submit_val_func = self.oracle.contract.get_function_by_name("submitValue")
         submit_val_tx = submit_val_func(
             _queryId=query_id,
@@ -385,27 +372,23 @@ class IntervalReporter:
         )
         submit_val_tx_signed = self.account.sign_transaction(built_submit_val_tx)
 
-        # bundle one pre-signed, EIP-1559 (type 2) transaction
-        # NOTE: chainId is necessary for all EIP-1559 txns
-        # NOTE: nonce is required for signed txns
-
+        # Create bundle of one pre-signed, EIP-1559 (type 2) transaction
         bundle = [
             {"signed_transaction": submit_val_tx_signed.rawTransaction},
         ]
 
-        # send bundle to be executed in the next blocks
+        # Send bundle to be executed in the next block
         block = self.endpoint._web3.eth.block_number
-        results = []
-        for target_block in [block + k for k in [1]]:
-            results.append(self.endpoint._web3.flashbots.send_bundle(
-                bundle, 
-                target_block_number=target_block))
-        print(f"Bundle sent to miners in block {block}")
+        result = self.endpoint._web3.flashbots.send_bundle(
+            bundle, 
+            target_block_number=block+1
+        )
+        logger.info(f"Bundle sent to miners in block {block}")
 
         # wait for the results
-        results[-1].wait()
+        result.wait()
         try:
-            tx_receipt = results[-1].receipts()
+            tx_receipt = result.receipts()
             print(f"Bundle was executed in block {tx_receipt[0].blockNumber}")
         except TransactionNotFound:
             print("Bundle was not executed")
