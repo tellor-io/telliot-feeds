@@ -9,11 +9,11 @@ from typing import Mapping
 import click
 from click.core import Context
 from telliot_core.apps.core import TelliotCore
-from telliot_feed_examples import flashbots
 
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.flashbots import flashbot
-from telliot_feed_examples.reporters.interval import FlashbotsReporter, IntervalReporter
+from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.reporters.flashbot import FlashbotReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
@@ -155,7 +155,7 @@ def cli(
 @click.option(
     "--profit",
     "-p",
-    "profit",
+    "expected_profit",
     help="lower threshold (inclusive) for expected percent profit",
     nargs=1,
     # User can omit profitability checks by specifying "YOLO"
@@ -168,38 +168,27 @@ def report(
     ctx: Context,
     legacy_id: str,
     gas_limit: int,
-    gas_price: int,
-    max_gas_price: int,
-    gas_price_speed: str,
+    priority_fee: float,
+    expected_profit: float,
     submit_once: bool,
-    profit_percent: float,
 ) -> None:
     """Report values to Tellor oracle"""
     core = get_app(ctx.obj)  # Initialize telliot core app using CLI context
 
+    # Print user settings to console
     flashbots_relay = ctx.obj["FLASHBOTS_RELAY"]
     if flashbots_relay is not None:
-        click.echo(f"***** Using flashbots relay on {flashbots_relay} *****")
+        click.echo(f"Using flashbots relay on {flashbots_relay}")
 
-    # Print user settings to console
     click.echo(f"Reporting legacy ID: {legacy_id}")
     click.echo(f"Current chain ID: {core.config.main.chain_id}")
 
-    if profit_percent == 0.0:
-        click.echo("Reporter not enforcing profit threshold.")
+    if expected_profit == "YOLO":
+        click.echo("🍜🍜🍜 Reporter not enforcing profit threshold! 🍜🍜🍜")
     else:
-        click.echo(f"Lower bound for expected percent profit: {profit_percent}%")
+        click.echo(f"Expected percent profit: {expected_profit}%")
 
-    # Gas price overrides other gas price settings
-    if not gas_price:
-        if max_gas_price != 0:
-            click.echo(
-                f"Reporter will use a maximum gas price of {max_gas_price} gwei."
-            )
-        click.echo(f"Selected gas price speed: {gas_price_speed}")
-    else:
-        click.echo(f"Gas price: {gas_price}")
-
+    click.echo(f"Priority fee: {priority_fee}")
     click.echo(f"Gas Limit: {gas_limit}")
 
     chosen_feed = LEGACY_DATAFEEDS[legacy_id]
@@ -210,11 +199,9 @@ def report(
         "master": core.tellorx.master,
         "oracle": core.tellorx.oracle,
         "datafeed": chosen_feed,
-        "profit_threshold": profit_percent,
-        "gas_price": gas_price,
-        "max_gas_price": max_gas_price,
-        "gas_price_speed": gas_price_speed,
+        "profit_threshold": expected_profit,
         "gas_limit": gas_limit,
+        "priority_fee": priority_fee,
     }
 
     if flashbots_relay is not None:
