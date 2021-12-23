@@ -20,6 +20,8 @@ from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.utils.log import get_logger
 
+from telliot_feed_examples.flashbots import flashbot
+
 
 logger = get_logger(__name__)
 
