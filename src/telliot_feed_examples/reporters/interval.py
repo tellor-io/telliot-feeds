@@ -20,9 +20,19 @@ from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.utils.log import get_logger
 
+from eth_account.account import Account
+from eth_account.signers.local import LocalAccount
 from telliot_feed_examples.flashbots import flashbot
+from telliot_feed_examples.flashbots.provider import get_default_endpoint
+from dotenv import load_dotenv, find_dotenv
+import os
+
+from telliot_core.gas.etherscan_gas import EtherscanGasPriceSource
+from web3 import Web3
+from web3.exceptions import TransactionNotFound
 
 
+load_dotenv(find_dotenv())
 logger = get_logger(__name__)
 
 
@@ -57,6 +67,24 @@ class IntervalReporter:
         self.gas_limit = gas_limit
 
         logger.info(f"Reporting with account: {self.user}")
+
+        # Set up flashbots
+        self.account: LocalAccount = Account.from_key(private_key)
+        self.signature: LocalAccount = Account.from_key(
+            os.environ.get("SIGNATURE_PRIVATE_KEY"))
+        
+        assert self.signature is not None
+        assert self.user == self.account.address
+
+        flashbots_uri = get_default_endpoint()
+        assert flashbots_uri == "https://relay.flashbots.net"
+
+        flashbot(self.endpoint._web3, self.signature, flashbots_uri)
+
+        logger.info("Flashbot set up")
+
+
+
 
     async def ensure_staked(self, gas_price_gwei: int) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked
@@ -159,7 +187,7 @@ class IntervalReporter:
         return False, status
 
     async def ensure_profitable(
-        self, gas_price_gwei: int
+        self, gas_price_gwei: int, base_fee,
     ) -> Tuple[bool, ResponseStatus]:
         """Estimate profitability
 
@@ -200,13 +228,14 @@ class IntervalReporter:
             current tips: {tips / 1e18} TRB
             current tb_reward: {tb_reward / 1e18} TRB
             gas_limit: {self.gas_limit}
-            gas_price_gwei: {gas_price_gwei}
+            priority fee: {gas_price_gwei}
+            next base fee: {base_fee}
             """
         )
 
         revenue = tb_reward + tips
         rev_usd = revenue / 1e18 * price_trb_usd
-        costs = self.gas_limit * gas_price_gwei
+        costs = self.gas_limit * (gas_price_gwei + base_fee)
         costs_usd = costs / 1e9 * price_eth_usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
@@ -241,7 +270,10 @@ class IntervalReporter:
 
     async def fetch_gas_price(self) -> int:
         """Fetch gas price from ethgasstation in gwei."""
-        return await ethgasstation(style=self.gas_price_speed)  # type: ignore
+        c = EtherscanGasPriceSource()
+        result = await c.fetch_new_datapoint()
+        return result
+        # return await ethgasstation(style=self.gas_price_speed)  # type: ignore
 
     async def report_once(
         self,
@@ -259,22 +291,27 @@ class IntervalReporter:
 
         # Custom gas price overrides other gas price settings
         gas_price_gwei = self.gas_price
-        if gas_price_gwei is None:
-            gas_price_gwei = await self.fetch_gas_price()
+        # if gas_price_gwei is None:
+            # gas_price_gwei = await self.fetch_gas_price()
+        gp_info = await self.fetch_gas_price()
+        print(gp_info)
+        gas_price_gwei = gp_info[0].FastGasPrice
 
-            gas_price_below_limit, status = await self.enforce_gas_price_limit(
-                gas_price_gwei
-            )
-            if not gas_price_below_limit:
-                return None, status
+
+        # gas_price_below_limit, status = await self.enforce_gas_price_limit(
+        #     gas_price_gwei
+        # )
+        # if not gas_price_below_limit:
+        #     return None, status
 
         staked, status = await self.ensure_staked(gas_price_gwei)
         if not staked:
             return None, status
 
-        profitable, status = await self.ensure_profitable(gas_price_gwei)
-        if not profitable:
-            return None, status
+        next_base_fee = gp_info[0].suggestBaseFee
+        profitable, status = await self.ensure_profitable(gas_price_gwei, next_base_fee)
+        # if not profitable:
+            # return None, status
 
         status = ResponseStatus()
 
@@ -312,18 +349,69 @@ class IntervalReporter:
             return None, status
 
         # Submit value
-        tx_receipt, status = await self.oracle.write_with_retry(
-            func_name="submitValue",
-            gas_price=gas_price_gwei,
-            gas_limit=self.gas_limit,
-            extra_gas_price=extra_gas_price,
-            retries=5,
+        # tx_receipt, status = await self.oracle.write_with_retry(
+        #     func_name="submitValue",
+        #     gas_price=gas_price_gwei,
+        #     gas_limit=self.gas_limit,
+        #     extra_gas_price=extra_gas_price,
+        #     retries=5,
+        #     _queryId=query_id,
+        #     _value=value,
+        #     _nonce=timestamp_count,
+        #     _queryData=query_data,
+        # )
+        submit_val_func = self.oracle.contract.get_function_by_name("submitValue")
+        submit_val_tx = submit_val_func(
             _queryId=query_id,
             _value=value,
             _nonce=timestamp_count,
             _queryData=query_data,
         )
+        acc_nonce = self.endpoint._web3.eth.get_transaction_count(self.account.address)
 
+        max_fee = next_base_fee + gas_price_gwei
+        logger.info(f'max fee: {max_fee}')
+
+        chain_id = 1
+        logger.info(f'chain id: {chain_id}')
+        built_submit_val_tx = submit_val_tx.buildTransaction(
+            {
+                "nonce": acc_nonce,
+                "gas": self.gas_limit,
+                "maxFeePerGas": Web3.toWei(max_fee, "gwei"),
+                "maxPriorityFeePerGas": Web3.toWei(gas_price_gwei, "gwei"),
+                "chainId": chain_id,
+            }
+        )
+        submit_val_tx_signed = self.account.sign_transaction(built_submit_val_tx)
+
+        # bundle one pre-signed, EIP-1559 (type 2) transaction
+        # NOTE: chainId is necessary for all EIP-1559 txns
+        # NOTE: nonce is required for signed txns
+
+        bundle = [
+            {"signed_transaction": submit_val_tx_signed.rawTransaction},
+        ]
+
+        # send bundle to be executed in the next blocks
+        block = self.endpoint._web3.eth.block_number
+        results = []
+        for target_block in [block + k for k in [1]]:
+            results.append(self.endpoint._web3.flashbots.send_bundle(
+                bundle, 
+                target_block_number=target_block))
+        print(f"Bundle sent to miners in block {block}")
+
+        # wait for the results
+        results[-1].wait()
+        try:
+            tx_receipt = results[-1].receipts()
+            print(f"Bundle was executed in block {tx_receipt[0].blockNumber}")
+        except TransactionNotFound:
+            print("Bundle was not executed")
+            return
+        
+        status = ResponseStatus()
         if status.ok and not status.error:
             # Reset previous submission timestamp
             self.last_submission_timestamp = 0
