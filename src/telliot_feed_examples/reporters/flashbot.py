@@ -1,0 +1,310 @@
+""" BTCUSD Price Reporter
+
+Example of a subclassed Reporter.
+"""
+import asyncio
+import time
+from typing import Any
+from typing import Optional
+from typing import Tuple
+
+from telliot_core.contract.contract import Contract
+from telliot_core.contract.gas import ethgasstation
+from telliot_core.datafeed import DataFeed
+from telliot_core.model.endpoints import RPCEndpoint
+from telliot_core.utils.response import error_status
+from telliot_core.utils.response import ResponseStatus
+from web3.datastructures import AttributeDict
+
+from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
+from telliot_feed_examples.utils.log import get_logger
+
+from eth_account.account import Account
+from eth_account.signers.local import LocalAccount
+from telliot_feed_examples.flashbots import flashbot
+from telliot_feed_examples.flashbots.provider import get_default_endpoint
+from dotenv import load_dotenv, find_dotenv
+import os
+
+from telliot_core.gas.etherscan_gas import EtherscanGasPriceSource
+from web3 import Web3
+from web3.exceptions import TransactionNotFound
+from telliot_feed_examples.reporters.interval import IntervalReporter
+
+
+load_dotenv(find_dotenv())
+logger = get_logger(__name__)
+
+
+class FlashbotReporter(IntervalReporter):
+    """Reports values from given datafeeds to a TellorX Oracle
+    every 10 seconds."""
+
+    def __init__(
+        self,
+        endpoint: RPCEndpoint,
+        private_key: str,
+        master: Contract,
+        oracle: Contract,
+        datafeed: DataFeed[Any],
+        gas_price: Optional[int] = None,
+        gas_price_speed: str = "fast",
+        profit_threshold: float = 0.0,
+        max_gas_price: int = 0,
+        gas_limit: int = 350000,
+    ) -> None:
+
+        self.endpoint = endpoint
+        self.master = master
+        self.oracle = oracle
+        self.datafeed = datafeed
+        self.user = self.endpoint.web3.eth.account.from_key(private_key).address
+        self.last_submission_timestamp = 0
+        self.profit_threshold = profit_threshold
+        self.max_gas_price = max_gas_price
+        self.gas_price_speed = gas_price_speed
+        self.gas_price = gas_price
+        self.gas_limit = gas_limit
+
+        logger.info(f"Reporting with account: {self.user}")
+
+        # Set up flashbots
+        self.account: LocalAccount = Account.from_key(private_key)
+        self.signature: LocalAccount = Account.from_key(
+            os.environ.get("SIGNATURE_PRIVATE_KEY"))
+        
+        assert self.signature is not None
+        assert self.user == self.account.address
+
+        flashbots_uri = get_default_endpoint()
+
+        flashbot(self.endpoint._web3, self.signature, flashbots_uri)
+        logger.info("Flashbots connection set up")
+
+
+    async def ensure_profitable(
+        self, gas_price_gwei: int, base_fee,
+    ) -> Tuple[bool, ResponseStatus]:
+        """Estimate profitability
+
+        Returns a bool signifying whether submitting for a given
+        queryID would generate a net profit."""
+        status = ResponseStatus()
+
+        # Don't check profitability if not specified by user
+        if self.profit_threshold == 0.0:
+            return True, status
+
+        # Get current tips and time-based reward for given queryID
+        rewards, read_status = await self.oracle.read(
+            "getCurrentReward", _queryId=self.datafeed.query.query_id
+        )
+
+        # Log web3 errors
+        if (not read_status.ok) or (rewards is None):
+            status.ok = False
+            status.error = (
+                "Unable to retrieve queryID's current rewards:" + read_status.error
+            )
+            logger.error(status.error)
+            status.e = read_status.e
+            return False, status
+
+        # Fetch token prices in USD
+        price_feeds = [eth_usd_median_feed, trb_usd_median_feed]
+        _ = await asyncio.gather(
+            *[feed.source.fetch_new_datapoint() for feed in price_feeds]
+        )
+        price_eth_usd = eth_usd_median_feed.source.latest[0]
+        price_trb_usd = trb_usd_median_feed.source.latest[0]
+
+        tips, tb_reward = rewards
+        logger.info(
+            f"""
+            tips: {tips / 1e18} TRB
+            time-based reward: {tb_reward / 1e18} TRB
+            gas: {self.gas_limit}
+            priority fee: {gas_price_gwei}
+            base fee: {base_fee}
+            max fee: {max_fee}
+            """
+        )
+
+        revenue = tb_reward + tips
+        rev_usd = revenue / 1e18 * price_trb_usd
+        costs = self.gas_limit * gas_price_gwei
+        costs_usd = costs / 1e9 * price_eth_usd
+        profit_usd = rev_usd - costs_usd
+        logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
+
+        percent_profit = ((profit_usd) / costs_usd) * 100
+        logger.info(f"Estimated percent profit: {round(percent_profit, 2)}%")
+
+        if not percent_profit >= self.profit_threshold:
+            status.ok = False
+            status.error = "Estimated profitability below threshold."
+            logger.info(status.error)
+            return False, status
+
+        return True, status
+
+    async def enforce_gas_price_limit(
+        self, gas_price_gwei: int
+    ) -> Tuple[bool, ResponseStatus]:
+        """Ensure estimated gas price isn't above threshold.
+
+        Returns a bool signifying whether the estimated gas price
+        is under the maximum threshold chosen by the user."""
+        status = ResponseStatus()
+
+        if (self.max_gas_price != 0) and (gas_price_gwei > self.max_gas_price):
+            status.ok = False
+            status.error = "Estimated gas price is above maximum gas price."
+            logger.error(status.error)
+            return False, status
+
+        return True, status
+
+    async def fetch_gas_price(self) -> int:
+        """Fetch gas price from ethgasstation in gwei."""
+        c = EtherscanGasPriceSource()
+        result = await c.fetch_new_datapoint()
+        return result
+        # return await ethgasstation(style=self.gas_price_speed)  # type: ignore
+
+    async def report_once(
+        self,
+    ) -> Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]:
+        """Report query value once
+
+        This method checks to see if a user is able to submit
+        values to the TellorX oracle, given their staker status
+        and last submission time. Also, this method does not
+        submit values if doing so won't make a profit."""
+
+        reporter_locked, status = await self.check_reporter_lock()
+        if reporter_locked:
+            return None, status
+
+        # Custom gas price overrides other gas price settings
+        if priority_fee is None or max_fee is None:
+            gp_info = await self.fetch_gas_price()
+        print(gp_info)
+        gas_price_gwei = gp_info[0].FastGasPrice
+
+
+        gas_price_below_limit, status = await self.enforce_gas_price_limit(
+            gas_price_gwei
+        )
+        if not gas_price_below_limit:
+            return None, status
+
+        staked, status = await self.ensure_staked(gas_price_gwei)
+        if not staked:
+            return None, status
+
+        next_base_fee = gp_info[0].suggestBaseFee
+        profitable, status = await self.ensure_profitable(gas_price_gwei, next_base_fee)
+        if not profitable:
+            return None, status
+
+        status = ResponseStatus()
+
+        # Update value
+        await self.datafeed.source.fetch_new_datapoint()
+        latest_data = self.datafeed.source.latest
+
+        if latest_data[0] is None:
+            msg = "Unable to retrieve updated datafeed value."
+            return None, error_status(msg, log=logger.info)
+
+        query = self.datafeed.query
+
+        try:
+            value = query.value_type.encode(latest_data[0])
+        except Exception as e:
+            msg = f"Error encoding response value {latest_data[0]}"
+            return None, error_status(msg, e=e, log=logger.error)
+
+        query_id = query.query_id
+        query_data = query.query_data
+
+        timestamp_count, read_status = await self.oracle.read(
+            func_name="getTimestampCountById", _queryId=query_id
+        )
+
+        # Log web3 errors
+        if not read_status.ok:
+            status.error = (
+                "Unable to retrieve timestampCount: " + read_status.error
+            )  # error won't be none # noqa: E501
+            logger.error(status.error)
+            status.e = read_status.e
+            return None, status
+
+        submit_val_func = self.oracle.contract.get_function_by_name("submitValue")
+        submit_val_tx = submit_val_func(
+            _queryId=query_id,
+            _value=value,
+            _nonce=timestamp_count,
+            _queryData=query_data,
+        )
+        acc_nonce = self.endpoint._web3.eth.get_transaction_count(self.account.address)
+
+        max_fee = next_base_fee + gas_price_gwei
+        logger.info(f'max fee: {max_fee}')
+
+        chain_id = 1
+        logger.info(f'chain id: {chain_id}')
+        built_submit_val_tx = submit_val_tx.buildTransaction(
+            {
+                "nonce": acc_nonce,
+                "gas": self.gas_limit,
+                "maxFeePerGas": Web3.toWei(max_fee, "gwei"),
+                "maxPriorityFeePerGas": Web3.toWei(gas_price_gwei, "gwei"),
+                "chainId": chain_id,
+            }
+        )
+        submit_val_tx_signed = self.account.sign_transaction(built_submit_val_tx)
+
+        # Create bundle of one pre-signed, EIP-1559 (type 2) transaction
+        bundle = [
+            {"signed_transaction": submit_val_tx_signed.rawTransaction},
+        ]
+
+        # Send bundle to be executed in the next block
+        block = self.endpoint._web3.eth.block_number
+        result = self.endpoint._web3.flashbots.send_bundle(
+            bundle, 
+            target_block_number=block+1
+        )
+        logger.info(f"Bundle sent to miners in block {block}")
+
+        # wait for the results
+        result.wait()
+        try:
+            tx_receipt = result.receipts()
+            print(f"Bundle was executed in block {tx_receipt[0].blockNumber}")
+        except TransactionNotFound:
+            print("Bundle was not executed")
+            return
+        
+        status = ResponseStatus()
+        if status.ok and not status.error:
+            # Reset previous submission timestamp
+            self.last_submission_timestamp = 0
+            tx_hash = tx_receipt["transactionHash"].hex()
+            # Point to relevant explorer
+            logger.info(f"View reported data: \n{self.endpoint.explorer}/tx/{tx_hash}")
+        else:
+            logger.error(status)
+
+        return tx_receipt, status
+
+    async def report(self) -> None:
+        """Submit latest values to the TellorX oracle every 12 hours."""
+
+        while True:
+            _, _ = await self.report_once()
+            await asyncio.sleep(10)
