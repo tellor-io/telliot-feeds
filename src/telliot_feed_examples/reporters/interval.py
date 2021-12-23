@@ -1,5 +1,4 @@
 """ BTCUSD Price Reporter
-
 Example of a subclassed Reporter.
 """
 import asyncio
@@ -20,19 +19,7 @@ from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.utils.log import get_logger
 
-from eth_account.account import Account
-from eth_account.signers.local import LocalAccount
-from telliot_feed_examples.flashbots import flashbot
-from telliot_feed_examples.flashbots.provider import get_default_endpoint
-from dotenv import load_dotenv, find_dotenv
-import os
 
-from telliot_core.gas.etherscan_gas import EtherscanGasPriceSource
-from web3 import Web3
-from web3.exceptions import TransactionNotFound
-
-
-load_dotenv(find_dotenv())
 logger = get_logger(__name__)
 
 
@@ -51,7 +38,7 @@ class IntervalReporter:
         gas_price_speed: str = "fast",
         profit_threshold: float = 0.0,
         max_gas_price: int = 0,
-        gas_limit: int = 350000,
+        gas_limit: int = 500000,
     ) -> None:
 
         self.endpoint = endpoint
@@ -68,24 +55,8 @@ class IntervalReporter:
 
         logger.info(f"Reporting with account: {self.user}")
 
-        # Set up flashbots
-        self.account: LocalAccount = Account.from_key(private_key)
-        self.signature: LocalAccount = Account.from_key(
-            os.environ.get("SIGNATURE_PRIVATE_KEY"))
-        
-        assert self.signature is not None
-        assert self.user == self.account.address
-
-        flashbots_uri = get_default_endpoint()
-        assert flashbots_uri == "https://relay.flashbots.net"
-
-        flashbot(self.endpoint._web3, self.signature, flashbots_uri)
-        logger.info("Flashbots connection set up")
-
-
     async def ensure_staked(self, gas_price_gwei: int) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked
-
         Returns a bool signifying whether the current address is
         staked. If the address is not initially, it attempts to stake with
         the address's funds."""
@@ -149,7 +120,6 @@ class IntervalReporter:
 
     async def check_reporter_lock(self) -> Tuple[bool, ResponseStatus]:
         """Ensure enough time has passed since last report
-
         Returns a bool signifying whether a given address is in a
         reporter lock or not (TellorX oracle users cannot submit
         multiple times within 12 hours)."""
@@ -184,10 +154,9 @@ class IntervalReporter:
         return False, status
 
     async def ensure_profitable(
-        self, gas_price_gwei: int, base_fee,
+        self, gas_price_gwei: int
     ) -> Tuple[bool, ResponseStatus]:
         """Estimate profitability
-
         Returns a bool signifying whether submitting for a given
         queryID would generate a net profit."""
         status = ResponseStatus()
@@ -222,12 +191,10 @@ class IntervalReporter:
         tips, tb_reward = rewards
         logger.info(
             f"""
-            tips: {tips / 1e18} TRB
-            time-based reward: {tb_reward / 1e18} TRB
-            gas: {self.gas_limit}
-            priority fee: {gas_price_gwei}
-            base fee: {base_fee}
-            max fee: {max_fee}
+            current tips: {tips / 1e18} TRB
+            current tb_reward: {tb_reward / 1e18} TRB
+            gas_limit: {self.gas_limit}
+            gas_price_gwei: {gas_price_gwei}
             """
         )
 
@@ -253,7 +220,6 @@ class IntervalReporter:
         self, gas_price_gwei: int
     ) -> Tuple[bool, ResponseStatus]:
         """Ensure estimated gas price isn't above threshold.
-
         Returns a bool signifying whether the estimated gas price
         is under the maximum threshold chosen by the user."""
         status = ResponseStatus()
@@ -268,16 +234,12 @@ class IntervalReporter:
 
     async def fetch_gas_price(self) -> int:
         """Fetch gas price from ethgasstation in gwei."""
-        c = EtherscanGasPriceSource()
-        result = await c.fetch_new_datapoint()
-        return result
-        # return await ethgasstation(style=self.gas_price_speed)  # type: ignore
+        return await ethgasstation(style=self.gas_price_speed)  # type: ignore
 
     async def report_once(
         self,
     ) -> Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]:
         """Report query value once
-
         This method checks to see if a user is able to submit
         values to the TellorX oracle, given their staker status
         and last submission time. Also, this method does not
@@ -288,24 +250,21 @@ class IntervalReporter:
             return None, status
 
         # Custom gas price overrides other gas price settings
-        if priority_fee is None or max_fee is None:
-            gp_info = await self.fetch_gas_price()
-        print(gp_info)
-        gas_price_gwei = gp_info[0].FastGasPrice
+        gas_price_gwei = self.gas_price
+        if gas_price_gwei is None:
+            gas_price_gwei = await self.fetch_gas_price()
 
-
-        gas_price_below_limit, status = await self.enforce_gas_price_limit(
-            gas_price_gwei
-        )
-        if not gas_price_below_limit:
-            return None, status
+            gas_price_below_limit, status = await self.enforce_gas_price_limit(
+                gas_price_gwei
+            )
+            if not gas_price_below_limit:
+                return None, status
 
         staked, status = await self.ensure_staked(gas_price_gwei)
         if not staked:
             return None, status
 
-        next_base_fee = gp_info[0].suggestBaseFee
-        profitable, status = await self.ensure_profitable(gas_price_gwei, next_base_fee)
+        profitable, status = await self.ensure_profitable(gas_price_gwei)
         if not profitable:
             return None, status
 
@@ -329,6 +288,7 @@ class IntervalReporter:
 
         query_id = query.query_id
         query_data = query.query_data
+        extra_gas_price = 20
 
         timestamp_count, read_status = await self.oracle.read(
             func_name="getTimestampCountById", _queryId=query_id
@@ -343,54 +303,19 @@ class IntervalReporter:
             status.e = read_status.e
             return None, status
 
-        submit_val_func = self.oracle.contract.get_function_by_name("submitValue")
-        submit_val_tx = submit_val_func(
+        # Submit value
+        tx_receipt, status = await self.oracle.write_with_retry(
+            func_name="submitValue",
+            gas_price=gas_price_gwei,
+            gas_limit=self.gas_limit,
+            extra_gas_price=extra_gas_price,
+            retries=5,
             _queryId=query_id,
             _value=value,
             _nonce=timestamp_count,
             _queryData=query_data,
         )
-        acc_nonce = self.endpoint._web3.eth.get_transaction_count(self.account.address)
 
-        max_fee = next_base_fee + gas_price_gwei
-        logger.info(f'max fee: {max_fee}')
-
-        chain_id = 1
-        logger.info(f'chain id: {chain_id}')
-        built_submit_val_tx = submit_val_tx.buildTransaction(
-            {
-                "nonce": acc_nonce,
-                "gas": self.gas_limit,
-                "maxFeePerGas": Web3.toWei(max_fee, "gwei"),
-                "maxPriorityFeePerGas": Web3.toWei(gas_price_gwei, "gwei"),
-                "chainId": chain_id,
-            }
-        )
-        submit_val_tx_signed = self.account.sign_transaction(built_submit_val_tx)
-
-        # Create bundle of one pre-signed, EIP-1559 (type 2) transaction
-        bundle = [
-            {"signed_transaction": submit_val_tx_signed.rawTransaction},
-        ]
-
-        # Send bundle to be executed in the next block
-        block = self.endpoint._web3.eth.block_number
-        result = self.endpoint._web3.flashbots.send_bundle(
-            bundle, 
-            target_block_number=block+1
-        )
-        logger.info(f"Bundle sent to miners in block {block}")
-
-        # wait for the results
-        result.wait()
-        try:
-            tx_receipt = result.receipts()
-            print(f"Bundle was executed in block {tx_receipt[0].blockNumber}")
-        except TransactionNotFound:
-            print("Bundle was not executed")
-            return
-        
-        status = ResponseStatus()
         if status.ok and not status.error:
             # Reset previous submission timestamp
             self.last_submission_timestamp = 0
