@@ -34,11 +34,9 @@ class IntervalReporter:
         master: Contract,
         oracle: Contract,
         datafeed: DataFeed[Any],
-        gas_price: Optional[int] = None,
-        gas_price_speed: str = "fast",
-        profit_threshold: float = 0.0,
-        max_gas_price: int = 0,
-        gas_limit: int = 500000,
+        gas_limit: Optional[int] = 300000,
+        priority_fee: Optional[int] = None,
+        expected_profit: Union[float, str] = 100.0,
     ) -> None:
 
         self.endpoint = endpoint
@@ -47,11 +45,9 @@ class IntervalReporter:
         self.datafeed = datafeed
         self.user = self.endpoint.web3.eth.account.from_key(private_key).address
         self.last_submission_timestamp = 0
-        self.profit_threshold = profit_threshold
-        self.max_gas_price = max_gas_price
-        self.gas_price_speed = gas_price_speed
-        self.gas_price = gas_price
+        self.expected_profit = expected_profit
         self.gas_limit = gas_limit
+        self.priority_fee = priority_fee
 
         logger.info(f"Reporting with account: {self.user}")
 
@@ -162,7 +158,7 @@ class IntervalReporter:
         status = ResponseStatus()
 
         # Don't check profitability if not specified by user
-        if self.profit_threshold == 0.0:
+        if self.expected_profit == 0.0:
             return True, status
 
         # Get current tips and time-based reward for given queryID
@@ -208,7 +204,7 @@ class IntervalReporter:
         percent_profit = ((profit_usd) / costs_usd) * 100
         logger.info(f"Estimated percent profit: {round(percent_profit, 2)}%")
 
-        if not percent_profit >= self.profit_threshold:
+        if not percent_profit >= self.expected_profit:
             status.ok = False
             status.error = "Estimated profitability below threshold."
             logger.info(status.error)
