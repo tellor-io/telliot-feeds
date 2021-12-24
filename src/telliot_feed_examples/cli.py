@@ -155,7 +155,7 @@ def cli(
     help="use custom priority fee (gwei)",
     nargs=1,
     type=float,
-    default=2.5,
+    default=3.0,
 )
 @click.option(
     "--profit",

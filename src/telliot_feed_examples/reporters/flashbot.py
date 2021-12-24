@@ -221,7 +221,7 @@ class FlashbotsReporter(IntervalReporter):
 
         max_fee = next_base_fee + self.priority_fee
         logger.info(f"maxFeePerGas used: {max_fee}")
-        logger.info(f"maxPriorityFeePerGas used: {self.priority_fee}")
+        logger.info(f"maxPriorityFeePerGas used: {max_fee}")
 
         built_submit_val_tx = submit_val_tx.buildTransaction(
             {
@@ -231,7 +231,7 @@ class FlashbotsReporter(IntervalReporter):
                 # TODO: Investigate more why etherscan txs using Flashbots have
                 # the same maxFeePerGas and maxPriorityFeePerGas. Example:
                 # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288 # noqa: E501
-                "maxPriorityFeePerGas": Web3.toWei(self.priority_fee, "gwei"),  # type: ignore # noqa: E501
+                "maxPriorityFeePerGas": Web3.toWei(max_fee, "gwei"),  # type: ignore # noqa: E501
                 "chainId": self.chain_id,
             }
         )
@@ -254,17 +254,16 @@ class FlashbotsReporter(IntervalReporter):
         # Wait for transaction confirmation
         result.wait()
         try:
-            tx_receipt = result.receipts()
-            print(f"Bundle was executed in block {tx_receipt[0].blockNumber}")
+            tx_receipt = result.receipts()[0]
+            print(f"Bundle was executed in block {tx_receipt.blockNumber}")
         except TransactionNotFound as e:
-            status.error = "Bundle was not executed: " + str(e.__traceback__)
+            status.error = "Bundle was not executed: " + e
             logger.error(status.error)
             status.e = e
             return None, status
 
         status = ResponseStatus()
         if status.ok and not status.error:
-            logger.info(str(tx_receipt))
             # Reset previous submission timestamp
             self.last_submission_timestamp = 0
             tx_hash = tx_receipt["transactionHash"].hex()
