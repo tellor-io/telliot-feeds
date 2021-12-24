@@ -1,10 +1,9 @@
 # Majority of this code from web3-flashbots:
 # https://github.com/flashbots/web3-flashbots
-
 # EIP-1559 subbport by @lekhovitsky
 # https://github.com/lekhovitsky
-
-from typing import TypedDict, List
+from typing import List
+from typing import TypedDict
 
 from eth_account.signers.local import LocalAccount
 from hexbytes import HexBytes

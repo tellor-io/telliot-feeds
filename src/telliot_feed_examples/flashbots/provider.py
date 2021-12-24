@@ -1,20 +1,23 @@
 # Majority of this code from web3-flashbots:
 # https://github.com/flashbots/web3-flashbots
-
 # EIP-1559 subbport by @lekhovitsky
 # https://github.com/lekhovitsky
-
+# flake8: noqa
 import logging
 import os
-from typing import Any, Union, Optional
+from typing import Any
+from typing import Optional
+from typing import Union
 
+from eth_account import Account
+from eth_account import messages
 from eth_account.signers.local import LocalAccount
 from eth_typing import URI
 from web3 import HTTPProvider
-from web3._utils.request import make_post_request
-from web3.types import RPCEndpoint, RPCResponse
 from web3 import Web3
-from eth_account import Account, messages
+from web3._utils.request import make_post_request
+from web3.types import RPCEndpoint
+from web3.types import RPCResponse
 
 
 def get_default_endpoint() -> URI:

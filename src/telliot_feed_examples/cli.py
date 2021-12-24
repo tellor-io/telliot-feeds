@@ -12,8 +12,8 @@ from click.core import Context
 from telliot_core.apps.core import TelliotCore
 
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
-from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
+from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
@@ -22,7 +22,7 @@ logger = get_logger(__name__)
 
 
 def parse_profit_input(expected_profit: str) -> Optional[float]:
-    """Parses user input expected profit and ensures 
+    """Parses user input expected profit and ensures
     the input is either a float or the string 'YOLO'."""
     if expected_profit == "YOLO":
         return expected_profit
@@ -44,7 +44,7 @@ def print_reporter_settings(
     """Print user settings to console."""
 
     if using_flashbots:
-        click.echo(f"\n⚡🤖⚡ Reporting through Flashbots relay ⚡🤖⚡")
+        click.echo("\n⚡🤖⚡ Reporting through Flashbots relay ⚡🤖⚡")
 
     click.echo(f"Reporting legacy ID: {legacy_id}")
     click.echo(f"Current chain ID: {chain_id}")
@@ -190,7 +190,7 @@ def report(
         gas_limit=gas_limit,
         priority_fee=priority_fee,
         expected_profit=expected_profit,
-        chain_id=core.config.main.chain_id
+        chain_id=core.config.main.chain_id,
     )
 
     chosen_feed = LEGACY_DATAFEEDS[legacy_id]

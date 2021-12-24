@@ -3,36 +3,31 @@
 Example of a subclassed Reporter.
 """
 import asyncio
-import time
+import os
 from typing import Any
 from typing import Optional
 from typing import Tuple
-import asyncio
 
+from dotenv import find_dotenv
+from dotenv import load_dotenv
+from eth_account.account import Account
+from eth_account.signers.local import LocalAccount
 from telliot_core.contract.contract import Contract
-from telliot_core.contract.gas import ethgasstation
 from telliot_core.datafeed import DataFeed
+from telliot_core.gas.etherscan_gas import EtherscanGasPriceSource
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
+from web3 import Web3
 from web3.datastructures import AttributeDict
+from web3.exceptions import TransactionNotFound
 
-from typing import Union
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
-from telliot_feed_examples.utils.log import get_logger
-
-from eth_account.account import Account
-from eth_account.signers.local import LocalAccount
 from telliot_feed_examples.flashbots import flashbot
 from telliot_feed_examples.flashbots.provider import get_default_endpoint
-from dotenv import load_dotenv, find_dotenv
-import os
-
-from telliot_core.gas.etherscan_gas import EtherscanGasPriceSource
-from web3 import Web3
-from web3.exceptions import TransactionNotFound
 from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.utils.log import get_logger
 
 
 load_dotenv(find_dotenv())
@@ -75,7 +70,8 @@ class FlashbotsReporter(IntervalReporter):
         # Set up flashbots
         self.account: LocalAccount = Account.from_key(private_key)
         self.signature: LocalAccount = Account.from_key(
-            os.environ.get("SIGNATURE_PRIVATE_KEY"))
+            os.environ.get("SIGNATURE_PRIVATE_KEY")
+        )
 
         assert self.signature is not None
         assert self.user == self.account.address
@@ -168,16 +164,14 @@ class FlashbotsReporter(IntervalReporter):
         and last submission time. Also, this method does not
         submit values if doing so won't make a profit."""
 
-        reporter_locked, status = await self.check_reporter_lock()
-        if reporter_locked:
-            return None, status
+        # reporter_locked, status = await self.check_reporter_lock()
+        # if reporter_locked:
+        #     return None, status
 
         fee_info = await self.get_fee_info()
         next_base_fee = fee_info[0].suggestBaseFee
 
-        profitable, status = await self.ensure_profitable(
-            base_fee=next_base_fee
-        )
+        profitable, status = await self.ensure_profitable(base_fee=next_base_fee)
         if not profitable:
             return None, status
 
@@ -225,8 +219,8 @@ class FlashbotsReporter(IntervalReporter):
         acc_nonce = self.endpoint._web3.eth.get_transaction_count(self.account.address)
 
         max_fee = next_base_fee + self.priority_fee
-        logger.info(f'maxFeePerGas used: {max_fee}')
-        logger.info(f'maxPriorityFeePerGas used: {self.priority_fee}')
+        logger.info(f"maxFeePerGas used: {max_fee}")
+        logger.info(f"maxPriorityFeePerGas used: {self.priority_fee}")
 
         built_submit_val_tx = submit_val_tx.buildTransaction(
             {
@@ -250,8 +244,7 @@ class FlashbotsReporter(IntervalReporter):
         # Send bundle to be executed in the next block
         block = self.endpoint._web3.eth.block_number
         result = self.endpoint._web3.flashbots.send_bundle(
-            bundle, 
-            target_block_number=block+1
+            bundle, target_block_number=block + 1
         )
         logger.info(f"Bundle sent to miners in block {block}")
 
@@ -263,7 +256,7 @@ class FlashbotsReporter(IntervalReporter):
         except TransactionNotFound:
             print("Bundle was not executed")
             return
-        
+
         status = ResponseStatus()
         if status.ok and not status.error:
             logger.info(str(tx_receipt))

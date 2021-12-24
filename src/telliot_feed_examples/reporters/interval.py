@@ -6,6 +6,7 @@ import time
 from typing import Any
 from typing import Optional
 from typing import Tuple
+from typing import Union
 
 from telliot_core.contract.contract import Contract
 from telliot_core.contract.gas import ethgasstation
@@ -18,7 +19,6 @@ from web3.datastructures import AttributeDict
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.utils.log import get_logger
-from typing import Union
 
 
 logger = get_logger(__name__)

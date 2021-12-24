@@ -1,11 +1,10 @@
 # Majority of this code from web3-flashbots:
 # https://github.com/flashbots/web3-flashbots
 # Including it here instead because it ^ doesn't seem to be actively supported.
-
 # EIP-1559 subbport by @lekhovitsky
 # https://github.com/lekhovitsky
-
-from typing import Union, Optional
+from typing import Optional
+from typing import Union
 
 from eth_account.signers.local import LocalAccount
 from eth_typing import URI

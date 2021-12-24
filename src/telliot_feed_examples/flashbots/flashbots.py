@@ -1,38 +1,40 @@
 # Majority of this code from web3-flashbots:
 # https://github.com/flashbots/web3-flashbots
-
 # EIP-1559 subbport by @lekhovitsky
 # https://github.com/lekhovitsky
-
-import rlp
 import time
 from functools import reduce
-from typing import Any, Dict, List, Optional, Callable, Union
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
 
+import rlp
 from eth_account import Account
+from eth_account._utils.legacy_transactions import encode_transaction
 from eth_account._utils.legacy_transactions import (
-    Transaction,
-    encode_transaction,
     serializable_unsigned_transaction_from_dict,
 )
-from eth_account._utils.typed_transactions import (
-    AccessListTransaction,
-    DynamicFeeTransaction,
-)
+from eth_account._utils.legacy_transactions import Transaction
+from eth_account._utils.typed_transactions import AccessListTransaction
+from eth_account._utils.typed_transactions import DynamicFeeTransaction
 from eth_typing import HexStr
 from hexbytes import HexBytes
 from toolz import dissoc
 from web3 import Web3
 from web3.method import Method
 from web3.module import Module
-from web3.types import RPCEndpoint, Nonce, TxParams, _Hash32
+from web3.types import _Hash32
+from web3.types import Nonce
+from web3.types import RPCEndpoint
+from web3.types import TxParams
 
-from .types import (
-    FlashbotsOpts,
-    FlashbotsBundleRawTx,
-    FlashbotsBundleTx,
-    FlashbotsBundleDictTx,
-)
+from .types import FlashbotsBundleDictTx
+from .types import FlashbotsBundleRawTx
+from .types import FlashbotsBundleTx
+from .types import FlashbotsOpts
 
 
 SECONDS_PER_BLOCK = 15
@@ -61,12 +63,12 @@ class FlashbotsTransactionResponse:
         self.target_block_number = target_block_number
 
     def wait(self) -> None:
-        """ Waits until the target block has been reached """
+        """Waits until the target block has been reached"""
         while self.w3.eth.blockNumber < self.target_block_number:
             time.sleep(1)
 
     def receipts(self) -> List[Union[_Hash32, HexBytes, HexStr]]:
-        """ Returns all the transaction receipts from the submitted bundle """
+        """Returns all the transaction receipts from the submitted bundle"""
         self.wait()
         return list(
             map(lambda tx: self.w3.eth.getTransactionReceipt(tx["hash"]), self.bundle)
@@ -83,7 +85,7 @@ class Flashbots(Module):
             Union[FlashbotsBundleTx, FlashbotsBundleRawTx, FlashbotsBundleDictTx]
         ],
     ) -> List[HexBytes]:
-        """ Given a bundle of signed and unsigned transactions, it signs them all """
+        """Given a bundle of signed and unsigned transactions, it signs them all"""
         nonces: Dict[HexStr, Nonce] = {}
         signed_transactions: List[HexBytes] = []
 
@@ -155,7 +157,8 @@ class Flashbots(Module):
         target_block_number: int,
         opts: Optional[FlashbotsOpts] = None,
     ) -> List[Any]:
-        """ Given a raw signed bundle, it packages it up with the block numbre and the timestamps """
+        """Given a raw signed bundle,
+        it packages it up with the block numbre and the timestamps"""
         # convert to hex
         return [
             {
@@ -258,7 +261,8 @@ class Flashbots(Module):
         evm_timestamp,
         opts: Optional[FlashbotsOpts] = None,
     ) -> Any:
-        """ Given a raw signed bundle, it packages it up with the block number and the timestamps """
+        """Given a raw signed bundle,
+        it packages it up with the block number and the timestamps"""
         inpt = [
             {
                 "txs": list(map(lambda x: x.hex(), signed_bundled_transactions)),
