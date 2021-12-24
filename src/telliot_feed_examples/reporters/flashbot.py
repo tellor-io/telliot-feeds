@@ -231,7 +231,7 @@ class FlashbotsReporter(IntervalReporter):
                 # TODO: Investigate more why etherscan txs using Flashbots have
                 # the same maxFeePerGas and maxPriorityFeePerGas. Example:
                 # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288 # noqa: E501
-                "maxPriorityFeePerGas": Web3.toWei(max_fee, "gwei"),  # type: ignore # noqa: E501
+                "maxPriorityFeePerGas": Web3.toWei(max_fee, "gwei"),  # noqa: E501
                 "chainId": self.chain_id,
             }
         )
@@ -257,7 +257,7 @@ class FlashbotsReporter(IntervalReporter):
             tx_receipt = result.receipts()[0]
             print(f"Bundle was executed in block {tx_receipt.blockNumber}")
         except TransactionNotFound as e:
-            status.error = "Bundle was not executed: " + e
+            status.error = "Bundle was not executed: " + str(e)
             logger.error(status.error)
             status.e = e
             return None, status
