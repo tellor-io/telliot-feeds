@@ -6,6 +6,7 @@ import asyncio
 from typing import Any
 from typing import Mapping
 from typing import Optional
+from typing import Union
 
 import click
 from click.core import Context
@@ -21,7 +22,7 @@ from telliot_feed_examples.utils.oracle_write import tip_query
 logger = get_logger(__name__)
 
 
-def parse_profit_input(expected_profit: str) -> Optional[float]:
+def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
     """Parses user input expected profit and ensures
     the input is either a float or the string 'YOLO'."""
     if expected_profit == "YOLO":
@@ -31,6 +32,7 @@ def parse_profit_input(expected_profit: str) -> Optional[float]:
             return float(expected_profit)
         except ValueError:
             click.echo("Not a valid profit input. Enter float or the string, 'YOLO'")
+            return None
 
 
 def print_reporter_settings(
@@ -42,9 +44,10 @@ def print_reporter_settings(
     chain_id: int,
 ) -> None:
     """Print user settings to console."""
+    click.echo("")
 
     if using_flashbots:
-        click.echo("\n⚡🤖⚡ Reporting through Flashbots relay ⚡🤖⚡")
+        click.echo("⚡🤖⚡ Reporting through Flashbots relay ⚡🤖⚡")
 
     click.echo(f"Reporting legacy ID: {legacy_id}")
     click.echo(f"Current chain ID: {chain_id}")
@@ -161,7 +164,7 @@ def cli(
     nargs=1,
     # User can omit profitability checks by specifying "YOLO"
     type=str,
-    default=100.0,
+    default="100.0",
 )
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.pass_context
@@ -197,7 +200,6 @@ def report(
 
     common_reporter_kwargs = {
         "endpoint": core.endpoint,
-        "chain_id": core.config.main.chain_id,
         "private_key": core.get_default_staker().private_key,
         "master": core.tellorx.master,
         "oracle": core.tellorx.oracle,
@@ -208,7 +210,10 @@ def report(
     }
 
     if using_flashbots:
-        reporter = FlashbotsReporter(**common_reporter_kwargs)
+        reporter = FlashbotsReporter(
+            **common_reporter_kwargs,
+            chain_id=core.config.main.chain_id,
+        )
     else:
         reporter = IntervalReporter(**common_reporter_kwargs)
 

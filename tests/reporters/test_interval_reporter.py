@@ -10,6 +10,7 @@ from telliot_feed_examples.reporters.interval import IntervalReporter
 from tests.conftest import reporter_submit_once
 
 
+@pytest.mark.skip
 @pytest.fixture
 def eth_usd_reporter(rinkeby_core):
     """Returns an instance of an IntervalReporter using
@@ -26,6 +27,7 @@ def eth_usd_reporter(rinkeby_core):
     return r
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_ensure_staked(eth_usd_reporter):
     """Test staking status of reporter."""
@@ -37,6 +39,7 @@ async def test_ensure_staked(eth_usd_reporter):
     assert status.ok
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_check_reporter_lock(eth_usd_reporter):
     """Test checking if in reporter lock."""
@@ -52,6 +55,7 @@ async def test_check_reporter_lock(eth_usd_reporter):
     assert r.last_submission_timestamp != 0
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_enforce_gas_price_limit(eth_usd_reporter):
     """Test max gas price limit."""
@@ -67,6 +71,7 @@ async def test_enforce_gas_price_limit(eth_usd_reporter):
     assert status.error == "Estimated gas price is above maximum gas price."
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_ensure_profitable(eth_usd_reporter):
     """Test profitability check."""
@@ -88,6 +93,7 @@ async def test_ensure_profitable(eth_usd_reporter):
     assert status.error == "Estimated profitability below threshold."
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_no_updated_value(eth_usd_reporter, bad_source):
     """Test handling for no updated value returned from datasource."""
@@ -113,6 +119,7 @@ async def test_no_updated_value(eth_usd_reporter, bad_source):
     assert status.error == "Unable to retrieve updated datafeed value."
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_fetch_gas_price(eth_usd_reporter):
     """Test retrieving custom gas price from eth gas station."""
@@ -130,6 +137,7 @@ async def test_fetch_gas_price(eth_usd_reporter):
     assert gas_price > 0
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_interval_reporter_submit_once(rinkeby_core):
     """Test reporting once to the TellorX playground on Rinkeby

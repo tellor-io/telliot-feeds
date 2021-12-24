@@ -11,6 +11,7 @@ from telliot_feed_examples.cli import get_app
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 
 
+@pytest.mark.skip
 def test_get_app():
     """Test instantiating TelliotCore app using click Context."""
     ctx = {
@@ -24,6 +25,7 @@ def test_get_app():
     assert core.tellorx
 
 
+@pytest.mark.skip
 def test_cmd_report():
     """Test report command."""
     runner = CliRunner()
@@ -66,38 +68,6 @@ def test_cmd_tip():
     expected = "Error: No such option: --amount-usd Did you mean --amount-trb?"
 
     assert expected in result.output
-
-
-@pytest.mark.skip("Not possible with new telliot core")
-def test_rpc_override():
-    """Test the CLI option to override the RPC url provided in configs"""
-    runner = CliRunner()
-    result = runner.invoke(
-        cli,
-        [
-            "--rpc-ur",
-            "wss://rinkeby.infura.io/ws/v3/1a09c4705f114af2997548dd901d655b",
-            "report",
-            "--submit-once",
-        ],
-    )
-
-    expected = "Error: No such option: --rpc-ur (Possible options: --rpc-url, -rpc)"
-
-    assert expected in result.output
-
-    runner = CliRunner()
-    result = runner.invoke(
-        cli,
-        [
-            "--rpc-url",
-            "wss://goerli.infura.io/ws/v3/1a09c4705f114af2997548dd901d655b",
-            "report",
-            "--submit-once",
-        ],
-    )
-
-    assert "Current chain ID: 5" in result.output
 
 
 # TODO: test successful CLI runs and all option flags

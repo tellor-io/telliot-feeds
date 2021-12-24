@@ -28,7 +28,7 @@ class IntervalReporter:
     """Reports values from given datafeeds to a TellorX Oracle
     every 10 seconds."""
 
-    async def __init__(
+    def __init__(
         self,
         endpoint: RPCEndpoint,
         private_key: str,
@@ -52,7 +52,7 @@ class IntervalReporter:
 
         logger.info(f"Reporting with account: {self.user}")
 
-        staked, status = await self.ensure_staked()
+        staked, status = asyncio.run(self.ensure_staked())
         assert staked and status.ok
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
