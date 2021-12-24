@@ -14,9 +14,10 @@ from telliot_core.apps.core import TelliotCore
 
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
-from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
+
+# from telliot_feed_examples.reporters.interval import IntervalReporter
 
 
 logger = get_logger(__name__)
@@ -178,7 +179,7 @@ def report(
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
-    expected_profit = parse_profit_input(expected_profit)
+    expected_profit = parse_profit_input(expected_profit)  # type: ignore
     if expected_profit is None:
         return
 
@@ -215,7 +216,9 @@ def report(
             chain_id=core.config.main.chain_id,
         )
     else:
-        reporter = IntervalReporter(**common_reporter_kwargs)
+        click.echo("Only reporting with Flashbots supported currently")
+        # reporter = IntervalReporter(**common_reporter_kwargs)
+        return
 
     if submit_once:
         _, _ = asyncio.run(reporter.report_once())

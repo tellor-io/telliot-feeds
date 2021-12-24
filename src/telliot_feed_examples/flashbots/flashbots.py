@@ -2,6 +2,7 @@
 # https://github.com/flashbots/web3-flashbots
 # EIP-1559 subbport by @lekhovitsky
 # https://github.com/lekhovitsky
+# type: ignore
 import time
 from functools import reduce
 from typing import Any

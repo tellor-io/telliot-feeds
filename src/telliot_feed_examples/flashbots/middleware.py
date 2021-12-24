@@ -2,6 +2,7 @@
 # https://github.com/flashbots/web3-flashbots
 # EIP-1559 subbport by @lekhovitsky
 # https://github.com/lekhovitsky
+# type: ignore
 from typing import Any
 from typing import Callable
 

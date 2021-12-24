@@ -3,6 +3,7 @@
 # EIP-1559 subbport by @lekhovitsky
 # https://github.com/lekhovitsky
 # flake8: noqa
+# type: ignore
 import logging
 import os
 from typing import Any

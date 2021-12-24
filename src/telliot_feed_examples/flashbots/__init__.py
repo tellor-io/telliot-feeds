@@ -3,6 +3,7 @@
 # Including it here instead because it ^ doesn't seem to be actively supported.
 # EIP-1559 subbport by @lekhovitsky
 # https://github.com/lekhovitsky
+# type: ignore
 from typing import Optional
 from typing import Union
 

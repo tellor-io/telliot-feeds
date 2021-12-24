@@ -24,8 +24,8 @@ from web3.exceptions import TransactionNotFound
 
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
-from telliot_feed_examples.flashbots import flashbot
-from telliot_feed_examples.flashbots.provider import get_default_endpoint
+from telliot_feed_examples.flashbots import flashbot  # type: ignore
+from telliot_feed_examples.flashbots.provider import get_default_endpoint  # type: ignore
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.utils.log import get_logger
 
@@ -59,7 +59,7 @@ class FlashbotsReporter(IntervalReporter):
         self.user = self.endpoint.web3.eth.account.from_key(private_key).address
         self.last_submission_timestamp = 0
         self.expected_profit = expected_profit
-        self.priority_fee = priority_fee
+        self.priority_fee = priority_fee  # type: ignore
         self.gas_limit = gas_limit
 
         logger.info(f"Reporting with account: {self.user}")
@@ -116,7 +116,7 @@ class FlashbotsReporter(IntervalReporter):
         price_trb_usd = trb_usd_median_feed.source.latest[0]
 
         tips, tb_reward = rewards
-        max_fee = self.priority_fee + base_fee
+        max_fee = self.priority_fee + base_fee  # type: ignore
 
         logger.info(
             f"""
@@ -131,7 +131,7 @@ class FlashbotsReporter(IntervalReporter):
 
         revenue = tb_reward + tips
         rev_usd = revenue / 1e18 * price_trb_usd
-        costs = self.gas_limit * max_fee
+        costs = self.gas_limit * max_fee  # type: ignore
         costs_usd = costs / 1e9 * price_eth_usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
@@ -147,7 +147,7 @@ class FlashbotsReporter(IntervalReporter):
 
         return True, status
 
-    async def get_fee_info(self) -> int:
+    async def get_fee_info(self) -> Any:
         """Fetch fee into from Etherscan API.
         Source: https://etherscan.io/apis"""
         c = EtherscanGasPriceSource()
@@ -164,12 +164,13 @@ class FlashbotsReporter(IntervalReporter):
         and last submission time. Also, this method does not
         submit values if doing so won't make a profit."""
 
-        # reporter_locked, status = await self.check_reporter_lock()
-        # if reporter_locked:
-        #     return None, status
+        reporter_locked, status = await self.check_reporter_lock()
+        if reporter_locked:
+            return None, status
 
         fee_info = await self.get_fee_info()
         next_base_fee = fee_info[0].suggestBaseFee
+        assert next_base_fee is not None
 
         profitable, status = await self.ensure_profitable(base_fee=next_base_fee)
         if not profitable:
@@ -229,12 +230,14 @@ class FlashbotsReporter(IntervalReporter):
                 "maxFeePerGas": Web3.toWei(max_fee, "gwei"),
                 # TODO: Investigate more why etherscan txs using Flashbots have
                 # the same maxFeePerGas and maxPriorityFeePerGas. Example:
-                # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288
-                "maxPriorityFeePerGas": Web3.toWei(self.priority_fee, "gwei"),
+                # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288 # noqa: E501
+                "maxPriorityFeePerGas": Web3.toWei(self.priority_fee, "gwei"),  # type: ignore # noqa: E501
                 "chainId": self.chain_id,
             }
         )
-        submit_val_tx_signed = self.account.sign_transaction(built_submit_val_tx)
+        submit_val_tx_signed = self.account.sign_transaction(
+            built_submit_val_tx
+        )  # type: ignore
 
         # Create bundle of one pre-signed, EIP-1559 (type 2) transaction
         bundle = [
@@ -253,9 +256,11 @@ class FlashbotsReporter(IntervalReporter):
         try:
             tx_receipt = result.receipts()
             print(f"Bundle was executed in block {tx_receipt[0].blockNumber}")
-        except TransactionNotFound:
-            print("Bundle was not executed")
-            return
+        except TransactionNotFound as e:
+            status.error = "Bundle was not executed: " + str(e.__traceback__)
+            logger.error(status.error)
+            status.e = e
+            return None, status
 
         status = ResponseStatus()
         if status.ok and not status.error:
