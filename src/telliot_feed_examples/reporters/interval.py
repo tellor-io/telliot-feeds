@@ -18,6 +18,7 @@ from web3.datastructures import AttributeDict
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.utils.log import get_logger
+from typing import Union
 
 
 logger = get_logger(__name__)
@@ -27,7 +28,7 @@ class IntervalReporter:
     """Reports values from given datafeeds to a TellorX Oracle
     every 10 seconds."""
 
-    def __init__(
+    async def __init__(
         self,
         endpoint: RPCEndpoint,
         private_key: str,
@@ -51,12 +52,17 @@ class IntervalReporter:
 
         logger.info(f"Reporting with account: {self.user}")
 
-    async def ensure_staked(self, gas_price_gwei: int) -> Tuple[bool, ResponseStatus]:
+        staked, status = await self.ensure_staked()
+        assert staked and status.ok
+
+    async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked
         Returns a bool signifying whether the current address is
         staked. If the address is not initially, it attempts to stake with
         the address's funds."""
         status = ResponseStatus()
+
+        gas_price_gwei = await self.fetch_gas_price()
 
         staker_info, read_status = await self.master.read(
             "getStakerInfo", _staker=self.user
@@ -230,7 +236,7 @@ class IntervalReporter:
 
     async def fetch_gas_price(self) -> int:
         """Fetch gas price from ethgasstation in gwei."""
-        return await ethgasstation(style=self.gas_price_speed)  # type: ignore
+        return await ethgasstation(style="average")  # type: ignore
 
     async def report_once(
         self,
@@ -255,10 +261,6 @@ class IntervalReporter:
             )
             if not gas_price_below_limit:
                 return None, status
-
-        staked, status = await self.ensure_staked(gas_price_gwei)
-        if not staked:
-            return None, status
 
         profitable, status = await self.ensure_profitable(gas_price_gwei)
         if not profitable:
