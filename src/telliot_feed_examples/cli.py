@@ -197,6 +197,7 @@ def report(
 
     common_reporter_kwargs = {
         "endpoint": core.endpoint,
+        "chain_id": core.config.main.chain_id,
         "private_key": core.get_default_staker().private_key,
         "master": core.tellorx.master,
         "oracle": core.tellorx.oracle,

@@ -7,6 +7,7 @@ import time
 from typing import Any
 from typing import Optional
 from typing import Tuple
+import asyncio
 
 from telliot_core.contract.contract import Contract
 from telliot_core.contract.gas import ethgasstation
@@ -16,6 +17,7 @@ from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
+from typing import Union
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.utils.log import get_logger
@@ -37,7 +39,7 @@ load_dotenv(find_dotenv())
 logger = get_logger(__name__)
 
 
-class FlashbotReporter(IntervalReporter):
+class FlashbotsReporter(IntervalReporter):
     """Reports values from given datafeeds to a TellorX Oracle
     every 10 seconds."""
 
@@ -45,46 +47,45 @@ class FlashbotReporter(IntervalReporter):
         self,
         endpoint: RPCEndpoint,
         private_key: str,
+        chain_id: int,
         master: Contract,
         oracle: Contract,
         datafeed: DataFeed[Any],
-        gas_price: Optional[int] = None,
-        gas_price_speed: str = "fast",
-        profit_threshold: float = 0.0,
-        max_gas_price: int = 0,
-        gas_limit: int = 350000,
+        expected_profit: float = 100.0,
+        gas_limit: int = 300000,
+        priority_fee: float = 2.0,
     ) -> None:
 
         self.endpoint = endpoint
         self.master = master
         self.oracle = oracle
         self.datafeed = datafeed
+        self.chain_id = chain_id
         self.user = self.endpoint.web3.eth.account.from_key(private_key).address
         self.last_submission_timestamp = 0
-        self.profit_threshold = profit_threshold
-        self.max_gas_price = max_gas_price
-        self.gas_price_speed = gas_price_speed
-        self.gas_price = gas_price
+        self.expected_profit = expected_profit
+        self.priority_fee = priority_fee
         self.gas_limit = gas_limit
 
         logger.info(f"Reporting with account: {self.user}")
+
+        staked, status = asyncio.run(self.ensure_staked())
+        assert staked and status.ok
 
         # Set up flashbots
         self.account: LocalAccount = Account.from_key(private_key)
         self.signature: LocalAccount = Account.from_key(
             os.environ.get("SIGNATURE_PRIVATE_KEY"))
-        
+
         assert self.signature is not None
         assert self.user == self.account.address
 
         flashbots_uri = get_default_endpoint()
-
         flashbot(self.endpoint._web3, self.signature, flashbots_uri)
-        logger.info("Flashbots connection set up")
-
 
     async def ensure_profitable(
-        self, gas_price_gwei: int, base_fee,
+        self,
+        base_fee: float,
     ) -> Tuple[bool, ResponseStatus]:
         """Estimate profitability
 
@@ -92,9 +93,8 @@ class FlashbotReporter(IntervalReporter):
         queryID would generate a net profit."""
         status = ResponseStatus()
 
-        # Don't check profitability if not specified by user
-        if self.profit_threshold == 0.0:
-            return True, status
+        if self.expected_profit == "YOLO":
+            return True, status  # Don't check profitability
 
         # Get current tips and time-based reward for given queryID
         rewards, read_status = await self.oracle.read(
@@ -120,20 +120,22 @@ class FlashbotReporter(IntervalReporter):
         price_trb_usd = trb_usd_median_feed.source.latest[0]
 
         tips, tb_reward = rewards
+        max_fee = self.priority_fee + base_fee
+
         logger.info(
             f"""
             tips: {tips / 1e18} TRB
             time-based reward: {tb_reward / 1e18} TRB
-            gas: {self.gas_limit}
-            priority fee: {gas_price_gwei}
+            gas limit: {self.gas_limit}
             base fee: {base_fee}
+            priority fee: {self.priority_fee}
             max fee: {max_fee}
             """
         )
 
         revenue = tb_reward + tips
         rev_usd = revenue / 1e18 * price_trb_usd
-        costs = self.gas_limit * gas_price_gwei
+        costs = self.gas_limit * max_fee
         costs_usd = costs / 1e9 * price_eth_usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
@@ -141,7 +143,7 @@ class FlashbotReporter(IntervalReporter):
         percent_profit = ((profit_usd) / costs_usd) * 100
         logger.info(f"Estimated percent profit: {round(percent_profit, 2)}%")
 
-        if not percent_profit >= self.profit_threshold:
+        if not percent_profit >= self.expected_profit:
             status.ok = False
             status.error = "Estimated profitability below threshold."
             logger.info(status.error)
@@ -149,29 +151,12 @@ class FlashbotReporter(IntervalReporter):
 
         return True, status
 
-    async def enforce_gas_price_limit(
-        self, gas_price_gwei: int
-    ) -> Tuple[bool, ResponseStatus]:
-        """Ensure estimated gas price isn't above threshold.
-
-        Returns a bool signifying whether the estimated gas price
-        is under the maximum threshold chosen by the user."""
-        status = ResponseStatus()
-
-        if (self.max_gas_price != 0) and (gas_price_gwei > self.max_gas_price):
-            status.ok = False
-            status.error = "Estimated gas price is above maximum gas price."
-            logger.error(status.error)
-            return False, status
-
-        return True, status
-
-    async def fetch_gas_price(self) -> int:
-        """Fetch gas price from ethgasstation in gwei."""
+    async def get_fee_info(self) -> int:
+        """Fetch fee into from Etherscan API.
+        Source: https://etherscan.io/apis"""
         c = EtherscanGasPriceSource()
         result = await c.fetch_new_datapoint()
         return result
-        # return await ethgasstation(style=self.gas_price_speed)  # type: ignore
 
     async def report_once(
         self,
@@ -187,25 +172,12 @@ class FlashbotReporter(IntervalReporter):
         if reporter_locked:
             return None, status
 
-        # Custom gas price overrides other gas price settings
-        if priority_fee is None or max_fee is None:
-            gp_info = await self.fetch_gas_price()
-        print(gp_info)
-        gas_price_gwei = gp_info[0].FastGasPrice
+        fee_info = await self.get_fee_info()
+        next_base_fee = fee_info[0].suggestBaseFee
 
-
-        gas_price_below_limit, status = await self.enforce_gas_price_limit(
-            gas_price_gwei
+        profitable, status = await self.ensure_profitable(
+            base_fee=next_base_fee
         )
-        if not gas_price_below_limit:
-            return None, status
-
-        staked, status = await self.ensure_staked(gas_price_gwei)
-        if not staked:
-            return None, status
-
-        next_base_fee = gp_info[0].suggestBaseFee
-        profitable, status = await self.ensure_profitable(gas_price_gwei, next_base_fee)
         if not profitable:
             return None, status
 
@@ -252,18 +224,20 @@ class FlashbotReporter(IntervalReporter):
         )
         acc_nonce = self.endpoint._web3.eth.get_transaction_count(self.account.address)
 
-        max_fee = next_base_fee + gas_price_gwei
-        logger.info(f'max fee: {max_fee}')
+        max_fee = next_base_fee + self.priority_fee
+        logger.info(f'maxFeePerGas used: {max_fee}')
+        logger.info(f'maxPriorityFeePerGas used: {self.priority_fee}')
 
-        chain_id = 1
-        logger.info(f'chain id: {chain_id}')
         built_submit_val_tx = submit_val_tx.buildTransaction(
             {
                 "nonce": acc_nonce,
                 "gas": self.gas_limit,
                 "maxFeePerGas": Web3.toWei(max_fee, "gwei"),
-                "maxPriorityFeePerGas": Web3.toWei(gas_price_gwei, "gwei"),
-                "chainId": chain_id,
+                # TODO: Investigate more why etherscan txs using Flashbots have
+                # the same maxFeePerGas and maxPriorityFeePerGas. Example:
+                # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288
+                "maxPriorityFeePerGas": Web3.toWei(self.priority_fee, "gwei"),
+                "chainId": self.chain_id,
             }
         )
         submit_val_tx_signed = self.account.sign_transaction(built_submit_val_tx)
@@ -281,7 +255,7 @@ class FlashbotReporter(IntervalReporter):
         )
         logger.info(f"Bundle sent to miners in block {block}")
 
-        # wait for the results
+        # Wait for transaction confirmation
         result.wait()
         try:
             tx_receipt = result.receipts()
@@ -292,6 +266,7 @@ class FlashbotReporter(IntervalReporter):
         
         status = ResponseStatus()
         if status.ok and not status.error:
+            logger.info(str(tx_receipt))
             # Reset previous submission timestamp
             self.last_submission_timestamp = 0
             tx_hash = tx_receipt["transactionHash"].hex()
