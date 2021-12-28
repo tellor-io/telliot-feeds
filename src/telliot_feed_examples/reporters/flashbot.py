@@ -49,7 +49,7 @@ class FlashbotsReporter(IntervalReporter):
         oracle: Contract,
         datafeed: DataFeed[Any],
         expected_profit: float = 100.0,
-        gas_limit: int = 300000,
+        gas_limit: int = 370000,
         priority_fee: float = 2.0,
     ) -> None:
 
@@ -149,12 +149,12 @@ class FlashbotsReporter(IntervalReporter):
 
         return True, status
 
-    # async def get_fee_info(self) -> Any:
-    #     """Fetch fee into from Etherscan API.
-    #     Source: https://etherscan.io/apis"""
-    #     c = EtherscanGasPriceSource()
-    #     result = await c.fetch_new_datapoint()
-    #     return result
+    async def get_fee_info(self) -> Any:
+        """Fetch fee into from Etherscan API.
+        Source: https://etherscan.io/apis"""
+        c = EtherscanGasPriceSource()
+        result = await c.fetch_new_datapoint()
+        return result
 
     async def report_once(
         self,
@@ -172,7 +172,11 @@ class FlashbotsReporter(IntervalReporter):
 
         # fee_info = await self.get_fee_info()
         # next_base_fee = fee_info[0].suggestBaseFee
-        next_base_fee =  await ethgasstation(style="safeLow")
+        # tip = fee_info[0].FastGasPrice
+        # self.priority_fee = tip
+        # print("priority fee:", tip)
+        # print("next base fee:", next_base_fee)
+        next_base_fee =  await ethgasstation(style="average")
         assert next_base_fee is not None
 
         profitable, status = await self.ensure_profitable(base_fee=next_base_fee)
@@ -224,7 +228,7 @@ class FlashbotsReporter(IntervalReporter):
 
         max_fee = next_base_fee + self.priority_fee
         logger.info(f"maxFeePerGas used: {max_fee}")
-        logger.info(f"maxPriorityFeePerGas used: {max_fee}")
+        logger.info(f"maxPriorityFeePerGas used: {self.priority_fee}")
 
         built_submit_val_tx = submit_val_tx.buildTransaction(
             {
@@ -249,6 +253,7 @@ class FlashbotsReporter(IntervalReporter):
 
         # Send bundle to be executed in the next block
         block = self.endpoint._web3.eth.block_number
+        print('CURRENT BLOCK:', block)
         # block = w3.eth.block_number
         # results = []
         # for target_block in [block + k for k in [1, 2, 3, 4, 5]]:
@@ -270,7 +275,8 @@ class FlashbotsReporter(IntervalReporter):
             print(f"Bundle was executed in block {tx_receipt.blockNumber}")
         except TransactionNotFound as e:
             # print(results[-1])
-            print(result)
+            print(result.bundle)
+            print(dir(result))
             status.error = "Bundle was not executed: " + str(e)
             logger.error(status.error)
             status.e = e

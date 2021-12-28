@@ -147,7 +147,7 @@ def cli(
     help="use custom gas limit",
     nargs=1,
     type=int,
-    default=300000,
+    default=370000,
 )
 @click.option(
     "--priority-fee",
