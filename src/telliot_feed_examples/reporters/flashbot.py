@@ -29,6 +29,8 @@ from telliot_feed_examples.flashbots.provider import get_default_endpoint  # typ
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.utils.log import get_logger
 
+from telliot_core.contract.gas import ethgasstation
+
 
 load_dotenv(find_dotenv())
 logger = get_logger(__name__)
@@ -147,12 +149,12 @@ class FlashbotsReporter(IntervalReporter):
 
         return True, status
 
-    async def get_fee_info(self) -> Any:
-        """Fetch fee into from Etherscan API.
-        Source: https://etherscan.io/apis"""
-        c = EtherscanGasPriceSource()
-        result = await c.fetch_new_datapoint()
-        return result
+    # async def get_fee_info(self) -> Any:
+    #     """Fetch fee into from Etherscan API.
+    #     Source: https://etherscan.io/apis"""
+    #     c = EtherscanGasPriceSource()
+    #     result = await c.fetch_new_datapoint()
+    #     return result
 
     async def report_once(
         self,
@@ -168,8 +170,9 @@ class FlashbotsReporter(IntervalReporter):
         if reporter_locked:
             return None, status
 
-        fee_info = await self.get_fee_info()
-        next_base_fee = fee_info[0].suggestBaseFee
+        # fee_info = await self.get_fee_info()
+        # next_base_fee = fee_info[0].suggestBaseFee
+        next_base_fee =  await ethgasstation(style="safeLow")
         assert next_base_fee is not None
 
         profitable, status = await self.ensure_profitable(base_fee=next_base_fee)
@@ -246,6 +249,13 @@ class FlashbotsReporter(IntervalReporter):
 
         # Send bundle to be executed in the next block
         block = self.endpoint._web3.eth.block_number
+        # block = w3.eth.block_number
+        # results = []
+        # for target_block in [block + k for k in [1, 2, 3, 4, 5]]:
+        #     results.append(
+        #         self.endpoint._web3.flashbots.send_bundle(bundle, target_block_number=target_block)
+        #     )
+        # logger.info(f"Bundle sent to miners in block {block}")
         result = self.endpoint._web3.flashbots.send_bundle(
             bundle, target_block_number=block + 1
         )
@@ -253,10 +263,14 @@ class FlashbotsReporter(IntervalReporter):
 
         # Wait for transaction confirmation
         result.wait()
+        # results[-1].wait()
         try:
+            # tx_receipt = results[-1].receipts()[0]
             tx_receipt = result.receipts()[0]
             print(f"Bundle was executed in block {tx_receipt.blockNumber}")
         except TransactionNotFound as e:
+            # print(results[-1])
+            print(result)
             status.error = "Bundle was not executed: " + str(e)
             logger.error(status.error)
             status.e = e
@@ -279,4 +293,4 @@ class FlashbotsReporter(IntervalReporter):
 
         while True:
             _, _ = await self.report_once()
-            await asyncio.sleep(10)
+            await asyncio.sleep(4)

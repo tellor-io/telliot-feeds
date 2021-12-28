@@ -70,7 +70,8 @@ def get_app(obj: Mapping[str, Any]) -> TelliotCore:
     # Replace default staker
     staker_tag = obj["STAKER_TAG"]
     if staker_tag is not None:
-        staker = app.config.stakers.find(tag=staker_tag)[0]
+        stakers = app.config.stakers.find(tag=staker_tag)
+        staker = stakers[0]
         default_staker = app.get_default_staker()
         default_staker.private_key = staker.private_key
         default_staker.address = staker.address
