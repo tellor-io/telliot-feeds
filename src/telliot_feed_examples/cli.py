@@ -18,6 +18,7 @@ from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
 # from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.utils.tx_types import ensure_one_tx_type
 
 
 logger = get_logger(__name__)
@@ -147,16 +148,34 @@ def cli(
     help="use custom gas limit",
     nargs=1,
     type=int,
-    default=370000,
+    default=350000,
+)
+@click.option(
+    "--max-fee",
+    "-mf",
+    "max_fee",
+    help="use custom maxFeePerGas (gwei)",
+    nargs=1,
+    type=int,
+    required=False,
 )
 @click.option(
     "--priority-fee",
     "-pf",
     "priority_fee",
-    help="use custom priority fee (gwei)",
+    help="use custom maxPriorityFeePerGas (gwei)",
     nargs=1,
-    type=float,
-    default=3.0,
+    type=int,
+    required=False,
+)
+@click.option(
+    "--gas-price",
+    "-gp",
+    "legacy_gas_price",
+    help="use custom legacy gasPrice (gwei)",
+    nargs=1,
+    type=int,
+    required=False
 )
 @click.option(
     "--profit",
@@ -174,7 +193,9 @@ def report(
     ctx: Context,
     legacy_id: str,
     gas_limit: int,
-    priority_fee: float,
+    max_fee: Optional[int],
+    priority_fee: Optional[int],
+    legacy_gas_price: Optional[int],
     expected_profit: str,
     submit_once: bool,
 ) -> None:
@@ -183,6 +204,12 @@ def report(
     expected_profit = parse_profit_input(expected_profit)  # type: ignore
     if expected_profit is None:
         return
+    
+    tx_type = ensure_one_tx_type(
+        max_fee=max_fee,
+        priority_fee=priority_fee,
+        legacy_gas_price=legacy_gas_price
+    )
 
     # Initialize telliot core app using CLI context
     core = get_app(ctx.obj)
@@ -192,8 +219,11 @@ def report(
     print_reporter_settings(
         using_flashbots=using_flashbots,
         legacy_id=legacy_id,
+        transaction_type=tx_type,
         gas_limit=gas_limit,
+        max_fee=max_fee,
         priority_fee=priority_fee,
+        legacy_gas_price=legacy_gas_price,
         expected_profit=expected_profit,
         chain_id=core.config.main.chain_id,
     )
@@ -207,8 +237,11 @@ def report(
         "oracle": core.tellorx.oracle,
         "datafeed": chosen_feed,
         "expected_profit": expected_profit,
+        "transaction_type": tx_type,
         "gas_limit": gas_limit,
+        "max_fee": max_fee,
         "priority_fee": priority_fee,
+        "legacy_gas_price": legacy_gas_price,
     }
 
     if using_flashbots:
