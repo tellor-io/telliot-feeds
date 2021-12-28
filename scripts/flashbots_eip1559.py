@@ -16,7 +16,7 @@ from web3.exceptions import TransactionNotFound
 from web3.types import TxParams
 
 from telliot_feed_examples.flashbots import flashbot
-from telliot_feed_examples.flashbots.etherscan_gas import EtherscanGasPriceSource
+from telliot_core.gas.etherscan_gas import EtherscanGasPriceSource
 
 
 load_dotenv(find_dotenv())
@@ -54,7 +54,7 @@ async def main() -> None:
     # bundle two EIP-1559 (type 2) transactions, pre-sign one of them
     # NOTE: chainId is necessary for all EIP-1559 txns
     # NOTE: nonce is required for signed txns
-    chain_id = 5
+    chain_id = 1
     print("chain id:", chain_id)
 
     c = EtherscanGasPriceSource()
@@ -69,10 +69,10 @@ async def main() -> None:
     nonce = w3.eth.get_transaction_count(sender.address)
     tx1: TxParams = {
         "to": receiver.address,
-        "value": Web3.toWei(0.01, "ether"),
+        "value": Web3.toWei(0.00001, "ether"),
         "gas": 25000,
         "maxFeePerGas": Web3.toWei(max_fee, "gwei"),
-        "maxPriorityFeePerGas": Web3.toWei(max_priority, "gwei"),
+        "maxPriorityFeePerGas": Web3.toWei(5, "gwei"),
         "nonce": nonce,
         "chainId": chain_id,
     }
@@ -80,7 +80,7 @@ async def main() -> None:
 
     tx2: TxParams = {
         "to": receiver.address,
-        "value": Web3.toWei(0.01, "ether"),
+        "value": Web3.toWei(0.00001, "ether"),
         "gas": 25000,
         "maxFeePerGas": Web3.toWei(max_fee, "gwei"),
         "maxPriorityFeePerGas": Web3.toWei(max_priority, "gwei"),
