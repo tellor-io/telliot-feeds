@@ -48,8 +48,11 @@ class FlashbotsReporter(IntervalReporter):
         oracle: Contract,
         datafeed: DataFeed[Any],
         expected_profit: float = 100.0,
-        gas_limit: int = 370000,
-        priority_fee: float = 2.0,
+        transaction_type: int = 0,
+        gas_limit: int = 350000,
+        max_fee: Optional[int] = None,
+        priority_fee: int = 5,
+        legacy_gas_price: Optional[int] = None,
     ) -> None:
 
         self.endpoint = endpoint
@@ -60,9 +63,12 @@ class FlashbotsReporter(IntervalReporter):
         self.user = self.endpoint.web3.eth.account.from_key(private_key).address
         self.last_submission_timestamp = 0
         self.expected_profit = expected_profit
-        self.priority_fee = priority_fee  # type: ignore
+        self.transaction_type = transaction_type
         self.gas_limit = gas_limit
-
+        self.max_fee = max_fee
+        self.priority_fee = priority_fee
+        self.legacy_gas_price = legacy_gas_price
+    
         logger.info(f"Reporting with account: {self.user}")
 
         staked, status = asyncio.run(self.ensure_staked())
@@ -80,18 +86,12 @@ class FlashbotsReporter(IntervalReporter):
         flashbots_uri = get_default_endpoint()
         flashbot(self.endpoint._web3, self.signature, flashbots_uri)
 
-    async def ensure_profitable(
-        self,
-        base_fee: float,
-    ) -> Tuple[bool, ResponseStatus]:
+    async def ensure_profitable(self) -> ResponseStatus:
         """Estimate profitability
 
         Returns a bool signifying whether submitting for a given
         queryID would generate a net profit."""
         status = ResponseStatus()
-
-        if self.expected_profit == "YOLO":
-            return True, status  # Don't check profitability
 
         # Get current tips and time-based reward for given queryID
         rewards, read_status = await self.oracle.read(
@@ -106,7 +106,7 @@ class FlashbotsReporter(IntervalReporter):
             )
             logger.error(status.error)
             status.e = read_status.e
-            return False, status
+            return status
 
         # Fetch token prices in USD
         price_feeds = [eth_usd_median_feed, trb_usd_median_feed]
@@ -117,22 +117,59 @@ class FlashbotsReporter(IntervalReporter):
         price_trb_usd = trb_usd_median_feed.source.latest[0]
 
         tips, tb_reward = rewards
-        max_fee = self.priority_fee + base_fee  # type: ignore
 
-        logger.info(
-            f"""
-            tips: {tips / 1e18} TRB
-            time-based reward: {tb_reward / 1e18} TRB
-            gas limit: {self.gas_limit}
-            base fee: {base_fee}
-            priority fee: {self.priority_fee}
-            max fee: {max_fee}
-            """
-        )
+        # Using transaction type 2 (EIP-1559)
+        if self.transaction_type == 2:
+            fee_info = await self.get_fee_info()
+            base_fee = fee_info[0].suggestBaseFee
+ 
+            # No miner tip provided by user
+            if self.priority_fee is None:
+                # From etherscan docs:
+                # "Safe/Proposed/Fast gas price recommendations are now modeled as Priority Fees."
+                # Source: https://docs.etherscan.io/api-endpoints/gas-tracker
+                priority_fee = fee_info[0].SafeGasPrice
+                self.priority_fee = priority_fee
+                
+            if self.max_fee is None:
+                # From Alchemy docs:
+                # "maxFeePerGas = baseFeePerGas + maxPriorityFeePerGas"
+                # Source: https://docs.alchemy.com/alchemy/guides/eip-1559/maxpriorityfeepergas-vs-maxfeepergas
+                self.max_fee = self.priority_fee + base_fee
 
+            logger.info(
+                f"""
+                tips: {tips / 1e18} TRB
+                time-based reward: {tb_reward / 1e18} TRB
+                gas limit: {self.gas_limit}
+                base fee: {base_fee}
+                priority fee: {self.priority_fee}
+                max fee: {self.max_fee}
+                """
+            )
+    
+            costs = self.gas_limit * self.max_fee
+        
+        # Using transaction type 0 (legacy)
+        else:
+            # Fetch legacy gas price if not provided by user
+            if not self.legacy_gas_price:
+                gas_price = await ethgasstation(style="fast")
+                self.legacy_gas_price = gas_price
+
+            logger.info(
+                f"""
+                tips: {tips / 1e18} TRB
+                time-based reward: {tb_reward / 1e18} TRB
+                gas limit: {self.gas_limit}
+                legacy gas price: {self.legacy_gas_price}
+                """
+            )
+            costs = self.gas_limit * self.legacy_gas_price
+
+        # Calculate profit
         revenue = tb_reward + tips
         rev_usd = revenue / 1e18 * price_trb_usd
-        costs = self.gas_limit * max_fee  # type: ignore
         costs_usd = costs / 1e9 * price_eth_usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
@@ -140,13 +177,13 @@ class FlashbotsReporter(IntervalReporter):
         percent_profit = ((profit_usd) / costs_usd) * 100
         logger.info(f"Estimated percent profit: {round(percent_profit, 2)}%")
 
-        if not percent_profit >= self.expected_profit:
+        if (self.expected_profit != "YOLO") and (percent_profit < self.expected_profit):
             status.ok = False
             status.error = "Estimated profitability below threshold."
             logger.info(status.error)
-            return False, status
+            return status
 
-        return True, status
+        return status
 
     async def get_fee_info(self) -> Any:
         """Fetch fee into from Etherscan API.
@@ -165,45 +202,37 @@ class FlashbotsReporter(IntervalReporter):
         and last submission time. Also, this method does not
         submit values if doing so won't make a profit."""
 
-        reporter_locked, status = await self.check_reporter_lock()
-        if reporter_locked:
+        status = await self.check_reporter_lock()
+        if not status.ok:
             return None, status
 
-        # fee_info = await self.get_fee_info()
-        # next_base_fee = fee_info[0].suggestBaseFee
-        next_base_fee = await ethgasstation(style="average")
-        assert next_base_fee is not None
-
-        profitable, status = await self.ensure_profitable(base_fee=next_base_fee)
-        if not profitable:
+        status = await self.ensure_profitable()
+        if not status.ok:
             return None, status
 
         status = ResponseStatus()
 
-        # Update value
+        # Update datafeed value
         await self.datafeed.source.fetch_new_datapoint()
         latest_data = self.datafeed.source.latest
-
         if latest_data[0] is None:
             msg = "Unable to retrieve updated datafeed value."
             return None, error_status(msg, log=logger.info)
-
+        
+        # Get query info & encode value to bytes
         query = self.datafeed.query
-
+        query_id = query.query_id
+        query_data = query.query_data
         try:
             value = query.value_type.encode(latest_data[0])
         except Exception as e:
             msg = f"Error encoding response value {latest_data[0]}"
             return None, error_status(msg, e=e, log=logger.error)
 
-        query_id = query.query_id
-        query_data = query.query_data
-
+        # Get nonce
         timestamp_count, read_status = await self.oracle.read(
             func_name="getTimestampCountById", _queryId=query_id
         )
-
-        # Log web3 errors
         if not read_status.ok:
             status.error = (
                 "Unable to retrieve timestampCount: " + read_status.error
@@ -212,6 +241,7 @@ class FlashbotsReporter(IntervalReporter):
             status.e = read_status.e
             return None, status
 
+        # Start transaction build
         submit_val_func = self.oracle.contract.get_function_by_name("submitValue")
         submit_val_tx = submit_val_func(
             _queryId=query_id,
@@ -221,22 +251,34 @@ class FlashbotsReporter(IntervalReporter):
         )
         acc_nonce = self.endpoint._web3.eth.get_transaction_count(self.account.address)
 
-        max_fee = next_base_fee + self.priority_fee
-        logger.info(f"maxFeePerGas used: {max_fee}")
-        logger.info(f"maxPriorityFeePerGas used: {self.priority_fee}")
+        # Add transaction type 2 (EIP-1559) data
+        if self.transaction_type == 2:
+            logger.info(f"maxFeePerGas: {self.max_fee}")
+            logger.info(f"maxPriorityFeePerGas: {self.priority_fee}")
 
-        built_submit_val_tx = submit_val_tx.buildTransaction(
-            {
-                "nonce": acc_nonce,
-                "gas": self.gas_limit,
-                "maxFeePerGas": Web3.toWei(max_fee, "gwei"),
-                # TODO: Investigate more why etherscan txs using Flashbots have
-                # the same maxFeePerGas and maxPriorityFeePerGas. Example:
-                # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288 # noqa: E501
-                "maxPriorityFeePerGas": Web3.toWei(max_fee, "gwei"),  # noqa: E501
-                "chainId": self.chain_id,
-            }
-        )
+            built_submit_val_tx = submit_val_tx.buildTransaction(
+                {
+                    "nonce": acc_nonce,
+                    "gas": self.gas_limit,
+                    "maxFeePerGas": Web3.toWei(self.max_fee, "gwei"),
+                    # TODO: Investigate more why etherscan txs using Flashbots have
+                    # the same maxFeePerGas and maxPriorityFeePerGas. Example:
+                    # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288 # noqa: E501
+                    "maxPriorityFeePerGas": Web3.toWei(self.priority_fee, "gwei"),  # noqa: E501
+                    "chainId": self.chain_id,
+                }
+            )
+        # Add transaction type 0 (legacy) data
+        else:
+            built_submit_val_tx = submit_val_tx.buildTransaction(
+                {
+                    "nonce": acc_nonce,
+                    "gas": self.gas_limit,
+                    "gasPrice": Web3.toWei(self.legacy_gas_price, "gwei"),
+                    "chainId": self.chain_id,
+                }
+            )
+        
         submit_val_tx_signed = self.account.sign_transaction(
             built_submit_val_tx
         )  # type: ignore
@@ -260,8 +302,6 @@ class FlashbotsReporter(IntervalReporter):
             tx_receipt = result.receipts()[0]
             print(f"Bundle was executed in block {tx_receipt.blockNumber}")
         except TransactionNotFound as e:
-            print(result.bundle)
-            print(dir(result))
             status.error = "Bundle was not executed: " + str(e)
             logger.error(status.error)
             status.e = e
@@ -284,4 +324,4 @@ class FlashbotsReporter(IntervalReporter):
 
         while True:
             _, _ = await self.report_once()
-            await asyncio.sleep(4)
+            await asyncio.sleep(7)

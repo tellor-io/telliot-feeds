@@ -18,7 +18,6 @@ from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
 # from telliot_feed_examples.reporters.interval import IntervalReporter
-from telliot_feed_examples.utils.tx_types import ensure_one_tx_type
 
 
 logger = get_logger(__name__)
@@ -44,6 +43,9 @@ def print_reporter_settings(
     priority_fee: float,
     expected_profit: str,
     chain_id: int,
+    max_fee: int,
+    transaction_type: int,
+    legacy_gas_price: int,
 ) -> None:
     """Print user settings to console."""
     click.echo("")
@@ -59,8 +61,11 @@ def print_reporter_settings(
     else:
         click.echo(f"Expected percent profit: {expected_profit}%")
 
-    click.echo(f"Priority fee (gwei): {priority_fee}")
-    click.echo(f"Gas Limit: {gas_limit}\n")
+    click.echo(f"Transaction type: {transaction_type}")
+    click.echo(f"Gas Limit: {gas_limit}")
+    click.echo(f"Legacy gas price {legacy_gas_price}")
+    click.echo(f"Max fee (gwei): {max_fee}")
+    click.echo(f"Priority fee (gwei): {priority_fee}\n")
 
 
 def get_app(obj: Mapping[str, Any]) -> TelliotCore:
@@ -115,7 +120,7 @@ def get_app(obj: Mapping[str, Any]) -> TelliotCore:
     "-fb/-nfb",
     "using_flashbots",
     type=bool,
-    default=False,
+    default=True,
 )
 @click.pass_context
 def cli(
@@ -187,11 +192,20 @@ def cli(
     type=str,
     default="100.0",
 )
+@click.option(
+    "--tx-type",
+    "-tx",
+    "tx_type",
+    help="choose transaction type (0 for legacy txs, 2 for EIP-1559)",
+    type=int,
+    default=0,
+)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.pass_context
 def report(
     ctx: Context,
     legacy_id: str,
+    tx_type: int,
     gas_limit: int,
     max_fee: Optional[int],
     priority_fee: Optional[int],
@@ -205,11 +219,7 @@ def report(
     if expected_profit is None:
         return
     
-    tx_type = ensure_one_tx_type(
-        max_fee=max_fee,
-        priority_fee=priority_fee,
-        legacy_gas_price=legacy_gas_price
-    )
+    assert tx_type in (0, 2)
 
     # Initialize telliot core app using CLI context
     core = get_app(ctx.obj)
@@ -227,6 +237,8 @@ def report(
         expected_profit=expected_profit,
         chain_id=core.config.main.chain_id,
     )
+
+    _ = input("Press [ENTER] to confirm settings.")
 
     chosen_feed = LEGACY_DATAFEEDS[legacy_id]
 
