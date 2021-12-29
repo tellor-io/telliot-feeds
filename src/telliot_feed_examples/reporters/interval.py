@@ -121,7 +121,7 @@ class IntervalReporter:
             status.e = None
             return False, status
 
-    async def check_reporter_lock(self) -> Tuple[bool, ResponseStatus]:
+    async def check_reporter_lock(self) -> ResponseStatus:
         """Ensure enough time has passed since last report
         Returns a bool signifying whether a given address is in a
         reporter lock or not (TellorX oracle users cannot submit
@@ -143,7 +143,7 @@ class IntervalReporter:
                 )
                 logger.error(status.error)
                 status.e = read_status.e
-                return True, status
+                return status
 
             self.last_submission_timestamp = last_timestamp
             logger.info(f"Last submission timestamp: {self.last_submission_timestamp}")
@@ -152,9 +152,9 @@ class IntervalReporter:
             status.ok = False
             status.error = "Current address is in reporter lock."
             logger.info(status.error)
-            return True, status
+            return status
 
-        return False, status
+        return status
 
     # async def ensure_profitable(
     #     self, gas_price_gwei: int
