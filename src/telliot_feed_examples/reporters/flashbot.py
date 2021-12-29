@@ -294,9 +294,15 @@ class FlashbotsReporter(IntervalReporter):
         # Send bundle to be executed in the next block
         block = self.endpoint._web3.eth.block_number
 
-        result = self.endpoint._web3.flashbots.send_bundle(
-            bundle, target_block_number=block + 1
-        )
+        results = []
+        for target_block in [block + k for k in [1, 2, 3, 4, 5]]:
+            results.append(
+                self.endpoint._web3.flashbots.send_bundle(bundle, target_block_number=target_block)
+            )
+        result = results[-1]
+        # result = self.endpoint._web3.flashbots.send_bundle(
+        #     bundle, target_block_number=block + 1
+        # )
         logger.info(f"Bundle sent to miners in block {block}")
 
         # Wait for transaction confirmation

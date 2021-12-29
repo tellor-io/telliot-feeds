@@ -46,6 +46,7 @@ def print_reporter_settings(
     max_fee: int,
     transaction_type: int,
     legacy_gas_price: int,
+    gas_price_speed: str,
 ) -> None:
     """Print user settings to console."""
     click.echo("")
@@ -63,9 +64,10 @@ def print_reporter_settings(
 
     click.echo(f"Transaction type: {transaction_type}")
     click.echo(f"Gas Limit: {gas_limit}")
-    click.echo(f"Legacy gas price {legacy_gas_price}")
+    click.echo(f"Legacy gas price (gwei): {legacy_gas_price}")
     click.echo(f"Max fee (gwei): {max_fee}")
-    click.echo(f"Priority fee (gwei): {priority_fee}\n")
+    click.echo(f"Priority fee (gwei): {priority_fee}")
+    click.echo(f"Gas price speed: {gas_price_speed}\n")
 
 
 def get_app(obj: Mapping[str, Any]) -> TelliotCore:
