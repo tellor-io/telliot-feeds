@@ -70,7 +70,7 @@ class FlashbotsReporter(IntervalReporter):
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
-    
+
         logger.info(f"Reporting with account: {self.user}")
 
         staked, status = asyncio.run(self.ensure_staked())
@@ -124,19 +124,19 @@ class FlashbotsReporter(IntervalReporter):
         if self.transaction_type == 2:
             fee_info = await self.get_fee_info()
             base_fee = fee_info[0].suggestBaseFee
- 
+
             # No miner tip provided by user
             if self.priority_fee is None:
                 # From etherscan docs:
-                # "Safe/Proposed/Fast gas price recommendations are now modeled as Priority Fees."
+                # "Safe/Proposed/Fast gas price recommendations are now modeled as Priority Fees."  # noqa: E501
                 # Source: https://docs.etherscan.io/api-endpoints/gas-tracker
                 priority_fee = fee_info[0].SafeGasPrice
                 self.priority_fee = priority_fee
-                
+
             if self.max_fee is None:
                 # From Alchemy docs:
                 # "maxFeePerGas = baseFeePerGas + maxPriorityFeePerGas"
-                # Source: https://docs.alchemy.com/alchemy/guides/eip-1559/maxpriorityfeepergas-vs-maxfeepergas
+                # Source: https://docs.alchemy.com/alchemy/guides/eip-1559/maxpriorityfeepergas-vs-maxfeepergas  # noqa: E501
                 self.max_fee = self.priority_fee + base_fee
 
             logger.info(
@@ -149,15 +149,14 @@ class FlashbotsReporter(IntervalReporter):
                 max fee: {self.max_fee}
                 """
             )
-    
-            costs = self.gas_limit * self.max_fee
-        
+
+            costs = self.gas_limit * self.max_fee  # type: ignore
+
         # Using transaction type 0 (legacy)
         else:
             # Fetch legacy gas price if not provided by user
             if not self.legacy_gas_price:
-                gas_price = await ethgasstation(
-                    style=self.gas_price_speed)
+                gas_price = await ethgasstation(style=self.gas_price_speed)
                 self.legacy_gas_price = gas_price
 
             logger.info(
@@ -168,7 +167,7 @@ class FlashbotsReporter(IntervalReporter):
                 legacy gas price: {self.legacy_gas_price}
                 """
             )
-            costs = self.gas_limit * self.legacy_gas_price
+            costs = self.gas_limit * self.legacy_gas_price  # type: ignore
 
         # Calculate profit
         revenue = tb_reward + tips
@@ -221,7 +220,7 @@ class FlashbotsReporter(IntervalReporter):
         if latest_data[0] is None:
             msg = "Unable to retrieve updated datafeed value."
             return None, error_status(msg, log=logger.info)
-        
+
         # Get query info & encode value to bytes
         query = self.datafeed.query
         query_id = query.query_id
@@ -263,11 +262,13 @@ class FlashbotsReporter(IntervalReporter):
                 {
                     "nonce": acc_nonce,
                     "gas": self.gas_limit,
-                    "maxFeePerGas": Web3.toWei(self.max_fee, "gwei"),
+                    "maxFeePerGas": Web3.toWei(self.max_fee, "gwei"),  # type: ignore
                     # TODO: Investigate more why etherscan txs using Flashbots have
                     # the same maxFeePerGas and maxPriorityFeePerGas. Example:
                     # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288 # noqa: E501
-                    "maxPriorityFeePerGas": Web3.toWei(self.priority_fee, "gwei"),  # noqa: E501
+                    "maxPriorityFeePerGas": Web3.toWei(
+                        self.priority_fee, "gwei"  # type: ignore
+                    ),  # noqa: E501
                     "chainId": self.chain_id,
                 }
             )
@@ -277,11 +278,11 @@ class FlashbotsReporter(IntervalReporter):
                 {
                     "nonce": acc_nonce,
                     "gas": self.gas_limit,
-                    "gasPrice": Web3.toWei(self.legacy_gas_price, "gwei"),
+                    "gasPrice": Web3.toWei(self.legacy_gas_price, "gwei"),  # type: ignore
                     "chainId": self.chain_id,
                 }
             )
-        
+
         submit_val_tx_signed = self.account.sign_transaction(
             built_submit_val_tx
         )  # type: ignore
@@ -297,7 +298,9 @@ class FlashbotsReporter(IntervalReporter):
         results = []
         for target_block in [block + k for k in [1, 2, 3, 4, 5]]:
             results.append(
-                self.endpoint._web3.flashbots.send_bundle(bundle, target_block_number=target_block)
+                self.endpoint._web3.flashbots.send_bundle(
+                    bundle, target_block_number=target_block
+                )
             )
         result = results[-1]
         # result = self.endpoint._web3.flashbots.send_bundle(

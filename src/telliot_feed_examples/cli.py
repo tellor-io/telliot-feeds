@@ -40,12 +40,12 @@ def print_reporter_settings(
     using_flashbots: bool,
     legacy_id: str,
     gas_limit: int,
-    priority_fee: float,
+    priority_fee: Optional[int],
     expected_profit: str,
     chain_id: int,
-    max_fee: int,
+    max_fee: Optional[int],
     transaction_type: int,
-    legacy_gas_price: int,
+    legacy_gas_price: Optional[int],
     gas_price_speed: str,
 ) -> None:
     """Print user settings to console."""
@@ -182,7 +182,7 @@ def cli(
     help="use custom legacy gasPrice (gwei)",
     nargs=1,
     type=int,
-    required=False
+    required=False,
 )
 @click.option(
     "--profit",
@@ -233,7 +233,7 @@ def report(
     expected_profit = parse_profit_input(expected_profit)  # type: ignore
     if expected_profit is None:
         return
-    
+
     assert tx_type in (0, 2)
 
     # Initialize telliot core app using CLI context
