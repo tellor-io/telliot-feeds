@@ -200,6 +200,18 @@ def cli(
     type=int,
     default=0,
 )
+@click.option(
+    "--gas-price-speed",
+    "-gps",
+    "gas_price_speed",
+    help="gas price speed for eth gas station API",
+    nargs=1,
+    type=click.Choice(
+        ["safeLow", "average", "fast", "fastest"],
+        case_sensitive=True,
+    ),
+    default="fast",
+)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.pass_context
 def report(
@@ -212,6 +224,7 @@ def report(
     legacy_gas_price: Optional[int],
     expected_profit: str,
     submit_once: bool,
+    gas_price_speed: str,
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
@@ -236,6 +249,7 @@ def report(
         legacy_gas_price=legacy_gas_price,
         expected_profit=expected_profit,
         chain_id=core.config.main.chain_id,
+        gas_price_speed=gas_price_speed,
     )
 
     _ = input("Press [ENTER] to confirm settings.")
@@ -254,6 +268,7 @@ def report(
         "max_fee": max_fee,
         "priority_fee": priority_fee,
         "legacy_gas_price": legacy_gas_price,
+        "gas_price_speed": gas_price_speed,
     }
 
     if using_flashbots:

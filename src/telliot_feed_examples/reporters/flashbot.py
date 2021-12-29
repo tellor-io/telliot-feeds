@@ -53,6 +53,7 @@ class FlashbotsReporter(IntervalReporter):
         max_fee: Optional[int] = None,
         priority_fee: int = 5,
         legacy_gas_price: Optional[int] = None,
+        gas_price_speed: str = "fast",
     ) -> None:
 
         self.endpoint = endpoint
@@ -68,6 +69,7 @@ class FlashbotsReporter(IntervalReporter):
         self.max_fee = max_fee
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
+        self.gas_price_speed = gas_price_speed
     
         logger.info(f"Reporting with account: {self.user}")
 
@@ -154,7 +156,8 @@ class FlashbotsReporter(IntervalReporter):
         else:
             # Fetch legacy gas price if not provided by user
             if not self.legacy_gas_price:
-                gas_price = await ethgasstation(style="fast")
+                gas_price = await ethgasstation(
+                    style=self.gas_price_speed)
                 self.legacy_gas_price = gas_price
 
             logger.info(
