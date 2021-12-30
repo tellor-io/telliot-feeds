@@ -86,6 +86,7 @@ class FlashbotsReporter(IntervalReporter):
         assert self.user == self.account.address
 
         flashbots_uri = get_default_endpoint()
+        logger.info(f'Flashbots provider endpoint: {flashbots_uri}')
         flashbot(self.endpoint._web3, self.signature, flashbots_uri)
 
     async def ensure_profitable(self) -> ResponseStatus:
@@ -294,18 +295,17 @@ class FlashbotsReporter(IntervalReporter):
 
         # Send bundle to be executed in the next block
         block = self.endpoint._web3.eth.block_number
-
-        results = []
-        for target_block in [block + k for k in [1, 2, 3, 4, 5]]:
-            results.append(
-                self.endpoint._web3.flashbots.send_bundle(
-                    bundle, target_block_number=target_block
-                )
-            )
-        result = results[-1]
-        # result = self.endpoint._web3.flashbots.send_bundle(
-        #     bundle, target_block_number=block + 1
-        # )
+        # results = []
+        # for target_block in [block + k for k in [1, 2, 3, 4, 5]]:
+        #     results.append(
+        #         self.endpoint._web3.flashbots.send_bundle(
+        #             bundle, target_block_number=target_block
+        #         )
+        #     )
+        # result = results[-1]
+        result = self.endpoint._web3.flashbots.send_bundle(
+            bundle, target_block_number=block + 1
+        )
         logger.info(f"Bundle sent to miners in block {block}")
 
         # Wait for transaction confirmation

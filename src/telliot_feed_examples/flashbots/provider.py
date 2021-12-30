@@ -24,6 +24,7 @@ from web3.types import RPCResponse
 def get_default_endpoint() -> URI:
     return URI(
         os.environ.get("FLASHBOTS_HTTP_PROVIDER_URI", "https://relay.flashbots.net")
+        # os.environ.get("FLASHBOTS_HTTP_PROVIDER_URI", "https://bundle.miningdao.io/")
     )
 
 
