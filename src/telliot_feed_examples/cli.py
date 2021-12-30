@@ -14,10 +14,9 @@ from telliot_core.apps.core import TelliotCore
 
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
+from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
-
-# from telliot_feed_examples.reporters.interval import IntervalReporter
 
 
 logger = get_logger(__name__)
@@ -271,17 +270,13 @@ def report(
         "priority_fee": priority_fee,
         "legacy_gas_price": legacy_gas_price,
         "gas_price_speed": gas_price_speed,
+        "chain_id": core.config.main.chain_id,
     }
 
     if using_flashbots:
-        reporter = FlashbotsReporter(
-            **common_reporter_kwargs,
-            chain_id=core.config.main.chain_id,
-        )
+        reporter = FlashbotsReporter(**common_reporter_kwargs)
     else:
-        click.echo("Only reporting with Flashbots supported currently")
-        # reporter = IntervalReporter(**common_reporter_kwargs)
-        return
+        reporter = IntervalReporter(**common_reporter_kwargs)  # type: ignore
 
     if submit_once:
         _, _ = asyncio.run(reporter.report_once())
