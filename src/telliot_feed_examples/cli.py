@@ -37,6 +37,7 @@ def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
 
 def print_reporter_settings(
     using_flashbots: bool,
+    signature_address: str,
     legacy_id: str,
     gas_limit: int,
     priority_fee: Optional[int],
@@ -52,6 +53,7 @@ def print_reporter_settings(
 
     if using_flashbots:
         click.echo("⚡🤖⚡ Reporting through Flashbots relay ⚡🤖⚡")
+        click.echo(f"Signature account: {signature_address}")
 
     click.echo(f"Reporting legacy ID: {legacy_id}")
     click.echo(f"Current chain ID: {chain_id}")
@@ -69,7 +71,7 @@ def print_reporter_settings(
     click.echo(f"Gas price speed: {gas_price_speed}\n")
 
 
-def get_app(obj: Mapping[str, Any]) -> TelliotCore:
+async def get_app(obj: Mapping[str, Any]) -> TelliotCore:
     """Get an app configured using CLI context"""
 
     app = TelliotCore.get() or TelliotCore()
@@ -90,7 +92,7 @@ def get_app(obj: Mapping[str, Any]) -> TelliotCore:
         # TODO: there should be a cleaner way to choose
         # the staker (some method in telliot-core)
 
-    _ = app.connect()
+    _ = await app.startup()
 
     # Ensure chain id compatible with flashbots relay
     if obj["USING_FLASHBOTS"]:
@@ -117,6 +119,16 @@ def get_app(obj: Mapping[str, Any]) -> TelliotCore:
     type=str,
 )
 @click.option(
+    "--signature-tag",
+    "-sgt",
+    "signature_tag",
+    help="use specific signature account by tag",
+    required=False,
+    nargs=1,
+    type=str,
+    default='flashbots-sig'
+)
+@click.option(
     "--flashbots/--no-flashbots",
     "-fb/-nfb",
     "using_flashbots",
@@ -127,11 +139,13 @@ def get_app(obj: Mapping[str, Any]) -> TelliotCore:
 def cli(
     ctx: Context,
     staker_tag: str,
+    signature_tag: str,
     using_flashbots: bool,
 ) -> None:
     """Telliot command line interface"""
     ctx.ensure_object(dict)
     ctx.obj["STAKER_TAG"] = staker_tag
+    ctx.obj["SIGNATURE_TAG"] = signature_tag
     ctx.obj["USING_FLASHBOTS"] = using_flashbots
 
 
@@ -236,12 +250,15 @@ def report(
     assert tx_type in (0, 2)
 
     # Initialize telliot core app using CLI context
-    core = get_app(ctx.obj)
+    core = asyncio.run(get_app(ctx.obj))
 
     using_flashbots = ctx.obj["USING_FLASHBOTS"]
+    signature_tag = ctx.obj["SIGNATURE_TAG"]
+    sig_staker = core.config.stakers.find(tag=signature_tag)[0]
 
     print_reporter_settings(
         using_flashbots=using_flashbots,
+        signature_address=sig_staker.address,
         legacy_id=legacy_id,
         transaction_type=tx_type,
         gas_limit=gas_limit,
@@ -274,7 +291,9 @@ def report(
     }
 
     if using_flashbots:
-        reporter = FlashbotsReporter(**common_reporter_kwargs)
+        reporter = FlashbotsReporter(
+            **common_reporter_kwargs,
+            signature_private_key=sig_staker.private_key)
     else:
         reporter = IntervalReporter(**common_reporter_kwargs)  # type: ignore
 
