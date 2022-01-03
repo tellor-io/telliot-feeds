@@ -16,8 +16,7 @@ from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.utils.log import get_logger
-
-# from telliot_feed_examples.utils.oracle_write import tip_query
+from telliot_feed_examples.utils.oracle_write import tip_query
 
 
 logger = get_logger(__name__)
@@ -305,63 +304,64 @@ def report(
         _, _ = asyncio.run(reporter.report())
 
 
-# @cli.command()
-# @click.option(
-#     "--legacy-id",
-#     "-lid",
-#     "legacy_id",
-#     help="report to a legacy ID",
-#     required=True,
-#     nargs=1,
-#     type=click.Choice(["1", "2", "10", "41", "50", "59"]),
-#     default="1",  # ETH/USD spot price
-# )
-# @click.option(
-#     "--amount-trb",
-#     "-trb",
-#     "amount_trb",
-#     help="amount to tip in TRB for a query ID",
-#     nargs=1,
-#     type=float,
-#     required=True,
-# )
-# @click.pass_context
-# def tip(
-#     ctx: Context,
-#     legacy_id: str,
-#     amount_trb: float,
-# ) -> None:
-#     """Tip TRB for a selected query ID"""
+@cli.command()
+@click.option(
+    "--legacy-id",
+    "-lid",
+    "legacy_id",
+    help="report to a legacy ID",
+    required=True,
+    nargs=1,
+    type=click.Choice(["1", "2", "10", "41", "50", "59"]),
+    default="1",  # ETH/USD spot price
+)
+@click.option(
+    "--amount-trb",
+    "-trb",
+    "amount_trb",
+    help="amount to tip in TRB for a query ID",
+    nargs=1,
+    type=float,
+    required=True,
+)
+@click.pass_context
+def tip(
+    ctx: Context,
+    legacy_id: str,
+    amount_trb: float,
+) -> None:
+    """Tip TRB for a selected query ID"""
 
-#     core = get_app(ctx.obj)  # Initialize telliot core app using CLI context
+    # Initialize telliot core app using CLI context
+    core = asyncio.run(get_app(ctx.obj))
 
-#     # Ensure valid legacy id
-#     if legacy_id not in LEGACY_DATAFEEDS:
-#         click.echo(
-#             f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
-#         )
-#         return
+    # Ensure valid legacy id
+    if legacy_id not in LEGACY_DATAFEEDS:
+        click.echo(
+            f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
+        )
+        return
 
-#     click.echo(f"Tipping {amount_trb} TRB for legacy ID {legacy_id}.")
+    click.echo(f"Tipping {amount_trb} TRB for legacy ID {legacy_id}.")
 
-#     chosen_feed = LEGACY_DATAFEEDS[legacy_id]
-#     tip = int(amount_trb * 1e18)
+    chosen_feed = LEGACY_DATAFEEDS[legacy_id]
+    tip = int(amount_trb * 1e18)
 
-#     tx_receipt, status = asyncio.run(
-#         tip_query(
-#             oracle=core.tellorx.oracle,
-#             datafeed=chosen_feed,
-#             tip=tip,
-#         )
-#     )
+    tx_receipt, status = asyncio.run(
+        tip_query(
+            oracle=core.tellorx.oracle,
+            datafeed=chosen_feed,
+            tip=tip,
+        )
+    )
 
-#     if status.ok and not status.error and tx_receipt:
-#         click.echo("Success!")
-#         tx_hash = tx_receipt["transactionHash"].hex()
-#         # Point to relevant explorer
-#         logger.info(f"View tip: \n{core.endpoint.explorer}/tx/{tx_hash}")
-#     else:
-#         logger.error(status)
+    if status.ok and not status.error and tx_receipt:
+        click.echo("Success!")
+        tx_hash = tx_receipt["transactionHash"].hex()
+        # Point to relevant explorer
+        logger.info(f"View tip: \n{core.endpoint.explorer}/tx/{tx_hash}")
+    else:
+        logger.error(status)
 
 
 if __name__ == "__main__":

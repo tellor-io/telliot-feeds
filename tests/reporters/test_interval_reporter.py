@@ -3,6 +3,7 @@ Tests covering the IntervalReporter class from
 telliot's reporters subpackage.
 """
 import pytest
+from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
@@ -12,19 +13,27 @@ from tests.conftest import reporter_submit_once
 
 @pytest.mark.skip
 @pytest.fixture
-def eth_usd_reporter(rinkeby_core):
+async def eth_usd_reporter(rinkeby_cfg):
     """Returns an instance of an IntervalReporter using
     the ETH/USD median datafeed."""
-    private_key = rinkeby_core.get_default_staker().private_key
-    r = IntervalReporter(
-        endpoint=rinkeby_core.config.get_endpoint(),
-        private_key=private_key,
-        master=rinkeby_core.tellorx.master,
-        oracle=rinkeby_core.tellorx.oracle,
-        datafeed=eth_usd_median_feed,
-        gas_price=10,
-    )
-    return r
+    async with TelliotCore(config=rinkeby_cfg) as core:
+        private_key = core.get_default_staker().private_key
+        r = IntervalReporter(
+            endpoint=core.config.get_endpoint(),
+            private_key=private_key,
+            master=core.tellorx.master,
+            oracle=core.tellorx.oracle,
+            datafeed=eth_usd_median_feed,
+            expected_profit="YOLO",
+            transaction_type=0,
+            gas_limit=400000,
+            max_fee=None,
+            priority_fee=None,
+            legacy_gas_price=None,
+            gas_price_speed="safeLow",
+            chain_id=core.config.main.chain_id,
+        )
+        return r
 
 
 @pytest.mark.skip

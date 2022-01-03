@@ -27,12 +27,18 @@ def rinkeby_cfg():
     rinkeby_endpoint = cfg.get_endpoint()
     # assert rinkeby_endpoint.network == "rinkeby"
 
-    # Optionally override private key and URL with ENV vars for testing
-    if os.getenv("PRIVATE_KEY", None):
-        cfg.main.private_key = os.environ["PRIVATE_KEY"]
-
     if os.getenv("NODE_URL", None):
         rinkeby_endpoint.url = os.environ["NODE_URL"]
+
+    # Replace staker private key
+    if os.getenv("PRIVATE_KEY", None):
+        private_key = os.environ["PRIVATE_KEY"]
+        rinkeby_stakers = cfg.stakers.find(chain_id=4)
+        if len(rinkeby_stakers) == 0:
+            raise Exception("No staker/private key defined for rinkeby")
+        rinkeby_staker = rinkeby_stakers[0]
+        rinkeby_staker.private_key = private_key
+        rinkeby_staker.address = "0x8D8D2006A485FA4a75dFD8Da8f63dA31401B8fA2"
 
     return cfg
 
@@ -48,7 +54,7 @@ def rinkeby_core(rinkeby_cfg):
         staker.private_key = os.getenv("PRIVATE_KEY", None)
         staker.address = "0x8D8D2006A485FA4a75dFD8Da8f63dA31401B8fA2"
 
-    app.connect()
+    app.startup()
     yield app
 
     # Destroy app instance after test (not working)
