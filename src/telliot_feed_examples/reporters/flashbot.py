@@ -3,7 +3,6 @@
 Example of a subclassed Reporter.
 """
 import asyncio
-import os
 from typing import Any
 from typing import Optional
 from typing import Tuple
@@ -39,6 +38,7 @@ class FlashbotsReporter(IntervalReporter):
         self,
         endpoint: RPCEndpoint,
         private_key: str,
+        signature_private_key: str,
         chain_id: int,
         master: Contract,
         oracle: Contract,
@@ -74,9 +74,9 @@ class FlashbotsReporter(IntervalReporter):
 
         # Set up flashbots
         self.account: LocalAccount = Account.from_key(private_key)
-        self.signature: LocalAccount = Account.from_key(
-            os.environ.get("SIGNATURE_PRIVATE_KEY")
-        )
+        self.signature: LocalAccount = Account.from_key(signature_private_key)
+
+        logger.info(f"Signature address: {self.signature.address}")
 
         assert self.signature is not None
         assert self.user.address == self.account.address

@@ -82,7 +82,7 @@ class IntervalReporter:
         gas_price_gwei = await self.fetch_gas_price()
 
         staker_info, read_status = await self.master.read(
-            "getStakerInfo", _staker=self.user
+            func_name="getStakerInfo", _staker=self.user.address
         )
 
         if (not read_status.ok) or (staker_info is None):
@@ -147,7 +147,7 @@ class IntervalReporter:
         # Save last submission timestamp to reduce web3 calls
         if self.last_submission_timestamp == 0:
             last_timestamp, read_status = await self.oracle.read(
-                "getReporterLastTimestamp", _reporter=self.user
+                "getReporterLastTimestamp", _reporter=self.user.address
             )
 
             # Log web3 errors
