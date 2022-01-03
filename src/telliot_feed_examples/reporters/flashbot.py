@@ -7,8 +7,6 @@ from typing import Any
 from typing import Optional
 from typing import Tuple
 
-from dotenv import find_dotenv
-from dotenv import load_dotenv
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
 from telliot_core.contract.contract import Contract
@@ -26,7 +24,6 @@ from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.utils.log import get_logger
 
 
-load_dotenv(find_dotenv())
 logger = get_logger(__name__)
 
 

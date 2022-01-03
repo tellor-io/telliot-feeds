@@ -118,6 +118,7 @@ async def get_app(obj: Mapping[str, Any]) -> TelliotCore:
     required=False,
     nargs=1,
     type=str,
+    default="my_rinkeby_staker",
 )
 @click.option(
     "--signature-tag",
