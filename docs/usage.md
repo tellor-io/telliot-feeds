@@ -1,10 +1,10 @@
 # Usage
 
-To use any of the telliot datafeed and reporter examples, use the command line interface (CLI), `telliot-examples`. Once this package is installed, any of the below commands are available to use.
+To use any of the telliot datafeed and reporter examples, use the command line interface (CLI) entry point, `telliot-examples`. Once this package is installed and your `stakers.yaml` and `endpoints.yaml` have been updated, any of the below commands are available to use.
 
-Note, by default, the `report` command will attempt to report data through the Flashbots relay.
+By default, the `report` command will submit transactions to the public mempool, not through the Flashbots relay, so there's a possibility of being beaten by those submitting through Flashbots. Getting transactions mined by submitting bundles through the Flashbots relay is not a profit guarantee, as those with higher reputation or more sophisticated monitoring can often win out over newer participants. In general, reporting for profit is highly competitive.
 
-Even if you set a profit percent threshold, you could still lose money if submitting on mainnet!
+Overall, this is experimental software, so even if you specify an expected profit percent, you could still lose money if submitting on mainnet!
 
 ## Commands
 
@@ -12,8 +12,9 @@ To use any of this package's subcommands, first invoke `telliot-examples` follow
 
 ### Help command
 
-Use the help command flag to view subcommands, flag options, and their descriptions:
+Use the help command flag to view any subcommands, flag options, and their descriptions:
 ```
+user:~/$ telliot-examples --help
 Usage: telliot-examples [OPTIONS] COMMAND [ARGS]...
 
   Telliot command line interface
@@ -35,12 +36,12 @@ Use the `report` command to submit data to the TellorX oracle. Here's an example
 telliot-examples --no-flashbots report --legacy-id 41 --submit-once
 ```
 
-Each of the command line option flags have shorter versions. For example, the shorter version of `--legacy-id` is `-lid`. To report the [price of ETH/USD](https://github.com/tellor-io/dataSpecs/blob/main/ids/LegacyRequest-01.md) every ~12 hours:
+Each of the command line option flags have shorter versions. For example, the shorter version of `--legacy-id` is `-lid`. To report the [price of ETH/USD](https://github.com/tellor-io/dataSpecs/blob/main/ids/LegacyRequest-01.md) every ~12 hours at an expected profit of 5%:
 ```
-telliot-examples report -lid 1
+telliot-examples report -lid 1 -p 5
 ```
 
-Use the help command flag to view all the `report` subcommand options:
+Again, use the help command flag to view any info about these subcommand flag options:
 ```
 user:~/$ telliot-examples report --help
 Usage: telliot-examples report [OPTIONS]
@@ -64,10 +65,36 @@ Options:
   --help                          Show this message and exit.
 ```
 
-Here's an exampels of reporting once with an expected profit percentage greater than or equal to 2%:
+### Reporting with Flashbots
+
+In order to submit transactions through the [Flashbots](https://docs.flashbots.net/flashbots-auction/searchers/quick-start/) relay, you need an additional private key and the associated account info in `stakers.yaml` that they'll use to identify you (and for building reputation as a Flashbots searcher). This account doesn't need any funds in it.
+
+Here's an example of said signatory account added to `stakers.yaml`:
+```yaml
+type: StakerList
+stakers:
+- type: Staker
+  tag: my_mainnet_staker
+  address: '0x00001234'
+  private_key: '0x00009999'
+  chain_id: 1
+- type: Staker
+  tag: my_rinkeby_staker
+  address: '0x00005678'
+  private_key: '0x00009999'
+  chain_id: 4
+- type: Staker
+  tag: flashbots-sig
+  address: '0xthisaddressdoesnotexist'
+  private_key: '0xthisisafakeprivatekey'
+  chain_id: 1
 ```
-telliot-examples report --submit-once -lid 50 -p 2
+
+After tweaking your config files, you need to select your mainnet staker as well as the signature account with the `--staker-tag/-st` and `--signature-tag/-sgt` CLI flag options, respectively. Also, add the `--flashbots/-fb` flag:
 ```
+telliot-examples -st my_mainnet_staker -sgt flashbots-sig -fb report -lid 2 -p 10
+```
+
 
 ### Tip command
 

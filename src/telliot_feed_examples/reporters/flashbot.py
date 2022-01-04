@@ -54,7 +54,7 @@ class FlashbotsReporter(IntervalReporter):
         self.oracle = oracle
         self.datafeed = datafeed
         self.chain_id = chain_id
-        self.user = self.endpoint.web3.eth.account.from_key(private_key)
+        self.user = self.endpoint.web3.eth.account.from_key(private_key).address
         self.last_submission_timestamp = 0
         self.expected_profit = expected_profit
         self.transaction_type = transaction_type
@@ -64,7 +64,7 @@ class FlashbotsReporter(IntervalReporter):
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
 
-        logger.info(f"Reporting with account: {self.user.address}")
+        logger.info(f"Reporting with account: {self.user}")
 
         staked, status = asyncio.run(self.ensure_staked())
         assert staked and status.ok
@@ -76,7 +76,7 @@ class FlashbotsReporter(IntervalReporter):
         logger.info(f"Signature address: {self.signature.address}")
 
         assert self.signature is not None
-        assert self.user.address == self.account.address
+        assert self.user == self.account.address
 
         flashbots_uri = get_default_endpoint()
         logger.info(f"Flashbots provider endpoint: {flashbots_uri}")

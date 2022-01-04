@@ -116,7 +116,7 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     "-fb/-nfb",
     "using_flashbots",
     type=bool,
-    default=True,
+    default=False,
 )
 @click.option(
     "--test_config",

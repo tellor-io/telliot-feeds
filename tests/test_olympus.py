@@ -2,26 +2,42 @@ import pytest
 from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
-from telliot_feed_examples.feeds.uspce_feed import uspce_feed
+from telliot_feed_examples.feeds.olympus import ohm_eth_median_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
-from telliot_feed_examples.sources import uspce
 
 
 @pytest.mark.asyncio
-async def test_uspce_interval_reporter_submit_once(rinkeby_cfg):
-    """test report of uspce manual price"""
-    # Override Python built-in input method
-    uspce.input = lambda: "123.456"
+async def test_fetch_price():
+    (value, _) = await ohm_eth_median_feed.source.fetch_new_datapoint()
+    assert value > 0
+    print(value)
 
+
+def test_query_info():
+    q = ohm_eth_median_feed.query
+
+    assert q.query_data == b'{"type":"SpotPrice","asset":"ohm","currency":"eth"}'
+    assert (
+        q.query_id.hex()
+        == "0136f215d1f75daabc0c0726ad4356debeb9bc95b24344165145a56684995966"
+    )
+    assert (
+        q.query_data.hex() == "7b2274797065223a2253706f745072696365222c2261"
+        "73736574223a226f686d222c2263757272656e6379223a22657468227d"
+    )
+
+
+@pytest.mark.asyncio
+async def test_ohm_eth_reporter_submit_once(rinkeby_cfg):
+    """Test reporting AMPL/USD/VWAP to the TellorX Oracle on Rinkeby."""
     async with TelliotCore(config=rinkeby_cfg) as core:
         private_key = core.get_default_staker().private_key
-
         r = IntervalReporter(
             endpoint=core.config.get_endpoint(),
             private_key=private_key,
             master=core.tellorx.master,
             oracle=core.tellorx.oracle,
-            datafeed=uspce_feed,
+            datafeed=ohm_eth_median_feed,
             expected_profit="YOLO",
             transaction_type=0,
             gas_limit=400000,

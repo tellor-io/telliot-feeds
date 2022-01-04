@@ -66,11 +66,47 @@ class IntervalReporter:
 
         logger.info(f"Reporting with account: {self.user}")
 
-        staked, status = asyncio.run(self.ensure_staked())
-        assert staked and status.ok
-
         self.account: LocalAccount = Account.from_key(private_key)
         assert self.user == self.account.address
+
+    async def check_reporter_lock(self) -> ResponseStatus:
+        """Ensure enough time has passed since last report
+        Returns a bool signifying whether a given address is in a
+        reporter lock or not (TellorX oracle users cannot submit
+        multiple times within 12 hours)."""
+        status = ResponseStatus()
+
+        # Save last submission timestamp to reduce web3 calls
+        if self.last_submission_timestamp == 0:
+            last_timestamp, read_status = await self.oracle.read(
+                "getReporterLastTimestamp", _reporter=self.user
+            )
+
+            # Log web3 errors
+            if (not read_status.ok) or (last_timestamp is None):
+                status.ok = False
+                status.error = (
+                    "Unable to retrieve reporter's last report timestamp:"
+                    + read_status.error
+                )
+                logger.error(status.error)
+                status.e = read_status.e
+                return status
+
+            self.last_submission_timestamp = last_timestamp
+            logger.info(f"Last submission timestamp: {self.last_submission_timestamp}")
+
+        if time.time() < self.last_submission_timestamp + 43200:  # 12 hours in seconds
+            status.ok = False
+            status.error = "Current address is in reporter lock."
+            logger.info(status.error)
+            return status
+
+        return status
+
+    async def fetch_gas_price(self) -> int:
+        """Fetch gas price from ethgasstation in gwei."""
+        return await ethgasstation(style="average")  # type: ignore
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked
@@ -82,7 +118,7 @@ class IntervalReporter:
         gas_price_gwei = await self.fetch_gas_price()
 
         staker_info, read_status = await self.master.read(
-            func_name="getStakerInfo", _staker=self.user.address
+            func_name="getStakerInfo", _staker=self.user
         )
 
         if (not read_status.ok) or (staker_info is None):
@@ -136,41 +172,6 @@ class IntervalReporter:
             logger.info(status.error)
             status.e = None
             return False, status
-
-    async def check_reporter_lock(self) -> ResponseStatus:
-        """Ensure enough time has passed since last report
-        Returns a bool signifying whether a given address is in a
-        reporter lock or not (TellorX oracle users cannot submit
-        multiple times within 12 hours)."""
-        status = ResponseStatus()
-
-        # Save last submission timestamp to reduce web3 calls
-        if self.last_submission_timestamp == 0:
-            last_timestamp, read_status = await self.oracle.read(
-                "getReporterLastTimestamp", _reporter=self.user.address
-            )
-
-            # Log web3 errors
-            if (not read_status.ok) or (last_timestamp is None):
-                status.ok = False
-                status.error = (
-                    "Unable to retrieve reporter's last report timestamp:"
-                    + read_status.error
-                )
-                logger.error(status.error)
-                status.e = read_status.e
-                return status
-
-            self.last_submission_timestamp = last_timestamp
-            logger.info(f"Last submission timestamp: {self.last_submission_timestamp}")
-
-        if time.time() < self.last_submission_timestamp + 43200:  # 12 hours in seconds
-            status.ok = False
-            status.error = "Current address is in reporter lock."
-            logger.info(status.error)
-            return status
-
-        return status
 
     async def ensure_profitable(self) -> ResponseStatus:
         """Estimate profitability
@@ -278,10 +279,6 @@ class IntervalReporter:
         result = await c.fetch_new_datapoint()
         return result
 
-    async def fetch_gas_price(self) -> int:
-        """Fetch gas price from ethgasstation in gwei."""
-        return await ethgasstation(style="average")  # type: ignore
-
     async def report_once(
         self,
     ) -> Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]:
@@ -290,6 +287,10 @@ class IntervalReporter:
         values to the TellorX oracle, given their staker status
         and last submission time. Also, this method does not
         submit values if doing so won't make a profit."""
+        # Check staker status
+        staked, status = await self.ensure_staked()
+        if not staked and status.ok:
+            return None, status
 
         status = await self.check_reporter_lock()
         if not status.ok:
