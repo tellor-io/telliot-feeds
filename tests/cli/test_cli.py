@@ -1,28 +1,11 @@
 """
 Unit tests covering telliot_core CLI commands.
 """
-import os
-
 import pytest
 from click.testing import CliRunner
 
 from telliot_feed_examples.cli import cli
-from telliot_feed_examples.cli import get_app
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
-
-
-@pytest.mark.skip
-def test_get_app():
-    """Test instantiating TelliotCore app using click Context."""
-    ctx = {
-        "CHAIN_ID": 4,  # Rinkeby testnet
-        "RPC_URL": os.getenv("NODE_URL", None),
-        "PRIVATE_KEY": os.getenv("PRIVATE_KEY", None),
-    }
-    core = get_app(ctx)
-
-    assert core.config
-    assert core.tellorx
 
 
 @pytest.mark.skip
@@ -63,7 +46,7 @@ def test_cmd_tip():
     """Test CLI tip command"""
     runner = CliRunner()
     trb = "0.00001"
-    result = runner.invoke(cli, ["tip", "--amount-usd", trb])
+    result = runner.invoke(cli, ["--test_config", "tip", "--amount-usd", trb])
 
     expected = "Error: No such option: --amount-usd Did you mean --amount-trb?"
 
