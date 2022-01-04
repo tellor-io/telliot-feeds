@@ -1,9 +1,9 @@
 import pytest
+from telliot_core.apps.core import TelliotCore
+from web3.datastructures import AttributeDict
 
 from telliot_feed_examples.feeds.olympus import ohm_eth_median_feed
-from telliot_core.apps.core import TelliotCore
 from telliot_feed_examples.reporters.interval import IntervalReporter
-from web3.datastructures import AttributeDict
 
 
 @pytest.mark.asyncio
