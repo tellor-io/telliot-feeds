@@ -25,6 +25,7 @@ def test_parse_profit_input():
     assert result is None
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_get_app():
     """Test instantiating TelliotCore app using click Context."""
