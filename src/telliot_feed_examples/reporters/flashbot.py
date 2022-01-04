@@ -2,7 +2,6 @@
 
 Example of a subclassed Reporter.
 """
-import asyncio
 from typing import Any
 from typing import Optional
 from typing import Tuple
@@ -66,9 +65,6 @@ class FlashbotsReporter(IntervalReporter):
 
         logger.info(f"Reporting with account: {self.user}")
 
-        staked, status = asyncio.run(self.ensure_staked())
-        assert staked and status.ok
-
         # Set up flashbots
         self.account: LocalAccount = Account.from_key(private_key)
         self.signature: LocalAccount = Account.from_key(signature_private_key)
@@ -91,6 +87,9 @@ class FlashbotsReporter(IntervalReporter):
         values to the TellorX oracle, given their staker status
         and last submission time. Also, this method does not
         submit values if doing so won't make a profit."""
+        staked, status = await self.ensure_staked()
+        if not staked and status.ok:
+            return None, status
 
         status = await self.check_reporter_lock()
         if not status.ok:
