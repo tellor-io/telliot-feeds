@@ -84,7 +84,6 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
         assert core.endpoint.web3.eth.chain_id == 1
 
     assert core.config
-    assert core.tellorx
 
     return core
 
@@ -98,9 +97,7 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     help="use specific staker by tag",
     required=False,
     nargs=1,
-    type=str,
-    default="my_rinkeby_staker",
-)
+    type=str)
 @click.option(
     "--signature-tag",
     "-sgt",
@@ -108,8 +105,7 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     help="use specific signature account by tag",
     required=False,
     nargs=1,
-    type=str,
-    default="flashbots-sig",
+    type=str
 )
 @click.option(
     "--flashbots/--no-flashbots",
@@ -245,11 +241,15 @@ async def report(
 
         using_flashbots = ctx.obj["USING_FLASHBOTS"]
         signature_tag = ctx.obj["SIGNATURE_TAG"]
-        sig_staker = core.config.stakers.find(tag=signature_tag)[0]
+        if signature_tag is not None:
+            sig_staker = core.config.stakers.find(tag=signature_tag)[0]
+            sig_staker_address = sig_staker.address
+        else:
+            sig_staker_address = ''
 
         print_reporter_settings(
             using_flashbots=using_flashbots,
-            signature_address=sig_staker.address,
+            signature_address=sig_staker_address,
             legacy_id=legacy_id,
             transaction_type=tx_type,
             gas_limit=gas_limit,
@@ -289,9 +289,9 @@ async def report(
             reporter = IntervalReporter(**common_reporter_kwargs)  # type: ignore
 
         if submit_once:
-            _, _ = asyncio.run(reporter.report_once())
+            _, _ = await reporter.report_once()
         else:
-            _, _ = asyncio.run(reporter.report())
+            _, _ = await reporter.report()
 
 
 @cli.command()
