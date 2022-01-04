@@ -241,7 +241,7 @@ async def report(
     assert tx_type in (0, 2)
 
     # Initialize telliot core app using CLI context
-    async with cli_core(ctx) as core:
+    async with reporter_cli_core(ctx) as core:
 
         using_flashbots = ctx.obj["USING_FLASHBOTS"]
         signature_tag = ctx.obj["SIGNATURE_TAG"]
@@ -324,7 +324,7 @@ async def tip(
     """Tip TRB for a selected query ID"""
 
     # Initialize telliot core app using CLI context
-    async with cli_core(ctx) as core:
+    async with reporter_cli_core(ctx) as core:
 
         # Ensure valid legacy id
         if legacy_id not in LEGACY_DATAFEEDS:
