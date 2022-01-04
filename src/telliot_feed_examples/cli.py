@@ -269,7 +269,7 @@ async def report(
 
         common_reporter_kwargs = {
             "endpoint": core.endpoint,
-            "private_key": core.get_default_staker().private_key,
+            "private_key": core.get_staker().private_key,
             "master": core.tellorx.master,
             "oracle": core.tellorx.oracle,
             "datafeed": chosen_feed,
