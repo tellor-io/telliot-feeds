@@ -97,7 +97,8 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     help="use specific staker by tag",
     required=False,
     nargs=1,
-    type=str)
+    type=str,
+)
 @click.option(
     "--signature-tag",
     "-sgt",
@@ -105,7 +106,7 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     help="use specific signature account by tag",
     required=False,
     nargs=1,
-    type=str
+    type=str,
 )
 @click.option(
     "--flashbots/--no-flashbots",
@@ -245,7 +246,7 @@ async def report(
             sig_staker = core.config.stakers.find(tag=signature_tag)[0]
             sig_staker_address = sig_staker.address
         else:
-            sig_staker_address = ''
+            sig_staker_address = ""
 
         print_reporter_settings(
             using_flashbots=using_flashbots,
