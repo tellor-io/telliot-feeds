@@ -76,12 +76,13 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     # (handles STAKER_TAG, CHAIN_ID, and TEST_CONFIG)
     core = cli_core(ctx)
 
+    # Override chain ID with staker's
+    core.config.main.chain_id = core.get_staker().chain_id
+
     # Ensure chain id compatible with flashbots relay
     if ctx.obj["USING_FLASHBOTS"]:
-        assert core.config
         # Only supports mainnet
         assert core.config.main.chain_id == 1
-        assert core.endpoint.web3.eth.chain_id == 1
 
     assert core.config
 
