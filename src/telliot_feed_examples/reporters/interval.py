@@ -15,16 +15,16 @@ from telliot_core.contract.gas import ethgasstation
 from telliot_core.datafeed import DataFeed
 from telliot_core.gas.etherscan_gas import EtherscanGasPriceSource
 from telliot_core.model.endpoints import RPCEndpoint
+from telliot_core.reporters.reporter_utils import tellorx_suggested_report
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
+from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.utils.log import get_logger
-from telliot_feed_examples.feeds import CATALOG_FEEDS
-from telliot_core.reporters.reporter_utils import tellorx_suggested_report
 
 
 logger = get_logger(__name__)
@@ -421,7 +421,7 @@ class IntervalReporter:
                 suggested_qtag = await tellorx_suggested_report(self.oracle)
                 if not suggested_qtag:
                     # TODO: log this error and continue looping
-                    raise Exception('Could not get suggested query.')
+                    raise Exception("Could not get suggested query.")
                 chosen_feed = CATALOG_FEEDS[suggested_qtag]
                 logger.info(f"Current query: {chosen_feed.query.descriptor}")
                 self.datafeed = chosen_feed

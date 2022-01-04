@@ -2,7 +2,6 @@
 
 Example of a subclassed Reporter.
 """
-from os import sync
 from typing import Any
 from typing import Optional
 from typing import Tuple

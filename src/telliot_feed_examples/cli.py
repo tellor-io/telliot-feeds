@@ -13,7 +13,8 @@ from telliot_core.cli.utils import async_run
 from telliot_core.cli.utils import cli_core
 from telliot_core.reporters.reporter_utils import tellorx_suggested_report
 
-from telliot_feed_examples.feeds import LEGACY_DATAFEEDS, CATALOG_FEEDS
+from telliot_feed_examples.feeds import CATALOG_FEEDS
+from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.utils.log import get_logger
@@ -36,17 +37,17 @@ def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
 
 
 def print_reporter_settings(
-        using_flashbots: bool,
-        signature_address: str,
-        legacy_id: str,
-        gas_limit: int,
-        priority_fee: Optional[int],
-        expected_profit: str,
-        chain_id: int,
-        max_fee: Optional[int],
-        transaction_type: int,
-        legacy_gas_price: Optional[int],
-        gas_price_speed: str,
+    using_flashbots: bool,
+    signature_address: str,
+    legacy_id: str,
+    gas_limit: int,
+    priority_fee: Optional[int],
+    expected_profit: str,
+    chain_id: int,
+    max_fee: Optional[int],
+    transaction_type: int,
+    legacy_gas_price: Optional[int],
+    gas_price_speed: str,
 ) -> None:
     """Print user settings to console."""
     click.echo("")
@@ -128,11 +129,11 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
 )
 @click.pass_context
 def cli(
-        ctx: Context,
-        staker_tag: str,
-        signature_tag: str,
-        using_flashbots: bool,
-        test_config: bool,
+    ctx: Context,
+    staker_tag: str,
+    signature_tag: str,
+    using_flashbots: bool,
+    test_config: bool,
 ) -> None:
     """Telliot command line interface"""
     ctx.ensure_object(dict)
@@ -223,16 +224,16 @@ def cli(
 @click.pass_context
 @async_run
 async def report(
-        ctx: Context,
-        legacy_id: str,
-        tx_type: int,
-        gas_limit: int,
-        max_fee: Optional[int],
-        priority_fee: Optional[int],
-        legacy_gas_price: Optional[int],
-        expected_profit: str,
-        submit_once: bool,
-        gas_price_speed: str,
+    ctx: Context,
+    legacy_id: str,
+    tx_type: int,
+    gas_limit: int,
+    max_fee: Optional[int],
+    priority_fee: Optional[int],
+    legacy_gas_price: Optional[int],
+    expected_profit: str,
+    submit_once: bool,
+    gas_price_speed: str,
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
@@ -261,7 +262,7 @@ async def report(
         else:
             suggested_qtag = await tellorx_suggested_report(core.tellorx.oracle)
             if not suggested_qtag:
-                raise Exception('Could not get suggested query.')
+                raise Exception("Could not get suggested query.")
             chosen_feed = CATALOG_FEEDS[suggested_qtag]
             sync_feed = True
 
@@ -334,9 +335,9 @@ async def report(
 @click.pass_context
 @async_run
 async def tip(
-        ctx: Context,
-        legacy_id: str,
-        amount_trb: float,
+    ctx: Context,
+    legacy_id: str,
+    amount_trb: float,
 ) -> None:
     """Tip TRB for a selected query ID"""
 
