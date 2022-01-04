@@ -1,38 +1,54 @@
 """
 Unit tests covering telliot_core CLI commands.
 """
-import os
-
 import pytest
 from click.testing import CliRunner
 
 from telliot_feed_examples.cli import cli
-from telliot_feed_examples.cli import get_app
-from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
+from telliot_feed_examples.cli import parse_profit_input
 
 
-def test_get_app():
-    """Test instantiating TelliotCore app using click Context."""
-    ctx = {
-        "CHAIN_ID": 4,  # Rinkeby testnet
-        "RPC_URL": os.getenv("NODE_URL", None),
-        "PRIVATE_KEY": os.getenv("PRIVATE_KEY", None),
-    }
-    core = get_app(ctx)
+def test_parse_profit_input():
+    """Test reading in custom expected profit from user."""
+    result = parse_profit_input("YOLO")
+    assert isinstance(result, str)
+    assert result == "YOLO"
 
-    assert core.config
-    assert core.tellorx
+    result = parse_profit_input("1234.1234")
+    assert isinstance(result, float)
+    assert result == 1234.1234
+
+    result = parse_profit_input("asdf")
+    assert result is None
+
+
+# TODO: test passes, but getting this error:
+# asyncio:base_events.py:1738 Unclosed client session
+# which breaks later tests because TelliotCore singleton
+# already exists
+@pytest.mark.skip
+def test_flag_staker_tag():
+    """Test user choosing to use different staker."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["-st", "thisdoesnotexist", "report"])
+
+    assert result.exception
+    assert result.exit_code == 1
+
+    expected = "No staker found for given tag, using default"
+    assert expected in result.stdout
 
 
 def test_cmd_report():
     """Test report command."""
     runner = CliRunner()
-    result = runner.invoke(cli, ["report", "--legacy-id", "1234"])
+    result = runner.invoke(cli, ["-nfb", "report", "-lid", "1234"])
 
-    assert result.exit_code == 0
+    assert result.exception
+    assert result.exit_code == 2
 
-    expected = f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
-    assert expected in result.output
+    expected = "Invalid value for '--legacy-id'"
+    assert expected in result.stdout
 
 
 def test_custom_gas_flag():
@@ -61,43 +77,8 @@ def test_cmd_tip():
     """Test CLI tip command"""
     runner = CliRunner()
     trb = "0.00001"
-    result = runner.invoke(cli, ["tip", "--amount-usd", trb])
+    result = runner.invoke(cli, ["--test_config", "tip", "--amount-usd", trb])
 
     expected = "Error: No such option: --amount-usd Did you mean --amount-trb?"
 
     assert expected in result.output
-
-
-@pytest.mark.skip("Not possible with new telliot core")
-def test_rpc_override():
-    """Test the CLI option to override the RPC url provided in configs"""
-    runner = CliRunner()
-    result = runner.invoke(
-        cli,
-        [
-            "--rpc-ur",
-            "wss://rinkeby.infura.io/ws/v3/1a09c4705f114af2997548dd901d655b",
-            "report",
-            "--submit-once",
-        ],
-    )
-
-    expected = "Error: No such option: --rpc-ur (Possible options: --rpc-url, -rpc)"
-
-    assert expected in result.output
-
-    runner = CliRunner()
-    result = runner.invoke(
-        cli,
-        [
-            "--rpc-url",
-            "wss://goerli.infura.io/ws/v3/1a09c4705f114af2997548dd901d655b",
-            "report",
-            "--submit-once",
-        ],
-    )
-
-    assert "Current chain ID: 5" in result.output
-
-
-# TODO: test successful CLI runs and all option flags

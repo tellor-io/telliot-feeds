@@ -18,7 +18,7 @@
 
 1. Report using the CLI:
     ```
-    telliot-examples --legacy-id 41 report --submit-once
+    telliot-examples --no-flashbots report -lid 41 --submit-once
     ```
 2. Enter value when prompted.
 
@@ -26,5 +26,5 @@
 
 1. Report using the CLI:
     ```
-    telliot-examples -lid 1 report
+    telliot-examples report --legacy-id 1
     ```
