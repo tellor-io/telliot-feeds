@@ -8,7 +8,22 @@ from click.testing import CliRunner
 
 from telliot_feed_examples.cli import cli
 from telliot_feed_examples.cli import get_app
+from telliot_feed_examples.cli import parse_profit_input
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
+
+
+def test_parse_profit_input():
+    """Test reading in custom expected profit from user."""
+    result = parse_profit_input("YOLO")
+    assert isinstance(result, str)
+    assert result == "YOLO"
+
+    result = parse_profit_input("1234.1234")
+    assert isinstance(result, float)
+    assert result == 1234.1234
+
+    result = parse_profit_input("asdf")
+    assert result is None
 
 
 @pytest.mark.skip
