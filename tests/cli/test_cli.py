@@ -1,6 +1,8 @@
 """
 Unit tests covering telliot_core CLI commands.
 """
+import os
+
 import pytest
 from click.testing import CliRunner
 
@@ -26,16 +28,18 @@ def test_parse_profit_input():
 @pytest.mark.asyncio
 async def test_get_app():
     """Test instantiating TelliotCore app using click Context."""
-    ctx = {
-        "STAKER_TAG": None,
-        "USING_FLASHBOTS": None,
-    }
-    core = await get_app(ctx)
+    # Skip if running github CI
+    if os.environ["NODE_URL"] is not None:
+        ctx = {
+            "STAKER_TAG": None,
+            "USING_FLASHBOTS": None,
+        }
+        core = await get_app(ctx)
 
-    assert core.config
-    assert core.tellorx
+        assert core.config
+        assert core.tellorx
 
-    await core.destroy()
+        await core.destroy()
 
 
 # TODO: test passes, but getting this error:
