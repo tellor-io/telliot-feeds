@@ -2,6 +2,7 @@
 
 Example of a subclassed Reporter.
 """
+from os import sync
 from typing import Any
 from typing import Optional
 from typing import Tuple
@@ -38,6 +39,7 @@ class FlashbotsReporter(IntervalReporter):
         chain_id: int,
         master: Contract,
         oracle: Contract,
+        sync_feed: bool,
         datafeed: DataFeed[Any],
         expected_profit: float = 100.0,
         transaction_type: int = 0,
@@ -51,6 +53,7 @@ class FlashbotsReporter(IntervalReporter):
         self.endpoint = endpoint
         self.master = master
         self.oracle = oracle
+        self.sync_feed = sync_feed
         self.datafeed = datafeed
         self.chain_id = chain_id
         self.user = self.endpoint.web3.eth.account.from_key(private_key).address

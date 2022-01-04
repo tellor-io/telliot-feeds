@@ -23,6 +23,8 @@ from web3.datastructures import AttributeDict
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.utils.log import get_logger
+from telliot_feed_examples.feeds import CATALOG_FEEDS
+from telliot_core.reporters.reporter_utils import tellorx_suggested_report
 
 
 logger = get_logger(__name__)
@@ -39,6 +41,7 @@ class IntervalReporter:
         chain_id: int,
         master: Contract,
         oracle: Contract,
+        sync_feed: bool,
         datafeed: DataFeed[Any],
         expected_profit: Union[str, float] = 100.0,
         transaction_type: int = 0,
@@ -52,6 +55,7 @@ class IntervalReporter:
         self.endpoint = endpoint
         self.master = master
         self.oracle = oracle
+        self.sync_feed = sync_feed
         self.datafeed = datafeed
         self.chain_id = chain_id
         self.user = self.endpoint.web3.eth.account.from_key(private_key).address
@@ -412,5 +416,14 @@ class IntervalReporter:
         """Submit latest values to the TellorX oracle every 12 hours."""
 
         while True:
+            suggested_qtag = None
+            if self.sync_feed:
+                suggested_qtag = await tellorx_suggested_report(self.oracle)
+                if not suggested_qtag:
+                    # TODO: log this error and continue looping
+                    raise Exception('Could not get suggested query.')
+                chosen_feed = CATALOG_FEEDS[suggested_qtag]
+                logger.info(f"Current query: {chosen_feed.query.descriptor}")
+                self.datafeed = chosen_feed
             _, _ = await self.report_once()
             await asyncio.sleep(7)

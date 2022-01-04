@@ -39,7 +39,6 @@ def print_reporter_settings(
         using_flashbots: bool,
         signature_address: str,
         legacy_id: str,
-        suggested_qtag: str,
         gas_limit: int,
         priority_fee: Optional[int],
         expected_profit: str,
@@ -58,8 +57,8 @@ def print_reporter_settings(
 
     if legacy_id:
         click.echo(f"Reporting legacy ID: {legacy_id}")
-    elif suggested_qtag:
-        click.echo(f"Reporting query (synchronized): {suggested_qtag}")
+    else:
+        click.echo("Reporting with synchronized queries")
 
     click.echo(f"Current chain ID: {chain_id}")
 
@@ -256,6 +255,7 @@ async def report(
 
         # Use selected legacy feed, or choose automatically
         suggested_qtag = None
+        sync_feed = False
         if legacy_id:
             chosen_feed = LEGACY_DATAFEEDS[legacy_id]
         else:
@@ -263,12 +263,12 @@ async def report(
             if not suggested_qtag:
                 raise Exception('Could not get suggested query.')
             chosen_feed = CATALOG_FEEDS[suggested_qtag]
+            sync_feed = True
 
         print_reporter_settings(
             using_flashbots=using_flashbots,
             signature_address=sig_staker_address,
             legacy_id=legacy_id,
-            suggested_qtag=suggested_qtag,
             transaction_type=tx_type,
             gas_limit=gas_limit,
             max_fee=max_fee,
@@ -283,9 +283,10 @@ async def report(
 
         common_reporter_kwargs = {
             "endpoint": core.endpoint,
-            "private_key": core.get_default_staker().private_key,
+            "private_key": core.get_staker().private_key,
             "master": core.tellorx.master,
             "oracle": core.tellorx.oracle,
+            "sync_feed": sync_feed,
             "datafeed": chosen_feed,
             "expected_profit": expected_profit,
             "transaction_type": tx_type,
