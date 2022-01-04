@@ -1,15 +1,12 @@
 """
 Unit tests covering telliot_core CLI commands.
 """
-import os
-
 import pytest
 from click.testing import CliRunner
 
 from telliot_feed_examples.cli import cli
 from telliot_feed_examples.cli import get_app
 from telliot_feed_examples.cli import parse_profit_input
-from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 
 
 def test_parse_profit_input():
@@ -26,30 +23,48 @@ def test_parse_profit_input():
     assert result is None
 
 
-@pytest.mark.skip
-def test_get_app():
+@pytest.mark.asyncio
+async def test_get_app():
     """Test instantiating TelliotCore app using click Context."""
     ctx = {
-        "CHAIN_ID": 4,  # Rinkeby testnet
-        "RPC_URL": os.getenv("NODE_URL", None),
-        "PRIVATE_KEY": os.getenv("PRIVATE_KEY", None),
+        "STAKER_TAG": None,
+        "USING_FLASHBOTS": None,
     }
-    core = get_app(ctx)
+    core = await get_app(ctx)
 
     assert core.config
     assert core.tellorx
 
+    await core.destroy()
 
+
+# TODO: test passes, but getting this error:
+# asyncio:base_events.py:1738 Unclosed client session
+# which breaks later tests because TelliotCore singleton
+# already exists
 @pytest.mark.skip
+def test_flag_staker_tag():
+    """Test user choosing to use different staker."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["-st", "thisdoesnotexist", "report"])
+
+    assert result.exception
+    assert result.exit_code == 1
+
+    expected = "No staker found for given tag, using default"
+    assert expected in result.stdout
+
+
 def test_cmd_report():
     """Test report command."""
     runner = CliRunner()
-    result = runner.invoke(cli, ["report", "--legacy-id", "1234"])
+    result = runner.invoke(cli, ["-nfb", "report", "-lid", "1234"])
 
-    assert result.exit_code == 0
+    assert result.exception
+    assert result.exit_code == 2
 
-    expected = f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
-    assert expected in result.output
+    expected = "Invalid value for '--legacy-id'"
+    assert expected in result.stdout
 
 
 def test_custom_gas_flag():
@@ -83,6 +98,3 @@ def test_cmd_tip():
     expected = "Error: No such option: --amount-usd Did you mean --amount-trb?"
 
     assert expected in result.output
-
-
-# TODO: test successful CLI runs and all option flags

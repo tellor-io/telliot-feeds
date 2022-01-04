@@ -80,17 +80,20 @@ async def get_app(obj: Mapping[str, Any]) -> TelliotCore:
     staker_tag = obj["STAKER_TAG"]
     if staker_tag is not None:
         stakers = app.config.stakers.find(tag=staker_tag)
-        staker = stakers[0]
         default_staker = app.get_default_staker()
-        default_staker.private_key = staker.private_key
-        default_staker.address = staker.address
-        default_staker.chain_id = staker.chain_id
-        default_staker.tag = staker.tag
+        if not stakers:
+            click.echo("No staker found for given tag, using default")
+        else:
+            staker = stakers[0]
+            default_staker.private_key = staker.private_key
+            default_staker.address = staker.address
+            default_staker.chain_id = staker.chain_id
+            default_staker.tag = staker.tag
 
-        app.config.main.chain_id = staker.chain_id
+            app.config.main.chain_id = staker.chain_id
 
-        # TODO: there should be a cleaner way to choose
-        # the staker (some method in telliot-core)
+            # TODO: there should be a cleaner way to choose
+            # the staker (some method in telliot-core)
 
     _ = await app.startup()
 
@@ -134,7 +137,7 @@ async def get_app(obj: Mapping[str, Any]) -> TelliotCore:
     "-fb/-nfb",
     "using_flashbots",
     type=bool,
-    default=True,
+    default=False,
 )
 @click.pass_context
 def cli(
