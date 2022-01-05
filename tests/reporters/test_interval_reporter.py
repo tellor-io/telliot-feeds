@@ -22,6 +22,7 @@ async def eth_usd_reporter(rinkeby_cfg):
             private_key=private_key,
             master=core.tellorx.master,
             oracle=core.tellorx.oracle,
+            sync_feed=True,
             datafeed=eth_usd_median_feed,
             expected_profit="YOLO",
             transaction_type=0,

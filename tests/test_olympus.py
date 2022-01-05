@@ -37,6 +37,7 @@ async def test_ohm_eth_reporter_submit_once(rinkeby_cfg):
             private_key=private_key,
             master=core.tellorx.master,
             oracle=core.tellorx.oracle,
+            sync_feed=False,
             datafeed=ohm_eth_median_feed,
             expected_profit="YOLO",
             transaction_type=0,
