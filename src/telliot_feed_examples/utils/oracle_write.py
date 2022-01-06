@@ -27,7 +27,7 @@ async def tip_query(
     tx_receit, status = await oracle.write_with_retry(
         func_name="tipQuery",
         gas_limit=350000,
-        gas_price=gas_price,
+        legacy_gas_price=gas_price,
         extra_gas_price=20,
         retries=retries,
         _queryId=datafeed.query.query_id,
