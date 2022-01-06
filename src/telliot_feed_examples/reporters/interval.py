@@ -11,9 +11,9 @@ from typing import Union
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
 from telliot_core.contract.contract import Contract
-from telliot_core.contract.gas import ethgasstation
 from telliot_core.datafeed import DataFeed
 from telliot_core.gas.etherscan_gas import EtherscanGasPriceSource
+from telliot_core.gas.legacy_gas import ethgasstation
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.reporters.reporter_utils import tellorx_suggested_report
 from telliot_core.utils.response import error_status
@@ -41,8 +41,7 @@ class IntervalReporter:
         chain_id: int,
         master: Contract,
         oracle: Contract,
-        sync_feed: bool,
-        datafeed: DataFeed[Any],
+        datafeed: Optional[DataFeed[Any]] = None,
         expected_profit: Union[str, float] = 100.0,
         transaction_type: int = 0,
         gas_limit: int = 350000,
@@ -55,7 +54,6 @@ class IntervalReporter:
         self.endpoint = endpoint
         self.master = master
         self.oracle = oracle
-        self.sync_feed = sync_feed
         self.datafeed = datafeed
         self.chain_id = chain_id
         self.user = self.endpoint.web3.eth.account.from_key(private_key).address
@@ -177,7 +175,10 @@ class IntervalReporter:
             status.e = None
             return False, status
 
-    async def ensure_profitable(self) -> ResponseStatus:
+    async def ensure_profitable(
+        self,
+        datafeed: DataFeed[Any],
+    ) -> ResponseStatus:
         """Estimate profitability
 
         Returns a bool signifying whether submitting for a given
@@ -186,7 +187,7 @@ class IntervalReporter:
 
         # Get current tips and time-based reward for given queryID
         rewards, read_status = await self.oracle.read(
-            "getCurrentReward", _queryId=self.datafeed.query.query_id
+            "getCurrentReward", _queryId=datafeed.query.query_id
         )
 
         # Log web3 errors
@@ -283,6 +284,18 @@ class IntervalReporter:
         result = await c.fetch_new_datapoint()
         return result
 
+    async def fetch_datafeed(self) -> DataFeed[Any]:
+        if self.datafeed is not None:
+            datafeed = self.datafeed
+        else:
+            suggested_qtag = await tellorx_suggested_report(self.oracle)
+            if not suggested_qtag:
+                msg = "Could not get suggested query."
+                return None, error_status(msg, log=logger.info)
+            datafeed = CATALOG_FEEDS[suggested_qtag]
+
+        return datafeed
+
     async def report_once(
         self,
     ) -> Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]:
@@ -300,21 +313,26 @@ class IntervalReporter:
         if not status.ok:
             return None, status
 
-        status = await self.ensure_profitable()
+        # Get suggested datafeed if none provided
+        datafeed = await self.fetch_datafeed()
+
+        status = await self.ensure_profitable(datafeed)
         if not status.ok:
             return None, status
 
         status = ResponseStatus()
 
+        logger.info(f"Current query: {datafeed.query.descriptor}")
+
         # Update datafeed value
-        await self.datafeed.source.fetch_new_datapoint()
-        latest_data = self.datafeed.source.latest
+        await datafeed.source.fetch_new_datapoint()
+        latest_data = datafeed.source.latest
         if latest_data[0] is None:
             msg = "Unable to retrieve updated datafeed value."
             return None, error_status(msg, log=logger.info)
 
         # Get query info & encode value to bytes
-        query = self.datafeed.query
+        query = datafeed.query
         query_id = query.query_id
         query_data = query.query_data
         try:
@@ -416,14 +434,5 @@ class IntervalReporter:
         """Submit latest values to the TellorX oracle every 12 hours."""
 
         while True:
-            suggested_qtag = None
-            if self.sync_feed:
-                suggested_qtag = await tellorx_suggested_report(self.oracle)
-                if not suggested_qtag:
-                    # TODO: log this error and continue looping
-                    raise Exception("Could not get suggested query.")
-                chosen_feed = CATALOG_FEEDS[suggested_qtag]
-                logger.info(f"Current query: {chosen_feed.query.descriptor}")
-                self.datafeed = chosen_feed
             _, _ = await self.report_once()
             await asyncio.sleep(7)

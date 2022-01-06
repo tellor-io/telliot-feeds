@@ -11,9 +11,7 @@ from click.core import Context
 from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import async_run
 from telliot_core.cli.utils import cli_core
-from telliot_core.reporters.reporter_utils import tellorx_suggested_report
 
-from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
@@ -255,16 +253,10 @@ async def report(
             sig_staker_address = ""
 
         # Use selected legacy feed, or choose automatically
-        suggested_qtag = None
-        sync_feed = False
         if legacy_id:
             chosen_feed = LEGACY_DATAFEEDS[legacy_id]
         else:
-            suggested_qtag = await tellorx_suggested_report(core.tellorx.oracle)
-            if not suggested_qtag:
-                raise Exception("Could not get suggested query.")
-            chosen_feed = CATALOG_FEEDS[suggested_qtag]
-            sync_feed = True
+            chosen_feed = None
 
         print_reporter_settings(
             using_flashbots=using_flashbots,
@@ -287,7 +279,6 @@ async def report(
             "private_key": core.get_staker().private_key,
             "master": core.tellorx.master,
             "oracle": core.tellorx.oracle,
-            "sync_feed": sync_feed,
             "datafeed": chosen_feed,
             "expected_profit": expected_profit,
             "transaction_type": tx_type,
