@@ -54,7 +54,11 @@ def print_reporter_settings(
         click.echo("⚡🤖⚡ Reporting through Flashbots relay ⚡🤖⚡")
         click.echo(f"Signature account: {signature_address}")
 
-    click.echo(f"Reporting legacy ID: {legacy_id}")
+    if legacy_id:
+        click.echo(f"Reporting legacy ID: {legacy_id}")
+    else:
+        click.echo("Reporting with synchronized queries")
+
     click.echo(f"Current chain ID: {chain_id}")
 
     if expected_profit == "YOLO":
@@ -144,10 +148,9 @@ def cli(
     "-lid",
     "legacy_id",
     help="report to a legacy ID",
-    required=True,
+    required=False,
     nargs=1,
     type=click.Choice(["1", "2", "10", "41", "50", "59"]),
-    default="1",  # ETH/USD spot price
 )
 @click.option(
     "--gas-limit",
@@ -249,6 +252,12 @@ async def report(
         else:
             sig_staker_address = ""
 
+        # Use selected legacy feed, or choose automatically
+        if legacy_id:
+            chosen_feed = LEGACY_DATAFEEDS[legacy_id]
+        else:
+            chosen_feed = None
+
         print_reporter_settings(
             using_flashbots=using_flashbots,
             signature_address=sig_staker_address,
@@ -264,8 +273,6 @@ async def report(
         )
 
         _ = input("Press [ENTER] to confirm settings.")
-
-        chosen_feed = LEGACY_DATAFEEDS[legacy_id]
 
         common_reporter_kwargs = {
             "endpoint": core.endpoint,

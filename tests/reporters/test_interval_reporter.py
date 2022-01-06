@@ -2,8 +2,11 @@
 Tests covering the IntervalReporter class from
 telliot's reporters subpackage.
 """
+from typing import Any
+
 import pytest
 from telliot_core.apps.core import TelliotCore
+from telliot_core.datafeed import DataFeed
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
@@ -65,12 +68,12 @@ async def test_ensure_profitable(eth_usd_reporter):
 
     assert r.expected_profit == "YOLO"
 
-    status = await r.ensure_profitable()
+    status = await r.ensure_profitable(r.datafeed)
 
     assert status.ok
 
     r.expected_profit = 1e10
-    status = await r.ensure_profitable()
+    status = await r.ensure_profitable(r.datafeed)
 
     assert not status.ok
     assert status.error == "Estimated profitability below threshold."
@@ -98,6 +101,9 @@ async def test_interval_reporter_submit_once(eth_usd_reporter):
     """Test reporting once to the TellorX playground on Rinkeby
     with three retries."""
     r = eth_usd_reporter
+
+    # Sync reporter
+    r.datafeed = None
 
     EXPECTED_ERRORS = {
         "Current addess disputed. Switch address to continue reporting.",
@@ -145,7 +151,7 @@ async def test_no_updated_value(eth_usd_reporter, bad_source):
     r.check_reporter_lock = passing
 
     # Override reporter profit check
-    async def profit():
+    async def profit(datafeed: DataFeed[Any]):
         return ResponseStatus()
 
     r.ensure_profitable = profit

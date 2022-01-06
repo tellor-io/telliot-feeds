@@ -38,7 +38,7 @@ class FlashbotsReporter(IntervalReporter):
         chain_id: int,
         master: Contract,
         oracle: Contract,
-        datafeed: DataFeed[Any],
+        datafeed: Optional[DataFeed[Any]] = None,
         expected_profit: float = 100.0,
         transaction_type: int = 0,
         gas_limit: int = 350000,
@@ -95,21 +95,25 @@ class FlashbotsReporter(IntervalReporter):
         if not status.ok:
             return None, status
 
-        status = await self.ensure_profitable()
+        datafeed = await self.fetch_datafeed()
+
+        status = await self.ensure_profitable(datafeed)
         if not status.ok:
             return None, status
 
         status = ResponseStatus()
 
+        logger.info(f"Current query: {datafeed.query.descriptor}")
+
         # Update datafeed value
-        await self.datafeed.source.fetch_new_datapoint()
-        latest_data = self.datafeed.source.latest
+        await datafeed.source.fetch_new_datapoint()
+        latest_data = datafeed.source.latest
         if latest_data[0] is None:
             msg = "Unable to retrieve updated datafeed value."
             return None, error_status(msg, log=logger.info)
 
         # Get query info & encode value to bytes
-        query = self.datafeed.query
+        query = datafeed.query
         query_id = query.query_id
         query_data = query.query_data
         try:
