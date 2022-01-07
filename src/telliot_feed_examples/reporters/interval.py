@@ -316,13 +316,13 @@ class IntervalReporter:
         # Get suggested datafeed if none provided
         datafeed = await self.fetch_datafeed()
 
+        logger.info(f"Current query: {datafeed.query.descriptor}")
+
         status = await self.ensure_profitable(datafeed)
         if not status.ok:
             return None, status
 
         status = ResponseStatus()
-
-        logger.info(f"Current query: {datafeed.query.descriptor}")
 
         # Update datafeed value
         await datafeed.source.fetch_new_datapoint()
