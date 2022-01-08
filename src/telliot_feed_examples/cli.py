@@ -11,12 +11,15 @@ from click.core import Context
 from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import async_run
 from telliot_core.cli.utils import cli_core
+from telliot_core.data.query_catalog import query_catalog
 
+from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
+
 
 logger = get_logger(__name__)
 
@@ -37,6 +40,7 @@ def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
 def print_reporter_settings(
     using_flashbots: bool,
     signature_address: str,
+    query_tag: str,
     legacy_id: str,
     gas_limit: int,
     priority_fee: Optional[int],
@@ -56,6 +60,8 @@ def print_reporter_settings(
 
     if legacy_id:
         click.echo(f"Reporting legacy ID: {legacy_id}")
+    elif query_tag:
+        click.echo(f"Reporting query tag: {query_tag}")
     else:
         click.echo("Reporting with synchronized queries")
 
@@ -144,10 +150,19 @@ def cli(
 # Report subcommand options
 @cli.command()
 @click.option(
+    "--query-tag",
+    "-qt",
+    "query_tag",
+    help="select datafeed using query tag",
+    required=False,
+    nargs=1,
+    type=click.Choice([q.tag for q in query_catalog.find()]),
+)
+@click.option(
     "--legacy-id",
     "-lid",
     "legacy_id",
-    help="report to a legacy ID",
+    help="select datafeed using legacy ID",
     required=False,
     nargs=1,
     type=click.Choice(["1", "2", "10", "41", "50", "59"]),
@@ -223,6 +238,7 @@ def cli(
 @async_run
 async def report(
     ctx: Context,
+    query_tag: str,
     legacy_id: str,
     tx_type: int,
     gas_limit: int,
@@ -253,14 +269,17 @@ async def report(
             sig_staker_address = ""
 
         # Use selected legacy feed, or choose automatically
-        if legacy_id:
+        if legacy_id is not None:
             chosen_feed = LEGACY_DATAFEEDS[legacy_id]
+        elif query_tag is not None:
+            chosen_feed = CATALOG_FEEDS[query_tag]
         else:
             chosen_feed = None
 
         print_reporter_settings(
             using_flashbots=using_flashbots,
             signature_address=sig_staker_address,
+            query_tag=query_tag,
             legacy_id=legacy_id,
             transaction_type=tx_type,
             gas_limit=gas_limit,
