@@ -51,6 +51,18 @@ def test_cmd_report():
     assert expected in result.stdout
 
 
+def test_invalid_report_option_query_tag():
+    """Test selecting datafeed using wrong query tag."""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["report", "-qt", "monero-usd-legacy"])
+
+    assert result.exception
+    assert result.exit_code == 2
+
+    expected = "Invalid value for '--query-tag' / '-qt'"
+    assert expected in result.stdout
+
+
 def test_custom_gas_flag():
     """Test using a custom gas."""
     # Test incorrect command invocation
