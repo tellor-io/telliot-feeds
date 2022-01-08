@@ -144,7 +144,7 @@ class IntervalReporter:
             _, write_status = await self.master.write_with_retry(
                 func_name="depositStake",
                 gas_limit=350000,
-                gas_price=gas_price_gwei,
+                legacy_gas_price=gas_price_gwei,
                 extra_gas_price=20,
                 retries=5,
             )
@@ -153,7 +153,9 @@ class IntervalReporter:
                 return True, status
             else:
                 status.error = (
-                    "Unable to stake deposit: " + write_status.error
+                    "Unable to stake deposit: "
+                    + write_status.error
+                    + f"Make sure {self.user} has enough ETH & TRB (100)"
                 )  # error won't be none # noqa: E501
                 logger.error(status.error)
                 status.e = write_status.e
