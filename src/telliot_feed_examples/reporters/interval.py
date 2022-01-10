@@ -144,7 +144,7 @@ class IntervalReporter:
             _, write_status = await self.master.write_with_retry(
                 func_name="depositStake",
                 gas_limit=350000,
-                gas_price=gas_price_gwei,
+                legacy_gas_price=gas_price_gwei,
                 extra_gas_price=20,
                 retries=5,
             )
@@ -152,28 +152,24 @@ class IntervalReporter:
             if write_status.ok:
                 return True, status
             else:
-                status.error = (
-                    "Unable to stake deposit: " + write_status.error
+                msg = (
+                    "Unable to stake deposit: "
+                    + write_status.error
+                    + f"Make sure {self.user} has enough ETH & TRB (100)"
                 )  # error won't be none # noqa: E501
-                logger.error(status.error)
-                status.e = write_status.e
-                return False, status
+                return False, error_status(msg, log=logger.info)
 
         # Status 3: disputed
         if staker_info[0] == 3:
-            status.error = "Current address disputed. Switch address to continue reporting."  # noqa: E501
-            logger.info(status.error)
-            status.e = None
-            return False, status
+            msg = "Current address disputed. Switch address to continue reporting."  # noqa: E501
+            return False, error_status(msg, log=logger.info)
 
         # Statuses 2, 4, and 5: stake transition
         else:
-            status.error = (
+            msg = (
                 "Current address is locked in dispute or for withdrawal."  # noqa: E501
             )
-            logger.info(status.error)
-            status.e = None
-            return False, status
+            return False, error_status(msg, log=logger.info)
 
     async def ensure_profitable(
         self,
