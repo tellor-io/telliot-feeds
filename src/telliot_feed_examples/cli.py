@@ -14,7 +14,6 @@ from telliot_core.cli.utils import cli_core
 from telliot_core.data.query_catalog import query_catalog
 
 from telliot_feed_examples.feeds import CATALOG_FEEDS
-from telliot_feed_examples.feeds import LEGACY_DATAFEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.utils.log import get_logger
@@ -41,7 +40,6 @@ def print_reporter_settings(
     using_flashbots: bool,
     signature_address: str,
     query_tag: str,
-    legacy_id: str,
     gas_limit: int,
     priority_fee: Optional[int],
     expected_profit: str,
@@ -58,9 +56,7 @@ def print_reporter_settings(
         click.echo("⚡🤖⚡ Reporting through Flashbots relay ⚡🤖⚡")
         click.echo(f"Signature account: {signature_address}")
 
-    if legacy_id:
-        click.echo(f"Reporting legacy ID: {legacy_id}")
-    elif query_tag:
+    if query_tag:
         click.echo(f"Reporting query tag: {query_tag}")
     else:
         click.echo("Reporting with synchronized queries")
@@ -159,15 +155,6 @@ def cli(
     type=click.Choice([q.tag for q in query_catalog.find()]),
 )
 @click.option(
-    "--legacy-id",
-    "-lid",
-    "legacy_id",
-    help="select datafeed using legacy ID",
-    required=False,
-    nargs=1,
-    type=click.Choice(["1", "2", "10", "41", "50", "59"]),
-)
-@click.option(
     "--gas-limit",
     "-gl",
     "gas_limit",
@@ -239,7 +226,6 @@ def cli(
 async def report(
     ctx: Context,
     query_tag: str,
-    legacy_id: str,
     tx_type: int,
     gas_limit: int,
     max_fee: Optional[int],
@@ -268,10 +254,8 @@ async def report(
         else:
             sig_staker_address = ""
 
-        # Use selected legacy feed, or choose automatically
-        if legacy_id is not None:
-            chosen_feed = LEGACY_DATAFEEDS[legacy_id]
-        elif query_tag is not None:
+        # Use selected feed, or choose automatically
+        if query_tag is not None:
             chosen_feed = CATALOG_FEEDS[query_tag]
         else:
             chosen_feed = None
@@ -280,7 +264,6 @@ async def report(
             using_flashbots=using_flashbots,
             signature_address=sig_staker_address,
             query_tag=query_tag,
-            legacy_id=legacy_id,
             transaction_type=tx_type,
             gas_limit=gas_limit,
             max_fee=max_fee,
@@ -324,14 +307,13 @@ async def report(
 
 @cli.command()
 @click.option(
-    "--legacy-id",
-    "-lid",
-    "legacy_id",
-    help="report to a legacy ID",
-    required=True,
+    "--query-tag",
+    "-qt",
+    "query_tag",
+    help="select datafeed using query tag",
+    required=False,
     nargs=1,
-    type=click.Choice(["1", "2", "10", "41", "50", "59"]),
-    default="1",  # ETH/USD spot price
+    type=click.Choice([q.tag for q in query_catalog.find()]),
 )
 @click.option(
     "--amount-trb",
@@ -346,7 +328,7 @@ async def report(
 @async_run
 async def tip(
     ctx: Context,
-    legacy_id: str,
+    query_tag: str,
     amount_trb: float,
 ) -> None:
     """Tip TRB for a selected query ID"""
@@ -354,16 +336,9 @@ async def tip(
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
-        # Ensure valid legacy id
-        if legacy_id not in LEGACY_DATAFEEDS:
-            click.echo(
-                f"Invalid legacy ID. Valid choices: {', '.join(list(LEGACY_DATAFEEDS))}"
-            )
-            return
+        click.echo(f"Tipping {amount_trb} TRB for query tag: {query_tag}.")
 
-        click.echo(f"Tipping {amount_trb} TRB for legacy ID {legacy_id}.")
-
-        chosen_feed = LEGACY_DATAFEEDS[legacy_id]
+        chosen_feed = CATALOG_FEEDS[query_tag]
         tip = int(amount_trb * 1e18)
 
         tx_receipt, status = asyncio.run(
