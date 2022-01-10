@@ -7,8 +7,8 @@ from telliot_core.datafeed import DataFeed
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
+from telliot_feed_examples.utils.contract import write_with_retry
 from telliot_feed_examples.utils.log import get_logger
-
 
 logger = get_logger(__name__)
 
@@ -24,10 +24,11 @@ async def tip_query(
 
     Tip TRB for the given datafeed's query ID to incentivise
     reporters to report relevant data."""
-    tx_receit, status = await oracle.write_with_retry(
+    tx_receipt, status = await write_with_retry(
+        oracle,
         func_name="tipQuery",
         gas_limit=350000,
-        legacy_gas_price=gas_price,
+        legacy_gas_price=int(gas_price),
         extra_gas_price=20,
         retries=retries,
         _queryId=datafeed.query.query_id,
@@ -35,4 +36,4 @@ async def tip_query(
         _tip=tip,
     )
 
-    return tx_receit, status
+    return tx_receipt, status
