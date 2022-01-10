@@ -39,15 +39,15 @@ def test_flag_staker_tag():
     assert expected in result.stdout
 
 
-def test_cmd_report():
-    """Test report command."""
+def test_invalid_report_option_query_tag():
+    """Test selecting datafeed using wrong query tag."""
     runner = CliRunner()
-    result = runner.invoke(cli, ["-nfb", "report", "-lid", "1234"])
+    result = runner.invoke(cli, ["report", "-qt", "monero-usd-legacy"])
 
     assert result.exception
     assert result.exit_code == 2
 
-    expected = "Invalid value for '--legacy-id'"
+    expected = "Invalid value for '--query-tag' / '-qt'"
     assert expected in result.stdout
 
 
