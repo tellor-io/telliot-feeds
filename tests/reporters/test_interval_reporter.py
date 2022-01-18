@@ -19,12 +19,13 @@ async def eth_usd_reporter(rinkeby_cfg):
     """Returns an instance of an IntervalReporter using
     the ETH/USD median datafeed."""
     async with TelliotCore(config=rinkeby_cfg) as core:
-        private_key = core.get_default_staker().private_key
+        private_key = core.get_staker().private_key
+        tellorx = core.get_tellorx_contracts()
         r = IntervalReporter(
             endpoint=core.config.get_endpoint(),
             private_key=private_key,
-            master=core.tellorx.master,
-            oracle=core.tellorx.oracle,
+            master=tellorx.master,
+            oracle=tellorx.oracle,
             datafeed=eth_usd_median_feed,
             expected_profit="YOLO",
             transaction_type=0,

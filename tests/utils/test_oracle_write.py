@@ -12,9 +12,10 @@ async def test_tip_query(rinkeby_cfg):
     """Test tipping ETH/USD price."""
 
     async with TelliotCore(config=rinkeby_cfg) as core:
+        tellorx = core.get_tellorx_contracts()
         tip = int(0.0001 * 1e18)
         tx_receipt, status = await tip_query(
-            oracle=core.tellorx.oracle,
+            oracle=tellorx.oracle,
             datafeed=eth_usd_median_feed,
             tip=tip,
         )
