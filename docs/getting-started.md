@@ -1,6 +1,6 @@
 # Getting Started
 
-Installation of Telliot Feed Examples requires that Python 3.8 or greater is already
+Installation of Telliot Feed Examples requires that Python 3.9 or greater is already
 installed on your system.
 
 

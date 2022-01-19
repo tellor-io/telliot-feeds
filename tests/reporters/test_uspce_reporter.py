@@ -14,13 +14,14 @@ async def test_uspce_interval_reporter_submit_once(rinkeby_cfg):
     uspce.input = lambda: "123.456"
 
     async with TelliotCore(config=rinkeby_cfg) as core:
-        private_key = core.get_default_staker().private_key
 
+        private_key = core.get_staker().private_key
+        tellorx = core.get_tellorx_contracts()
         r = IntervalReporter(
             endpoint=core.config.get_endpoint(),
             private_key=private_key,
-            master=core.tellorx.master,
-            oracle=core.tellorx.oracle,
+            master=tellorx.master,
+            oracle=tellorx.oracle,
             datafeed=uspce_feed,
             expected_profit="YOLO",
             transaction_type=0,

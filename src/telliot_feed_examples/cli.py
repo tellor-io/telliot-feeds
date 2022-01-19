@@ -276,11 +276,12 @@ async def report(
 
         _ = input("Press [ENTER] to confirm settings.")
 
+        tellorx = core.get_tellorx_contracts()
         common_reporter_kwargs = {
             "endpoint": core.endpoint,
             "private_key": core.get_staker().private_key,
-            "master": core.tellorx.master,
-            "oracle": core.tellorx.oracle,
+            "master": tellorx.master,
+            "oracle": tellorx.oracle,
             "datafeed": chosen_feed,
             "expected_profit": expected_profit,
             "transaction_type": tx_type,
@@ -341,9 +342,10 @@ async def tip(
         chosen_feed = CATALOG_FEEDS[query_tag]
         tip = int(amount_trb * 1e18)
 
+        tellorx = core.get_tellorx_contracts()
         tx_receipt, status = asyncio.run(
             tip_query(
-                oracle=core.tellorx.oracle,
+                oracle=tellorx.oracle,
                 datafeed=chosen_feed,
                 tip=tip,
             )
