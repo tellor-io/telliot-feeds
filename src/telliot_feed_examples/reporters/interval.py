@@ -15,7 +15,7 @@ from telliot_core.datafeed import DataFeed
 from telliot_core.gas.etherscan_gas import EtherscanGasPriceSource
 from telliot_core.gas.legacy_gas import ethgasstation
 from telliot_core.model.endpoints import RPCEndpoint
-from telliot_core.reporters.reporter_utils import tellorx_suggested_report
+from telliot_core.reporters.reporter_utils import tellor_suggested_report
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
@@ -284,7 +284,7 @@ class IntervalReporter:
         if self.datafeed is not None:
             datafeed = self.datafeed
         else:
-            suggested_qtag = await tellorx_suggested_report(self.oracle)
+            suggested_qtag = await tellor_suggested_report(self.oracle)
             if not suggested_qtag:
                 msg = "Could not get suggested query."
                 return None, error_status(msg, log=logger.info)
@@ -388,7 +388,7 @@ class IntervalReporter:
                 {
                     "nonce": acc_nonce,
                     "gas": self.gas_limit,
-                    "gasPrice": Web3.toWei(gas_price, "gwei"),  # type: ignore
+                    "gasPrice": Web3.toWei(gas_price, "gwei"),
                     "chainId": self.chain_id,
                 }
             )

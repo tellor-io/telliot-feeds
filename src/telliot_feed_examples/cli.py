@@ -316,7 +316,7 @@ async def report(
                 reporter = FlashbotsReporter(
                     **tellorx_reporter_kwargs,
                     signature_private_key=sig_staker.private_key,
-                )
+                )  # type: ignore
             else:
                 reporter = IntervalReporter(**tellorx_reporter_kwargs)  # type: ignore
 

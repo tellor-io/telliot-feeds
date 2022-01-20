@@ -2,6 +2,7 @@
 from typing import Any
 from typing import Optional
 from typing import Tuple
+from typing import Union
 
 import requests
 from eth_account.account import Account
@@ -31,7 +32,7 @@ class PolygonReporter(IntervalReporter):
         oracle: Contract,
         token: Contract,
         datafeed: Optional[DataFeed[Any]] = None,
-        expected_profit: float = "YOLO",
+        expected_profit: Union[str, float] = "YOLO",
         transaction_type: int = 2,
         gas_limit: int = 350000,
         max_fee: Optional[int] = None,
@@ -65,13 +66,15 @@ class PolygonReporter(IntervalReporter):
         datafeed: DataFeed[Any],
     ) -> ResponseStatus:
         """Make profitability check always pass."""
+
         return ResponseStatus()
 
-    def fetch_gas_price(self, speed: str = "safeLow") -> int:
+    async def fetch_gas_price(self, speed: str = "safeLow") -> int:
         """Fetch estimated gas prices for Polygon mainnet."""
-        prices = requests.get("https://gasstation-mainnet.matic.network")
+        prices = requests.get("https://gasstation-mainnet.matic.network").json()
+        price = int(prices[speed])
 
-        return int(prices.json()[speed])
+        return await price  # type: ignore
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked
@@ -107,7 +110,7 @@ class PolygonReporter(IntervalReporter):
 
         self.last_submission_timestamp = last_report
 
-        # Attempt to stake 10 TRB
+        # Attempt to stake
         if staker_balance < 10:
             logger.info("Address not yet staked. Approving & depositing stake.")
 
@@ -125,7 +128,7 @@ class PolygonReporter(IntervalReporter):
                 msg = "Unable to approve staking"
                 return False, error_status(msg, log=logger.error)
 
-            _, write_status = await self.oracle(
+            _, write_status = await self.oracle.write(
                 func_name="depositStake",
                 gas_limit=300000,
                 legacy_gas_price=gas_price_gwei,
@@ -139,5 +142,4 @@ class PolygonReporter(IntervalReporter):
                 )  # error won't be none # noqa: E501
                 return False, error_status(msg, log=logger.error)
 
-        else:
-            return True, ResponseStatus()
+        return True, ResponseStatus()
