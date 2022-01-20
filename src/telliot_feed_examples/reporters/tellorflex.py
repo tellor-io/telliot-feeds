@@ -35,7 +35,7 @@ class PolygonReporter(IntervalReporter):
         oracle: Contract,
         token: Contract,
         datafeed: Optional[DataFeed[Any]] = None,
-        expected_profit: float = 100.0,
+        expected_profit: float = "YOLO",
         transaction_type: int = 2,
         gas_limit: int = 350000,
         max_fee: Optional[int] = None,
@@ -71,11 +71,11 @@ class PolygonReporter(IntervalReporter):
         """Make profitability check always pass."""
         return ResponseStatus()
     
-    async def fetch_gas_price(self, speed: str = "average") -> int:
+    def fetch_gas_price(self, speed: str = "safeLow") -> int:
         """Fetch estimated gas prices for Polygon mainnet."""
-        prices = await requests.get('https://gasstation-mainnet.matic.network').json()
+        prices = requests.get('https://gasstation-mainnet.matic.network')
 
-        return int(prices[speed])
+        return int(prices.json()[speed])
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked
@@ -114,25 +114,25 @@ class PolygonReporter(IntervalReporter):
         if staker_balance < 10:
             logger.info("Address not yet staked. Approving & depositing stake.")
 
-            gas_price_gwei = await self.fetch_gas_price()
+            gas_price_gwei = self.fetch_gas_price()
             amount = 10 - staker_balance
 
             _, write_status = await self.token.write(
                 func_name="approve",
                 gas_limit=100000,
                 legacy_gas_price=gas_price_gwei,
-                _spender=self.oracle.address,
-                _amount=amount,
+                spender=self.oracle.address,
+                amount=amount,
             )
             if not write_status.ok:
                 msg = "Unable to approve staking"
-                return False, error_status(msg, log=logger.info)
+                return False, error_status(msg, log=logger.error)
 
             _, write_status = await self.oracle(
                 func_name="depositStake",
                 gas_limit=300000,
                 legacy_gas_price=gas_price_gwei,
-                _amount=amount,
+                amount=amount,
             )
             if not write_status.ok:
                 msg = (
@@ -140,6 +140,7 @@ class PolygonReporter(IntervalReporter):
                     + write_status.error
                     + f"Make sure {self.user} has enough MATIC & TRB (10)"
                 )  # error won't be none # noqa: E501
-                return False, error_status(msg, log=logger.info)
+                return False, error_status(msg, log=logger.error)
 
-        return True, ResponseStatus()
+        else:
+            return True, ResponseStatus()
