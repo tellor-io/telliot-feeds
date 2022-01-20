@@ -297,6 +297,9 @@ async def report(
         if core.config.main.chain_id in POLYGON_CHAINS:
             tellorflex = core.get_tellorflex_contracts()
 
+            # Type 2 transactions unsupported currently
+            common_reporter_kwargs["transaction_type"] = 0
+
             reporter = PolygonReporter(
                 oracle=tellorflex.oracle,
                 token=tellorflex.token,
