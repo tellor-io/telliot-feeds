@@ -19,6 +19,7 @@ from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
+from telliot_core.apps.telliot_config import TelliotConfig
 
 
 logger = get_logger(__name__)
@@ -86,9 +87,6 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     # (handles STAKER_TAG, CHAIN_ID, and TEST_CONFIG)
     core = cli_core(ctx)
 
-    # Override chain ID with staker's
-    core.config.main.chain_id = core.get_staker().chain_id
-
     # Ensure chain id compatible with flashbots relay
     if ctx.obj["USING_FLASHBOTS"]:
         # Only supports mainnet
@@ -145,6 +143,10 @@ def cli(
     ctx.obj["SIGNATURE_TAG"] = signature_tag
     ctx.obj["USING_FLASHBOTS"] = using_flashbots
     ctx.obj["TEST_CONFIG"] = test_config
+
+    # Include chain id based on staker tag
+    staker = TelliotConfig().stakers.find(tag=staker_tag)[0]
+    ctx.obj["CHAIN_ID"] = staker.chain_id
 
 
 # Report subcommand options
