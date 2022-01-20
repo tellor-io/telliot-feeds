@@ -73,9 +73,8 @@ class PolygonReporter(IntervalReporter):
     async def fetch_gas_price(self, speed: str = "safeLow") -> int:
         """Fetch estimated gas prices for Polygon mainnet."""
         prices = requests.get("https://gasstation-mainnet.matic.network").json()
-        price = int(prices[speed])
 
-        return await price  # type: ignore
+        return int(prices[speed])
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked
@@ -172,3 +171,9 @@ class PolygonReporter(IntervalReporter):
             return error_status(msg, log=logger.error)
 
         return ResponseStatus()
+
+    async def get_num_reports_by_id(self, query_id: int) -> Tuple[int, ResponseStatus]:
+        count, read_status = await self.oracle.read(
+            func_name="getNewValueCountbyQueryId", _queryId=query_id
+        )
+        return count, read_status

@@ -292,6 +292,12 @@ class IntervalReporter:
 
         return datafeed
 
+    async def get_num_reports_by_id(self, query_id: int) -> Tuple[int, ResponseStatus]:
+        count, read_status = await self.oracle.read(
+            func_name="getTimestampCountById", _queryId=query_id
+        )
+        return count, read_status
+
     async def report_once(
         self,
     ) -> Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]:
@@ -338,12 +344,11 @@ class IntervalReporter:
             return None, error_status(msg, e=e, log=logger.error)
 
         # Get nonce
-        timestamp_count, read_status = await self.oracle.read(
-            func_name="getTimestampCountById", _queryId=query_id
-        )
+        report_count, read_status = await self.get_num_reports_by_id(query_id)
+
         if not read_status.ok:
             status.error = (
-                "Unable to retrieve timestampCount: " + read_status.error
+                "Unable to retrieve report count: " + read_status.error
             )  # error won't be none # noqa: E501
             logger.error(status.error)
             status.e = read_status.e
@@ -354,7 +359,7 @@ class IntervalReporter:
         submit_val_tx = submit_val_func(
             _queryId=query_id,
             _value=value,
-            _nonce=timestamp_count,
+            _nonce=report_count,
             _queryData=query_data,
         )
         acc_nonce = self.endpoint._web3.eth.get_transaction_count(self.account.address)
