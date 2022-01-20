@@ -3,24 +3,20 @@ from typing import Any
 from typing import Optional
 from typing import Tuple
 
+import requests
+from eth_account.account import Account
+from eth_account.signers.local import LocalAccount
 from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
+from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
-from web3.datastructures import AttributeDict
-from eth_account.signers.local import LocalAccount
-from eth_account.account import Account
-
-
-from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.reporters.interval import IntervalReporter
-from telliot_core.utils.response import error_status
-import requests
+from telliot_feed_examples.utils.log import get_logger
 
 
 logger = get_logger(__name__)
-
 
 
 class PolygonReporter(IntervalReporter):
@@ -70,10 +66,10 @@ class PolygonReporter(IntervalReporter):
     ) -> ResponseStatus:
         """Make profitability check always pass."""
         return ResponseStatus()
-    
+
     def fetch_gas_price(self, speed: str = "safeLow") -> int:
         """Fetch estimated gas prices for Polygon mainnet."""
-        prices = requests.get('https://gasstation-mainnet.matic.network')
+        prices = requests.get("https://gasstation-mainnet.matic.network")
 
         return int(prices.json()[speed])
 
@@ -91,11 +87,11 @@ class PolygonReporter(IntervalReporter):
             return False, error_status(msg, log=logger.info)
 
         (
-        staker_startdate,
-        staker_balance,
-        locked_balance,
-        last_report,
-        num_reports,
+            staker_startdate,
+            staker_balance,
+            locked_balance,
+            last_report,
+            num_reports,
         ) = staker_info
 
         logger.info(
@@ -106,8 +102,9 @@ class PolygonReporter(IntervalReporter):
             locked balance: {locked_balance}
             last report:    {last_report}
             total reports:  {num_reports}
-            """)
-        
+            """
+        )
+
         self.last_submission_timestamp = last_report
 
         # Attempt to stake 10 TRB
