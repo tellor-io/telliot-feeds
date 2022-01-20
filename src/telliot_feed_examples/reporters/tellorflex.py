@@ -41,7 +41,7 @@ class PolygonReporter(IntervalReporter):
         max_fee: Optional[int] = None,
         priority_fee: int = 100,
         legacy_gas_price: Optional[int] = None,
-        gas_price_speed: str = "fast",
+        gas_price_speed: str = "safeLow",
     ) -> None:
 
         self.endpoint = endpoint
