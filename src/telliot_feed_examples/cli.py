@@ -16,6 +16,7 @@ from telliot_core.data.query_catalog import query_catalog
 from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
@@ -276,14 +277,10 @@ async def report(
 
         _ = input("Press [ENTER] to confirm settings.")
 
-        tellorx = core.get_tellorx_contracts()
         common_reporter_kwargs = {
             "endpoint": core.endpoint,
             "private_key": core.get_staker().private_key,
-            "master": tellorx.master,
-            "oracle": tellorx.oracle,
             "datafeed": chosen_feed,
-            "expected_profit": expected_profit,
             "transaction_type": tx_type,
             "gas_limit": gas_limit,
             "max_fee": max_fee,
@@ -293,12 +290,32 @@ async def report(
             "chain_id": core.config.main.chain_id,
         }
 
-        if using_flashbots:
-            reporter = FlashbotsReporter(
-                **common_reporter_kwargs, signature_private_key=sig_staker.private_key
+        # Reporting to Polygon TellorFlex
+        if core.config.main.chain_id == 137:
+            tellorflex = core.get_tellorflex_contracts()
+
+            reporter = PolygonReporter(
+                oracle=tellorflex.oracle,
+                token=tellorflex.token,
+                **common_reporter_kwargs,
             )
+        # Reporting to TellorX
         else:
-            reporter = IntervalReporter(**common_reporter_kwargs)  # type: ignore
+            tellorx = core.get_tellorx_contracts()
+            tellorx_reporter_kwargs = {
+                "master": tellorx.master,
+                "oracle": tellorx.oracle,
+                "expected_profit": expected_profit,
+                **common_reporter_kwargs,
+            }
+
+            if using_flashbots:
+                reporter = FlashbotsReporter(
+                    **tellorx_reporter_kwargs,
+                    signature_private_key=sig_staker.private_key,
+                )
+            else:
+                reporter = IntervalReporter(**tellorx_reporter_kwargs)  # type: ignore
 
         if submit_once:
             _, _ = await reporter.report_once()
