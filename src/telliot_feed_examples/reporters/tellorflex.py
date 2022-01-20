@@ -1,5 +1,6 @@
 """TellorFlex compatible reporters"""
 import time
+from datetime import timedelta
 from typing import Any
 from typing import Optional
 from typing import Tuple
@@ -163,12 +164,17 @@ class PolygonReporter(IntervalReporter):
         self.last_submission_timestamp = last_report
         logger.info(f"Last submission timestamp: {self.last_submission_timestamp}")
 
-        num_stakes = (staker_balance - (staker_balance % 10)) / 10
+        trb = staker_balance / 1e18
+        num_stakes = (trb - (trb % 10)) / 10
         reporter_lock = (12 / num_stakes) * 3600
 
-        if time.time() < self.last_submission_timestamp + reporter_lock:
-            msg = "Current address is in reporter lock."
-            return error_status(msg, log=logger.error)
+        time_remaining = round(
+            self.last_submission_timestamp + reporter_lock - time.time()
+        )
+        if time_remaining > 0:
+            hr_min_sec = str(timedelta(seconds=time_remaining))
+            msg = "Currently in reporter lock. Time left: " + hr_min_sec
+            return error_status(msg, log=logger.info)
 
         return ResponseStatus()
 
