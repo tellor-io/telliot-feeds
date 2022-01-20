@@ -24,6 +24,9 @@ from telliot_feed_examples.utils.oracle_write import tip_query
 logger = get_logger(__name__)
 
 
+POLYGON_CHAINS = (137, 80001)
+
+
 def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
     """Parses user input expected profit and ensures
     the input is either a float or the string 'YOLO'."""
@@ -290,8 +293,8 @@ async def report(
             "chain_id": core.config.main.chain_id,
         }
 
-        # Reporting to Polygon TellorFlex
-        if core.config.main.chain_id == 137:
+        # Report to Polygon TellorFlex
+        if core.config.main.chain_id in POLYGON_CHAINS:
             tellorflex = core.get_tellorflex_contracts()
 
             reporter = PolygonReporter(
@@ -299,7 +302,7 @@ async def report(
                 token=tellorflex.token,
                 **common_reporter_kwargs,
             )
-        # Reporting to TellorX
+        # Report to TellorX
         else:
             tellorx = core.get_tellorx_contracts()
             tellorx_reporter_kwargs = {
