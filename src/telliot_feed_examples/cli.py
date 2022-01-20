@@ -9,6 +9,7 @@ from typing import Union
 import click
 from click.core import Context
 from telliot_core.apps.core import TelliotCore
+from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.cli.utils import async_run
 from telliot_core.cli.utils import cli_core
 from telliot_core.data.query_catalog import query_catalog
@@ -19,7 +20,6 @@ from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
-from telliot_core.apps.telliot_config import TelliotConfig
 
 
 logger = get_logger(__name__)
