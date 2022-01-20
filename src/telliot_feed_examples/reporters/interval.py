@@ -106,9 +106,9 @@ class IntervalReporter:
 
         return status
 
-    async def fetch_gas_price(self) -> int:
+    async def fetch_gas_price(self, speed: str = "average") -> int:
         """Fetch gas price from ethgasstation in gwei."""
-        return await ethgasstation(style="average")  # type: ignore
+        return await ethgasstation(speed)  # type: ignore
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked
@@ -380,11 +380,15 @@ class IntervalReporter:
             )
         # Add transaction type 0 (legacy) data
         else:
+            # Fetch legacy gas price if not provided by user
+            if not self.legacy_gas_price:
+                gas_price = await self.fetch_gas_price(self.gas_price_speed)
+
             built_submit_val_tx = submit_val_tx.buildTransaction(
                 {
                     "nonce": acc_nonce,
                     "gas": self.gas_limit,
-                    "gasPrice": Web3.toWei(self.legacy_gas_price, "gwei"),  # type: ignore
+                    "gasPrice": Web3.toWei(gas_price, "gwei"),  # type: ignore
                     "chainId": self.chain_id,
                 }
             )
