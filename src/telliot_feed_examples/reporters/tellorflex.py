@@ -1,4 +1,5 @@
 """TellorFlex compatible reporters"""
+import time
 from typing import Any
 from typing import Optional
 from typing import Tuple
@@ -143,3 +144,31 @@ class PolygonReporter(IntervalReporter):
                 return False, error_status(msg, log=logger.error)
 
         return True, ResponseStatus()
+
+    async def check_reporter_lock(self) -> ResponseStatus:
+        """Ensure enough time has passed since last report
+        Returns a bool signifying whether a given address is in a
+        reporter lock or not (TellorX oracle users cannot submit
+        multiple times within 12 hours)."""
+
+        staker_info, read_status = await self.oracle.read(
+            func_name="getStakerInfo", _staker=self.user
+        )
+
+        if (not read_status.ok) or (staker_info is None):
+            msg = "Unable to read reporters staker info"
+            return error_status(msg, log=logger.error)
+
+        _, staker_balance, _, last_report, _ = staker_info
+
+        self.last_submission_timestamp = last_report
+        logger.info(f"Last submission timestamp: {self.last_submission_timestamp}")
+
+        num_stakes = (staker_balance - (staker_balance % 10)) / 10
+        reporter_lock = (12 / num_stakes) * 3600
+
+        if time.time() < self.last_submission_timestamp + reporter_lock:
+            msg = "Current address is in reporter lock."
+            return error_status(msg, log=logger.error)
+
+        return ResponseStatus()
