@@ -24,7 +24,7 @@ def env(key: str) -> str:
 async def main() -> None:
     account: LocalAccount = Account.from_key(env("polygon_pk"))
 
-    chain_id = 137
+    chain_id = 80001
     staking_amount = int(1e18 * 10)  # 10 trb
     print("staking amount:", staking_amount)
 
@@ -39,14 +39,22 @@ async def main() -> None:
         """
     )
 
-    flex_address = "0xFd45Ae72E81Adaaf01cC61c8bCe016b7060DD537"
+    # Mainnet
+    if chain_id == 137:
+        flex_address = "0xFd45Ae72E81Adaaf01cC61c8bCe016b7060DD537"
+        trb_address = "0xE3322702BEdaaEd36CdDAb233360B939775ae5f1"
+    # Mumbai testnet
+    else:
+        flex_address = "0x41b66dd93b03e89D29114a7613A6f9f0d4F40178"
+        trb_address = "0x45cAF1aae42BA5565EC92362896cc8e0d55a2126"
+
     oracle = w3.eth.contract(
         address=flex_address,
         abi=tellor_flex_abi,
     )
 
     trb_polygon = w3.eth.contract(
-        address="0xE3322702BEdaaEd36CdDAb233360B939775ae5f1",
+        address=trb_address,
         abi=erc20_abi,
     )
 
