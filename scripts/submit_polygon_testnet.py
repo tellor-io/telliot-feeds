@@ -1,6 +1,8 @@
 import asyncio
 import os
 
+from abi import erc20_abi
+from abi import tellor_flex_abi
 from dotenv import find_dotenv
 from dotenv import load_dotenv
 from eth_account.account import Account
@@ -10,7 +12,6 @@ from web3 import Web3
 from web3.middleware import geth_poa_middleware
 
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
-from abi import tellor_flex_abi, erc20_abi
 
 
 load_dotenv(find_dotenv())
@@ -19,17 +20,18 @@ load_dotenv(find_dotenv())
 def env(key: str) -> str:
     return os.environ.get(key)
 
+
 async def main() -> None:
     account: LocalAccount = Account.from_key(env("polygon_pk"))
 
     chain_id = 137
-    staking_amount = int(1e18 * 10) # 10 trb
-    print('staking amount:', staking_amount)
+    staking_amount = int(1e18 * 10)  # 10 trb
+    print("staking amount:", staking_amount)
 
     w3 = Web3(HTTPProvider(env("polygon_endpoint_url")))
     if chain_id == 80001:
         w3.middleware_onion.inject(geth_poa_middleware, layer=0)
-    
+
     print("address:", account.address)
     print(
         f"""Reporter account balance:
@@ -50,14 +52,20 @@ async def main() -> None:
 
     staker_info_func = oracle.get_function_by_name("getStakerInfo")
     staker_info = staker_info_func(_staker=account.address).call()
-    staker_startdate, staked_balance, locked_balance, last_report, num_reports = staker_info
-    print('staker start date:', staker_startdate)
-    print('staked balance:', staked_balance)
-    print('locked balance:', locked_balance)
-    print('last report:', last_report)
-    print('num reports:', num_reports)
+    (
+        staker_startdate,
+        staked_balance,
+        locked_balance,
+        last_report,
+        num_reports,
+    ) = staker_info
+    print("staker start date:", staker_startdate)
+    print("staked balance:", staked_balance)
+    print("locked balance:", locked_balance)
+    print("last report:", last_report)
+    print("num reports:", num_reports)
 
-    # ## Transfer TRB & MATIC to dev-acct-9
+    # # Transfer TRB & MATIC to dev-acct-9
     # print('testing transfer')
     # transfer_func = trb_polygon.get_function_by_name("transfer")
     # acc_nonce = w3.eth.get_transaction_count(account.address)
@@ -84,11 +92,9 @@ async def main() -> None:
 
     # print(f"view transfer transaction: ({tx_url})")
 
-
     if staker_startdate == 0:
-        ## use allowance(address owner, address spender) external view returns (uint256)
         print()
-        print('approving deposit stake')
+        print("approving deposit stake")
         approve_func = trb_polygon.get_function_by_name("approve")
         acc_nonce = w3.eth.get_transaction_count(account.address)
         approve_tx_dict = {
@@ -103,16 +109,14 @@ async def main() -> None:
         tx_signed = account.sign_transaction(built_approve_func)
         tx_hash = w3.eth.send_raw_transaction(tx_signed.rawTransaction)
 
-        tx_receipt = w3.eth.wait_for_transaction_receipt(
-            tx_hash, timeout=360
-        )
+        tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=360)
         print(tx_receipt)
 
         tx_url = f"https://polygonscan.com/tx/{tx_hash.hex()}"
 
         print(f"view approve transaction: ({tx_url})")
-        
-        print('depositing stake')
+
+        print("depositing stake")
         stake_func = oracle.get_function_by_name("depositStake")
         acc_nonce = w3.eth.get_transaction_count(account.address)
         stake_tx_dict = {
@@ -127,15 +131,12 @@ async def main() -> None:
         tx_signed = account.sign_transaction(built_stake_func)
         tx_hash = w3.eth.send_raw_transaction(tx_signed.rawTransaction)
 
-        tx_receipt = w3.eth.wait_for_transaction_receipt(
-            tx_hash, timeout=360
-        )
+        tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=360)
         print(tx_receipt)
 
         tx_url = f"https://polygonscan.com/tx/{tx_hash.hex()}"
 
         print(f"view deposit stake transaction: ({tx_url})")
-
 
     _ = await trb_usd_median_feed.source.fetch_new_datapoint()
     latest_data = trb_usd_median_feed.source.latest
@@ -156,7 +157,7 @@ async def main() -> None:
         _queryData=query.query_data,
     )
     acc_nonce = w3.eth.get_transaction_count(account.address)
-  
+
     gas = 350000
 
     built_submit_val_tx = submit_val_tx.buildTransaction(
@@ -172,14 +173,13 @@ async def main() -> None:
 
     tx_hash = w3.eth.send_raw_transaction(tx_signed.rawTransaction)
 
-    tx_receipt = w3.eth.wait_for_transaction_receipt(
-        tx_hash, timeout=360
-    )
+    tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=360)
     print(tx_receipt)
 
     tx_url = f"https://polygonscan.com/tx/{tx_hash.hex()}"
 
     print(f"transaction succeeded. ({tx_url})")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
