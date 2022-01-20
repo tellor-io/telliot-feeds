@@ -32,8 +32,8 @@ class PolygonReporter(IntervalReporter):
         endpoint: RPCEndpoint,
         private_key: str,
         chain_id: int,
-        oracle_contract: Contract,
-        token_contract: Contract,
+        oracle: Contract,
+        token: Contract,
         datafeed: Optional[DataFeed[Any]] = None,
         expected_profit: float = 100.0,
         transaction_type: int = 2,
@@ -45,8 +45,8 @@ class PolygonReporter(IntervalReporter):
     ) -> None:
 
         self.endpoint = endpoint
-        self.oracle_contract = oracle_contract
-        self.token_contract = token_contract
+        self.oracle = oracle
+        self.token = token
         self.datafeed = datafeed
         self.chain_id = chain_id
         self.user = self.endpoint.web3.eth.account.from_key(private_key).address
@@ -82,58 +82,64 @@ class PolygonReporter(IntervalReporter):
         Returns a bool signifying whether the current address is
         staked. If the address is not initially, it attempts to stake with
         the address's funds."""
-        status = ResponseStatus()
-
-        gas_price_gwei = await self.fetch_gas_price()
-
-        staker_info, read_status = await self.master.read(
+        staker_info, read_status = await self.oracle.read(
             func_name="getStakerInfo", _staker=self.user
         )
 
         if (not read_status.ok) or (staker_info is None):
-            status.ok = False
-            status.error = (
-                "Unable to read reporters staker status: " + read_status.error
-            )  # error won't be none # noqa: E501
-            status.e = read_status.e
-            return False, status
+            msg = "Unable to read reporters staker info"
+            return False, error_status(msg, log=logger.info)
 
-        logger.info(f"Stake status: {staker_info[0]}")
+        (
+        staker_startdate,
+        staker_balance,
+        locked_balance,
+        last_report,
+        num_reports,
+        ) = staker_info
 
-        # Status 1: staked
-        if staker_info[0] == 1:
-            return True, status
+        logger.info(
+            f"""
+            STAKER INFO
+            start date:     {staker_startdate}
+            balance:        {staker_balance}
+            locked balance: {locked_balance}
+            last report:    {last_report}
+            total reports:  {num_reports}
+            """)
+        
+        self.last_submission_timestamp = last_report
 
-        # Status 0: not yet staked
-        elif staker_info[0] == 0:
-            logger.info("Address not yet staked. Depositing stake.")
+        # Attempt to stake 10 TRB
+        if staker_balance < 10:
+            logger.info("Address not yet staked. Approving & depositing stake.")
 
-            _, write_status = await self.master.write_with_retry(
-                func_name="depositStake",
-                gas_limit=350000,
+            gas_price_gwei = await self.fetch_gas_price()
+            amount = 10 - staker_balance
+
+            _, write_status = await self.token.write(
+                func_name="approve",
+                gas_limit=100000,
                 legacy_gas_price=gas_price_gwei,
-                extra_gas_price=20,
-                retries=5,
+                _spender=self.oracle.address,
+                _amount=amount,
             )
+            if not write_status.ok:
+                msg = "Unable to approve staking"
+                return False, error_status(msg, log=logger.info)
 
-            if write_status.ok:
-                return True, status
-            else:
+            _, write_status = await self.oracle(
+                func_name="depositStake",
+                gas_limit=300000,
+                legacy_gas_price=gas_price_gwei,
+                _amount=amount,
+            )
+            if not write_status.ok:
                 msg = (
                     "Unable to stake deposit: "
                     + write_status.error
-                    + f"Make sure {self.user} has enough ETH & TRB (100)"
+                    + f"Make sure {self.user} has enough MATIC & TRB (10)"
                 )  # error won't be none # noqa: E501
                 return False, error_status(msg, log=logger.info)
 
-        # Status 3: disputed
-        if staker_info[0] == 3:
-            msg = "Current address disputed. Switch address to continue reporting."  # noqa: E501
-            return False, error_status(msg, log=logger.info)
-
-        # Statuses 2, 4, and 5: stake transition
-        else:
-            msg = (
-                "Current address is locked in dispute or for withdrawal."  # noqa: E501
-            )
-            return False, error_status(msg, log=logger.info)
+        return True, ResponseStatus()
