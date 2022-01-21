@@ -42,6 +42,7 @@ def get_stake_amount() -> float:
     msg = "Enter amount TRB to stake if unstaked:"
     stake = click.prompt(msg, type=float, default=10.0, show_default=True)
     assert isinstance(stake, float)
+    assert stake > 10.0
 
     return stake
 
