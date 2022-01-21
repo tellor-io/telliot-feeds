@@ -2,7 +2,8 @@
 import os
 
 import pytest
-from chained_accounts import ChainedAccount, find_accounts
+from chained_accounts import ChainedAccount
+from chained_accounts import find_accounts
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.datasource import DataSource
 from telliot_core.dtypes.datapoint import OptionalDataPoint
@@ -30,7 +31,9 @@ def rinkeby_cfg():
         # Create a test account using PRIVATE_KEY defined on github.
         key = os.getenv("PRIVATE_KEY", None)
         if key:
-            ChainedAccount.add("git-rinkeby-key", chains=4, key=os.environ["PRIVATE_KEY"], password="")
+            ChainedAccount.add(
+                "git-rinkeby-key", chains=4, key=os.environ["PRIVATE_KEY"], password=""
+            )
         else:
             raise Exception("Need a mumbai account")
 
@@ -53,7 +56,12 @@ def mumbai_cfg():
         # Create a test account using PRIVATE_KEY defined on github.
         key = os.getenv("PRIVATE_KEY", None)
         if key:
-            ChainedAccount.add("git-mumbai-key", chains=80001, key=os.environ["PRIVATE_KEY"], password="")
+            ChainedAccount.add(
+                "git-mumbai-key",
+                chains=80001,
+                key=os.environ["PRIVATE_KEY"],
+                password="",
+            )
         else:
             raise Exception("Need a mumbai account")
 

@@ -7,12 +7,14 @@ from typing import Optional
 from typing import Union
 
 import click
+from chained_accounts import find_accounts
 from click.core import Context
+from eth_utils import to_checksum_address
 from telliot_core.apps.core import TelliotCore
-from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.cli.utils import async_run
 from telliot_core.cli.utils import cli_core
 from telliot_core.data.query_catalog import query_catalog
+from telliot_core.utils.key_helpers import lazy_key_getter
 
 from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
@@ -21,9 +23,7 @@ from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
-
 logger = get_logger(__name__)
-
 
 POLYGON_CHAINS = (137, 80001)
 
@@ -164,8 +164,8 @@ def cli(
     ctx.obj["TEST_CONFIG"] = test_config
 
     # Include chain id based on staker tag
-    staker = TelliotConfig().stakers.find(tag=staker_tag)[0]
-    ctx.obj["CHAIN_ID"] = staker.chain_id
+    accounts = find_accounts(name=staker_tag)
+    ctx.obj["CHAIN_ID"] = accounts[0].chains[0]
 
 
 # Report subcommand options
@@ -274,10 +274,10 @@ async def report(
         using_flashbots = ctx.obj["USING_FLASHBOTS"]
         signature_tag = ctx.obj["SIGNATURE_TAG"]
         if signature_tag is not None:
-            sig_staker = core.config.stakers.find(tag=signature_tag)[0]
-            sig_staker_address = sig_staker.address
+            sig_account = find_accounts(name=signature_tag)[0]
+            sig_staker_address = to_checksum_address(sig_account.address)
         else:
-            sig_staker_address = ""
+            sig_staker_address = ""  # type: ignore
 
         # Use selected feed, or choose automatically
         if query_tag is not None:
@@ -303,7 +303,7 @@ async def report(
 
         common_reporter_kwargs = {
             "endpoint": core.endpoint,
-            "private_key": core.get_staker().private_key,
+            "account": core.get_account(),
             "datafeed": chosen_feed,
             "transaction_type": tx_type,
             "gas_limit": gas_limit,
@@ -342,7 +342,7 @@ async def report(
             if using_flashbots:
                 reporter = FlashbotsReporter(
                     **tellorx_reporter_kwargs,
-                    signature_private_key=sig_staker.private_key,
+                    signature_private_key=lazy_key_getter(sig_account),
                 )  # type: ignore
             else:
                 reporter = IntervalReporter(**tellorx_reporter_kwargs)  # type: ignore
