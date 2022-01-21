@@ -2,12 +2,13 @@
 Tests covering the IntervalReporter class from
 telliot's reporters subpackage.
 """
+from datetime import datetime
 from typing import Any
 
 import pytest
 from telliot_core.apps.core import TelliotCore
 from telliot_core.datafeed import DataFeed
-from telliot_core.queries import SpotPrice
+from telliot_core.gas.etherscan_gas import EtherscanGasPrice
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
@@ -41,9 +42,32 @@ async def eth_usd_reporter(rinkeby_cfg):
 
 
 @pytest.mark.asyncio
+async def test_fetch_datafeed(eth_usd_reporter):
+    r = eth_usd_reporter
+    feed = await r.fetch_datafeed()
+    assert isinstance(feed, DataFeed)
+
+    r.datafeed = None
+    assert r.datafeed is None
+    feed = await r.fetch_datafeed()
+    assert isinstance(feed, DataFeed)
+
+
+@pytest.mark.asyncio
+async def test_get_fee_info(eth_usd_reporter):
+    info, time = await eth_usd_reporter.get_fee_info()
+
+    assert isinstance(time, datetime)
+    assert isinstance(info, EtherscanGasPrice)
+    assert isinstance(info.LastBlock, int)
+    assert info.LastBlock > 0
+    assert isinstance(info.gasUsedRatio, list)
+
+
+@pytest.mark.asyncio
 async def test_get_num_reports_by_id(eth_usd_reporter):
-    query = SpotPrice(asset="eth", currency="usd")
-    num, status = await eth_usd_reporter.get_num_reports_by_id(query.query_id)
+    r = eth_usd_reporter
+    num, status = await r.get_num_reports_by_id(r.datafeed.query.query_id)
 
     assert isinstance(status, ResponseStatus)
 
