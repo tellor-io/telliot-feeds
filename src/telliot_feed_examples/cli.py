@@ -28,6 +28,24 @@ logger = get_logger(__name__)
 POLYGON_CHAINS = (137, 80001)
 
 
+def get_stake_amount() -> float:
+    """Retrieve desired stake amount from user
+
+    Each stake is 10 TRB on TellorFlex Polygon. If an address
+    is not staked for any reason, the PolygonReporter will attempt
+    to stake. Number of stakes determines the reporter lock:
+
+    reporter_lock = 12hrs / N * stakes
+
+    Retrieves desidred stake amount from user input."""
+
+    msg = "Enter amount TRB to stake if unstaked:"
+    stake = click.prompt(msg, type=float, default=10.0, show_default=True)
+    assert isinstance(stake, float)
+
+    return stake
+
+
 def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
     """Parses user input expected profit and ensures
     the input is either a float or the string 'YOLO'."""
@@ -297,6 +315,8 @@ async def report(
 
         # Report to Polygon TellorFlex
         if core.config.main.chain_id in POLYGON_CHAINS:
+            stake = get_stake_amount()
+
             tellorflex = core.get_tellorflex_contracts()
 
             # Type 2 transactions unsupported currently
@@ -305,6 +325,7 @@ async def report(
             reporter = PolygonReporter(
                 oracle=tellorflex.oracle,
                 token=tellorflex.token,
+                stake=stake,
                 **common_reporter_kwargs,
             )
         # Report to TellorX

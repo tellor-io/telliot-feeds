@@ -33,6 +33,7 @@ class PolygonReporter(IntervalReporter):
         chain_id: int,
         oracle: Contract,
         token: Contract,
+        stake: float = 10.0,
         datafeed: Optional[DataFeed[Any]] = None,
         expected_profit: Union[str, float] = "YOLO",
         transaction_type: int = 2,
@@ -46,6 +47,7 @@ class PolygonReporter(IntervalReporter):
         self.endpoint = endpoint
         self.oracle = oracle
         self.token = token
+        self.stake = stake
         self.datafeed = datafeed
         self.chain_id = chain_id
         self.user = self.endpoint.web3.eth.account.from_key(private_key).address
@@ -102,8 +104,9 @@ class PolygonReporter(IntervalReporter):
             f"""
             STAKER INFO
             start date:     {staker_startdate}
-            balance:        {staker_balance}
-            locked balance: {locked_balance}
+            desired stake:  {self.stake}
+            amount staked:  {staker_balance / 1e18}
+            locked balance: {locked_balance / 1e18}
             last report:    {last_report}
             total reports:  {num_reports}
             """
@@ -112,11 +115,11 @@ class PolygonReporter(IntervalReporter):
         self.last_submission_timestamp = last_report
 
         # Attempt to stake
-        if staker_balance < 10:
-            logger.info("Address not yet staked. Approving & depositing stake.")
+        if staker_balance / 1e18 < self.stake:
+            logger.info("Current stake too low. Approving & depositing stake.")
 
-            gas_price_gwei = self.fetch_gas_price()
-            amount = 10 - staker_balance
+            gas_price_gwei = await self.fetch_gas_price()
+            amount = int(self.stake * 1e18) - staker_balance
 
             _, write_status = await self.token.write(
                 func_name="approve",
@@ -133,7 +136,7 @@ class PolygonReporter(IntervalReporter):
                 func_name="depositStake",
                 gas_limit=300000,
                 legacy_gas_price=gas_price_gwei,
-                amount=amount,
+                _amount=amount,
             )
             if not write_status.ok:
                 msg = (
@@ -142,6 +145,8 @@ class PolygonReporter(IntervalReporter):
                     + f"Make sure {self.user} has enough MATIC & TRB (10)"
                 )  # error won't be none # noqa: E501
                 return False, error_status(msg, log=logger.error)
+
+            logger.info(f"Staked {amount / 1e18} TRB")
 
         return True, ResponseStatus()
 
