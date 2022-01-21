@@ -141,12 +141,10 @@ class IntervalReporter:
         elif staker_info[0] == 0:
             logger.info("Address not yet staked. Depositing stake.")
 
-            _, write_status = await self.master.write_with_retry(
+            _, write_status = await self.master.write(
                 func_name="depositStake",
                 gas_limit=350000,
                 legacy_gas_price=gas_price_gwei,
-                extra_gas_price=20,
-                retries=5,
             )
 
             if write_status.ok:
@@ -388,6 +386,8 @@ class IntervalReporter:
             # Fetch legacy gas price if not provided by user
             if not self.legacy_gas_price:
                 gas_price = await self.fetch_gas_price(self.gas_price_speed)
+            else:
+                gas_price = self.legacy_gas_price
 
             built_submit_val_tx = submit_val_tx.buildTransaction(
                 {

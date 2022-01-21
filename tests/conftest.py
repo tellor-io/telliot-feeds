@@ -4,7 +4,7 @@ import os
 import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.datasource import DataSource
-from telliot_core.types.datapoint import OptionalDataPoint
+from telliot_core.dtypes.datapoint import OptionalDataPoint
 
 
 @pytest.fixture(scope="session", autouse=True)
