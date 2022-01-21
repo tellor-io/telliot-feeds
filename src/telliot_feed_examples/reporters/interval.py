@@ -290,7 +290,9 @@ class IntervalReporter:
 
         return datafeed
 
-    async def get_num_reports_by_id(self, query_id: int) -> Tuple[int, ResponseStatus]:
+    async def get_num_reports_by_id(
+        self, query_id: bytes
+    ) -> Tuple[int, ResponseStatus]:
         count, read_status = await self.oracle.read(
             func_name="getTimestampCountById", _queryId=query_id
         )
