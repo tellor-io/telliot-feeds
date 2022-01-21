@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 from telliot_core.apps.core import TelliotCore
 from telliot_core.datafeed import DataFeed
+from telliot_core.queries import SpotPrice
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
@@ -37,6 +38,19 @@ async def eth_usd_reporter(rinkeby_cfg):
             chain_id=core.config.main.chain_id,
         )
         return r
+
+
+@pytest.mark.asyncio
+async def test_get_num_reports_by_id(eth_usd_reporter):
+    query = SpotPrice(asset="eth", currency="usd")
+    num, status = await eth_usd_reporter.get_num_reports_by_id(query.query_id)
+
+    assert isinstance(status, ResponseStatus)
+
+    if status.ok:
+        assert isinstance(num, int)
+    else:
+        assert num is None
 
 
 @pytest.mark.asyncio
