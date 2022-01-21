@@ -3,10 +3,12 @@
 A simple interface for interacting with telliot example feed functionality.
 """
 import asyncio
+import getpass
 from typing import Optional
 from typing import Union
 
 import click
+from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from click.core import Context
 from eth_utils import to_checksum_address
@@ -246,6 +248,7 @@ def cli(
     default="fast",
 )
 @click.option("--submit-once/--submit-continuous", default=False)
+@click.option("-p", "--password", type=str)
 @click.pass_context
 @async_run
 async def report(
@@ -259,6 +262,7 @@ async def report(
     expected_profit: str,
     submit_once: bool,
     gas_price_speed: str,
+    password: str,
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
@@ -268,8 +272,28 @@ async def report(
 
     assert tx_type in (0, 2)
 
+    name = ctx.obj["STAKER_TAG"]
+    if name:
+        account = ChainedAccount(name)
+        if not account.keyfile.exists():
+            click.echo(f"Account {name} does not exist.")
+            return
+
+    try:
+        if not password:
+            password = getpass.getpass(f"Enter password for {name} keyfile: ")
+        acc = ChainedAccount(name)
+        acc.unlock(password)
+    except ValueError:
+        click.echo("Invalid Password")
+
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
+
+        if not account:
+            account = core.get_account()
+            if not account.is_unlocked:
+                account.unlock(password)
 
         using_flashbots = ctx.obj["USING_FLASHBOTS"]
         signature_tag = ctx.obj["SIGNATURE_TAG"]
@@ -303,7 +327,7 @@ async def report(
 
         common_reporter_kwargs = {
             "endpoint": core.endpoint,
-            "account": core.get_account(),
+            "account": account,
             "datafeed": chosen_feed,
             "transaction_type": tx_type,
             "gas_limit": gas_limit,
