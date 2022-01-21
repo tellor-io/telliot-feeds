@@ -23,7 +23,7 @@ logger = get_logger(__name__)
 
 
 class PolygonReporter(IntervalReporter):
-    """Reports values from given datafeeds to a TellorFlex Oracle
+    """Reports values from given datafeeds to a TellorFlex
     on Polygon."""
 
     def __init__(
@@ -80,10 +80,11 @@ class PolygonReporter(IntervalReporter):
         return int(prices[speed])
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
-        """Make sure the current user is staked
+        """Make sure the current user is staked.
+
         Returns a bool signifying whether the current address is
-        staked. If the address is not initially, it attempts to stake with
-        the address's funds."""
+        staked. If the address is not initially, it attempts to deposit
+        the given stake amount."""
         staker_info, read_status = await self.oracle.read(
             func_name="getStakerInfo", _staker=self.user
         )
@@ -151,11 +152,15 @@ class PolygonReporter(IntervalReporter):
         return True, ResponseStatus()
 
     async def check_reporter_lock(self) -> ResponseStatus:
-        """Ensure enough time has passed since last report
-        Returns a bool signifying whether a given address is in a
-        reporter lock or not (TellorX oracle users cannot submit
-        multiple times within 12 hours)."""
+        """Ensure enough time has passed since last report.
 
+        One stake is 10 TRB. Reporter lock is depends on the
+        total staked:
+
+        reporter_lock = 12hrs / # stakes
+
+        Returns bool signifying whether a given address is in a
+        reporter lock or not."""
         staker_info, read_status = await self.oracle.read(
             func_name="getStakerInfo", _staker=self.user
         )

@@ -32,7 +32,7 @@ logger = get_logger(__name__)
 
 class IntervalReporter:
     """Reports values from given datafeeds to a TellorX Oracle
-    every 10 seconds."""
+    every 7 seconds."""
 
     def __init__(
         self,

@@ -1,20 +1,43 @@
 # Usage
+**This is experimental software! You can lose money!**
 
-To use any of the telliot datafeed and reporter examples, use the command line interface (CLI) entry point, `telliot-examples`. Once this package is installed and your `stakers.yaml` and `endpoints.yaml` have been updated, any of the below commands are available to use.
+Prerequisites: Update `stakers.yaml` and `endpoints.yaml` in `~/telliot`: [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)
 
-By default, the `report` command will submit transactions to the public mempool, not through the Flashbots relay, so there's a possibility of being beaten by those submitting through Flashbots. Getting transactions mined by submitting bundles through the Flashbots relay is not a profit guarantee, as those with higher reputation or more sophisticated monitoring can often win out over newer participants. In general, reporting for profit is highly competitive.
+To use any of the telliot datafeed and reporter examples, use the command line interface (CLI) tool. A basic example:
+```
+$ telliot-examples -st fakename report
+```
+**Read/confirm the correct settings when prompted and read chain-specific sections below:**
+```
+$ telliot-examples -st fakename report
+telliot-core 0.0.10.dev1
+telliot_feed_examples (plugin): Version 0.0.12dev0
+Using: eth-rinkeby [staker: dev-acct-4]
 
-Overall, this is experimental software, so even if you specify an expected profit percent, you could still lose money if submitting on mainnet!
+Reporting with synchronized queries
+Current chain ID: 4
+Expected percent profit: 100.0%
+Transaction type: 0
+Gas Limit: 350000
+Legacy gas price (gwei): None
+Max fee (gwei): None
+Priority fee (gwei): None
+Gas price speed: fast
 
-## Commands
+Press [ENTER] to confirm settings.
+```
 
-To use any of this package's subcommands, first invoke `telliot-examples` followed by any subcommands.
+For basics, see [Reporter Settings](#reporter-settings).
+
+Chain-specific info: [Ethereum](#report-on-ethereum) & [Polygon](#report-on-polygon).
+
+## Reporter Settings
 
 ### Help command
 
-Use the help command flag to view any subcommands, flag options, and their descriptions:
+Use the help flag to view available commands and option flags:
 ```
-user:~/$ telliot-examples --help
+$ telliot-examples --help
 Usage: telliot-examples [OPTIONS] COMMAND [ARGS]...
 
   Telliot command line interface
@@ -27,6 +50,30 @@ Options:
 
 Commands:
   report  Report values to Tellor oracle
+```
+
+Use the help to view subcommand options as well:
+```
+$ telliot-examples report --help
+Usage: telliot-examples report [OPTIONS]
+
+  Report values to Tellor oracle
+
+Options:
+  -qt, --query-tag [eth-usd-legacy|btc-usd-legacy|ampl-legacy|uspce-legacy|trb-usd-legacy|eth-jpy-legacy|ohm-eth-spot]
+                                  select datafeed using query tag
+  -gl, --gas-limit INTEGER        use custom gas limit
+  -mf, --max-fee INTEGER          use custom maxFeePerGas (gwei)
+  -pf, --priority-fee INTEGER     use custom maxPriorityFeePerGas (gwei)
+  -gp, --gas-price INTEGER        use custom legacy gasPrice (gwei)
+  -p, --profit TEXT               lower threshold (inclusive) for expected
+                                  percent profit
+  -tx, --tx-type INTEGER          choose transaction type (0 for legacy txs, 2
+                                  for EIP-1559)
+  -gps, --gas-price-speed [safeLow|average|fast|fastest]
+                                  gas price speed for eth gas station API
+  --submit-once / --submit-continuous
+  --help                          Show this message and exit.
 ```
 
 ### Report command
@@ -65,6 +112,7 @@ Options:
   --help                          Show this message and exit.
 ```
 
+## Report on Ethereum
 ### Reporting with Flashbots
 
 In order to submit transactions through the [Flashbots](https://docs.flashbots.net/flashbots-auction/searchers/quick-start/) relay, you need an additional private key and the associated account info in `stakers.yaml` that they'll use to identify you (and for building reputation as a Flashbots searcher). This account doesn't need any funds in it.

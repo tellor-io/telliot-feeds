@@ -8,8 +8,6 @@ from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 
 @pytest.fixture
 async def polygon_reporter(mumbai_cfg):
-    """Returns an instance of an IntervalReporter using
-    the ETH/USD median datafeed."""
     async with TelliotCore(config=mumbai_cfg) as core:
         flex = core.get_tellorflex_contracts()
         r = PolygonReporter(
