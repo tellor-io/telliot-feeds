@@ -1,9 +1,9 @@
 import pytest
 from telliot_core.apps.core import TelliotCore
-
-from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 from telliot_core.utils.response import ResponseStatus
+
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 
 
 @pytest.fixture
@@ -54,7 +54,7 @@ async def test_check_reporter_lock(polygon_reporter):
 
     assert isinstance(status, ResponseStatus)
     if not status.ok:
-        assert 'reporter lock' in status.error
+        assert "reporter lock" in status.error
 
 
 @pytest.mark.asyncio
