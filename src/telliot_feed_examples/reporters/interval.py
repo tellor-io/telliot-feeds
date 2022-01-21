@@ -15,7 +15,7 @@ from telliot_core.datafeed import DataFeed
 from telliot_core.gas.etherscan_gas import EtherscanGasPriceSource
 from telliot_core.gas.legacy_gas import ethgasstation
 from telliot_core.model.endpoints import RPCEndpoint
-from telliot_core.reporters.reporter_utils import tellorx_suggested_report
+from telliot_core.reporters.reporter_utils import tellor_suggested_report
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
@@ -32,7 +32,7 @@ logger = get_logger(__name__)
 
 class IntervalReporter:
     """Reports values from given datafeeds to a TellorX Oracle
-    every 10 seconds."""
+    every 7 seconds."""
 
     def __init__(
         self,
@@ -106,9 +106,9 @@ class IntervalReporter:
 
         return status
 
-    async def fetch_gas_price(self) -> int:
+    async def fetch_gas_price(self, speed: str = "average") -> int:
         """Fetch gas price from ethgasstation in gwei."""
-        return await ethgasstation(style="average")  # type: ignore
+        return await ethgasstation(speed)  # type: ignore
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked
@@ -141,12 +141,10 @@ class IntervalReporter:
         elif staker_info[0] == 0:
             logger.info("Address not yet staked. Depositing stake.")
 
-            _, write_status = await self.master.write_with_retry(
+            _, write_status = await self.master.write(
                 func_name="depositStake",
                 gas_limit=350000,
                 legacy_gas_price=gas_price_gwei,
-                extra_gas_price=20,
-                retries=5,
             )
 
             if write_status.ok:
@@ -284,13 +282,21 @@ class IntervalReporter:
         if self.datafeed is not None:
             datafeed = self.datafeed
         else:
-            suggested_qtag = await tellorx_suggested_report(self.oracle)
+            suggested_qtag = await tellor_suggested_report(self.oracle)
             if not suggested_qtag:
                 msg = "Could not get suggested query."
                 return None, error_status(msg, log=logger.info)
             datafeed = CATALOG_FEEDS[suggested_qtag]
 
         return datafeed
+
+    async def get_num_reports_by_id(
+        self, query_id: bytes
+    ) -> Tuple[int, ResponseStatus]:
+        count, read_status = await self.oracle.read(
+            func_name="getTimestampCountById", _queryId=query_id
+        )
+        return count, read_status
 
     async def report_once(
         self,
@@ -338,12 +344,11 @@ class IntervalReporter:
             return None, error_status(msg, e=e, log=logger.error)
 
         # Get nonce
-        timestamp_count, read_status = await self.oracle.read(
-            func_name="getTimestampCountById", _queryId=query_id
-        )
+        report_count, read_status = await self.get_num_reports_by_id(query_id)
+
         if not read_status.ok:
             status.error = (
-                "Unable to retrieve timestampCount: " + read_status.error
+                "Unable to retrieve report count: " + read_status.error
             )  # error won't be none # noqa: E501
             logger.error(status.error)
             status.e = read_status.e
@@ -354,7 +359,7 @@ class IntervalReporter:
         submit_val_tx = submit_val_func(
             _queryId=query_id,
             _value=value,
-            _nonce=timestamp_count,
+            _nonce=report_count,
             _queryData=query_data,
         )
         acc_nonce = self.endpoint._web3.eth.get_transaction_count(self.account.address)
@@ -380,11 +385,17 @@ class IntervalReporter:
             )
         # Add transaction type 0 (legacy) data
         else:
+            # Fetch legacy gas price if not provided by user
+            if not self.legacy_gas_price:
+                gas_price = await self.fetch_gas_price(self.gas_price_speed)
+            else:
+                gas_price = self.legacy_gas_price
+
             built_submit_val_tx = submit_val_tx.buildTransaction(
                 {
                     "nonce": acc_nonce,
                     "gas": self.gas_limit,
-                    "gasPrice": Web3.toWei(self.legacy_gas_price, "gwei"),  # type: ignore
+                    "gasPrice": Web3.toWei(gas_price, "gwei"),
                     "chainId": self.chain_id,
                 }
             )

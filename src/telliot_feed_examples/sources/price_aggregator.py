@@ -8,9 +8,9 @@ from typing import List
 from typing import Literal
 
 from telliot_core.datasource import DataSource
+from telliot_core.dtypes.datapoint import datetime_now_utc
+from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_source import PriceSource
-from telliot_core.types.datapoint import datetime_now_utc
-from telliot_core.types.datapoint import OptionalDataPoint
 
 from telliot_feed_examples.utils.log import get_logger
 

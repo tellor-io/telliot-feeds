@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from telliot_core.datasource import DataSource
-from telliot_core.types.datapoint import DataPoint
-from telliot_core.types.datapoint import datetime_now_utc
+from telliot_core.dtypes.datapoint import DataPoint
+from telliot_core.dtypes.datapoint import datetime_now_utc
 
 from telliot_feed_examples.utils.log import get_logger
 
