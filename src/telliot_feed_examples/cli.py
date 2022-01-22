@@ -105,7 +105,7 @@ def print_reporter_settings(
 def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     """Get telliot core configured in reporter CLI context"""
     # Delegate to main cli core getter
-    # (handles STAKER_TAG, CHAIN_ID, and TEST_CONFIG)
+    # (handles ACCOUNT_NAME, CHAIN_ID, and TEST_CONFIG)
     core = cli_core(ctx)
 
     # Ensure chain id compatible with flashbots relay
@@ -121,10 +121,10 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
 # Main CLI options
 @click.group()
 @click.option(
-    "--staker-tag",
-    "-st",
-    "staker_tag",
-    help="use specific staker by tag",
+    "--account",
+    "-a",
+    "account",
+    help="Name of account used for reporting.",
     required=False,
     nargs=1,
     type=str,
@@ -153,20 +153,22 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
 @click.pass_context
 def cli(
     ctx: Context,
-    staker_tag: str,
+    account: str,
     signature_tag: str,
     using_flashbots: bool,
     test_config: bool,
 ) -> None:
     """Telliot command line interface"""
     ctx.ensure_object(dict)
-    ctx.obj["STAKER_TAG"] = staker_tag
+    ctx.obj["ACCOUNT_NAME"] = account
     ctx.obj["SIGNATURE_TAG"] = signature_tag
     ctx.obj["USING_FLASHBOTS"] = using_flashbots
     ctx.obj["TEST_CONFIG"] = test_config
 
-    # Include chain id based on staker tag
-    accounts = find_accounts(name=staker_tag)
+    # Pull chain from account
+    # Note: this is not be reliable because accounts can be associated with
+    # multiple chains.
+    accounts = find_accounts(name=account)
     ctx.obj["CHAIN_ID"] = accounts[0].chains[0]
 
 
@@ -272,12 +274,7 @@ async def report(
 
     assert tx_type in (0, 2)
 
-    name = ctx.obj["STAKER_TAG"]
-    if name:
-        account = ChainedAccount(name)
-        if not account.keyfile.exists():
-            click.echo(f"Account {name} does not exist.")
-            return
+    name = ctx.obj["ACCOUNT_NAME"]
 
     try:
         if not password:
@@ -288,10 +285,8 @@ async def report(
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
-        # Choose the default account if it's not specified.
-        if not account:
-            account = core.get_account()
-
+        # Make sure current account is unlocked
+        account = core.get_account()
         if not account.is_unlocked:
             account.unlock(password)
 
