@@ -1,6 +1,6 @@
 # Usage
 
-**This is experimental software! You can lose money!**
+**This is experimental software! You might lose money!**
 
 Prerequisites: Update configuration files: [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)
 
@@ -8,7 +8,9 @@ To use any of the telliot datafeed and reporter examples, use the command line i
 ```
 $ telliot-examples -st fakename report
 ```
-**Be sure to confirm the correct settings when prompted and read chain-specific reporting sections below:**
+
+**Be sure to always confirm the correct settings when prompted and read chain-specific usage sections before setting up your reporter!**
+
 ```
 $ telliot-examples -st fakename report
 telliot-core 0.0.10.dev1
@@ -36,6 +38,7 @@ Press [ENTER] to confirm settings.
 # Reporting Basics
 
 ## Help flag
+
 Use the help flag to view available commands and option flags:
 ```
 $ telliot-examples --help
@@ -78,12 +81,14 @@ Options:
 ```
 
 ## Staker Tag Flag
+
 You must select an account to use for reporting. The staker tag flag (`--staker-tag`/`-st`) is used to retrieve a [ChainedAccount](https://github.com/pydefi/chained-accounts) with a corresponding name. This `ChainedAccount` stores the account's checksum address, private key, and chain IDs. Example usage:
 ```
 telliot-examples -st fakeaccountname report
 ```
 
 ## Report Command
+
 Use the `report` command to submit data to the TellorX or TellorFlex oracles. Example `report` command usage:
 ```
 telliot-examples --st bigdaddysatoshi report
@@ -94,6 +99,9 @@ telliot-examples -st staker1 report --submit-once
 ```
 
 ## Profit Flag
+
+**Reporting for profit is extremely competitive and profit estimates aren't guarantees that you won't lose money!**
+
 Use the profit flag (`--profit/-p`) to.. specify an expected profit. The default is 100% profit, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use the `"YOLO"` string:
 ```
 telliot-examples -st staker1 report -p YOLO
@@ -103,8 +111,6 @@ Normal profit flag usage:
 telliot-examples -st staker4000 report -p 2
 ```
 
-**Reporting for profit is extremely competitive and profit estimates aren't guarantees that you won't lose money!**
-
 ## Gas, Fee, & Transaction Type Flags
 If gas fees and transaction types (`--tx-type/-tx`) aren't specified by the user, defaults and estimates will be used/retrieved.
 
@@ -112,37 +118,44 @@ The `--gas-price/-gp` flag is for legacy transactions, while the `--max-fee/-mf`
 
 Example usage:
 ```
-telliot-examples -st kevin report -tx 0 -gl 310000 -gp 1234 -p 22
+telliot-examples -st kevin report -tx 0 -gl 310000 -gp 9001 -p 22
 ```
 
 # Reporting on Ethereum
+
+Both transaction types (0 & 2) are supported for reporting.
+
 ## Regular Usage
+
+It's not advised to report without Flashbots, unless on a testnet like Rinkeby, because transactions sent to the public mempool on Ethereum mainnet will most likely be [front-run](https://www.paradigm.xyz/2020/08/ethereum-is-a-dark-forest/), so you'll lose money.
+
+If you want to report without flashbots on Ethereum mainnet, use the `--no-flashbots/-nfb` flag.
+
+Example usage:
+```
+telliot-examples -st mainnetstaker7 -nfb report
+```
+
 ## Using Flashbots
 
-In order to submit transactions through the [Flashbots](https://docs.flashbots.net/flashbots-auction/searchers/quick-start/) relay, you need an additional private key and the associated account info in `stakers.yaml` that they'll use to identify you (and for building reputation as a Flashbots searcher). This account doesn't need any funds in it.
+The Flashbots organization provides an endpoint, or relay, to bypass the public mempool and submit transaction bundles directly to miners. More info [here](https://github.com/flashbots/pm).
 
-Here's an example of said signatory account added to `stakers.yaml`:
-```yaml
-type: StakerList
-stakers:
-- type: Staker
-  tag: my_mainnet_staker
-  address: '0x00001234'
-  private_key: '0x00009999'
-  chain_id: 1
-- type: Staker
-  tag: my_rinkeby_staker
-  address: '0x00005678'
-  private_key: '0x00009999'
-  chain_id: 4
-- type: Staker
-  tag: flashbots-sig
-  address: '0xthisaddressdoesnotexist'
-  private_key: '0xthisisafakeprivatekey'
-  chain_id: 1
+Even using Flashbots, reporting on Ethereum mainnet is competitive. Other endpoints are available to experiment with ([MiningDAO](https://github.com/Mining-DAO/mev-geth#quick-start), [mistX](https://mistx.stoplight.io/)).
+
+If the account you've selected for reporting is staked on mainnet, then the reporter will send transactions to the Flashbots relay by default. To explicitly use Flashbots, include the `--flashbots/-fb` flag.
+
+Reporting with Flashbots on testnet is not supported.
+
+### Create Signatory Account
+
+In order to submit transactions through the [Flashbots](https://docs.flashbots.net/flashbots-auction/searchers/quick-start/) relay, you need an additional Ethereum acccount. The Flashbots organization uses this signatory account's address to identify you and build your historical reputation as a MEV ["searcher"](https://docs.flashbots.net/flashbots-auction/searchers/quick-start). This signatory account doesn't need any funds in it. Store it it as a `ChainedAccount` in the same way you would any other (see [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)).
+
+When reporting, select your signatory account by tag as well as your staked mainnet account. Use the `--staker-tag/-st` and `--signature-tag/-sgt` flags. 
+
+Example usage:
+```
+telliot-examples -st mainnetstaker1 -sgt sigacct -fb report
 ```
 
-After tweaking your config files, you need to select your mainnet staker as well as the signature account with the `--staker-tag/-st` and `--signature-tag/-sgt` CLI flag options, respectively. Also, add the `--flashbots/-fb` flag:
-```
-telliot-examples -st my_mainnet_staker -sgt flashbots-sig -fb report -lid 2 -p 10
-```
+# Reporting on Polygon
+
