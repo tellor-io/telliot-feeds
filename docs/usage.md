@@ -159,3 +159,37 @@ telliot-examples -st mainnetstaker1 -sgt sigacct -fb report
 
 # Reporting on Polygon
 
+Only legacy transaction types are supported. Also, TellorFlex on Polygon has no built-in rewards for reporting, so profitability checks are skipped. Read more about TellorFlex on Polygon [here](https://github.com/tellor-io/tellorFlex).
+
+Example usage:
+```
+telliot-examples -st mumbaistaker report
+```
+
+## Staking
+
+With TellorFlex on Polygon, reporters can stake multiple times. Each stake is 10 TRB, so if you stake 140 TRB, you've staked 14 times.
+
+The `PolygonReporter` will prompt the user to enter a desired stake amount:
+```
+Enter blah blah
+```
+If the current account being used to report isn't staked, the reporter will use the CLI-entered stake amount to stake. Also, if the reporter account's actual stake is reduced after a dispute, the reporter will attempt to stake the difference in TRB to return to the original desired stake amount.
+
+Example:
+```
+- user enters desired stake of 50
+- reporter identifies that current address has only 40 TRB staked
+- reporter stakes an additional 10 TRB, bringing the total amount staked to 50 TRB
+- reporter reports
+- reporter waits while in reporter lock
+...
+```
+
+## Reporter Lock
+
+TellorX reporters on Ethereum must wait 12 hours between each data sumbission. The reporter lock for TellorFlex on Polygon is variable. It depends on how many stakes an account has. Specifically:
+```
+reporter_lock = 12 hours / number_of_stakes
+```
+So if you have 120 TRB staked, you can report every hour.
