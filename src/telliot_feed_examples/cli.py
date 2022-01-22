@@ -3,16 +3,19 @@
 A simple interface for interacting with telliot example feed functionality.
 """
 import asyncio
+import getpass
 from typing import Optional
 from typing import Union
 
 import click
+from chained_accounts import find_accounts
 from click.core import Context
+from eth_utils import to_checksum_address
 from telliot_core.apps.core import TelliotCore
-from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.cli.utils import async_run
 from telliot_core.cli.utils import cli_core
 from telliot_core.data.query_catalog import query_catalog
+from telliot_core.utils.key_helpers import lazy_key_getter
 
 from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
@@ -21,9 +24,7 @@ from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
-
 logger = get_logger(__name__)
-
 
 POLYGON_CHAINS = (137, 80001)
 
@@ -42,7 +43,7 @@ def get_stake_amount() -> float:
     msg = "Enter amount TRB to stake if unstaked:"
     stake = click.prompt(msg, type=float, default=10.0, show_default=True)
     assert isinstance(stake, float)
-    assert stake > 10.0
+    assert stake >= 10.0
 
     return stake
 
@@ -103,7 +104,7 @@ def print_reporter_settings(
 def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     """Get telliot core configured in reporter CLI context"""
     # Delegate to main cli core getter
-    # (handles STAKER_TAG, CHAIN_ID, and TEST_CONFIG)
+    # (handles ACCOUNT_NAME, CHAIN_ID, and TEST_CONFIG)
     core = cli_core(ctx)
 
     # Ensure chain id compatible with flashbots relay
@@ -119,10 +120,10 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
 # Main CLI options
 @click.group()
 @click.option(
-    "--staker-tag",
-    "-st",
-    "staker_tag",
-    help="use specific staker by tag",
+    "--account",
+    "-a",
+    "account",
+    help="Name of account used for reporting.",
     required=False,
     nargs=1,
     type=str,
@@ -151,21 +152,23 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
 @click.pass_context
 def cli(
     ctx: Context,
-    staker_tag: str,
+    account: str,
     signature_tag: str,
     using_flashbots: bool,
     test_config: bool,
 ) -> None:
     """Telliot command line interface"""
     ctx.ensure_object(dict)
-    ctx.obj["STAKER_TAG"] = staker_tag
+    ctx.obj["ACCOUNT_NAME"] = account
     ctx.obj["SIGNATURE_TAG"] = signature_tag
     ctx.obj["USING_FLASHBOTS"] = using_flashbots
     ctx.obj["TEST_CONFIG"] = test_config
 
-    # Include chain id based on staker tag
-    staker = TelliotConfig().stakers.find(tag=staker_tag)[0]
-    ctx.obj["CHAIN_ID"] = staker.chain_id
+    # Pull chain from account
+    # Note: this is not be reliable because accounts can be associated with
+    # multiple chains.
+    accounts = find_accounts(name=account)
+    ctx.obj["CHAIN_ID"] = accounts[0].chains[0]
 
 
 # Report subcommand options
@@ -246,6 +249,7 @@ def cli(
     default="fast",
 )
 @click.option("--submit-once/--submit-continuous", default=False)
+@click.option("-p", "--password", type=str)
 @click.pass_context
 @async_run
 async def report(
@@ -259,6 +263,7 @@ async def report(
     expected_profit: str,
     submit_once: bool,
     gas_price_speed: str,
+    password: str,
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
@@ -268,16 +273,29 @@ async def report(
 
     assert tx_type in (0, 2)
 
+    name = ctx.obj["ACCOUNT_NAME"]
+
+    try:
+        if not password:
+            password = getpass.getpass(f"Enter password for {name} keyfile: ")
+    except ValueError:
+        click.echo("Invalid Password")
+
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
+
+        # Make sure current account is unlocked
+        account = core.get_account()
+        if not account.is_unlocked:
+            account.unlock(password)
 
         using_flashbots = ctx.obj["USING_FLASHBOTS"]
         signature_tag = ctx.obj["SIGNATURE_TAG"]
         if signature_tag is not None:
-            sig_staker = core.config.stakers.find(tag=signature_tag)[0]
-            sig_staker_address = sig_staker.address
+            sig_account = find_accounts(name=signature_tag)[0]
+            sig_staker_address = to_checksum_address(sig_account.address)
         else:
-            sig_staker_address = ""
+            sig_staker_address = ""  # type: ignore
 
         # Use selected feed, or choose automatically
         if query_tag is not None:
@@ -303,7 +321,7 @@ async def report(
 
         common_reporter_kwargs = {
             "endpoint": core.endpoint,
-            "private_key": core.get_staker().private_key,
+            "account": account,
             "datafeed": chosen_feed,
             "transaction_type": tx_type,
             "gas_limit": gas_limit,
@@ -342,7 +360,7 @@ async def report(
             if using_flashbots:
                 reporter = FlashbotsReporter(
                     **tellorx_reporter_kwargs,
-                    signature_private_key=sig_staker.private_key,
+                    signature_private_key=lazy_key_getter(sig_account),
                 )  # type: ignore
             else:
                 reporter = IntervalReporter(**tellorx_reporter_kwargs)  # type: ignore

@@ -8,14 +8,15 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
-from eth_account.account import Account
-from eth_account.signers.local import LocalAccount
+from chained_accounts import ChainedAccount
+from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.gas.etherscan_gas import EtherscanGasPriceSource
 from telliot_core.gas.legacy_gas import ethgasstation
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.reporters.reporter_utils import tellor_suggested_report
+from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
@@ -37,7 +38,7 @@ class IntervalReporter:
     def __init__(
         self,
         endpoint: RPCEndpoint,
-        private_key: str,
+        account: ChainedAccount,
         chain_id: int,
         master: Contract,
         oracle: Contract,
@@ -56,7 +57,7 @@ class IntervalReporter:
         self.oracle = oracle
         self.datafeed = datafeed
         self.chain_id = chain_id
-        self.user = self.endpoint.web3.eth.account.from_key(private_key).address
+        self.user = to_checksum_address(account.address)
         self.last_submission_timestamp = 0
         self.expected_profit = expected_profit
         self.transaction_type = transaction_type
@@ -68,8 +69,9 @@ class IntervalReporter:
 
         logger.info(f"Reporting with account: {self.user}")
 
-        self.account: LocalAccount = Account.from_key(private_key)
-        assert self.user == self.account.address
+        self.account = account
+
+        assert self.user == to_checksum_address(self.account.address)
 
     async def check_reporter_lock(self) -> ResponseStatus:
         """Ensure enough time has passed since last report
@@ -326,6 +328,8 @@ class IntervalReporter:
 
         status = ResponseStatus()
 
+        address = to_checksum_address(self.account.address)
+
         # Update datafeed value
         await datafeed.source.fetch_new_datapoint()
         latest_data = datafeed.source.latest
@@ -362,7 +366,7 @@ class IntervalReporter:
             _nonce=report_count,
             _queryData=query_data,
         )
-        acc_nonce = self.endpoint._web3.eth.get_transaction_count(self.account.address)
+        acc_nonce = self.endpoint._web3.eth.get_transaction_count(address)
 
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:
@@ -400,7 +404,9 @@ class IntervalReporter:
                 }
             )
 
-        tx_signed = self.account.sign_transaction(built_submit_val_tx)  # type: ignore
+        lazy_unlock_account(self.account)
+        local_account = self.account.local_account
+        tx_signed = local_account.sign_transaction(built_submit_val_tx)
 
         try:
             logger.debug("Sending submitValue transaction")

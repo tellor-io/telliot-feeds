@@ -15,11 +15,11 @@ async def test_uspce_interval_reporter_submit_once(rinkeby_cfg):
 
     async with TelliotCore(config=rinkeby_cfg) as core:
 
-        private_key = core.get_staker().private_key
+        account = core.get_account()
         tellorx = core.get_tellorx_contracts()
         r = IntervalReporter(
             endpoint=core.config.get_endpoint(),
-            private_key=private_key,
+            account=account,
             master=tellorx.master,
             oracle=tellorx.oracle,
             datafeed=uspce_feed,

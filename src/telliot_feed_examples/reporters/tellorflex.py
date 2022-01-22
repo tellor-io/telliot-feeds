@@ -7,8 +7,8 @@ from typing import Tuple
 from typing import Union
 
 import requests
-from eth_account.account import Account
-from eth_account.signers.local import LocalAccount
+from chained_accounts import ChainedAccount
+from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
@@ -29,7 +29,7 @@ class PolygonReporter(IntervalReporter):
     def __init__(
         self,
         endpoint: RPCEndpoint,
-        private_key: str,
+        account: ChainedAccount,
         chain_id: int,
         oracle: Contract,
         token: Contract,
@@ -50,7 +50,7 @@ class PolygonReporter(IntervalReporter):
         self.stake = stake
         self.datafeed = datafeed
         self.chain_id = chain_id
-        self.user = self.endpoint.web3.eth.account.from_key(private_key).address
+        self.user = to_checksum_address(account.address)
         self.last_submission_timestamp = 0
         self.expected_profit = expected_profit
         self.transaction_type = transaction_type
@@ -62,8 +62,8 @@ class PolygonReporter(IntervalReporter):
 
         logger.info(f"Reporting with account: {self.user}")
 
-        self.account: LocalAccount = Account.from_key(private_key)
-        assert self.user == self.account.address
+        self.account: ChainedAccount = account
+        assert self.user == to_checksum_address(self.account.address)
 
     async def ensure_profitable(
         self,
@@ -170,6 +170,9 @@ class PolygonReporter(IntervalReporter):
             return error_status(msg, log=logger.error)
 
         _, staker_balance, _, last_report, _ = staker_info
+
+        if staker_balance < 10 * 1e18:
+            return error_status("Staker balance too low.", log=logger.info)
 
         self.last_submission_timestamp = last_report
         logger.info(f"Last submission timestamp: {self.last_submission_timestamp}")
