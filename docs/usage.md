@@ -6,13 +6,13 @@ Prerequisites: Update configuration files: [Getting Started](https://tellor-io.g
 
 To use any of the telliot datafeed and reporter examples, use the command line interface (CLI) tool. A basic example:
 ```
-$ telliot-examples -st fakename report
+$ telliot-examples --account fakename report
 ```
 
 **Be sure to always confirm the correct settings when prompted and read chain-specific usage sections before setting up your reporter!**
 
 ```
-$ telliot-examples -st fakename report
+$ telliot-examples -a fakename report
 telliot-core 0.0.10.dev1
 telliot_feed_examples (plugin): Version 0.0.12dev0
 Using: eth-rinkeby [staker: dev-acct-4]
@@ -47,13 +47,16 @@ Usage: telliot-examples [OPTIONS] COMMAND [ARGS]...
   Telliot command line interface
 
 Options:
-  -st, --staker-tag TEXT          use specific staker by tag
+  -a, --account TEXT              Name of account used for reporting.
   -sgt, --signature-tag TEXT      use specific signature account by tag
   -fb, --flashbots / -nfb, --no-flashbots
+  --test_config                   Runs command with test configuration
+                                  (developer use only)
   --help                          Show this message and exit.
 
 Commands:
   report  Report values to Tellor oracle
+  tip     Tip TRB for a selected query ID
 ```
 
 The help flag shows subcommand options as well:
@@ -80,22 +83,22 @@ Options:
   --help                          Show this message and exit.
 ```
 
-## Staker Tag Flag
+## Account Flag
 
-You must select an account to use for reporting. The staker tag flag (`--staker-tag`/`-st`) is used to retrieve a [ChainedAccount](https://github.com/pydefi/chained-accounts) with a corresponding name. This `ChainedAccount` stores the account's checksum address, private key, and chain IDs. Example usage:
+You must select an account to use for reporting. The account flag (`--account`/`-a`) is used to retrieve a [ChainedAccount](https://github.com/pydefi/chained-accounts) with a corresponding name. This `ChainedAccount` stores the account's checksum address, private key, and chain IDs. Example usage:
 ```
-telliot-examples -st fakeaccountname report
+telliot-examples -a fakeaccountname report
 ```
 
 ## Report Command
 
 Use the `report` command to submit data to the TellorX or TellorFlex oracles. Example `report` command usage:
 ```
-telliot-examples --st bigdaddysatoshi report
+telliot-examples -a bigdaddysatoshi report
 ```
 By default, the reporter will continue to attempt reporting whenever out of reporting lock. Use the `--submit-once` flag to only report once:
 ```
-telliot-examples -st staker1 report --submit-once
+telliot-examples -a staker1 report --submit-once
 ```
 
 ## Profit Flag
@@ -104,11 +107,11 @@ telliot-examples -st staker1 report --submit-once
 
 Use the profit flag (`--profit/-p`) to.. specify an expected profit. The default is 100% profit, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use the `"YOLO"` string:
 ```
-telliot-examples -st staker1 report -p YOLO
+telliot-examples -a staker1 report -p YOLO
 ```
 Normal profit flag usage:
 ```
-telliot-examples -st staker4000 report -p 2
+telliot-examples -a staker4000 report -p 2
 ```
 
 ## Gas, Fee, & Transaction Type Flags
@@ -118,7 +121,7 @@ The `--gas-price/-gp` flag is for legacy transactions, while the `--max-fee/-mf`
 
 Example usage:
 ```
-telliot-examples -st kevin report -tx 0 -gl 310000 -gp 9001 -p 22
+telliot-examples -a kevin report -tx 0 -gl 310000 -gp 9001 -p 22
 ```
 
 # Reporting on Ethereum
@@ -133,7 +136,7 @@ If you want to report without flashbots on Ethereum mainnet, use the `--no-flash
 
 Example usage:
 ```
-telliot-examples -st mainnetstaker7 -nfb report
+telliot-examples -a mainnetstaker7 -nfb report
 ```
 
 ## Using Flashbots
@@ -150,11 +153,11 @@ Reporting with Flashbots on testnet is not supported.
 
 In order to submit transactions through the [Flashbots](https://docs.flashbots.net/flashbots-auction/searchers/quick-start/) relay, you need an additional Ethereum acccount. The Flashbots organization uses this signatory account's address to identify you and build your historical reputation as a MEV ["searcher"](https://docs.flashbots.net/flashbots-auction/searchers/quick-start). This signatory account doesn't need any funds in it. Store it it as a `ChainedAccount` in the same way you would any other (see [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)).
 
-When reporting, select your signatory account by tag as well as your staked mainnet account. Use the `--staker-tag/-st` and `--signature-tag/-sgt` flags. 
+When reporting, select your signatory account by tag as well as your staked mainnet account. Use the `--account/-a` and `--signature-tag/-sgt` flags. 
 
 Example usage:
 ```
-telliot-examples -st mainnetstaker1 -sgt sigacct -fb report
+telliot-examples -a mainnetstaker1 -sgt sigacct -fb report
 ```
 
 # Reporting on Polygon
@@ -163,7 +166,7 @@ Only legacy transaction types are supported. Also, TellorFlex on Polygon has no 
 
 Example usage:
 ```
-telliot-examples -st mumbaistaker report
+telliot-examples -a mumbaistaker report
 ```
 
 ## Staking
