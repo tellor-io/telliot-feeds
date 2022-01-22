@@ -2,7 +2,7 @@
 
 **This is experimental software! You might lose money!**
 
-Prerequisites: Update configuration files: [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)
+Prerequisites: [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)
 
 To use any of the telliot datafeed and reporter examples, use the command line interface (CLI) tool. A basic example:
 ```
