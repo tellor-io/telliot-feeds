@@ -8,7 +8,6 @@ from typing import Optional
 from typing import Union
 
 import click
-from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from click.core import Context
 from eth_utils import to_checksum_address
