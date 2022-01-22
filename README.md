@@ -1,20 +1,16 @@
 # Telliot Feed Examples
 
-## Project documentation
+This package contains reporting tools and datafeeds for the TellorX and TellorFlex oracles.
 
-- [Telliot Feed Examples](https://tellor-io.github.io/telliot-feed-examples/)
+## [Project documentation](https://tellor-io.github.io/telliot-feed-examples/)
 
-## Installation and Configuration
+## [Installation and Configuration](https://tellor-io.github.io/telliot-feed-examples/getting-started/)
 
-- [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)
-
-## Usage
-
-- [Usage](https://tellor-io.github.io/telliot-feed-examples/usage/)
+## [Usage](https://tellor-io.github.io/telliot-feed-examples/usage/)
 
 ## Example
 
 Report using the CLI:
 ```
-telliot-examples -a fakename report
+telliot-examples -a fakeaccountname report
 ```
