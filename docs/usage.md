@@ -172,7 +172,7 @@ With TellorFlex on Polygon, reporters can stake multiple times. Each stake is 10
 
 The `PolygonReporter` will prompt the user to enter a desired stake amount:
 ```
-Enter blah blah
+Enter amount TRB to stake if unstaked: [10.0]:
 ```
 If the current account being used to report isn't staked, the reporter will use the CLI-entered stake amount to stake. Also, if the reporter account's actual stake is reduced after a dispute, the reporter will attempt to stake the difference in TRB to return to the original desired stake amount.
 
