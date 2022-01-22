@@ -282,18 +282,18 @@ async def report(
     try:
         if not password:
             password = getpass.getpass(f"Enter password for {name} keyfile: ")
-        acc = ChainedAccount(name)
-        acc.unlock(password)
     except ValueError:
         click.echo("Invalid Password")
 
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
+        # Choose the default account if it's not specified.
         if not account:
             account = core.get_account()
-            if not account.is_unlocked:
-                account.unlock(password)
+
+        if not account.is_unlocked:
+            account.unlock(password)
 
         using_flashbots = ctx.obj["USING_FLASHBOTS"]
         signature_tag = ctx.obj["SIGNATURE_TAG"]
