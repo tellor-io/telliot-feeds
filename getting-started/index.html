@@ -282,8 +282,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#save-account-info" class="md-nav__link">
-    Save Account Info
+  <a href="#add-reporting-accounts" class="md-nav__link">
+    Add Reporting Accounts
   </a>
   
 </li>
@@ -449,8 +449,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#save-account-info" class="md-nav__link">
-    Save Account Info
+  <a href="#add-reporting-accounts" class="md-nav__link">
+    Add Reporting Accounts
   </a>
   
 </li>
@@ -572,8 +572,21 @@ source tenv/bin/activate
 <span class="nn">...</span><span class="w"></span>
 </code></pre></div>
 Once you've specified your endpoints, what's left is to configure your account information (private keys, chain IDs, et.) using <code>chained-accounts</code>.</p>
-<h3 id="save-account-info">Save Account Info<a class="headerlink" href="#save-account-info" title="Permanent link">&para;</a></h3>
-<p>Save your encrypted private keys and account information via the command line. Instructions <a href="https://github.com/pydefi/chained-accounts">here</a>. Once finished,  read the <a href="https://tellor-io.github.io/telliot-feed-examples/usage/">Usage</a> section, then you'll be set to report.</p>
+<h3 id="add-reporting-accounts">Add Reporting Accounts<a class="headerlink" href="#add-reporting-accounts" title="Permanent link">&para;</a></h3>
+<p>The reporter needs to know which accounts are available for submitting values to the oracle.
+Use the command line to add necessary reporting accounts/private keys.</p>
+<p>For example, to add an account called <code>my-matic-acct</code> for reporting on polygon mainnet (EVM chain_id=137):</p>
+<div class="highlight"><pre><span></span><code>&gt;&gt; chained add my-matic-acct 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
+Enter encryption password for my-matic-acct: 
+Confirm password: 
+Added new account my-matic-acct (address= 0xcd19cf65af3a3aea1f44a7cb0257fc7455f245f0) for use on chains (137,)
+</code></pre></div>
+<p>Note that reporting accounts can be used for ETH mainnet (chain_id=1), Rinkeby testnet (chain_id=4), or Polygon testnet
+(chain_id=80001).  Also note that a single account/private key can be associated with multiple chains.</p>
+<p>Detailed instructions for managing EVM accounts can be found in the
+<a href="https://github.com/pydefi/chained-accounts"><code>chained_accounts</code> package documentation</a>. </p>
+<p>After configuring accounts, read the <a href="https://tellor-io.github.io/telliot-feed-examples/usage/">Usage</a> section,
+then you'll be set to report.</p>
 <h2 id="other-possible-configs">Other possible configs<a class="headerlink" href="#other-possible-configs" title="Permanent link">&para;</a></h2>
 <h3 id="ampl">AMPL<a class="headerlink" href="#ampl" title="Permanent link">&para;</a></h3>
 <p>If you'd like to report legacy AMPL values, generate default AMPL configs from the repository's home directory:
