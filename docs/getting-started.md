@@ -98,9 +98,26 @@ endpoints:
 ```
 Once you've specified your endpoints, what's left is to configure your account information (private keys, chain IDs, et.) using `chained-accounts`.
 
-### Save Account Info
+### Add Reporting Accounts
 
-Save your encrypted private keys and account information via the command line. Instructions [here](https://github.com/pydefi/chained-accounts). Once finished,  read the [Usage](https://tellor-io.github.io/telliot-feed-examples/usage/) section, then you'll be set to report.
+The reporter needs to know which accounts are available for submitting values to the oracle.
+Use the command line to add necessary reporting accounts/private keys.
+
+For example, to add an account called `my-matic-acct` for reporting on polygon mainnet (EVM chain_id=137):
+
+    >> chained add my-matic-acct 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
+    Enter encryption password for my-matic-acct: 
+    Confirm password: 
+    Added new account my-matic-acct (address= 0xcd19cf65af3a3aea1f44a7cb0257fc7455f245f0) for use on chains (137,)
+
+Note that reporting accounts can be used for ETH mainnet (chain_id=1), Rinkeby testnet (chain_id=4), or Polygon testnet
+(chain_id=80001).  Also note that a single account/private key can be associated with multiple chains.
+
+Detailed instructions for managing EVM accounts can be found in the
+[`chained_accounts` package documentation](https://github.com/pydefi/chained-accounts). 
+
+After configuring accounts, read the [Usage](https://tellor-io.github.io/telliot-feed-examples/usage/) section,
+then you'll be set to report.
 
 ## Other possible configs
 ### AMPL
