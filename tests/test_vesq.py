@@ -56,6 +56,8 @@ async def test_vsq_usd_reporter_submit_once(mumbai_cfg):
         else:
             assert not tx_receipt
             assert not status.ok
-            assert ("Currently in reporter lock." in status.error) or \
-                   ("Current addess disputed" in status.error) or \
-                   ("Unable to retrieve updated datafeed" in status.error)
+            assert (
+                ("Currently in reporter lock." in status.error)
+                or ("Current addess disputed" in status.error)
+                or ("Unable to retrieve updated datafeed" in status.error)
+            )
