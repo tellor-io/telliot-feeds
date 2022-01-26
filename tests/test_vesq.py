@@ -41,15 +41,6 @@ async def test_vsq_usd_reporter_submit_once(mumbai_cfg):
             max_fee=100,
         )
 
-        EXPECTED_ERRORS = {
-            "Current addess disputed. Switch address to continue reporting.",
-            "Current address is locked in dispute or for withdrawal.",
-            "Current address is in reporter lock.",
-            "Estimated profitability below threshold.",
-            "Estimated gas price is above maximum gas price.",
-            "Unable to retrieve updated datafeed value.",
-        }
-
         ORACLE_ADDRESSES = {
             "0xFd45Ae72E81Adaaf01cC61c8bCe016b7060DD537",  # polygon
             "0x41b66dd93b03e89D29114a7613A6f9f0d4F40178",  # mumbai
@@ -65,4 +56,6 @@ async def test_vsq_usd_reporter_submit_once(mumbai_cfg):
         else:
             assert not tx_receipt
             assert not status.ok
-            assert status.error in EXPECTED_ERRORS
+            assert ("Currently in reporter lock." in status.error) or \
+                   ("Current addess disputed" in status.error) or \
+                   ("Unable to retrieve updated datafeed" in status.error)
