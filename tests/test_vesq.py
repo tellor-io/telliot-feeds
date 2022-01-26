@@ -16,22 +16,20 @@ async def test_fetch_price():
 def test_query_info():
     q = vsq_usd_median_feed.query
     exp_id = "a21622568487d99fcdce1e75ddb12d40fecf323093ac9ee06099da27acae880c"
-    exp_data="7b2274797065223a2253706f745072696365222c226173736574223a22767371222c2263757272656e6379223a22757364227d"
+    exp_data = (
+        "7b2274797065223a2253706f745072696365222c2261737365"
+        "74223a22767371222c2263757272656e6379223a22757364227d"
+    )
 
     assert q.query_data == b'{"type":"SpotPrice","asset":"vsq","currency":"usd"}'
-    assert (
-            q.query_id.hex() == exp_id
-    )
-    assert (
-            q.query_data.hex() == exp_data
-    )
+    assert q.query_id.hex() == exp_id
+    assert q.query_data.hex() == exp_data
 
 
 @pytest.mark.asyncio
 async def test_vsq_usd_reporter_submit_once(mumbai_cfg):
     """Test reporting Vesq on mumbai."""
     async with TelliotCore(config=mumbai_cfg) as core:
-        account = core.get_account()
         flex = core.get_tellorflex_contracts()
         r = PolygonReporter(
             endpoint=core.endpoint,
@@ -40,6 +38,7 @@ async def test_vsq_usd_reporter_submit_once(mumbai_cfg):
             oracle=flex.oracle,
             token=flex.token,
             datafeed=vsq_usd_median_feed,
+            max_fee=100,
         )
 
         EXPECTED_ERRORS = {
