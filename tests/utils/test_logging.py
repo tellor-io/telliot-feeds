@@ -1,5 +1,4 @@
 import os
-from logging import Logger
 from pathlib import Path
 
 from telliot_core.utils.home import default_homedir
@@ -15,22 +14,10 @@ def test_default_logsdir() -> None:
     assert ld.exists()
 
 
-def test_get_logger() -> None:
-    """Tests instantiating a logger for the main package."""
-    logger = get_logger(__name__)
-    log_file = logger.handlers[0].baseFilename
-    expected_log_file = default_logsdir() / ("telliot-feed-examples.log")
-    expected_log_file.resolve().absolute()
-
-    assert isinstance(logger, Logger)
-    assert log_file == str(expected_log_file)
-    assert logger.name == __name__
-
-
 def test_reocurring_messages() -> None:
     """Ensure logger filters out recocurring messages"""
     logger = get_logger(__name__)
-    expected_log_file = default_logsdir() / ("telliot-feed-examples.log")
+    expected_log_file = default_logsdir() / ("telliot.log")
     expected_log_file.resolve().absolute()
     num_lines_before = 0
     with open(os.path.join(expected_log_file), "r") as f:
