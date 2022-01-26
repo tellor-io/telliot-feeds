@@ -1,6 +1,5 @@
 import logging
 import pathlib
-import sys
 from pathlib import Path
 
 from telliot_core.apps.telliot_config import TelliotConfig
