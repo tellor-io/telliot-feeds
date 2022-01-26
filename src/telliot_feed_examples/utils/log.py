@@ -44,6 +44,6 @@ def get_logger(name: str) -> logging.Logger:
     _ = get_logger(name=__name__)
     """
     logger = logging.getLogger(name)
-    # logger.addFilter(DuplicateFilter())
+    logger.addFilter(DuplicateFilter())
 
     return logger
