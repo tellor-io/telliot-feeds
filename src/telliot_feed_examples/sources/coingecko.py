@@ -20,6 +20,7 @@ coingecko_coin_id = {
     "eth": "ethereum",
     "trb": "tellor",
     "ohm": "olympus",
+    "vsq": "vesq",
 }
 
 
