@@ -1,6 +1,8 @@
+import logging
 import os
 from pathlib import Path
 
+from telliot_core.logs import init_logging
 from telliot_core.utils.home import default_homedir
 
 from telliot_feed_examples.utils.log import default_logsdir
@@ -14,9 +16,10 @@ def test_default_logsdir() -> None:
     assert ld.exists()
 
 
-def test_reocurring_messages() -> None:
-    """Ensure logger filters out recocurring messages"""
-    logger = get_logger(__name__)
+def test_recurring_messages() -> None:
+    """Ensure logger filters out recurring messages"""
+    logger = get_logger("telliot_feed_examples")
+    init_logging(logging.INFO)
     expected_log_file = default_logsdir() / ("telliot.log")
     expected_log_file.resolve().absolute()
     num_lines_before = 0
@@ -32,4 +35,4 @@ def test_reocurring_messages() -> None:
         for _ in f:
             num_lines_after += 1
 
-    assert num_lines_after - num_lines_before == 2
+    assert num_lines_after - num_lines_before == 1
