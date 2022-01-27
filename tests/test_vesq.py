@@ -6,6 +6,7 @@ from telliot_feed_examples.feeds.vesq import vsq_usd_median_feed
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 
 
+@pytest.mark.skip("Avoid coingecko rate limits")
 @pytest.mark.asyncio
 async def test_fetch_price():
     (value, ts) = await vsq_usd_median_feed.source.fetch_new_datapoint()
