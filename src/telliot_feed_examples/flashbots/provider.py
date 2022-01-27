@@ -64,6 +64,6 @@ class FlashbotProvider(HTTPProvider):
         )
         response = self.decode_rpc_response(raw_response)
         self.logger.debug(
-            f"Getting response HTTP. URI: {self.endpoint_uri}, " "Method: {method}, Response: {response}"
+            f"Getting response HTTP. URI: {self.endpoint_uri}, Method: {method}, Response: {response}"
         )
         return response
