@@ -6,6 +6,7 @@ from telliot_feed_examples.feeds.olympus import ohm_eth_median_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
 
 
+@pytest.mark.skip("Avoid coingecko rate limits")
 @pytest.mark.asyncio
 async def test_fetch_price():
     (value, _) = await ohm_eth_median_feed.source.fetch_new_datapoint()

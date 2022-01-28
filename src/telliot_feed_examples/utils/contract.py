@@ -87,7 +87,7 @@ async def write_with_retry(
                 **kwargs,
             )
 
-            logger.debug(f"Attempt {attempt} status: ", status)
+            logger.debug(f"Attempt {attempt} status: {status}")
 
             # Exit loop if transaction successful
             if status.ok and (tx_receipt is not None) and (tx_receipt["status"] == 1):
