@@ -7,6 +7,7 @@ from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.sources import uspce
 
 
+@pytest.mark.skip("Asks for psswd")
 @pytest.mark.asyncio
 async def test_uspce_interval_reporter_submit_once(rinkeby_cfg):
     """test report of uspce manual price"""

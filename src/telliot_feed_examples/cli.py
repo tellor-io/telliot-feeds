@@ -249,7 +249,7 @@ def cli(
     default="fast",
 )
 @click.option("--submit-once/--submit-continuous", default=False)
-@click.option("-p", "--password", type=str)
+@click.option("-pswd", "--password", type=str)
 @click.pass_context
 @async_run
 async def report(
