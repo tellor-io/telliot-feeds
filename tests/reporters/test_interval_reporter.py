@@ -135,6 +135,7 @@ async def test_fetch_gas_price(eth_usd_reporter):
     assert gas_price > 0
 
 
+@pytest.mark.skip("Asks for psswd")
 @pytest.mark.asyncio
 async def test_interval_reporter_submit_once(eth_usd_reporter):
     """Test reporting once to the TellorX playground on Rinkeby
@@ -171,6 +172,7 @@ async def test_interval_reporter_submit_once(eth_usd_reporter):
         assert status.error in EXPECTED_ERRORS
 
 
+@pytest.mark.skip("Asks for psswd")
 @pytest.mark.asyncio
 async def test_no_updated_value(eth_usd_reporter, bad_source):
     """Test handling for no updated value returned from datasource."""
