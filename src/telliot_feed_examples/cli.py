@@ -313,6 +313,13 @@ async def report(
             chosen_feed = CATALOG_FEEDS[query_tag]
         elif diva_option_id is not None:
             # Ensure valid chain ID
+            cid = core.config.main.chain_id
+            if cid not in POLYGON_CHAINS and cid != 3:  # Ropsten
+                click.echo(
+                    f"Current chain id ({cid}) not supported for"
+                    " reporting Diva Protocol data."
+                )
+                return
             # Generate datafeed
             chosen_feed = fetch_diva_datafeed(diva_option_id)
         else:
