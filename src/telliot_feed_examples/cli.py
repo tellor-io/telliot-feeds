@@ -21,8 +21,10 @@ from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
+from telliot_feed_examples.utils.diva_protocol import fetch_diva_datafeed
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
+
 
 logger = get_logger(__name__)
 
@@ -271,6 +273,7 @@ async def report(
     expected_profit: str,
     submit_once: bool,
     gas_price_speed: str,
+    diva_option_id: int,
     password: str,
 ) -> None:
     """Report values to Tellor oracle"""
@@ -308,6 +311,10 @@ async def report(
         # Use selected feed, or choose automatically
         if query_tag is not None:
             chosen_feed = CATALOG_FEEDS[query_tag]
+        elif diva_option_id is not None:
+            # Ensure valid chain ID
+            # Generate datafeed
+            chosen_feed = fetch_diva_datafeed(diva_option_id)
         else:
             chosen_feed = None
 
