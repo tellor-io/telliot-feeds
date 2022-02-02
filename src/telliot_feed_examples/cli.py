@@ -248,6 +248,14 @@ def cli(
     ),
     default="fast",
 )
+@click.option(
+    "--diva-option-id",
+    "-doid",
+    "diva_option_id",
+    help="option ID for Diva Protocol on Polygon",
+    nargs=1,
+    type=int,
+)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pswd", "--password", type=str)
 @click.pass_context
