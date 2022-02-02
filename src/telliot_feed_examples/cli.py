@@ -308,12 +308,13 @@ async def report(
         else:
             sig_staker_address = ""  # type: ignore
 
+        cid = core.config.main.chain_id
+
         # Use selected feed, or choose automatically
         if query_tag is not None:
             chosen_feed = CATALOG_FEEDS[query_tag]
         elif diva_option_id is not None:
             # Ensure valid chain ID
-            cid = core.config.main.chain_id
             if cid not in POLYGON_CHAINS and cid != 3:  # Ropsten
                 click.echo(
                     f"Current chain id ({cid}) not supported for"
@@ -335,7 +336,7 @@ async def report(
             priority_fee=priority_fee,
             legacy_gas_price=legacy_gas_price,
             expected_profit=expected_profit,
-            chain_id=core.config.main.chain_id,
+            chain_id=cid,
             gas_price_speed=gas_price_speed,
         )
 
@@ -351,11 +352,11 @@ async def report(
             "priority_fee": priority_fee,
             "legacy_gas_price": legacy_gas_price,
             "gas_price_speed": gas_price_speed,
-            "chain_id": core.config.main.chain_id,
+            "chain_id": cid,
         }
 
         # Report to Polygon TellorFlex
-        if core.config.main.chain_id in POLYGON_CHAINS:
+        if core.config.main.chain_id in POLYGON_CHAINS or cid == 3:
             stake = get_stake_amount()
 
             tellorflex = core.get_tellorflex_contracts()
