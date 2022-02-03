@@ -251,10 +251,10 @@ def cli(
     default="fast",
 )
 @click.option(
-    "--diva-option-id",
-    "-doid",
-    "diva_option_id",
-    help="option ID for Diva Protocol on Polygon",
+    "--pool-id",
+    "-pid",
+    "diva_pool_id",
+    help="pool ID for Diva Protocol on Polygon",
     nargs=1,
     type=int,
 )
@@ -273,7 +273,7 @@ async def report(
     expected_profit: str,
     submit_once: bool,
     gas_price_speed: str,
-    diva_option_id: int,
+    diva_pool_id: int,
     password: str,
 ) -> None:
     """Report values to Tellor oracle"""
@@ -313,7 +313,7 @@ async def report(
         # Use selected feed, or choose automatically
         if query_tag is not None:
             chosen_feed = CATALOG_FEEDS[query_tag]
-        elif diva_option_id is not None:
+        elif diva_pool_id is not None:
             # Ensure valid chain ID
             if cid not in POLYGON_CHAINS and cid != 3:  # Ropsten
                 click.echo(
@@ -322,7 +322,7 @@ async def report(
                 )
                 return
             # Generate datafeed
-            chosen_feed = fetch_diva_datafeed(diva_option_id)
+            chosen_feed = fetch_diva_datafeed(diva_pool_id)
         else:
             chosen_feed = None
 

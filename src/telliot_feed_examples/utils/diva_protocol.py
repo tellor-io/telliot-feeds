@@ -12,11 +12,11 @@ DATAFEED_LOOKUP = {
 }
 
 
-def fetch_diva_datafeed(option_id: int) -> DataFeed[float]:
+def fetch_diva_datafeed(pool_id: int) -> DataFeed[float]:
     """Returns datafeed using user input option ID and corresponding
     asset information."""
-    # TODO get asset from diva based on option_id
+    # TODO get asset from diva based on pool_id
     asset = "ETH/USD"
     feed = DATAFEED_LOOKUP[asset]
-    feed.query = divaProtocolPolygon(option_id)
+    feed.query = divaProtocolPolygon(pool_id)
     return feed
