@@ -21,7 +21,7 @@ from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
-from telliot_feed_examples.utils.diva_protocol import fetch_diva_datafeed
+from telliot_feed_examples.utils.diva_protocol import assemble_diva_datafeed
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
@@ -322,7 +322,9 @@ async def report(
                 )
                 return
             # Generate datafeed
-            chosen_feed = fetch_diva_datafeed(diva_pool_id)
+            chosen_feed = await assemble_diva_datafeed(
+                pool_id=diva_pool_id, node=core.endpoint, account=account
+            )
         else:
             chosen_feed = None
 
