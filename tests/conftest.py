@@ -68,6 +68,35 @@ def mumbai_cfg():
     return cfg
 
 
+@pytest.fixture(scope="session", autouse=True)
+def ropsten_cfg():
+    """Return a test telliot configuration for use on polygon-mumbai
+
+    If environment variables are defined, they will override the values in config files
+    """
+    cfg = TelliotConfig()
+
+    # Override configuration for ropsten testnet
+    cfg.main.chain_id = 3
+
+    endpt = cfg.get_endpoint()
+    if "INFURA_API_KEY" in endpt.url:
+        endpt.url = f'wss://ropsten.infura.io/ws/v3/{os.environ["INFURA_API_KEY"]}'
+
+    accounts = find_accounts(chain_id=3)
+    if not accounts:
+        # Create a test account using PRIVATE_KEY defined on github.
+        key = os.getenv("PRIVATE_KEY", None)
+        if key:
+            ChainedAccount.add(
+                "git-ropsten-key", chains=3, key=os.environ["PRIVATE_KEY"], password=""
+            )
+        else:
+            raise Exception("Need a mumbai account")
+
+    return cfg
+
+
 @pytest.fixture(scope="session")
 def bad_source():
     """Used for testing no updated value for datafeeds."""

@@ -15,14 +15,17 @@ from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import async_run
 from telliot_core.cli.utils import cli_core
 from telliot_core.data.query_catalog import query_catalog
+from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 from telliot_core.utils.key_helpers import lazy_key_getter
 
 from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
+from telliot_feed_examples.utils.diva_protocol import assemble_diva_datafeed
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
+
 
 logger = get_logger(__name__)
 
@@ -59,6 +62,17 @@ def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
         except ValueError:
             click.echo("Not a valid profit input. Enter float or the string, 'YOLO'")
             return None
+
+
+def valid_diva_chain(chain_id: int) -> bool:
+    """Ensure given chain ID supports reporting Diva Protocol data."""
+    if chain_id not in POLYGON_CHAINS and chain_id != 3:  # Ropsten
+        print(
+            f"Current chain id ({chain_id}) not supported for"
+            " reporting Diva Protocol data."
+        )
+        return False
+    return True
 
 
 def print_reporter_settings(
@@ -248,6 +262,14 @@ def cli(
     ),
     default="fast",
 )
+@click.option(
+    "--pool-id",
+    "-pid",
+    "diva_pool_id",
+    help="pool ID for Diva Protocol on Polygon",
+    nargs=1,
+    type=int,
+)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pswd", "--password", type=str)
 @click.pass_context
@@ -263,6 +285,7 @@ async def report(
     expected_profit: str,
     submit_once: bool,
     gas_price_speed: str,
+    diva_pool_id: int,
     password: str,
 ) -> None:
     """Report values to Tellor oracle"""
@@ -297,9 +320,18 @@ async def report(
         else:
             sig_staker_address = ""  # type: ignore
 
+        cid = core.config.main.chain_id
+
         # Use selected feed, or choose automatically
         if query_tag is not None:
             chosen_feed = CATALOG_FEEDS[query_tag]
+        elif diva_pool_id is not None:
+            if not valid_diva_chain(chain_id=cid):
+                return
+            # Generate datafeed
+            chosen_feed = await assemble_diva_datafeed(
+                pool_id=diva_pool_id, node=core.endpoint, account=account
+            )
         else:
             chosen_feed = None
 
@@ -313,7 +345,7 @@ async def report(
             priority_fee=priority_fee,
             legacy_gas_price=legacy_gas_price,
             expected_profit=expected_profit,
-            chain_id=core.config.main.chain_id,
+            chain_id=cid,
             gas_price_speed=gas_price_speed,
         )
 
@@ -329,11 +361,11 @@ async def report(
             "priority_fee": priority_fee,
             "legacy_gas_price": legacy_gas_price,
             "gas_price_speed": gas_price_speed,
-            "chain_id": core.config.main.chain_id,
+            "chain_id": cid,
         }
 
         # Report to Polygon TellorFlex
-        if core.config.main.chain_id in POLYGON_CHAINS:
+        if core.config.main.chain_id in POLYGON_CHAINS or cid == 3:
             stake = get_stake_amount()
 
             tellorflex = core.get_tellorflex_contracts()
@@ -423,6 +455,64 @@ async def tip(
             logger.info(f"View tip: \n{core.endpoint.explorer}/tx/{tx_hash}")
         else:
             logger.error(status)
+
+
+@cli.command()
+@click.option(
+    "--pool-id",
+    "-pid",
+    "pool_id",
+    help="pool ID for Diva Protocol on Polygon",
+    nargs=1,
+    type=int,
+    required=True,
+)
+@click.option(
+    "--gas-price",
+    "-gp",
+    "legacy_gas_price",
+    help="use custom legacy gasPrice (gwei)",
+    nargs=1,
+    type=int,
+    required=False,
+)
+@click.option("-pswd", "--password", type=str)
+@click.pass_context
+@async_run
+async def settle(
+    ctx: Context,
+    pool_id: int,
+    password: str,
+    legacy_gas_price: int = 100,
+) -> None:
+    """Settle a derivative pool in DIVA Protocol."""
+
+    name = ctx.obj["ACCOUNT_NAME"]
+    try:
+        if not password:
+            password = getpass.getpass(f"Enter password for {name} keyfile: ")
+    except ValueError:
+        click.echo("Invalid Password")
+
+    # Initialize telliot core app using CLI context
+    async with reporter_cli_core(ctx) as core:
+
+        # Make sure current account is unlocked
+        account = core.get_account()
+        if not account.is_unlocked:
+            account.unlock(password)
+
+        cid = core.config.main.chain_id
+        if not valid_diva_chain(chain_id=cid):
+            return
+
+        oracle = DivaOracleTellorContract(core.endpoint, account)
+        oracle.connect()
+
+        status = await oracle.set_final_reference_value(
+            pool_id=pool_id, legacy_gas_price=legacy_gas_price
+        )
+        assert status.ok
 
 
 if __name__ == "__main__":

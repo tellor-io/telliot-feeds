@@ -10,6 +10,7 @@ from click.testing import CliRunner
 from telliot_feed_examples.cli import cli
 from telliot_feed_examples.cli import get_stake_amount
 from telliot_feed_examples.cli import parse_profit_input
+from telliot_feed_examples.cli import valid_diva_chain
 
 
 def test_parse_profit_input():
@@ -73,6 +74,12 @@ def test_custom_gas_flag():
     assert expected in result.output
 
 
+def test_diva_protocol_invalid_chain():
+    valid = valid_diva_chain(chain_id=1)
+
+    assert not valid
+
+
 def test_cmd_tip():
     """Test CLI tip command"""
     runner = CliRunner()
@@ -94,3 +101,13 @@ def test_get_stake_amount(monkeypatch):
     with pytest.raises(Abort):
         monkeypatch.setattr("sys.stdin", StringIO("asdf\n"))
         _ = get_stake_amount()
+
+
+def test_cmd_settle():
+    """Test CLI settle DIVA pool command"""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--test_config", "settle", "--pool-id", "a;lsdkfj;ak"])
+
+    expected = "Invalid value"
+
+    assert expected in result.output

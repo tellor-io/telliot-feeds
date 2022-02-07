@@ -19,6 +19,7 @@ jobs:
       TEST_SECRET: ${{ secrets.TEST_SECRET }}
       RAPID_KEY: ${{ secrets.TEST_RAPID_KEY }}
       ANYBLOCK_KEY: ${{ secrets.TEST_ANYBLOCK_KEY }}
+      INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
 
     strategy:
       matrix:
