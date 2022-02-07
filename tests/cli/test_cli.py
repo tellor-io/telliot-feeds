@@ -73,6 +73,15 @@ def test_custom_gas_flag():
     assert expected in result.output
 
 
+def test_diva_protocol_invalid_chain():
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--test_config", "report", "-pid", "100"])
+
+    expected = "Current chain id (4) not supported for reporting Diva Protocol data."
+
+    assert expected in result.output
+
+
 def test_cmd_tip():
     """Test CLI tip command"""
     runner = CliRunner()
