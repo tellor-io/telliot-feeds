@@ -63,6 +63,17 @@ def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
             return None
 
 
+def valid_diva_chain(chain_id: int) -> bool:
+    """Ensure given chain ID supports reporting Diva Protocol data."""
+    if chain_id not in POLYGON_CHAINS and chain_id != 3:  # Ropsten
+        print(
+            f"Current chain id ({chain_id}) not supported for"
+            " reporting Diva Protocol data."
+        )
+        return False
+    return True
+
+
 def print_reporter_settings(
     using_flashbots: bool,
     signature_address: str,
@@ -314,12 +325,7 @@ async def report(
         if query_tag is not None:
             chosen_feed = CATALOG_FEEDS[query_tag]
         elif diva_pool_id is not None:
-            # Ensure valid chain ID
-            if cid not in POLYGON_CHAINS and cid != 3:  # Ropsten
-                click.echo(
-                    f"Current chain id ({cid}) not supported for"
-                    " reporting Diva Protocol data."
-                )
+            if not valid_diva_chain(chain_id=cid):
                 return
             # Generate datafeed
             chosen_feed = await assemble_diva_datafeed(

@@ -10,6 +10,7 @@ from click.testing import CliRunner
 from telliot_feed_examples.cli import cli
 from telliot_feed_examples.cli import get_stake_amount
 from telliot_feed_examples.cli import parse_profit_input
+from telliot_feed_examples.cli import valid_diva_chain
 
 
 def test_parse_profit_input():
@@ -74,12 +75,9 @@ def test_custom_gas_flag():
 
 
 def test_diva_protocol_invalid_chain():
-    runner = CliRunner()
-    result = runner.invoke(cli, ["--test_config", "report", "-pid", "100"])
+    valid = valid_diva_chain(chain_id=1)
 
-    expected = "Current chain id (4) not supported for reporting Diva Protocol data."
-
-    assert expected in result.output
+    assert not valid
 
 
 def test_cmd_tip():
