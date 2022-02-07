@@ -101,3 +101,13 @@ def test_get_stake_amount(monkeypatch):
     with pytest.raises(Abort):
         monkeypatch.setattr("sys.stdin", StringIO("asdf\n"))
         _ = get_stake_amount()
+
+
+def test_cmd_settle():
+    """Test CLI settle DIVA pool command"""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--test_config", "settle", "--pool-id", "a;lsdkfj;ak"])
+
+    expected = "Invalid value"
+
+    assert expected in result.output

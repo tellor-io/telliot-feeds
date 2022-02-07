@@ -15,6 +15,7 @@ from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import async_run
 from telliot_core.cli.utils import cli_core
 from telliot_core.data.query_catalog import query_catalog
+from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 from telliot_core.utils.key_helpers import lazy_key_getter
 
 from telliot_feed_examples.feeds import CATALOG_FEEDS
@@ -454,6 +455,64 @@ async def tip(
             logger.info(f"View tip: \n{core.endpoint.explorer}/tx/{tx_hash}")
         else:
             logger.error(status)
+
+
+@cli.command()
+@click.option(
+    "--pool-id",
+    "-pid",
+    "pool_id",
+    help="pool ID for Diva Protocol on Polygon",
+    nargs=1,
+    type=int,
+    required=True,
+)
+@click.option(
+    "--gas-price",
+    "-gp",
+    "legacy_gas_price",
+    help="use custom legacy gasPrice (gwei)",
+    nargs=1,
+    type=int,
+    required=False,
+)
+@click.option("-pswd", "--password", type=str)
+@click.pass_context
+@async_run
+async def settle(
+    ctx: Context,
+    pool_id: int,
+    legacy_gas_price: int,
+    password: str,
+) -> None:
+    """Settle a derivative pool in DIVA Protocol."""
+
+    name = ctx.obj["ACCOUNT_NAME"]
+    try:
+        if not password:
+            password = getpass.getpass(f"Enter password for {name} keyfile: ")
+    except ValueError:
+        click.echo("Invalid Password")
+
+    # Initialize telliot core app using CLI context
+    async with reporter_cli_core(ctx) as core:
+
+        # Make sure current account is unlocked
+        account = core.get_account()
+        if not account.is_unlocked:
+            account.unlock(password)
+
+        cid = core.config.main.chain_id
+        if not valid_diva_chain(chain_id=cid):
+            return
+
+        oracle = DivaOracleTellorContract(core.endpoint, account)
+        oracle.connect()
+
+        status = await oracle.set_final_reference_value(
+            pool_id=pool_id, legacy_gas_price=legacy_gas_price
+        )
+        assert status.ok
 
 
 if __name__ == "__main__":
