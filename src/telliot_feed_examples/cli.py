@@ -482,8 +482,8 @@ async def tip(
 async def settle(
     ctx: Context,
     pool_id: int,
-    legacy_gas_price: int,
     password: str,
+    legacy_gas_price: int = 100,
 ) -> None:
     """Settle a derivative pool in DIVA Protocol."""
 
