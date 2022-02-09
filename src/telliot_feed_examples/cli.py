@@ -29,7 +29,8 @@ from telliot_feed_examples.utils.oracle_write import tip_query
 
 logger = get_logger(__name__)
 
-POLYGON_CHAINS = (137, 80001)
+TELLOR_FLEX_CHAINS = (137, 80001, 3, 122)
+DIVA_PROTOCOL_CHAINS = (137, 80001, 3)
 
 
 def get_stake_amount() -> float:
@@ -66,7 +67,7 @@ def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
 
 def valid_diva_chain(chain_id: int) -> bool:
     """Ensure given chain ID supports reporting Diva Protocol data."""
-    if chain_id not in POLYGON_CHAINS and chain_id != 3:  # Ropsten
+    if chain_id not in DIVA_PROTOCOL_CHAINS:
         print(
             f"Current chain id ({chain_id}) not supported for"
             " reporting Diva Protocol data."
@@ -365,7 +366,7 @@ async def report(
         }
 
         # Report to Polygon TellorFlex
-        if core.config.main.chain_id in POLYGON_CHAINS or cid == 3:
+        if core.config.main.chain_id in TELLOR_FLEX_CHAINS:
             stake = get_stake_amount()
 
             tellorflex = core.get_tellorflex_contracts()
