@@ -9,7 +9,6 @@ from telliot_core.datasource import DataSource
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 
 
-@pytest.mark.skip("Run locally, github action testing failure")
 @pytest.fixture(scope="session", autouse=True)
 def rinkeby_cfg():
     """Get rinkeby endpoint from config

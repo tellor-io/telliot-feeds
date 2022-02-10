@@ -6,7 +6,7 @@ from telliot_feed_examples.feeds.bct_usd_feed import bct_usd_median_feed
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 
 
-# @pytest.mark.skip("Asks for password")
+@pytest.mark.skip("Run locally, github action testing failure")
 @pytest.mark.asyncio
 async def test_bct_usd_reporter_submit_once(mumbai_cfg):
     """Test reporting bct/usd on mumbai."""
