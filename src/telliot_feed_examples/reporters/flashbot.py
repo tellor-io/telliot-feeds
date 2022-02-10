@@ -5,9 +5,12 @@ Example of a subclassed Reporter.
 from typing import Any
 from typing import Optional
 from typing import Tuple
+from typing import Union
 
+from chained_accounts import ChainedAccount
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
+from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
@@ -33,13 +36,13 @@ class FlashbotsReporter(IntervalReporter):
     def __init__(
         self,
         endpoint: RPCEndpoint,
-        private_key: str,
-        signature_private_key: str,
+        account: ChainedAccount,
+        signature_account: ChainedAccount,
         chain_id: int,
         master: Contract,
         oracle: Contract,
         datafeed: Optional[DataFeed[Any]] = None,
-        expected_profit: float = 100.0,
+        expected_profit: Union[str, float] = 100.0,
         transaction_type: int = 0,
         gas_limit: int = 350000,
         max_fee: Optional[int] = None,
@@ -49,11 +52,14 @@ class FlashbotsReporter(IntervalReporter):
     ) -> None:
 
         self.endpoint = endpoint
+        self.account: LocalAccount = Account.from_key(account.key)
+        self.signature_account: LocalAccount = Account.from_key(signature_account.key)
         self.master = master
         self.oracle = oracle
         self.datafeed = datafeed
         self.chain_id = chain_id
-        self.user = self.endpoint.web3.eth.account.from_key(private_key).address
+        self.acct_addr = to_checksum_address(account.address)
+        self.sig_acct_addr = to_checksum_address(signature_account.address)
         self.last_submission_timestamp = 0
         self.expected_profit = expected_profit
         self.transaction_type = transaction_type
@@ -63,20 +69,12 @@ class FlashbotsReporter(IntervalReporter):
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
 
-        logger.info(f"Reporting with account: {self.user}")
-
-        # Set up flashbots
-        self.account: LocalAccount = Account.from_key(private_key)
-        self.signature: LocalAccount = Account.from_key(signature_private_key)
-
-        logger.info(f"Signature address: {self.signature.address}")
-
-        assert self.signature is not None
-        assert self.user == self.account.address
+        logger.info(f"Reporting with account: {self.acct_addr}")
+        logger.info(f"Signature address: {self.sig_acct_addr}")
 
         flashbots_uri = get_default_endpoint()
         logger.info(f"Flashbots provider endpoint: {flashbots_uri}")
-        flashbot(self.endpoint._web3, self.signature, flashbots_uri)
+        flashbot(self.endpoint._web3, self.signature_account, flashbots_uri)
 
     async def report_once(
         self,
@@ -142,7 +140,7 @@ class FlashbotsReporter(IntervalReporter):
             _nonce=timestamp_count,
             _queryData=query_data,
         )
-        acc_nonce = self.endpoint._web3.eth.get_transaction_count(self.account.address)
+        acc_nonce = self.endpoint._web3.eth.get_transaction_count(self.acct_addr)
 
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:

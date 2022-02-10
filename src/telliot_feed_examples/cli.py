@@ -16,7 +16,6 @@ from telliot_core.cli.utils import async_run
 from telliot_core.cli.utils import cli_core
 from telliot_core.data.query_catalog import query_catalog
 from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
-from telliot_core.utils.key_helpers import lazy_key_getter
 
 from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
@@ -77,7 +76,6 @@ def valid_diva_chain(chain_id: int) -> bool:
 
 
 def print_reporter_settings(
-    using_flashbots: bool,
     signature_address: str,
     query_tag: str,
     gas_limit: int,
@@ -92,7 +90,7 @@ def print_reporter_settings(
     """Print user settings to console."""
     click.echo("")
 
-    if using_flashbots:
+    if signature_address != "":
         click.echo("⚡🤖⚡ Reporting through Flashbots relay ⚡🤖⚡")
         click.echo(f"Signature account: {signature_address}")
 
@@ -123,7 +121,7 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     core = cli_core(ctx)
 
     # Ensure chain id compatible with flashbots relay
-    if ctx.obj["USING_FLASHBOTS"]:
+    if ctx.obj["SIGNATURE_ACCOUNT_NAME"] is not None:
         # Only supports mainnet
         assert core.config.main.chain_id == 1
 
@@ -144,20 +142,13 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     type=str,
 )
 @click.option(
-    "--signature-tag",
-    "-sgt",
-    "signature_tag",
-    help="use specific signature account by tag",
+    "--signature-account",
+    "-sa",
+    "signature_account",
+    help="Name of signature account used for reporting with Flashbots.",
     required=False,
     nargs=1,
     type=str,
-)
-@click.option(
-    "--flashbots/--no-flashbots",
-    "-fb/-nfb",
-    "using_flashbots",
-    type=bool,
-    default=False,
 )
 @click.option(
     "--test_config",
@@ -168,15 +159,13 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
 def cli(
     ctx: Context,
     account: str,
-    signature_tag: str,
-    using_flashbots: bool,
+    signature_account: str,
     test_config: bool,
 ) -> None:
     """Telliot command line interface"""
     ctx.ensure_object(dict)
     ctx.obj["ACCOUNT_NAME"] = account
-    ctx.obj["SIGNATURE_TAG"] = signature_tag
-    ctx.obj["USING_FLASHBOTS"] = using_flashbots
+    ctx.obj["SIGNATURE_ACCOUNT_NAME"] = signature_account
     ctx.obj["TEST_CONFIG"] = test_config
 
     # Pull chain from account
@@ -272,7 +261,8 @@ def cli(
     type=int,
 )
 @click.option("--submit-once/--submit-continuous", default=False)
-@click.option("-pswd", "--password", type=str)
+@click.option("-pwd", "--password", type=str)
+@click.option("-spwd", "--signature-password", type=str)
 @click.pass_context
 @async_run
 async def report(
@@ -288,6 +278,7 @@ async def report(
     gas_price_speed: str,
     diva_pool_id: int,
     password: str,
+    signature_password: str,
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
@@ -298,12 +289,22 @@ async def report(
     assert tx_type in (0, 2)
 
     name = ctx.obj["ACCOUNT_NAME"]
+    sig_acct_name = ctx.obj["SIGNATURE_ACCOUNT_NAME"]
 
     try:
         if not password:
             password = getpass.getpass(f"Enter password for {name} keyfile: ")
     except ValueError:
         click.echo("Invalid Password")
+
+    if sig_acct_name is not None:
+        try:
+            if not signature_password:
+                signature_password = getpass.getpass(
+                    f"Enter password for {sig_acct_name} keyfile: "
+                )
+        except ValueError:
+            click.echo("Invalid Password")
 
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
@@ -313,13 +314,13 @@ async def report(
         if not account.is_unlocked:
             account.unlock(password)
 
-        using_flashbots = ctx.obj["USING_FLASHBOTS"]
-        signature_tag = ctx.obj["SIGNATURE_TAG"]
-        if signature_tag is not None:
-            sig_account = find_accounts(name=signature_tag)[0]
-            sig_staker_address = to_checksum_address(sig_account.address)
+        if sig_acct_name is not None:
+            sig_account = find_accounts(name=sig_acct_name)[0]
+            if not sig_account.is_unlocked:
+                sig_account.unlock(password)
+            sig_acct_addr = to_checksum_address(sig_account.address)
         else:
-            sig_staker_address = ""  # type: ignore
+            sig_acct_addr = ""  # type: ignore
 
         cid = core.config.main.chain_id
 
@@ -337,8 +338,7 @@ async def report(
             chosen_feed = None
 
         print_reporter_settings(
-            using_flashbots=using_flashbots,
-            signature_address=sig_staker_address,
+            signature_address=sig_acct_addr,
             query_tag=query_tag,
             transaction_type=tx_type,
             gas_limit=gas_limit,
@@ -390,10 +390,10 @@ async def report(
                 **common_reporter_kwargs,
             }
 
-            if using_flashbots:
+            if sig_acct_addr != "":
                 reporter = FlashbotsReporter(
                     **tellorx_reporter_kwargs,
-                    signature_private_key=lazy_key_getter(sig_account),
+                    signature_account=sig_account,
                 )  # type: ignore
             else:
                 reporter = IntervalReporter(**tellorx_reporter_kwargs)  # type: ignore
