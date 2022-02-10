@@ -53,11 +53,12 @@ class IntervalReporter:
     ) -> None:
 
         self.endpoint = endpoint
+        self.account = account
         self.master = master
         self.oracle = oracle
         self.datafeed = datafeed
         self.chain_id = chain_id
-        self.user = to_checksum_address(account.address)
+        self.acct_addr = to_checksum_address(account.address)
         self.last_submission_timestamp = 0
         self.expected_profit = expected_profit
         self.transaction_type = transaction_type
@@ -67,11 +68,7 @@ class IntervalReporter:
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
 
-        logger.info(f"Reporting with account: {self.user}")
-
-        self.account = account
-
-        assert self.user == to_checksum_address(self.account.address)
+        logger.info(f"Reporting with account: {self.acct_addr}")
 
     async def check_reporter_lock(self) -> ResponseStatus:
         """Ensure enough time has passed since last report
@@ -83,7 +80,7 @@ class IntervalReporter:
         # Save last submission timestamp to reduce web3 calls
         if self.last_submission_timestamp == 0:
             last_timestamp, read_status = await self.oracle.read(
-                "getReporterLastTimestamp", _reporter=self.user
+                "getReporterLastTimestamp", _reporter=self.acct_addr
             )
 
             # Log web3 errors
@@ -122,7 +119,7 @@ class IntervalReporter:
         gas_price_gwei = await self.fetch_gas_price()
 
         staker_info, read_status = await self.master.read(
-            func_name="getStakerInfo", _staker=self.user
+            func_name="getStakerInfo", _staker=self.acct_addr
         )
 
         if (not read_status.ok) or (staker_info is None):
@@ -155,7 +152,7 @@ class IntervalReporter:
                 msg = (
                     "Unable to stake deposit: "
                     + write_status.error
-                    + f"Make sure {self.user} has enough ETH & TRB (100)"
+                    + f"Make sure {self.acct_addr} has enough ETH & TRB (100)"
                 )  # error won't be none # noqa: E501
                 return False, error_status(msg, log=logger.info)
 

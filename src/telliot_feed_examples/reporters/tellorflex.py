@@ -50,7 +50,7 @@ class PolygonReporter(IntervalReporter):
         self.stake = stake
         self.datafeed = datafeed
         self.chain_id = chain_id
-        self.user = to_checksum_address(account.address)
+        self.acct_addr = to_checksum_address(account.address)
         self.last_submission_timestamp = 0
         self.expected_profit = expected_profit
         self.transaction_type = transaction_type
@@ -60,10 +60,10 @@ class PolygonReporter(IntervalReporter):
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
 
-        logger.info(f"Reporting with account: {self.user}")
+        logger.info(f"Reporting with account: {self.acct_addr}")
 
         self.account: ChainedAccount = account
-        assert self.user == to_checksum_address(self.account.address)
+        assert self.acct_addr == to_checksum_address(self.account.address)
 
     async def ensure_profitable(
         self,
@@ -86,7 +86,7 @@ class PolygonReporter(IntervalReporter):
         staked. If the address is not initially, it attempts to deposit
         the given stake amount."""
         staker_info, read_status = await self.oracle.read(
-            func_name="getStakerInfo", _staker=self.user
+            func_name="getStakerInfo", _staker=self.acct_addr
         )
 
         if (not read_status.ok) or (staker_info is None):
@@ -143,7 +143,7 @@ class PolygonReporter(IntervalReporter):
                 msg = (
                     "Unable to stake deposit: "
                     + write_status.error
-                    + f"Make sure {self.user} has enough MATIC & TRB (10)"
+                    + f"Make sure {self.acct_addr} has enough MATIC & TRB (10)"
                 )  # error won't be none # noqa: E501
                 return False, error_status(msg, log=logger.error)
 
@@ -162,7 +162,7 @@ class PolygonReporter(IntervalReporter):
         Returns bool signifying whether a given address is in a
         reporter lock or not."""
         staker_info, read_status = await self.oracle.read(
-            func_name="getStakerInfo", _staker=self.user
+            func_name="getStakerInfo", _staker=self.acct_addr
         )
 
         if (not read_status.ok) or (staker_info is None):
