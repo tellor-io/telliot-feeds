@@ -13,6 +13,9 @@ from telliot_feed_examples.utils.log import get_logger
 logger = get_logger(__name__)
 
 
+# Check supported assets here: https://api.exchange.coinbase.com/products
+
+
 class CoinbasePriceService(WebPriceService):
     """Coinbase Price Service"""
 

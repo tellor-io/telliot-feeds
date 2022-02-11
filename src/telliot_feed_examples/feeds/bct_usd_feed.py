@@ -10,6 +10,8 @@ bct_usd_median_feed = DataFeed(
         asset="bct",
         currency="usd",
         algorithm="median",
-        sources=[CoinGeckoPriceSource(asset="bct", currency="usd")],
+        sources=[
+            CoinGeckoPriceSource(asset="bct", currency="usd"),
+        ],
     ),
 )
