@@ -6,7 +6,7 @@ from telliot_feed_examples.feeds.dai_usd_feed import dai_usd_median_feed
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 
 
-# @pytest.mark.skip("Run locally, github action testing failure")
+@pytest.mark.skip("Run locally, github action testing failure")
 @pytest.mark.asyncio
 async def test_dai_usd_reporter_submit_once(mumbai_cfg):
     """Test reporting bct/usd on mumbai."""
