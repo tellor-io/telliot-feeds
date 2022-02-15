@@ -18,6 +18,7 @@ logger = get_logger(__name__)
 coingecko_coin_id = {
     "bct": "toucan-protocol-base-carbon-tonne",
     "btc": "bitcoin",
+    "dai": "dai",
     "eth": "ethereum",
     "trb": "tellor",
     "ohm": "olympus",
