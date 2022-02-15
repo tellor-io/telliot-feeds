@@ -14,7 +14,7 @@ from telliot_feed_examples.utils.log import get_logger
 logger = get_logger(__name__)
 
 # Hardcoded supported assets & currencies
-binance_assets = {"ETH"}
+binance_assets = {"ETH", "DAI"}
 binance_currencies = {"USDT", "USDC"}
 
 
