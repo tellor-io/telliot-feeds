@@ -1,5 +1,6 @@
-from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_core.data.query_catalog import query_catalog
+
+from telliot_feed_examples.feeds import CATALOG_FEEDS
 
 
 def test_supports_all_active_queries():
