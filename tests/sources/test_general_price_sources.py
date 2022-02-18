@@ -9,12 +9,14 @@ from telliot_feed_examples.sources.bittrex import BittrexPriceService
 from telliot_feed_examples.sources.coinbase import CoinbasePriceService
 from telliot_feed_examples.sources.coingecko import CoinGeckoPriceService
 from telliot_feed_examples.sources.gemini import GeminiPriceService
+from telliot_feed_examples.sources.nomics import NomicsPriceService
 
 service = {
     "coinbase": CoinbasePriceService(),
     "coingecko": CoinGeckoPriceService(),
     "bittrex": BittrexPriceService(),
     "gemini": GeminiPriceService(),
+    "nomics": NomicsPriceService(),
 }
 
 
@@ -45,6 +47,13 @@ async def test_coinbase():
 async def test_coingecko():
     """Test retrieving from Coingecko price source."""
     v, t = await get_price("btc", "usd", service["coingecko"])
+    validate_price(v, t)
+
+
+@pytest.mark.asyncio
+async def test_nomics():
+    """Test retrieving from Coinbase price source."""
+    v, t = await get_price("btc", "usd", service["nomics"])
     validate_price(v, t)
 
 
