@@ -2,13 +2,13 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 from urllib.parse import urlencode
-from telliot_core.dtypes.datapoint import datetime_now_utc
 
+from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_service import WebPriceService
 from telliot_core.pricing.price_source import PriceSource
-from telliot_feed_examples.config.nomics import NomicsConfig
 
+from telliot_feed_examples.config.nomics import NomicsConfig
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -47,14 +47,20 @@ class NomicsPriceService(WebPriceService):
         if not coin_id:
             raise Exception("Asset not supported: {}".format(asset))
 
-        url_params = urlencode({
-            "key": apikey, "ids": coin_id.upper(), "interval": "1d", "convert": currency})
+        url_params = urlencode(
+            {
+                "key": apikey,
+                "ids": coin_id.upper(),
+                "interval": "1d",
+                "convert": currency,
+            }
+        )
         request_url = "/v1/currencies/ticker?{}".format(url_params)
 
         d = self.get_url(request_url)
 
         if "error" in d:
-            logger.error(d['exception'].args[1])
+            logger.error(d["exception"].args[1])
             return None, None
 
         elif "response" in d:
@@ -76,6 +82,4 @@ class NomicsPriceService(WebPriceService):
 class NomicsPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: NomicsPriceService = field(
-        default_factory=NomicsPriceService, init=False
-    )
+    service: NomicsPriceService = field(default_factory=NomicsPriceService, init=False)
