@@ -8,7 +8,7 @@ from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_service import WebPriceService
 from telliot_core.pricing.price_source import PriceSource
 
-from telliot_feed_examples.config.nomics import NomicsConfig
+from telliot_feed_examples.config.ampl import AMPLConfig
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -21,7 +21,7 @@ nomics_coin_id = {
     "btc": "BTC",
 }
 
-c = NomicsConfig()
+c = AMPLConfig()
 apikey = c.main.nomics_api_key
 
 
@@ -39,6 +39,10 @@ class NomicsPriceService(WebPriceService):
         This implementation gets the price from the Nomics API
 
         """
+
+        if apikey == "":
+            logger.warn("To use the nomics source, add nomics api key to ampl.yaml")
+            return None, None
 
         asset = asset.lower()
         currency = currency.upper()
