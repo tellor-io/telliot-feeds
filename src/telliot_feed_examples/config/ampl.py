@@ -20,6 +20,9 @@ class AMPLConfigOptions(ConfigOptions):
     # Access key for BraveNewCoin / Rapid api
     rapid_api_key: str = ""
 
+    # Access key for BraveNewCoin / Rapid api
+    nomics_api_key: str = ""
+
 
 @dataclass
 class AMPLConfig(Base):
