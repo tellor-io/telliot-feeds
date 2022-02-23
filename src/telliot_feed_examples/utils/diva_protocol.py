@@ -10,6 +10,7 @@ from telliot_core.tellor.tellorflex.diva import DivaProtocolContract
 
 from telliot_feed_examples.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feed_examples.sources.diva_protocol import DivaManualSource
 
 
 logger = logging.getLogger(__name__)
@@ -35,13 +36,11 @@ async def assemble_diva_datafeed(
         logger.error("Could not assemble diva datafeed: error getting pool params.")
         return None
 
-    asset = params[0]
-    feed = DATAFEED_LOOKUP[asset]
-    if feed is None:
-        logger.error(
-            "Could not assemble diva datafeed: error"
-            f"getting feed based on asset: {asset}"
-        )
-    feed.query = divaProtocolPolygon(pool_id)
+    asset = params[0]  # Reference asset
+    ts = params[8]  # Expiry date
+    feed = DataFeed(
+        query=divaProtocolPolygon(pool_id),
+        source=DivaManualSource(reference_asset=asset, timestamp=ts),
+    )
 
     return feed
