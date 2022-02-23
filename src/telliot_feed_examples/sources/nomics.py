@@ -5,10 +5,10 @@ from urllib.parse import urlencode
 
 from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
+from telliot_core.model.api_keys import ApiKeyList
 from telliot_core.pricing.price_service import WebPriceService
 from telliot_core.pricing.price_source import PriceSource
 
-from telliot_feed_examples.config.ampl import AMPLConfig
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -21,8 +21,7 @@ nomics_coin_id = {
     "btc": "BTC",
 }
 
-c = AMPLConfig()
-apikey = c.main.nomics_api_key
+API_KEY = ApiKeyList().find(name="nomics")[0].key
 
 
 class NomicsPriceService(WebPriceService):
@@ -40,7 +39,7 @@ class NomicsPriceService(WebPriceService):
 
         """
 
-        if apikey == "":
+        if API_KEY == "":
             logger.warn("To use the nomics source, add nomics api key to ampl.yaml")
             return None, None
 
@@ -53,7 +52,7 @@ class NomicsPriceService(WebPriceService):
 
         url_params = urlencode(
             {
-                "key": apikey,
+                "key": API_KEY,
                 "ids": coin_id.upper(),
                 "interval": "1d",
                 "convert": currency,
