@@ -16,4 +16,4 @@ async def test_assemble_diva_datafeed(ropsten_cfg) -> None:
 
         assert isinstance(feed, DataFeed)
         assert isinstance(feed.query, divaProtocolPolygon)
-        assert feed.source.asset == "btc"
+        assert feed.source.reference_asset == "BTC/USD"
