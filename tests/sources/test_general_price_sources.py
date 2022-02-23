@@ -1,20 +1,24 @@
 """ Unit tests for pricing module
 
 """
+import os
 from datetime import datetime
 
 import pytest
 
+from telliot_feed_examples.config.ampl import AMPLConfig
 from telliot_feed_examples.sources.bittrex import BittrexPriceService
 from telliot_feed_examples.sources.coinbase import CoinbasePriceService
 from telliot_feed_examples.sources.coingecko import CoinGeckoPriceService
 from telliot_feed_examples.sources.gemini import GeminiPriceService
+from telliot_feed_examples.sources.nomics import NomicsPriceService
 
 service = {
     "coinbase": CoinbasePriceService(),
     "coingecko": CoinGeckoPriceService(),
     "bittrex": BittrexPriceService(),
     "gemini": GeminiPriceService(),
+    "nomics": NomicsPriceService(),
 }
 
 
@@ -34,6 +38,16 @@ def validate_price(v, t):
     print(t)
 
 
+@pytest.fixture()
+def config():
+    c = AMPLConfig()
+
+    if not c.main.nomics_api_key and "NOMICS_KEY" in os.environ:
+        c.main.nomics_api_key = os.environ["NOMICS_KEY"]
+
+    return c
+
+
 @pytest.mark.asyncio
 async def test_coinbase():
     """Test retrieving from Coinbase price source."""
@@ -46,6 +60,17 @@ async def test_coingecko():
     """Test retrieving from Coingecko price source."""
     v, t = await get_price("btc", "usd", service["coingecko"])
     validate_price(v, t)
+
+
+@pytest.mark.asyncio
+async def test_nomics(config):
+    """Test retrieving from Nomics price source."""
+    api_key = config.main.nomics_api_key
+    if api_key != "":
+        v, t = await get_price("btc", "usd", service["nomics"])
+        validate_price(v, t)
+    else:
+        print("No Nomics api key ")
 
 
 @pytest.mark.asyncio

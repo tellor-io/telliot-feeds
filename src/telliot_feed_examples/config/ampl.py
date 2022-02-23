@@ -14,11 +14,14 @@ from telliot_core.model.base import Base
 class AMPLConfigOptions(ConfigOptions):
     """Configurations needed for AMPL apis."""
 
-    # Acces key for AnyBlock api
+    # Acces key for AnyBlock API
     anyblock_api_key: str = ""
 
-    # Access key for BraveNewCoin / Rapid api
+    # Access key for BraveNewCoin / Rapid API
     rapid_api_key: str = ""
+
+    # Access key for Nomics API
+    nomics_api_key: str = ""
 
 
 @dataclass
