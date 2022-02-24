@@ -68,7 +68,7 @@ async def test_ampl_usd_vwap_source(keys_dict):
     else:
         ampl_source = AMPLUSDVWAPSource()
         ampl_source.sources[0].api_key = keys_dict["anyblock"]
-        ampl_source.sources[0].api_key = keys_dict["bravenewcoin"]
+        ampl_source.sources[1].api_key = keys_dict["bravenewcoin"]
 
         value, timestamp = await ampl_source.fetch_new_datapoint()
 
