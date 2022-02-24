@@ -3,9 +3,9 @@ from dataclasses import field
 from typing import Any
 from urllib.parse import urlencode
 
+from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
-from telliot_core.model.api_keys import ApiKeyList
 from telliot_core.pricing.price_service import WebPriceService
 from telliot_core.pricing.price_source import PriceSource
 
@@ -21,7 +21,7 @@ nomics_coin_id = {
     "btc": "BTC",
 }
 
-API_KEY = ApiKeyList().find(name="nomics")[0].key
+API_KEY = TelliotConfig().api_keys.find(name="nomics")[0].key
 
 
 class NomicsPriceService(WebPriceService):
