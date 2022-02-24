@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 import pytest
-from telliot_core.model.api_keys import ApiKeyList
+from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feed_examples.sources.bittrex import BittrexPriceService
 from telliot_feed_examples.sources.coinbase import CoinbasePriceService
@@ -41,7 +41,7 @@ def validate_price(v, t):
 
 @pytest.fixture()
 def nomics_key():
-    key = ApiKeyList().find(name="nomics")[0].key
+    key = TelliotConfig().api_keys.find(name="nomics")[0].key
 
     if not key and "NOMICS_KEY" in os.environ:
         key = os.environ["NOMICS_KEY"]
@@ -66,7 +66,7 @@ async def test_coingecko():
 @pytest.mark.asyncio
 async def test_nomics(nomics_key):
     """Test retrieving from Nomics price source."""
-    if nomics_key != "":
+    if nomics_key:
         v, t = await get_price("btc", "usd", service["nomics"])
         validate_price(v, t)
     else:

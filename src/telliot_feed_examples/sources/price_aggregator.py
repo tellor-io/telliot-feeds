@@ -102,5 +102,8 @@ class PriceAggregator(DataSource[float], ABC):
         logger.info(
             "Feed Price: {} reported at time {}".format(datapoint[0], datapoint[1])
         )
+        logger.info(
+            "Number of Sources used for this report are: {}".format(len(prices))
+        )
 
         return datapoint
