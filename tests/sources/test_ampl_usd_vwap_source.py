@@ -12,10 +12,8 @@ from telliot_feed_examples.sources.ampl_usd_vwap import BraveNewCoinSource
 @pytest.fixture()
 def keys_dict():
     keys = TelliotConfig().api_keys
-    print("keys:", keys)
     anyblock_key = keys.find("anyblock")[0].key
     rapid_key = keys.find("bravenewcoin")[0].key
-    print("XXXX ANYBLOCK KEY: XXXXX", anyblock_key)
 
     if not anyblock_key and "ANYBLOCK_KEY" in os.environ:
         anyblock_key = os.environ["ANYBLOCK_KEY"]
@@ -69,6 +67,8 @@ async def test_ampl_usd_vwap_source(keys_dict):
         print("No api keys found")
     else:
         ampl_source = AMPLUSDVWAPSource()
+        ampl_source.sources[0].api_key = keys_dict["anyblock"]
+        ampl_source.sources[0].api_key = keys_dict["bravenewcoin"]
 
         value, timestamp = await ampl_source.fetch_new_datapoint()
 
