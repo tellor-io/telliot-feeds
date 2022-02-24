@@ -184,16 +184,14 @@ class AMPLUSDVWAPSource(DataSource[float]):
     #: Currency of returned price
     currency: str = "usd"
 
-    #: Access tokens for apis
-    cfg: TelliotConfig = field(default_factory=TelliotConfig)
-
     #: Data sources
     sources: List[DataSource[float]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
+        keys = TelliotConfig().api_keys
         self.sources = [
-            AnyBlockSource(api_key=self.cfg.api_keys.find("anyblock")[0].key),
-            BraveNewCoinSource(api_key=self.cfg.api_keys.find("bravenewcoin")[0].key),
+            AnyBlockSource(api_key=keys.find("anyblock")[0].key),
+            BraveNewCoinSource(api_key=keys.find("bravenewcoin")[0].key),
         ]
 
     async def update_sources(self) -> List[OptionalDataPoint[float]]:

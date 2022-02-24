@@ -10,10 +10,12 @@ from telliot_feed_examples.sources.ampl_usd_vwap import BraveNewCoinSource
 
 
 @pytest.fixture()
-def config():
-    c = TelliotConfig()
-    anyblock_key = c.api_keys.find("anyblock")[0].key
-    rapid_key = c.api_keys.find("bravenewcoin")[0].key
+def keys_dict():
+    keys = TelliotConfig().api_keys
+    print("keys:", keys)
+    anyblock_key = keys.find("anyblock")[0].key
+    rapid_key = keys.find("bravenewcoin")[0].key
+    print("XXXX ANYBLOCK KEY: XXXXX", anyblock_key)
 
     if not anyblock_key and "ANYBLOCK_KEY" in os.environ:
         anyblock_key = os.environ["ANYBLOCK_KEY"]
@@ -21,19 +23,17 @@ def config():
     if not rapid_key and "RAPID_KEY" in os.environ:
         rapid_key = os.environ["RAPID_KEY"]
 
-    return c
+    return {"anyblock": anyblock_key, "bravenewcoin": rapid_key}
 
 
 @pytest.mark.asyncio
-async def test_bravenewcoin_source(config):
+async def test_bravenewcoin_source(keys_dict):
     """Test retrieving AMPL/USD/VWAP data from BraveNewCoin/Rapid api.
 
     Retrieves bearer token and adds to headers of main data request."""
 
-    api_key = config.api_keys.find("bravenewcoin")[0].key
-
-    if api_key != "":
-        ampl_source = BraveNewCoinSource(api_key=api_key)
+    if keys_dict["bravenewcoin"]:
+        ampl_source = BraveNewCoinSource(api_key=keys_dict["bravenewcoin"])
 
         value, timestamp = await ampl_source.fetch_new_datapoint()
 
@@ -45,10 +45,9 @@ async def test_bravenewcoin_source(config):
 
 
 @pytest.mark.asyncio
-async def test_anyblock_source(config):
+async def test_anyblock_source(keys_dict):
     """Test retrieving AMPL/USD/VWAP data from AnyBlock api."""
-
-    api_key = config.api_keys.find("anyblock")[0].key
+    api_key = keys_dict["anyblock"]
 
     if api_key != "":
         ampl_source = AnyBlockSource(api_key=api_key)
@@ -63,15 +62,13 @@ async def test_anyblock_source(config):
 
 
 @pytest.mark.asyncio
-async def test_ampl_usd_vwap_source(config):
+async def test_ampl_usd_vwap_source(keys_dict):
     """Test getting median updated AMPL/USD/VWAP value."""
 
-    key1 = config.api_keys.find("anyblock")[0].key
-    key2 = config.api_keys.find("bravenewcoin")[0].key
-    if not all((key1, key2)):
+    if not all(keys_dict.values()):
         print("No api keys found")
     else:
-        ampl_source = AMPLUSDVWAPSource(cfg=config)
+        ampl_source = AMPLUSDVWAPSource()
 
         value, timestamp = await ampl_source.fetch_new_datapoint()
 
@@ -81,10 +78,10 @@ async def test_ampl_usd_vwap_source(config):
 
 
 @pytest.mark.asyncio
-async def test_no_updated_value(config, bad_source):
+async def test_no_updated_value(bad_source):
     """Test no AMPL/USD/VWAP value retrieved."""
 
-    ampl_source = AMPLUSDVWAPSource(cfg=config)
+    ampl_source = AMPLUSDVWAPSource()
 
     # Switch source to test one that doesn't return an updated value
     ampl_source.sources = [bad_source]
