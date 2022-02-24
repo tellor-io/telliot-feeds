@@ -13,12 +13,12 @@ from typing import Tuple
 from typing import TypeVar
 
 import requests
+from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.datasource import DataSource
 from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.utils.response import ResponseStatus
 
-from telliot_feed_examples.config.ampl import AMPLConfig
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -185,15 +185,15 @@ class AMPLUSDVWAPSource(DataSource[float]):
     currency: str = "usd"
 
     #: Access tokens for apis
-    cfg: AMPLConfig = field(default_factory=AMPLConfig)
+    cfg: TelliotConfig = field(default_factory=TelliotConfig)
 
     #: Data sources
     sources: List[DataSource[float]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self.sources = [
-            AnyBlockSource(api_key=self.cfg.main.anyblock_api_key),
-            BraveNewCoinSource(api_key=self.cfg.main.rapid_api_key),
+            AnyBlockSource(api_key=self.cfg.api_keys.find("anyblock")[0].key),
+            BraveNewCoinSource(api_key=self.cfg.api_keys.find("bravenewcoin")[0].key),
         ]
 
     async def update_sources(self) -> List[OptionalDataPoint[float]]:
