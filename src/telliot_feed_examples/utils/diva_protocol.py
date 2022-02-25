@@ -10,7 +10,7 @@ from telliot_core.tellor.tellorflex.diva import DivaProtocolContract
 
 from telliot_feed_examples.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
-from telliot_feed_examples.sources.diva_protocol import DivaManualSource
+from telliot_feed_examples.sources.price.spot.diva_protocol import DivaManualSource
 
 
 logger = logging.getLogger(__name__)

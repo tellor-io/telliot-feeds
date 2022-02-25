@@ -2,9 +2,9 @@
 from telliot_core.datafeed import DataFeed
 from telliot_core.queries import LegacyRequest
 
-from telliot_feed_examples.sources.bitfinex import BitfinexPriceSource
-from telliot_feed_examples.sources.bitflyer import BitflyerPriceSource
-from telliot_feed_examples.sources.coingecko import CoinGeckoPriceSource
+from telliot_feed_examples.sources.price.spot.bitfinex import BitfinexPriceSource
+from telliot_feed_examples.sources.price.spot.bitflyer import BitflyerPriceSource
+from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoPriceSource
 from telliot_feed_examples.sources.price_aggregator import PriceAggregator
 
 eth_jpy_median_feed = DataFeed(

@@ -7,11 +7,11 @@ from datetime import datetime
 import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feed_examples.sources.bittrex import BittrexPriceService
-from telliot_feed_examples.sources.coinbase import CoinbasePriceService
-from telliot_feed_examples.sources.coingecko import CoinGeckoPriceService
-from telliot_feed_examples.sources.gemini import GeminiPriceService
-from telliot_feed_examples.sources.nomics import NomicsPriceService
+from telliot_feed_examples.sources.price.spot.bittrex import BittrexPriceService
+from telliot_feed_examples.sources.price.spot.coinbase import CoinbasePriceService
+from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoPriceService
+from telliot_feed_examples.sources.price.spot.gemini import GeminiPriceService
+from telliot_feed_examples.sources.price.spot.nomics import NomicsPriceService
 
 
 service = {

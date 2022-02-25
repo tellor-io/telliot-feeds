@@ -1,11 +1,11 @@
 from telliot_core.datafeed import DataFeed
 from telliot_core.queries import SpotPrice
 
-from telliot_feed_examples.sources.binance import BinancePriceSource
-from telliot_feed_examples.sources.bittrex import BittrexPriceSource
-from telliot_feed_examples.sources.coinbase import CoinbasePriceSource
-from telliot_feed_examples.sources.coingecko import CoinGeckoPriceSource
-from telliot_feed_examples.sources.gemini import GeminiPriceSource
+from telliot_feed_examples.sources.price.spot.binance import BinancePriceSource
+from telliot_feed_examples.sources.price.spot.bittrex import BittrexPriceSource
+from telliot_feed_examples.sources.price.spot.coinbase import CoinbasePriceSource
+from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoPriceSource
+from telliot_feed_examples.sources.price.spot.gemini import GeminiPriceSource
 from telliot_feed_examples.sources.price_aggregator import PriceAggregator
 
 dai_usd_median_feed = DataFeed(

@@ -2,10 +2,10 @@
 from telliot_core.datafeed import DataFeed
 from telliot_core.queries import LegacyRequest
 
-from telliot_feed_examples.sources.binance import BinancePriceSource
-from telliot_feed_examples.sources.coinbase import CoinbasePriceSource
-from telliot_feed_examples.sources.coingecko import CoinGeckoPriceSource
-from telliot_feed_examples.sources.kraken import KrakenPriceSource
+from telliot_feed_examples.sources.price.spot.binance import BinancePriceSource
+from telliot_feed_examples.sources.price.spot.coinbase import CoinbasePriceSource
+from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoPriceSource
+from telliot_feed_examples.sources.price.spot.kraken import KrakenPriceSource
 from telliot_feed_examples.sources.price_aggregator import PriceAggregator
 
 eth_usd_median_feed = DataFeed(
