@@ -41,11 +41,13 @@ class PoloniexHistoricalPriceService(WebPriceService):
         if pair not in poloniex_pairs:
             raise Exception(f"Currency pair not supported: {pair}")
 
-        url_params = urlencode({
-            "currencyPair": pair,
-            "start": ts - 1e4,
-            "end": ts + 1e4,
-        })
+        url_params = urlencode(
+            {
+                "currencyPair": pair,
+                "start": ts - 1e4,
+                "end": ts + 1e4,
+            }
+        )
 
         # Source: https://docs.Poloniex.com/rest/#operation/getRecentTrades
         request_url = f"public?command=returnTradeHistory&{url_params}"
