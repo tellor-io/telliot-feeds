@@ -7,6 +7,9 @@ from datetime import datetime
 import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 
+from telliot_feed_examples.sources.price.historical.kraken import (
+    KrakenHistoricalPriceService,
+)
 from telliot_feed_examples.sources.price.spot.bittrex import BittrexSpotPriceService
 from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceService
 from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceService
@@ -84,6 +87,12 @@ async def test_bittrex():
 async def test_gemini():
     """Test retrieving from Gemini price source."""
     v, t = await get_price("btc", "usd", service["gemini"])
+    validate_price(v, t)
+
+
+@pytest.mark.asyncio
+async def test_kraken_historical():
+    v, t = await KrakenHistoricalPriceService().get_price("eth", "usd", ts=1616663420)
     validate_price(v, t)
 
 
