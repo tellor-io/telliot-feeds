@@ -20,17 +20,20 @@ kraken_currencies = {"USD"}
 
 
 class KrakenHistoricalPriceService(WebPriceService):
-    """Kraken Price Service"""
+    """Kraken Historical Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
-        kwargs["name"] = "Kraken Price Service"
+        kwargs["name"] = "Kraken Historical Price Service"
         kwargs["url"] = "https://api.kraken.com"
         super().__init__(**kwargs)
 
-    async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
+    async def get_price(
+        self, asset: str, currency: str, ts: int
+    ) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
-        This implementation gets the price from the Kraken API."""
+        This implementation gets the historical price from
+        the Kraken API using a timestamp."""
 
         asset = asset.upper()
         currency = currency.upper()
@@ -40,9 +43,12 @@ class KrakenHistoricalPriceService(WebPriceService):
         if currency not in kraken_currencies:
             raise Exception(f"Currency not supported: {currency}")
 
-        url_params = urlencode({"pair": f"{asset}{currency}"})
+        url_params = urlencode(
+            {"pair": f"{asset}{currency}", "since": ts}  # Unix timestamp
+        )
 
-        request_url = f"/0/public/Ticker?{url_params}"
+        # Source: https://docs.kraken.com/rest/#operation/getRecentTrades
+        request_url = f"/0/public/Trades?{url_params}"
 
         d = self.get_url(request_url)
 
@@ -54,7 +60,7 @@ class KrakenHistoricalPriceService(WebPriceService):
             response = d["response"]
 
             try:
-                price = float(response["result"][f"X{asset}Z{currency}"]["c"][0])
+                price = float(response["result"][f"X{asset}Z{currency}"][0][0])
             except KeyError as e:
                 msg = f"Error parsing Kraken API response: KeyError: {e}"
                 logger.critical(msg)
