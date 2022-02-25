@@ -7,19 +7,19 @@ from datetime import datetime
 import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feed_examples.sources.price.spot.bittrex import BittrexPriceService
-from telliot_feed_examples.sources.price.spot.coinbase import CoinbasePriceService
-from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoPriceService
-from telliot_feed_examples.sources.price.spot.gemini import GeminiPriceService
-from telliot_feed_examples.sources.price.spot.nomics import NomicsPriceService
+from telliot_feed_examples.sources.price.spot.bittrex import BittrexSpotPriceService
+from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceService
+from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceService
+from telliot_feed_examples.sources.price.spot.gemini import GeminiSpotPriceService
+from telliot_feed_examples.sources.price.spot.nomics import NomicsSpotPriceService
 
 
 service = {
-    "coinbase": CoinbasePriceService(),
-    "coingecko": CoinGeckoPriceService(),
-    "bittrex": BittrexPriceService(),
-    "gemini": GeminiPriceService(),
-    "nomics": NomicsPriceService(),
+    "coinbase": CoinbaseSpotPriceService(),
+    "coingecko": CoinGeckoSpotPriceService(),
+    "bittrex": BittrexSpotPriceService(),
+    "gemini": GeminiSpotPriceService(),
+    "nomics": NomicsSpotPriceService(),
 }
 
 
@@ -88,6 +88,6 @@ async def test_gemini():
 
 
 # def test_web_price_service_timeout():
-#     ps = CoinbasePriceService(timeout=0.0000001)
+#     ps = CoinbaseSpotPriceService(timeout=0.0000001)
 #     result = ps.get_url()
 #     assert result["error"] == "Timeout Error"

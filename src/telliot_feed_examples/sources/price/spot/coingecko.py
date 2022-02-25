@@ -26,7 +26,7 @@ coingecko_coin_id = {
 }
 
 
-class CoinGeckoPriceService(WebPriceService):
+class CoinGeckoSpotPriceService(WebPriceService):
     """CoinGecko Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
@@ -75,9 +75,9 @@ class CoinGeckoPriceService(WebPriceService):
 
 
 @dataclass
-class CoinGeckoPriceSource(PriceSource):
+class CoinGeckoSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: CoinGeckoPriceService = field(
-        default_factory=CoinGeckoPriceService, init=False
+    service: CoinGeckoSpotPriceService = field(
+        default_factory=CoinGeckoSpotPriceService, init=False
     )

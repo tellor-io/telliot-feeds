@@ -32,7 +32,7 @@ class GeminiPriceResponse(BaseModel):
 #  'last': '46703.47'}}
 
 
-class GeminiPriceService(WebPriceService):
+class GeminiSpotPriceService(WebPriceService):
     """Gemini Price Service"""
 
     def __init__(self, **kwargs: Any):
@@ -67,7 +67,9 @@ class GeminiPriceService(WebPriceService):
 
 
 @dataclass
-class GeminiPriceSource(PriceSource):
+class GeminiSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: GeminiPriceService = field(default_factory=GeminiPriceService, init=False)
+    service: GeminiSpotPriceService = field(
+        default_factory=GeminiSpotPriceService, init=False
+    )

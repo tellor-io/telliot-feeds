@@ -13,7 +13,7 @@ from telliot_feed_examples.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-class CoinbasePriceService(WebPriceService):
+class CoinbaseSpotPriceService(WebPriceService):
     """Coinbase Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
@@ -54,9 +54,9 @@ class CoinbasePriceService(WebPriceService):
 
 
 @dataclass
-class CoinbasePriceSource(PriceSource):
+class CoinbaseSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: CoinbasePriceService = field(
-        default_factory=CoinbasePriceService, init=False
+    service: CoinbaseSpotPriceService = field(
+        default_factory=CoinbaseSpotPriceService, init=False
     )

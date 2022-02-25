@@ -18,7 +18,7 @@ bitfinex_assets = {"ETH"}
 bitfinex_currencies = {"JPY"}
 
 
-class BitfinexPriceService(WebPriceService):
+class BitfinexSpotPriceService(WebPriceService):
     """Bitfinex Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
@@ -63,9 +63,9 @@ class BitfinexPriceService(WebPriceService):
 
 
 @dataclass
-class BitfinexPriceSource(PriceSource):
+class BitfinexSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: BitfinexPriceService = field(
-        default_factory=BitfinexPriceService, init=False
+    service: BitfinexSpotPriceService = field(
+        default_factory=BitfinexSpotPriceService, init=False
     )

@@ -2,10 +2,10 @@
 from telliot_core.datafeed import DataFeed
 from telliot_core.queries import LegacyRequest
 
-from telliot_feed_examples.sources.price.spot.binance import BinancePriceSource
-from telliot_feed_examples.sources.price.spot.coinbase import CoinbasePriceSource
-from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoPriceSource
-from telliot_feed_examples.sources.price.spot.kraken import KrakenPriceSource
+from telliot_feed_examples.sources.price.spot.binance import BinanceSpotPriceSource
+from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceSource
+from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
+from telliot_feed_examples.sources.price.spot.kraken import KrakenSpotPriceSource
 from telliot_feed_examples.sources.price_aggregator import PriceAggregator
 
 eth_usd_median_feed = DataFeed(
@@ -15,11 +15,11 @@ eth_usd_median_feed = DataFeed(
         currency="usd",
         algorithm="median",
         sources=[
-            CoinbasePriceSource(asset="eth", currency="usd"),
-            CoinGeckoPriceSource(asset="eth", currency="usd"),
-            KrakenPriceSource(asset="eth", currency="usd"),
-            BinancePriceSource(asset="eth", currency="usdc"),
-            BinancePriceSource(asset="eth", currency="usdt"),
+            CoinbaseSpotPriceSource(asset="eth", currency="usd"),
+            CoinGeckoSpotPriceSource(asset="eth", currency="usd"),
+            KrakenSpotPriceSource(asset="eth", currency="usd"),
+            BinanceSpotPriceSource(asset="eth", currency="usdc"),
+            BinanceSpotPriceSource(asset="eth", currency="usdt"),
         ],
     ),
 )

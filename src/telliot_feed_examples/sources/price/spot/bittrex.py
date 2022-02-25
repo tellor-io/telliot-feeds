@@ -27,7 +27,7 @@ class PriceResponse(BaseModel):
     result: Optional[BittrexQuote]
 
 
-class BittrexPriceService(WebPriceService):
+class BittrexSpotPriceService(WebPriceService):
     """Bittrex Price Service"""
 
     def __init__(self, **kwargs: Any):
@@ -67,9 +67,9 @@ class BittrexPriceService(WebPriceService):
 
 
 @dataclass
-class BittrexPriceSource(PriceSource):
+class BittrexSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: BittrexPriceService = field(
-        default_factory=BittrexPriceService, init=False
+    service: BittrexSpotPriceService = field(
+        default_factory=BittrexSpotPriceService, init=False
     )

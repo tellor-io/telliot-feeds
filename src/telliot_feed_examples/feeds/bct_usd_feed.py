@@ -1,8 +1,8 @@
 from telliot_core.datafeed import DataFeed
 from telliot_core.queries import SpotPrice
 
-from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoPriceSource
-from telliot_feed_examples.sources.price.spot.nomics import NomicsPriceSource
+from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
+from telliot_feed_examples.sources.price.spot.nomics import NomicsSpotPriceSource
 from telliot_feed_examples.sources.price_aggregator import PriceAggregator
 
 bct_usd_median_feed = DataFeed(
@@ -12,8 +12,8 @@ bct_usd_median_feed = DataFeed(
         currency="usd",
         algorithm="median",
         sources=[
-            CoinGeckoPriceSource(asset="bct", currency="usd"),
-            NomicsPriceSource(asset="bct", currency="usd"),
+            CoinGeckoSpotPriceSource(asset="bct", currency="usd"),
+            NomicsSpotPriceSource(asset="bct", currency="usd"),
         ],
     ),
 )

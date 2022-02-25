@@ -19,7 +19,7 @@ bitflyer_assets = {"ETH"}
 bitflyer_currencies = {"JPY"}
 
 
-class BitflyerPriceService(WebPriceService):
+class BitflyerSpotPriceService(WebPriceService):
     """Bitflyer Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
@@ -67,9 +67,9 @@ class BitflyerPriceService(WebPriceService):
 
 
 @dataclass
-class BitflyerPriceSource(PriceSource):
+class BitflyerSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: BitflyerPriceService = field(
-        default_factory=BitflyerPriceService, init=False
+    service: BitflyerSpotPriceService = field(
+        default_factory=BitflyerSpotPriceService, init=False
     )
