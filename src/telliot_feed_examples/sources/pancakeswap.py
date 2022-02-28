@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from dataclasses import field
-from typing import Any
 from datetime import datetime
+from typing import Any
 
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_service import WebPriceService
 from telliot_core.pricing.price_source import PriceSource
 
-from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.mapping.mapping import asset_mapping
+from telliot_feed_examples.utils.log import get_logger
 
 
 logger = get_logger(__name__)
@@ -68,5 +68,6 @@ class PancakeswapPriceService(WebPriceService):
 class PancakeswapPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: PancakeswapPriceService = field(default_factory=PancakeswapPriceService,
-                                             init=False)
+    service: PancakeswapPriceService = field(
+        default_factory=PancakeswapPriceService, init=False
+    )

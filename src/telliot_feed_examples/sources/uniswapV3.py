@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
-import requests
 
+import requests
 from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_service import WebPriceService
 from telliot_core.pricing.price_source import PriceSource
 
-from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.mapping.mapping import asset_mapping
+from telliot_feed_examples.utils.log import get_logger
 
 
 logger = get_logger(__name__)
@@ -39,14 +39,14 @@ class UniswapV3PriceService(WebPriceService):
             raise Exception("Asset not supported: {}".format(asset))
 
         headers = {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
         }
 
-        query = '{bundles{id ethPriceUSD}token' + f'(id: "{token}")' + '{ derivedETH } }'
+        query = (
+            "{bundles{id ethPriceUSD}token" + f'(id: "{token}")' + "{ derivedETH } }"
+        )
 
-        json_data = {
-            'query': query
-        }
+        json_data = {"query": query}
 
         request_url = self.url + "/subgraphs/name/uniswap/uniswap-v3"
 
@@ -90,4 +90,5 @@ class UniswapV3PriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
     service: UniswapV3PriceService = field(
-        default_factory=UniswapV3PriceService, init=False)
+        default_factory=UniswapV3PriceService, init=False
+    )
