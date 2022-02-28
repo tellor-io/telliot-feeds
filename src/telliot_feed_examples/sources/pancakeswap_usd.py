@@ -1,18 +1,18 @@
 from dataclasses import dataclass
 from dataclasses import field
-from datetime import datetime
 from typing import Any
 
+from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_service import WebPriceService
 from telliot_core.pricing.price_source import PriceSource
 
-from telliot_feed_examples.mapping.mapping import asset_mapping
 from telliot_feed_examples.utils.log import get_logger
 
 
 logger = get_logger(__name__)
-assets = asset_mapping["pancakeswap"]
+pancakeswap_map = {
+    "wbnb": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"}
 
 
 class PancakeswapPriceService(WebPriceService):
@@ -34,7 +34,7 @@ class PancakeswapPriceService(WebPriceService):
 
         asset = asset.lower()
 
-        token_addr = assets.get(asset, None)
+        token_addr = pancakeswap_map.get(asset, None)
 
         if not token_addr:
             raise Exception("Asset not supported: {}".format(asset))
@@ -51,9 +51,7 @@ class PancakeswapPriceService(WebPriceService):
             response = d["response"]
 
             try:
-                updated = datetime.utcfromtimestamp(response["updated_at"] / 1000)
                 price = response["data"]["price"]
-                logger.info(f"Pancakeswap API response on {asset}: ${price}, {updated}")
             except KeyError as e:
                 msg = "Error parsing Nomics API response: KeyError: {}".format(e)
                 logger.critical(msg)
@@ -61,7 +59,7 @@ class PancakeswapPriceService(WebPriceService):
         else:
             raise Exception("Invalid response from get_url")
 
-        return float(price), updated
+        return float(price), datetime_now_utc()
 
 
 @dataclass

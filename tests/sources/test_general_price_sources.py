@@ -12,9 +12,8 @@ from telliot_feed_examples.sources.coinbase import CoinbasePriceService
 from telliot_feed_examples.sources.coingecko import CoinGeckoPriceService
 from telliot_feed_examples.sources.gemini import GeminiPriceService
 from telliot_feed_examples.sources.nomics import NomicsPriceService
-from telliot_feed_examples.sources.pancakeswap import PancakeswapPriceService
-from telliot_feed_examples.sources.uniswapV3 import UniswapV3PriceService
-from telliot_feed_examples.utils.log import get_logger
+from telliot_feed_examples.sources.pancakeswap_usd import PancakeswapPriceService
+from telliot_feed_examples.sources.uniswapV3_usd import UniswapV3PriceService
 
 
 service = {
@@ -26,8 +25,6 @@ service = {
     "uniswapV3": UniswapV3PriceService(),
     "pancakeswap": PancakeswapPriceService(),
 }
-
-logger = get_logger(__name__)
 
 
 async def get_price(asset, currency, s):
@@ -95,18 +92,16 @@ async def test_gemini():
 
 
 @pytest.mark.asyncio
-async def test_uniswap():
+async def test_uniswap_usd():
     """Test retrieving from UniswapV3 price source."""
     v, t = await get_price("wbtc", "usd", service["uniswapV3"])
-    logger.info(f"Uniswap API response on wbtc: ${v}")
     validate_price(v, t)
 
 
 @pytest.mark.asyncio
-async def test_pancakeswap():
+async def test_pancakeswap_usd():
     """Test retrieving from UniswapV3 price source."""
     v, t = await get_price("wbnb", "usd", service["pancakeswap"])
-    logger.info(f"Pancakeswap API response on wbnb: ${v}, {t}")
     validate_price(v, t)
 
 

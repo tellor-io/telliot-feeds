@@ -8,13 +8,15 @@ from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_service import WebPriceService
 from telliot_core.pricing.price_source import PriceSource
 
-from telliot_feed_examples.mapping.mapping import asset_mapping
 from telliot_feed_examples.utils.log import get_logger
 
 
 logger = get_logger(__name__)
-
-assets = asset_mapping
+uniswapV3_map = {
+    "eth": "0x0000000000000000000000000000000000000000",
+    "wbtc": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+    "matic": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
+    "dai": "0x6b175474e89094c44da98b954eedeac495271d0f", }
 
 
 class UniswapV3PriceService(WebPriceService):
@@ -29,12 +31,13 @@ class UniswapV3PriceService(WebPriceService):
         """Implement PriceServiceInterface
 
         This implementation gets the price from the UniswapV3 subgraph
+        https://docs.uniswap.org/sdk/subgraph/subgraph-examples
 
         """
 
         asset = asset.lower()
 
-        token = assets["uniswapV3"].get(asset, None)
+        token = uniswapV3_map.get(asset, None)
         if not token:
             raise Exception("Asset not supported: {}".format(asset))
 
@@ -74,7 +77,6 @@ class UniswapV3PriceService(WebPriceService):
                 token_data = response["data"]["token"]["derivedETH"]
                 token_price = token_data if asset != "eth" else 1
                 price = ethprice * float(token_price)
-                logger.info(f"Uniswap subgraph report on {asset}: ${price}")
                 return price, datetime_now_utc()
             except KeyError as e:
                 msg = "Error parsing UniswapV3 response: KeyError: {}".format(e)
