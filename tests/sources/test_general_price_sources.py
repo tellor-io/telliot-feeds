@@ -18,6 +18,8 @@ from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceS
 from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceService
 from telliot_feed_examples.sources.price.spot.gemini import GeminiSpotPriceService
 from telliot_feed_examples.sources.price.spot.nomics import NomicsSpotPriceService
+from telliot_feed_examples.sources.price.spot.uniswapV3_usd import UniswapV3PriceSource
+from telliot_feed_examples.sources.price.spot.pancakeswap_usd import PancakeswapPriceSource
 
 
 service = {
@@ -26,6 +28,8 @@ service = {
     "bittrex": BittrexSpotPriceService(),
     "gemini": GeminiSpotPriceService(),
     "nomics": NomicsSpotPriceService(),
+    "pancakeswap": PancakeswapPriceSource(),
+    "uniswapV3": UniswapV3PriceSource(),
 }
 
 
@@ -94,9 +98,22 @@ async def test_gemini():
 
 
 @pytest.mark.asyncio
+async def test_uniswap_usd():
+    """Test retrieving from UniswapV3 price source."""
+    v, t = await get_price("wbtc", "usd", service["uniswapV3"])
+    validate_price(v, t)
+
+
+@pytest.mark.asyncio
+async def test_pancakeswap_usd():
+    """Test retrieving from UniswapV3 price source."""
+    v, t = await get_price("wbnb", "usd", service["pancakeswap"])
+    validate_price(v, t)
+
+
+@pytest.mark.asyncio
 async def test_kraken_historical():
     v, t = await KrakenHistoricalPriceService().get_price("eth", "usd", ts=1616663420)
-    validate_price(v, t)
 
 
 @pytest.mark.asyncio
@@ -107,7 +124,6 @@ async def test_poloniex_historical():
     v, t = await PoloniexHistoricalPriceService().get_price(
         "tusd", "eth", ts=1645822159
     )
-    validate_price(v, t)
 
 
 # def test_web_price_service_timeout():
