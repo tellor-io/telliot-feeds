@@ -12,6 +12,8 @@ from telliot_feed_examples.sources.coinbase import CoinbasePriceService
 from telliot_feed_examples.sources.coingecko import CoinGeckoPriceService
 from telliot_feed_examples.sources.gemini import GeminiPriceService
 from telliot_feed_examples.sources.nomics import NomicsPriceService
+from telliot_feed_examples.sources.pancakeswap_usd import PancakeswapPriceService
+from telliot_feed_examples.sources.uniswapV3_usd import UniswapV3PriceService
 
 
 service = {
@@ -20,6 +22,8 @@ service = {
     "bittrex": BittrexPriceService(),
     "gemini": GeminiPriceService(),
     "nomics": NomicsPriceService(),
+    "uniswapV3": UniswapV3PriceService(),
+    "pancakeswap": PancakeswapPriceService(),
 }
 
 
@@ -84,6 +88,20 @@ async def test_bittrex():
 async def test_gemini():
     """Test retrieving from Gemini price source."""
     v, t = await get_price("btc", "usd", service["gemini"])
+    validate_price(v, t)
+
+
+@pytest.mark.asyncio
+async def test_uniswap_usd():
+    """Test retrieving from UniswapV3 price source."""
+    v, t = await get_price("wbtc", "usd", service["uniswapV3"])
+    validate_price(v, t)
+
+
+@pytest.mark.asyncio
+async def test_pancakeswap_usd():
+    """Test retrieving from UniswapV3 price source."""
+    v, t = await get_price("wbnb", "usd", service["pancakeswap"])
     validate_price(v, t)
 
 
