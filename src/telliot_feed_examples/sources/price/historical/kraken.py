@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from dataclasses import field
 from typing import Any
 from typing import Optional
 from urllib.parse import urlencode
 
+import requests
 from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_service import WebPriceService
@@ -16,20 +16,54 @@ logger = get_logger(__name__)
 
 
 # Hardcoded supported assets & currencies
-kraken_assets = {"ETH"}
+kraken_assets = {"ETH", "BTC"}
 kraken_currencies = {"USD"}
 
 
 class KrakenHistoricalPriceService(WebPriceService):
     """Kraken Historical Price Service"""
 
-    def __init__(self, **kwargs: Any) -> None:
-        kwargs["name"] = "Kraken Historical Price Service"
-        kwargs["url"] = "https://api.kraken.com"
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        timeout: float = 0.5,
+        name: str = "Kraken Historical Price Service",
+        url: str = "https://api.kraken.com",
+        ts: int = 0,
+    ):
+        self.name = name
+        self.url = url
+        self.ts = ts
+        self.timeout = timeout
+
+    def get_url(self, url: str = "") -> dict[str, Any]:
+        """Helper function to get URL JSON response while handling exceptions
+
+        Args:
+            url: URL to fetch
+
+        Returns:
+            A dictionary with the following (optional) keys:
+                json (dict or list): Result, if no error occurred
+                error (str): A description of the error, if one occurred
+                exception (Exception): The exception, if one occurred
+        """
+
+        request_url = self.url + url
+
+        with requests.Session() as s:
+            try:
+                r = s.get(request_url, timeout=self.timeout)
+                json_data = r.json()
+                return {"response": json_data}
+
+            except requests.exceptions.ConnectTimeout as e:
+                return {"error": "Timeout Error", "exception": e}
+
+            except Exception as e:
+                return {"error": str(type(e)), "exception": e}
 
     async def get_price(
-        self, asset: str, currency: str, ts: Optional[int]
+        self, asset: str, currency: str, ts: Optional[int] = None
     ) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
@@ -79,6 +113,4 @@ class KrakenHistoricalPriceSource(PriceSource):
     ts: int = 0
     asset: str = ""
     currency: str = ""
-    service: KrakenHistoricalPriceService = field(
-        default_factory=KrakenHistoricalPriceService, init=False
-    )
+    service: KrakenHistoricalPriceService = KrakenHistoricalPriceService(ts=ts)

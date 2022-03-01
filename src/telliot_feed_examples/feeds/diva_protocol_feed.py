@@ -1,5 +1,6 @@
 """Helper functions for reporting data for Diva Protocol."""
 import logging
+from dataclasses import dataclass
 from typing import Optional
 
 from chained_accounts import ChainedAccount
@@ -19,48 +20,60 @@ from telliot_feed_examples.sources.price.historical.poloniex import (
 )
 from telliot_feed_examples.sources.price_aggregator import PriceAggregator
 
-# from telliot_feed_examples.sources.diva_protocol import DivaManualSource
-
 
 logger = logging.getLogger(__name__)
 
 
-SUPPORTED_REFERENCE_ASSETS = {
-    "ETH/USD",
-    "BTC/USD"
-}
+SUPPORTED_REFERENCE_ASSETS = {"ETH/USD", "BTC/USD"}
 
 
-async def assemble_diva_datafeed(
+@dataclass
+class DivaPoolParameters:
+    """More info: https://github.com/divaprotocol/oracles#diva-smart-contract"""
+
+    reference_asset: str
+    expiry_date: int
+
+
+async def get_pool_params(
     pool_id: int, node: RPCEndpoint, account: ChainedAccount
-) -> Optional[DataFeed[float]]:
-    """Returns datafeed using user input option ID and corresponding
-    asset information.
-    
-    Currently, reference assets are hard-coded. Only historical
-    prices for ETH/USD & BTC/USD are supported."""
+) -> Optional[DivaPoolParameters]:
+    """Fetches and parses needed parameters for a given pool."""
 
     diva = DivaProtocolContract(node, account)
     diva.connect()
 
     params = await diva.get_pool_parameters(pool_id)
     if params is None:
-        logger.error("Could not assemble diva datafeed: error getting pool params.")
+        logger.error("Error getting pool params from Diva contract.")
         return None
 
-    ref_asset = params[0].lower()  # Reference asset
-    if "eth" in ref_asset:
-        asset = "eth"
-    elif "btc" in ref_asset:
-        asset = "btc"
-    else:
-        logger.error(f"Reference asset not supported: {ref_asset}")
+    pool_params = DivaPoolParameters(reference_asset=params[0], expiry_date=params[8])
+    if pool_params.reference_asset not in SUPPORTED_REFERENCE_ASSETS:
+        logger.error(f"Reference asset not supported: {pool_params.reference_asset}")
         return None
 
-    ts = params[8]  # Expiry date
+    return pool_params
+
+
+async def assemble_diva_datafeed(
+    pool_id: int, node: RPCEndpoint, account: ChainedAccount
+) -> Optional[DataFeed[float]]:
+    """Returns datafeed using user input pool ID and corresponding
+    asset information.
+
+    Reference assets are currently whitelisted & hard-coded."""
+
+    params = await get_pool_params(pool_id, node, account)
+    if params is None:
+        logger.error("Error getting pool parameters.")
+        return None
+
+    asset = params.reference_asset.split("/")[0].lower()
+    ts = params.expiry_date
+
     feed = DataFeed(
         query=divaProtocolPolygon(pool_id),
-        # source=DivaManualSource(reference_asset=asset, timestamp=ts),
         source=PriceAggregator(
             asset=asset,
             currency="usd",
