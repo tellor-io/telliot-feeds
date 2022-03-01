@@ -18,8 +18,10 @@ from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceS
 from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceService
 from telliot_feed_examples.sources.price.spot.gemini import GeminiSpotPriceService
 from telliot_feed_examples.sources.price.spot.nomics import NomicsSpotPriceService
-from telliot_feed_examples.sources.price.spot.uniswapV3_usd import UniswapV3PriceSource
-from telliot_feed_examples.sources.price.spot.pancakeswap_usd import PancakeswapPriceSource
+from telliot_feed_examples.sources.price.spot.pancakeswap_usd import (
+    PancakeswapPriceService,
+)
+from telliot_feed_examples.sources.price.spot.uniswapV3_usd import UniswapV3PriceService
 
 
 service = {
@@ -28,8 +30,8 @@ service = {
     "bittrex": BittrexSpotPriceService(),
     "gemini": GeminiSpotPriceService(),
     "nomics": NomicsSpotPriceService(),
-    "pancakeswap": PancakeswapPriceSource(),
-    "uniswapV3": UniswapV3PriceSource(),
+    "pancakeswap": PancakeswapPriceService(),
+    "uniswapV3": UniswapV3PriceService(),
 }
 
 
