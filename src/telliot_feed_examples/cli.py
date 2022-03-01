@@ -21,7 +21,7 @@ from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
-from telliot_feed_examples.utils.diva_protocol import assemble_diva_datafeed
+from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 

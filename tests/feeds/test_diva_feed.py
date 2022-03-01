@@ -3,11 +3,11 @@ from telliot_core.api import DataFeed
 from telliot_core.apps.core import TelliotCore
 from telliot_core.queries.diva_protocol import divaProtocolPolygon
 
-from telliot_feed_examples.utils.diva_protocol import assemble_diva_datafeed
+from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 
 
 @pytest.mark.asyncio
-async def test_assemble_diva_datafeed(ropsten_cfg) -> None:
+async def test_diva_datafeed(ropsten_cfg) -> None:
     async with TelliotCore(config=ropsten_cfg) as core:
         account = core.get_account()
         feed = await assemble_diva_datafeed(
@@ -17,3 +17,5 @@ async def test_assemble_diva_datafeed(ropsten_cfg) -> None:
         assert isinstance(feed, DataFeed)
         assert isinstance(feed.query, divaProtocolPolygon)
         assert feed.source.asset == "btc"
+
+        

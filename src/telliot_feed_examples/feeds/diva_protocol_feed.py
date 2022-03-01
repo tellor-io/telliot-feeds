@@ -8,8 +8,6 @@ from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.queries.diva_protocol import divaProtocolPolygon
 from telliot_core.tellor.tellorflex.diva import DivaProtocolContract
 
-from telliot_feed_examples.feeds.btc_usd_feed import btc_usd_median_feed
-from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.sources.price.historical.cryptowatch import (
     CryptowatchHistoricalPriceSource,
 )
@@ -27,9 +25,9 @@ from telliot_feed_examples.sources.price_aggregator import PriceAggregator
 logger = logging.getLogger(__name__)
 
 
-DATAFEED_LOOKUP = {
-    "ETH/USD": eth_usd_median_feed,
-    "BTC/USD": btc_usd_median_feed,
+SUPPORTED_REFERENCE_ASSETS = {
+    "ETH/USD",
+    "BTC/USD"
 }
 
 
@@ -37,7 +35,10 @@ async def assemble_diva_datafeed(
     pool_id: int, node: RPCEndpoint, account: ChainedAccount
 ) -> Optional[DataFeed[float]]:
     """Returns datafeed using user input option ID and corresponding
-    asset information."""
+    asset information.
+    
+    Currently, reference assets are hard-coded. Only historical
+    prices for ETH/USD & BTC/USD are supported."""
 
     diva = DivaProtocolContract(node, account)
     diva.connect()
@@ -53,7 +54,7 @@ async def assemble_diva_datafeed(
     elif "btc" in ref_asset:
         asset = "btc"
     else:
-        logger.warning("Reference asset not supported")
+        logger.error(f"Reference asset not supported: {ref_asset}")
         return None
 
     ts = params[8]  # Expiry date
