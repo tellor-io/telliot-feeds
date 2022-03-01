@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
+from typing import Optional
 from urllib.parse import urlencode
 
 from telliot_core.dtypes.datapoint import datetime_now_utc
@@ -27,7 +28,7 @@ class CryptowatchHistoricalPriceService(WebPriceService):
         super().__init__(**kwargs)
 
     async def get_price(
-        self, asset: str, currency: str, ts: int
+        self, asset: str, currency: str, ts: Optional[int]
     ) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
@@ -38,6 +39,8 @@ class CryptowatchHistoricalPriceService(WebPriceService):
         Documentation for Cryptowatch API:
         https://docs.cryptowat.ch/rest-api/markets/ohlc
         """
+        if ts is None:
+            ts = self.ts
 
         asset = asset.lower()
         currency = currency.lower()
@@ -77,6 +80,7 @@ class CryptowatchHistoricalPriceService(WebPriceService):
 
 @dataclass
 class CryptowatchHistoricalPriceSource(PriceSource):
+    ts: int = 0
     asset: str = ""
     currency: str = ""
     service: CryptowatchHistoricalPriceService = field(

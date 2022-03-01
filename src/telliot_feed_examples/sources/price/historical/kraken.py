@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
+from typing import Optional
 from urllib.parse import urlencode
 
 from telliot_core.dtypes.datapoint import datetime_now_utc
@@ -28,12 +29,14 @@ class KrakenHistoricalPriceService(WebPriceService):
         super().__init__(**kwargs)
 
     async def get_price(
-        self, asset: str, currency: str, ts: int
+        self, asset: str, currency: str, ts: Optional[int]
     ) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
         This implementation gets the historical price from
         the Kraken API using a timestamp."""
+        if ts is None:
+            ts = self.ts
 
         asset = asset.upper()
         currency = currency.upper()
@@ -73,6 +76,7 @@ class KrakenHistoricalPriceService(WebPriceService):
 
 @dataclass
 class KrakenHistoricalPriceSource(PriceSource):
+    ts: int = 0
     asset: str = ""
     currency: str = ""
     service: KrakenHistoricalPriceService = field(

@@ -10,7 +10,18 @@ from telliot_core.tellor.tellorflex.diva import DivaProtocolContract
 
 from telliot_feed_examples.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
-from telliot_feed_examples.sources.diva_protocol import DivaManualSource
+from telliot_feed_examples.sources.price.historical.cryptowatch import (
+    CryptowatchHistoricalPriceSource,
+)
+from telliot_feed_examples.sources.price.historical.kraken import (
+    KrakenHistoricalPriceSource,
+)
+from telliot_feed_examples.sources.price.historical.poloniex import (
+    PoloniexHistoricalPriceSource,
+)
+from telliot_feed_examples.sources.price_aggregator import PriceAggregator
+
+# from telliot_feed_examples.sources.diva_protocol import DivaManualSource
 
 
 logger = logging.getLogger(__name__)
@@ -36,11 +47,30 @@ async def assemble_diva_datafeed(
         logger.error("Could not assemble diva datafeed: error getting pool params.")
         return None
 
-    asset = params[0]  # Reference asset
+    ref_asset = params[0].lower()  # Reference asset
+    if "eth" in ref_asset:
+        asset = "eth"
+    elif "btc" in ref_asset:
+        asset = "btc"
+    else:
+        logger.warning("Reference asset not supported")
+        return None
+
     ts = params[8]  # Expiry date
     feed = DataFeed(
         query=divaProtocolPolygon(pool_id),
-        source=DivaManualSource(reference_asset=asset, timestamp=ts),
+        # source=DivaManualSource(reference_asset=asset, timestamp=ts),
+        source=PriceAggregator(
+            asset=asset,
+            currency="usd",
+            algorithm="median",
+            sources=[
+                CryptowatchHistoricalPriceSource(asset=asset, currency="usd", ts=ts),
+                KrakenHistoricalPriceSource(asset=asset, currency="usd", ts=ts),
+                PoloniexHistoricalPriceSource(asset=asset, currency="dai", ts=ts),
+                PoloniexHistoricalPriceSource(asset=asset, currency="tusd", ts=ts),
+            ],
+        ),
     )
 
     return feed
