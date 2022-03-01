@@ -48,11 +48,7 @@ class CryptowatchHistoricalPriceService(WebPriceService):
 
         periods = 1800  # 30min
         url_params = urlencode(
-            {
-                "after": int(ts - 1e4),
-                "before": ts,
-                "periods": periods
-            }
+            {"after": int(ts - 1e4), "before": ts, "periods": periods}
         )
 
         request_url = f"markets/coinbase-pro/{pair}/ohlc?{url_params}"
