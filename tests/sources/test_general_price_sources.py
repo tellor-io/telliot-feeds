@@ -7,6 +7,9 @@ from datetime import datetime
 import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 
+from telliot_feed_examples.sources.price.historical.cryptowatch import (
+    CryptowatchHistoricalPriceService,
+)
 from telliot_feed_examples.sources.price.historical.kraken import (
     KrakenHistoricalPriceService,
 )
@@ -116,6 +119,7 @@ async def test_pancakeswap_usd():
 @pytest.mark.asyncio
 async def test_kraken_historical():
     v, t = await KrakenHistoricalPriceService().get_price("eth", "usd", ts=1616663420)
+    validate_price(v, t)
 
 
 @pytest.mark.asyncio
@@ -126,6 +130,14 @@ async def test_poloniex_historical():
     v, t = await PoloniexHistoricalPriceService().get_price(
         "tusd", "eth", ts=1645822159
     )
+
+
+@pytest.mark.asyncio
+async def test_cryptowatch_historical():
+    v, t = await CryptowatchHistoricalPriceService().get_price(
+        "eth", "usd", ts=1646145821
+    )
+    validate_price(v, t)
 
 
 # def test_web_price_service_timeout():
