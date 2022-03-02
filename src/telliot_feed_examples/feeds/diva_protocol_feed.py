@@ -56,6 +56,25 @@ async def get_pool_params(
     return pool_params
 
 
+def get_source(asset: str, ts: int) -> PriceAggregator:
+    """Returns PriceAggregator with sources adjusted based on given asset."""
+    source = PriceAggregator(
+        asset=asset,
+        currency="usd",
+        algorithm="median",
+        sources=[
+            CryptowatchHistoricalPriceSource(asset=asset, currency="usd", ts=ts),
+            KrakenHistoricalPriceSource(asset=asset, currency="usd", ts=ts),
+            PoloniexHistoricalPriceSource(asset=asset, currency="dai", ts=ts),
+            PoloniexHistoricalPriceSource(asset=asset, currency="tusd", ts=ts),
+        ],
+    )
+    if asset == "btc":
+        source.sources[1].asset = "xbt"
+
+    return source
+
+
 async def assemble_diva_datafeed(
     pool_id: int, node: RPCEndpoint, account: ChainedAccount
 ) -> Optional[DataFeed[float]]:
@@ -74,17 +93,7 @@ async def assemble_diva_datafeed(
 
     feed = DataFeed(
         query=divaProtocolPolygon(pool_id),
-        source=PriceAggregator(
-            asset=asset,
-            currency="usd",
-            algorithm="median",
-            sources=[
-                CryptowatchHistoricalPriceSource(asset=asset, currency="usd", ts=ts),
-                KrakenHistoricalPriceSource(asset=asset, currency="usd", ts=ts),
-                PoloniexHistoricalPriceSource(asset=asset, currency="dai", ts=ts),
-                PoloniexHistoricalPriceSource(asset=asset, currency="tusd", ts=ts),
-            ],
-        ),
+        source=get_source(asset, ts),
     )
 
     return feed

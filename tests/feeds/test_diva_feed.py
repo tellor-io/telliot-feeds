@@ -8,9 +8,17 @@ from telliot_core.queries.diva_protocol import divaProtocolPolygon
 from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feed_examples.feeds.diva_protocol_feed import DivaPoolParameters
 from telliot_feed_examples.feeds.diva_protocol_feed import get_pool_params
+from telliot_feed_examples.feeds.diva_protocol_feed import get_source
 from telliot_feed_examples.sources.price.historical.poloniex import (
     PoloniexHistoricalPriceSource,
 )
+
+
+def test_get_source() -> None:
+    source = get_source("btc", 1243)
+
+    assert source.sources[1].asset == "xbt"
+    assert source.sources[3].ts == 1243
 
 
 @pytest.mark.asyncio
@@ -41,4 +49,15 @@ async def test_diva_datafeed(ropsten_cfg) -> None:
 
         v, t = await feed.source.fetch_new_datapoint()
         assert v > 1000
+        assert isinstance(t, datetime)
+
+        feed = await assemble_diva_datafeed(
+            pool_id=159, node=core.endpoint, account=account
+        )
+
+        assert feed.source.asset == "btc"
+        assert feed.source.sources[1].asset == "xbt"
+
+        v, t = await feed.source.fetch_new_datapoint()
+        assert v > 30000
         assert isinstance(t, datetime)
