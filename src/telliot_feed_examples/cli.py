@@ -480,6 +480,7 @@ async def tip(
     nargs=1,
     type=int,
     required=False,
+    default=100,
 )
 @click.option("-pswd", "--password", type=str)
 @click.pass_context
@@ -517,7 +518,10 @@ async def settle(
         status = await oracle.set_final_reference_value(
             pool_id=pool_id, legacy_gas_price=legacy_gas_price
         )
-        assert status.ok
+        if status is not None and status.ok:
+            click.echo(f"Pool {pool_id} settled.")
+        else:
+            click.echo(f"Unable to settle Pool {pool_id}.")
 
 
 if __name__ == "__main__":
