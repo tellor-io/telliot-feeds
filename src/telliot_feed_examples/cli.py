@@ -86,6 +86,7 @@ def print_reporter_settings(
     transaction_type: int,
     legacy_gas_price: Optional[int],
     gas_price_speed: str,
+    diva_pool_id: Optional[int],
 ) -> None:
     """Print user settings to console."""
     click.echo("")
@@ -96,6 +97,8 @@ def print_reporter_settings(
 
     if query_tag:
         click.echo(f"Reporting query tag: {query_tag}")
+    elif diva_pool_id is not None:
+        click.echo(f"Reporting data for Diva Protocol Pool ID {diva_pool_id}")
     else:
         click.echo("Reporting with synchronized queries")
 
@@ -348,6 +351,7 @@ async def report(
             expected_profit=expected_profit,
             chain_id=cid,
             gas_price_speed=gas_price_speed,
+            diva_pool_id=diva_pool_id,
         )
 
         _ = input("Press [ENTER] to confirm settings.")
