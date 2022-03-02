@@ -14,7 +14,8 @@ from telliot_feed_examples.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-# Hardcoded supported assets/urrencies pairs
+# Hardcoded supported asset/currency pairs
+# Poloniex swaps the usual order of asset/currency to currency/asset
 poloniex_pairs = {"DAI_ETH", "TUSD_ETH", "DAI_BTC", "TUSD_BTC"}
 
 
@@ -23,10 +24,10 @@ class PoloniexHistoricalPriceService:
 
     def __init__(
         self,
-        timeout: float = 0.5,
+        ts: int = 0,
+        timeout: float = 1,
         name: str = "Poloniex Historical Price Service",
         url: str = "https://poloniex.com/",
-        ts: int = 0,
     ):
         self.name = name
         self.url = url
@@ -72,7 +73,9 @@ class PoloniexHistoricalPriceService:
 
         asset = asset.upper()
         currency = currency.upper()
-        pair = asset + "_" + currency
+        pair = (
+            currency + "_" + asset
+        )  # Poloniex wants the reverse of standard order: asset/currency
 
         if pair not in poloniex_pairs:
             raise Exception(f"Currency pair not supported: {pair}")
@@ -89,6 +92,7 @@ class PoloniexHistoricalPriceService:
         request_url = f"public?command=returnTradeHistory&{url_params}"
 
         d = self.get_url(request_url)
+        price = None
 
         if "error" in d:
             logger.error(d)
@@ -98,6 +102,12 @@ class PoloniexHistoricalPriceService:
             response = d["response"]
 
             try:
+                if len(response) == 0:
+                    logger.warning(
+                        "No data from Poloniex historical price source for"
+                        f"given timestamp ({ts}) & pair ({pair})."
+                    )
+                    return None, None
                 price = float(response[0]["rate"])
             except KeyError as e:
                 msg = f"Error parsing Poloniex API response: KeyError: {e}"
@@ -115,3 +125,6 @@ class PoloniexHistoricalPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
     service: PoloniexHistoricalPriceService = PoloniexHistoricalPriceService(ts=ts)
+
+    def __post_init__(self) -> None:
+        self.service.ts = self.ts

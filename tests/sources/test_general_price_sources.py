@@ -124,11 +124,11 @@ async def test_kraken_historical():
 
 @pytest.mark.asyncio
 async def test_poloniex_historical():
-    v, t = await PoloniexHistoricalPriceService().get_price("dai", "eth", ts=1645813159)
+    v, t = await PoloniexHistoricalPriceService().get_price("eth", "dai", ts=1645813159)
     validate_price(v, t)
 
     v, t = await PoloniexHistoricalPriceService().get_price(
-        "tusd", "eth", ts=1645822159
+        "eth", "tusd", ts=1645822159
     )
 
 

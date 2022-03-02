@@ -37,6 +37,6 @@ async def test_diva_datafeed(ropsten_cfg) -> None:
         assert feed.source.asset == "eth"
         assert feed.source.sources[2].currency == "dai"
 
-        # v, t = await feed.source.fetch_new_datapoint()
-        # assert v > 25000
-        # assert t == 123412341234
+        v, t = await feed.source.fetch_new_datapoint()
+        assert v > 1000
+        assert t == 1646235595
