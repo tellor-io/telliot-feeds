@@ -120,3 +120,6 @@ class CryptowatchHistoricalPriceSource(PriceSource):
     service: CryptowatchHistoricalPriceService = CryptowatchHistoricalPriceService(
         ts=ts
     )
+
+    def __post_init__(self) -> None:
+        self.service.ts = self.ts

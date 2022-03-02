@@ -114,3 +114,6 @@ class KrakenHistoricalPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
     service: KrakenHistoricalPriceService = KrakenHistoricalPriceService(ts=ts)
+
+    def __post_init__(self) -> None:
+        self.service.ts = self.ts

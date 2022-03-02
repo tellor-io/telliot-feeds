@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from telliot_core.api import DataFeed
 from telliot_core.apps.core import TelliotCore
@@ -39,4 +41,4 @@ async def test_diva_datafeed(ropsten_cfg) -> None:
 
         v, t = await feed.source.fetch_new_datapoint()
         assert v > 1000
-        assert t == 1646235595
+        assert isinstance(t, datetime)
