@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
-from typing import Optional
+from typing import Dict
 
 from pydantic import BaseModel
 from telliot_core.dtypes.datapoint import datetime_now_utc
@@ -15,24 +15,29 @@ from telliot_feed_examples.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-class BittrexQuote(BaseModel):
-    Bid: float
-    Ask: float
-    Last: float
+class GeminiPriceResponse(BaseModel):
+    bid: float
+    ask: float
+    last: float
+    volume: Dict[str, Any]
 
 
-class PriceResponse(BaseModel):
-    success: bool
-    message: str
-    result: Optional[BittrexQuote]
+# Example output
+# {'bid': '46696.49',
+#  'ask': '46706.28',
+#  'volume':
+#      {'BTC': '1478.8403795849',
+#       'USD': '67545338.339627693826',
+#       'timestamp': 1631636700000},
+#  'last': '46703.47'}}
 
 
-class BittrexPriceService(WebPriceService):
-    """Bittrex Price Service"""
+class GeminiSpotPriceService(WebPriceService):
+    """Gemini Price Service"""
 
     def __init__(self, **kwargs: Any):
         super().__init__(
-            name="Bittrex Price Service", url="https://api.bittrex.com", **kwargs
+            name="Gemini Price Service", url="https://api.gemini.com", **kwargs
         )
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
@@ -44,32 +49,27 @@ class BittrexPriceService(WebPriceService):
         instead of the locally generated timestamp.
         """
 
-        request_url = "/api/v1.1/public/getticker?market={}-{}".format(
-            currency.lower(), asset.lower()
-        )
+        request_url = "/v1/pubticker/{}{}".format(asset.lower(), currency.lower())
 
         d = self.get_url(request_url)
-
         if "error" in d:
             logger.error(d)
             return None, None
 
         else:
-            r = PriceResponse.parse_obj(d["response"])
-            if r.success:
-                if r.result is not None:
-                    return r.result.Last, datetime_now_utc()
-                else:
-                    return None, None
+            r = GeminiPriceResponse.parse_obj(d["response"])
+
+            if r.last is not None:
+                return r.last, datetime_now_utc()
             else:
-                logger.error(r.message)
+                logger.error(r)
                 return None, None
 
 
 @dataclass
-class BittrexPriceSource(PriceSource):
+class GeminiSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: BittrexPriceService = field(
-        default_factory=BittrexPriceService, init=False
+    service: GeminiSpotPriceService = field(
+        default_factory=GeminiSpotPriceService, init=False
     )

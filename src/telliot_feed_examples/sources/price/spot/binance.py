@@ -18,7 +18,7 @@ binance_assets = {"ETH", "DAI"}
 binance_currencies = {"USDT", "USDC"}
 
 
-class BinancePriceService(WebPriceService):
+class BinanceSpotPriceService(WebPriceService):
     """Binance Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
@@ -67,9 +67,9 @@ class BinancePriceService(WebPriceService):
 
 
 @dataclass
-class BinancePriceSource(PriceSource):
+class BinanceSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: BinancePriceService = field(
-        default_factory=BinancePriceService, init=False
+    service: BinanceSpotPriceService = field(
+        default_factory=BinanceSpotPriceService, init=False
     )

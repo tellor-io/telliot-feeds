@@ -19,7 +19,7 @@ kraken_assets = {"ETH"}
 kraken_currencies = {"USD"}
 
 
-class KrakenPriceService(WebPriceService):
+class KrakenSpotPriceService(WebPriceService):
     """Kraken Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
@@ -66,7 +66,9 @@ class KrakenPriceService(WebPriceService):
 
 
 @dataclass
-class KrakenPriceSource(PriceSource):
+class KrakenSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: KrakenPriceService = field(default_factory=KrakenPriceService, init=False)
+    service: KrakenSpotPriceService = field(
+        default_factory=KrakenSpotPriceService, init=False
+    )

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
-from urllib.parse import urlencode
 
 from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
@@ -15,35 +14,32 @@ logger = get_logger(__name__)
 
 
 # Hardcoded supported assets & currencies
-bitflyer_assets = {"ETH"}
-bitflyer_currencies = {"JPY"}
+bitfinex_assets = {"ETH"}
+bitfinex_currencies = {"JPY"}
 
 
-class BitflyerPriceService(WebPriceService):
-    """Bitflyer Price Service"""
+class BitfinexSpotPriceService(WebPriceService):
+    """Bitfinex Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
-        kwargs["name"] = "Bitflyer Price Service"
-        kwargs["url"] = "https://api.bitflyer.com"
+        kwargs["name"] = "Bitfinex Price Service"
+        kwargs["url"] = "https://api-pub.bitfinex.com"
         super().__init__(**kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
-        This implementation gets the price from the Bitflyer API."""
+        This implementation gets the price from the Bitfinex API."""
 
         asset = asset.upper()
         currency = currency.upper()
 
-        if asset not in bitflyer_assets:
+        if asset not in bitfinex_assets:
             raise Exception(f"Asset not supported: {asset}")
-        if currency not in bitflyer_currencies:
+        if currency not in bitfinex_currencies:
             raise Exception(f"Currency not supported: {currency}")
 
-        asset_currency = asset + "_" + currency
-
-        url_params = urlencode({"product_code": asset_currency})
-        request_url = f"/v1/getticker?{url_params}"
+        request_url = f"/v2/ticker/t{asset}{currency}"
 
         d = self.get_url(request_url)
 
@@ -55,7 +51,7 @@ class BitflyerPriceService(WebPriceService):
             response = d["response"]
 
             try:
-                price = float(response["ltp"])
+                price = float(response[6])
             except KeyError as e:
                 msg = f"Error parsing Coingecko API response: KeyError: {e}"
                 logger.critical(msg)
@@ -67,9 +63,9 @@ class BitflyerPriceService(WebPriceService):
 
 
 @dataclass
-class BitflyerPriceSource(PriceSource):
+class BitfinexSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: BitflyerPriceService = field(
-        default_factory=BitflyerPriceService, init=False
+    service: BitfinexSpotPriceService = field(
+        default_factory=BitfinexSpotPriceService, init=False
     )

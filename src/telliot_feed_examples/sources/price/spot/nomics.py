@@ -24,7 +24,7 @@ nomics_coin_id = {
 API_KEY = TelliotConfig().api_keys.find(name="nomics")[0].key
 
 
-class NomicsPriceService(WebPriceService):
+class NomicsSpotPriceService(WebPriceService):
     """Nomics Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
@@ -82,7 +82,9 @@ class NomicsPriceService(WebPriceService):
 
 
 @dataclass
-class NomicsPriceSource(PriceSource):
+class NomicsSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: NomicsPriceService = field(default_factory=NomicsPriceService, init=False)
+    service: NomicsSpotPriceService = field(
+        default_factory=NomicsSpotPriceService, init=False
+    )
