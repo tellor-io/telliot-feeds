@@ -13,7 +13,8 @@ from telliot_feed_examples.utils.log import get_logger
 logger = get_logger(__name__)
 pancakeswap_map = {
     "wbnb": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
-    "fuse": "0x5857c96dae9cf8511b08cb07f85753c472d36ea3"}
+    "fuse": "0x5857c96dae9cf8511b08cb07f85753c472d36ea3",
+}
 
 
 class PancakeswapBnbPriceService(WebPriceService):

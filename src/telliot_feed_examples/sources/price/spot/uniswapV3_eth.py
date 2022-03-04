@@ -16,7 +16,7 @@ uniswapV3_map = {
     "wbtc": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
     "matic": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
     "dai": "0x6b175474e89094c44da98b954eedeac495271d0f",
-    "fuse": "0x970b9bb2c0444f5e81e9d0efb84c8ccdcdcaf84d"
+    "fuse": "0x970b9bb2c0444f5e81e9d0efb84c8ccdcdcaf84d",
 }
 
 
@@ -46,9 +46,7 @@ class UniswapV3EthPriceService(WebPriceService):
             "Content-Type": "application/json",
         }
 
-        query = (
-            "{token" + f'(id: "{token}")' + "{ derivedETH } }"
-        )
+        query = "{token" + f'(id: "{token}")' + "{ derivedETH } }"
 
         json_data = {"query": query}
 
