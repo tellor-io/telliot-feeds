@@ -21,8 +21,14 @@ from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceS
 from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceService
 from telliot_feed_examples.sources.price.spot.gemini import GeminiSpotPriceService
 from telliot_feed_examples.sources.price.spot.nomics import NomicsSpotPriceService
+from telliot_feed_examples.sources.price.spot.pancakeswap_bnb import (
+    PancakeswapBnbPriceService,
+)
 from telliot_feed_examples.sources.price.spot.pancakeswap_usd import (
     PancakeswapPriceService,
+)
+from telliot_feed_examples.sources.price.spot.uniswapV3_eth import (
+    UniswapV3EthPriceService,
 )
 from telliot_feed_examples.sources.price.spot.uniswapV3_usd import UniswapV3PriceService
 
@@ -35,6 +41,8 @@ service = {
     "nomics": NomicsSpotPriceService(),
     "pancakeswap": PancakeswapPriceService(),
     "uniswapV3": UniswapV3PriceService(),
+    "uniswapV3Eth": UniswapV3EthPriceService(),
+    "pancakeswapBNB": PancakeswapBnbPriceService(),
 }
 
 
@@ -113,6 +121,20 @@ async def test_uniswap_usd():
 async def test_pancakeswap_usd():
     """Test retrieving from UniswapV3 price source."""
     v, t = await get_price("wbnb", "usd", service["pancakeswap"])
+    validate_price(v, t)
+
+
+@pytest.mark.asyncio
+async def test_fuse_eth():
+    """Test retrieving from UniswapV3 price source."""
+    v, t = await get_price("fuse", "eth", service["uniswapV3Eth"])
+    validate_price(v, t)
+
+
+@pytest.mark.asyncio
+async def test_fuse_bnb():
+    """Test retrieving from UniswapV3 price source."""
+    v, t = await get_price("fuse", "bnb", service["pancakeswapBNB"])
     validate_price(v, t)
 
 
