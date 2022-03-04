@@ -15,6 +15,7 @@ logger = get_logger(__name__)
 
 # Check supported assets here: https://api.exchange.coinbase.com/products
 
+
 class CoinbaseSpotPriceService(WebPriceService):
     """Coinbase Price Service"""
 

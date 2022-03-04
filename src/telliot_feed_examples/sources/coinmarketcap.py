@@ -1,13 +1,13 @@
-#adding bct-usd price from coinmarketcap
-
-from requests import Request, Session
-from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
+# adding bct-usd price from coinmarketcap
 import json
-
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 
+from requests import Session
+from requests.exceptions import ConnectionError
+from requests.exceptions import Timeout
+from requests.exceptions import TooManyRedirects
 from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_service import WebPriceService
@@ -20,23 +20,24 @@ logger = get_logger(__name__)
 
 # Check supported assets here: https://api.exchange.coinbase.com/products
 
+
 class CoinMarketCapPriceService(WebPriceService):
     """CoinMarketCap Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "CoinMarketCap Price Service"
-        kwargs["url"] = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+        kwargs[
+            "url"
+        ] = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
         super().__init__(**kwargs)
 
     async def get_price(self, symbol: str, key: str) -> OptionalDataPoint[float]:
 
-        url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest'
-        parameters = {
-            'symbol': symbol
-        }
+        url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+        parameters = {"symbol": symbol}
         headers = {
-            'Accepts': 'application/json',
-            'X-CMC_PRO_API_KEY': key,
+            "Accepts": "application/json",
+            "X-CMC_PRO_API_KEY": key,
         }
 
         session = Session()
@@ -49,10 +50,8 @@ class CoinMarketCapPriceService(WebPriceService):
         except (ConnectionError, Timeout, TooManyRedirects) as e:
             print(e)
 
-        price = data['data']['BCT']['quote']['USD']['price']
+        price = data["data"]["BCT"]["quote"]["USD"]["price"]
         return price, datetime_now_utc()
-
-
 
 
 @dataclass
