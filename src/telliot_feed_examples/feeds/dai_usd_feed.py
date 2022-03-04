@@ -1,24 +1,25 @@
-"""Example datafeed used by BTCUSDReporter."""
 from telliot_core.datafeed import DataFeed
-from telliot_core.queries.legacy_query import LegacyRequest
+from telliot_core.queries import SpotPrice
 
+from telliot_feed_examples.sources.price.spot.binance import BinanceSpotPriceSource
 from telliot_feed_examples.sources.price.spot.bittrex import BittrexSpotPriceSource
 from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceSource
 from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feed_examples.sources.price.spot.gemini import GeminiSpotPriceSource
 from telliot_feed_examples.sources.price_aggregator import PriceAggregator
 
-btc_usd_median_feed = DataFeed(
-    query=LegacyRequest(legacy_id=2),
+dai_usd_median_feed = DataFeed(
+    query=SpotPrice(asset="DAI", currency="USD"),
     source=PriceAggregator(
-        asset="btc",
+        asset="dai",
         currency="usd",
         algorithm="median",
         sources=[
-            CoinbaseSpotPriceSource(asset="btc", currency="usd"),
-            CoinGeckoSpotPriceSource(asset="btc", currency="usd"),
-            BittrexSpotPriceSource(asset="btc", currency="usd"),
-            GeminiSpotPriceSource(asset="btc", currency="usd"),
+            CoinGeckoSpotPriceSource(asset="dai", currency="usd"),
+            CoinbaseSpotPriceSource(asset="dai", currency="usd"),
+            BinanceSpotPriceSource(asset="dai", currency="usdt"),
+            GeminiSpotPriceSource(asset="dai", currency="usd"),
+            BittrexSpotPriceSource(asset="dai", currency="usd"),
         ],
     ),
 )

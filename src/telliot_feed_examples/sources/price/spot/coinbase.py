@@ -15,8 +15,7 @@ logger = get_logger(__name__)
 
 # Check supported assets here: https://api.exchange.coinbase.com/products
 
-
-class CoinbasePriceService(WebPriceService):
+class CoinbaseSpotPriceService(WebPriceService):
     """Coinbase Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
@@ -57,9 +56,9 @@ class CoinbasePriceService(WebPriceService):
 
 
 @dataclass
-class CoinbasePriceSource(PriceSource):
+class CoinbaseSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: CoinbasePriceService = field(
-        default_factory=CoinbasePriceService, init=False
+    service: CoinbaseSpotPriceService = field(
+        default_factory=CoinbaseSpotPriceService, init=False
     )

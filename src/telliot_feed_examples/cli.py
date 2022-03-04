@@ -18,10 +18,10 @@ from telliot_core.data.query_catalog import query_catalog
 from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 
 from telliot_feed_examples.feeds import CATALOG_FEEDS
+from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
-from telliot_feed_examples.utils.diva_protocol import assemble_diva_datafeed
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
@@ -86,6 +86,7 @@ def print_reporter_settings(
     transaction_type: int,
     legacy_gas_price: Optional[int],
     gas_price_speed: str,
+    diva_pool_id: Optional[int],
 ) -> None:
     """Print user settings to console."""
     click.echo("")
@@ -96,6 +97,8 @@ def print_reporter_settings(
 
     if query_tag:
         click.echo(f"Reporting query tag: {query_tag}")
+    elif diva_pool_id is not None:
+        click.echo(f"Reporting data for Diva Protocol Pool ID {diva_pool_id}")
     else:
         click.echo("Reporting with synchronized queries")
 
@@ -348,6 +351,7 @@ async def report(
             expected_profit=expected_profit,
             chain_id=cid,
             gas_price_speed=gas_price_speed,
+            diva_pool_id=diva_pool_id,
         )
 
         _ = input("Press [ENTER] to confirm settings.")
@@ -476,6 +480,7 @@ async def tip(
     nargs=1,
     type=int,
     required=False,
+    default=100,
 )
 @click.option("-pswd", "--password", type=str)
 @click.pass_context
@@ -513,7 +518,10 @@ async def settle(
         status = await oracle.set_final_reference_value(
             pool_id=pool_id, legacy_gas_price=legacy_gas_price
         )
-        assert status.ok
+        if status is not None and status.ok:
+            click.echo(f"Pool {pool_id} settled.")
+        else:
+            click.echo(f"Unable to settle Pool {pool_id}.")
 
 
 if __name__ == "__main__":
