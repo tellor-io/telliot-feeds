@@ -84,7 +84,6 @@ class UniswapV3PriceService(WebPriceService):
                 else:
                     token_data = response["data"]["token"]["derivedETH"]
                 price = ethprice * float(token_data)
-                logger.info(f"{price}, {currency}")  # remove this line
                 return price, datetime_now_utc()
             except KeyError as e:
                 msg = "Error parsing UniswapV3 response: KeyError: {}".format(e)
