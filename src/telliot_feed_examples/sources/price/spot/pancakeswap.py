@@ -17,8 +17,8 @@ pancakeswap_map = {
 }
 
 
-class PancakeswapBnbPriceService(WebPriceService):
-    """Pancakeswap Price Service in BNB"""
+class PancakeswapPriceService(WebPriceService):
+    """Pancakeswap Price Service in USD and BNB"""
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "Pancakeswap Price Service"
@@ -51,23 +51,28 @@ class PancakeswapBnbPriceService(WebPriceService):
 
         elif "response" in d:
             response = d["response"]
+            print(response)
 
             try:
-                price = response["data"]["price_BNB"]
+                price = (
+                    response["data"]["price"]
+                    if currency.lower() == "usd"
+                    else response["data"]["price_BNB"]
+                )
             except KeyError as e:
-                msg = "Error parsing Nomics API response: KeyError: {}".format(e)
+                msg = "Error parsing Pancakeswap API response: KeyError: {}".format(e)
                 logger.critical(msg)
 
         else:
             raise Exception("Invalid response from get_url")
-
+        logger.info(f"price for {asset} in {currency}: {price}")
         return float(price), datetime_now_utc()
 
 
 @dataclass
-class PancakeswapBnbPriceSource(PriceSource):
+class PancakeswapPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: PancakeswapBnbPriceService = field(
-        default_factory=PancakeswapBnbPriceService, init=False
+    service: PancakeswapPriceService = field(
+        default_factory=PancakeswapPriceService, init=False
     )
