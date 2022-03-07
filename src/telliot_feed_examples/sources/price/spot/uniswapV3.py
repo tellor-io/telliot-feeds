@@ -17,11 +17,12 @@ uniswapV3_map = {
     "wbtc": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
     "matic": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
     "dai": "0x6b175474e89094c44da98b954eedeac495271d0f",
+    "fuse": "0x970b9bb2c0444f5e81e9d0efb84c8ccdcdcaf84d",
 }
 
 
 class UniswapV3PriceService(WebPriceService):
-    """UniswapV3 Price Service"""
+    """UniswapV3 Price Service in USD and ETH"""
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "UniswapV3 Price Service"
@@ -75,9 +76,14 @@ class UniswapV3PriceService(WebPriceService):
 
             try:
                 ethprice = float(response["data"]["bundles"][0]["ethPriceUSD"])
-                token_data = response["data"]["token"]["derivedETH"]
-                token_price = token_data if asset != "eth" else 1
-                price = ethprice * float(token_price)
+                if asset.lower() == "eth":
+                    token_data = 1
+                elif currency.lower() == "eth":
+                    ethprice = 1
+                    token_data = response["data"]["token"]["derivedETH"]
+                else:
+                    token_data = response["data"]["token"]["derivedETH"]
+                price = ethprice * float(token_data)
                 return price, datetime_now_utc()
             except KeyError as e:
                 msg = "Error parsing UniswapV3 response: KeyError: {}".format(e)

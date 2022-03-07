@@ -11,11 +11,14 @@ from telliot_feed_examples.utils.log import get_logger
 
 
 logger = get_logger(__name__)
-pancakeswap_map = {"wbnb": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"}
+pancakeswap_map = {
+    "wbnb": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
+    "fuse": "0x5857c96dae9cf8511b08cb07f85753c472d36ea3",
+}
 
 
 class PancakeswapPriceService(WebPriceService):
-    """Pancakeswap Price Service"""
+    """Pancakeswap Price Service in USD and BNB"""
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "Pancakeswap Price Service"
@@ -48,16 +51,21 @@ class PancakeswapPriceService(WebPriceService):
 
         elif "response" in d:
             response = d["response"]
+            print(response)
 
             try:
-                price = response["data"]["price"]
+                price = (
+                    response["data"]["price"]
+                    if currency.lower() == "usd"
+                    else response["data"]["price_BNB"]
+                )
             except KeyError as e:
-                msg = "Error parsing Nomics API response: KeyError: {}".format(e)
+                msg = "Error parsing Pancakeswap API response: KeyError: {}".format(e)
                 logger.critical(msg)
 
         else:
             raise Exception("Invalid response from get_url")
-
+        logger.info(f"price for {asset} in {currency}: {price}")
         return float(price), datetime_now_utc()
 
 
