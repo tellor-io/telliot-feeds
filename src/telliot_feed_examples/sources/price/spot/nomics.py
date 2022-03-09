@@ -20,6 +20,7 @@ nomics_coin_id = {
     "bct": "BCT5",
     "btc": "BTC",
     "ric": "RIC4",
+    "idle": "IDLE"
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="nomics")[0].key
@@ -53,7 +54,7 @@ class NomicsSpotPriceService(WebPriceService):
 
         url_params = urlencode(
             {
-                "key": "561128ff5c392739fc12577dc1c4e63ccd3991fc",
+                "key": API_KEY,
                 "ids": coin_id.upper(),
                 "interval": "1d",
                 "convert": currency,

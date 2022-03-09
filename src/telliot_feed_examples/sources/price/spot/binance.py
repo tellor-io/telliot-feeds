@@ -44,7 +44,6 @@ class BinanceSpotPriceService(WebPriceService):
 
         elif "response" in d:
             response = d["response"]
-            print(response)
 
             try:
                 price = float(response[0][4])
