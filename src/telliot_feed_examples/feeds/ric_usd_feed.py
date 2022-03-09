@@ -10,6 +10,6 @@ ric_usd_median_feed = DataFeed(
         asset="ric",
         currency="usd",
         algorithm="median",
-        sources=[CoinGeckoSpotPriceSource(asset="ric", currency="usd")]
+        sources=[CoinGeckoSpotPriceSource(asset="ric", currency="usd")],
     ),
 )
