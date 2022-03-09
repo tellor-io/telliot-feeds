@@ -65,7 +65,7 @@ class NomicsSpotPriceService(WebPriceService):
         d = self.get_url(request_url)
 
         if "error" in d:
-            logger.error(d["exception"].args[1])
+            logger.error(d)
             return None, None
 
         elif "response" in d:
