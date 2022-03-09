@@ -16,12 +16,7 @@ logger = get_logger(__name__)
 
 # Coinbase API uses the 'id' field from /coins/list.
 # Using a manual mapping for now.
-nomics_coin_id = {
-    "bct": "BCT5",
-    "btc": "BTC",
-    "ric": "RIC4",
-    "idle": "IDLE"
-}
+nomics_coin_id = {"bct": "BCT5", "btc": "BTC", "ric": "RIC4", "idle": "IDLE"}
 
 API_KEY = TelliotConfig().api_keys.find(name="nomics")[0].key
 

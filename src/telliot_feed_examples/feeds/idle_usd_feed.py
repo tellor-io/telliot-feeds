@@ -11,6 +11,9 @@ idle_usd_median_feed = DataFeed(
         asset="idle",
         currency="usd",
         algorithm="median",
-        sources=[CoinGeckoSpotPriceSource(asset="idle", currency="usd"), NomicsSpotPriceSource(asset="idle", currency="usd")],
+        sources=[
+            CoinGeckoSpotPriceSource(asset="idle", currency="usd"),
+            NomicsSpotPriceSource(asset="idle", currency="usd"),
+        ],
     ),
 )

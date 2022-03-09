@@ -76,4 +76,3 @@ class KrakenSpotPriceSource(PriceSource):
     service: KrakenSpotPriceService = field(
         default_factory=KrakenSpotPriceService, init=False
     )
-
