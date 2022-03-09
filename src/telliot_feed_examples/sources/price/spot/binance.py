@@ -13,10 +13,6 @@ from telliot_feed_examples.utils.log import get_logger
 
 logger = get_logger(__name__)
 
-# Hardcoded supported assets & currencies
-binance_assets = {"ETH", "DAI"}
-binance_currencies = {"USDT", "USDC"}
-
 
 class BinanceSpotPriceService(WebPriceService):
     """Binance Price Service"""
@@ -34,11 +30,6 @@ class BinanceSpotPriceService(WebPriceService):
         asset = asset.upper()
         currency = currency.upper()
 
-        if asset not in binance_assets:
-            raise Exception(f"Asset not supported: {asset}")
-        if currency not in binance_currencies:
-            raise Exception(f"Currency not supported: {currency}")
-
         url_params = urlencode(
             {"symbol": f"{asset}{currency}", "interval": "1d", "limit": 1}
         )
@@ -53,6 +44,7 @@ class BinanceSpotPriceService(WebPriceService):
 
         elif "response" in d:
             response = d["response"]
+            print(response)
 
             try:
                 price = float(response[0][4])

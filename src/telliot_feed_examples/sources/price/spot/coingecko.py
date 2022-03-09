@@ -20,8 +20,14 @@ coingecko_coin_id = {
     "btc": "bitcoin",
     "dai": "dai",
     "eth": "ethereum",
+    "idle": "idle",
+    "mkr": "maker",
+    "matic": "matic-network",
+    "ric": "richochet",
+    "sushi": "sushi",
     "trb": "tellor",
     "ohm": "olympus",
+    "usdc": "usd-coin",
     "vsq": "vesq",
 }
 

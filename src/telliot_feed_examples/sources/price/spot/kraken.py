@@ -14,11 +14,6 @@ from telliot_feed_examples.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-# Hardcoded supported assets & currencies
-kraken_assets = {"ETH"}
-kraken_currencies = {"USD"}
-
-
 class KrakenSpotPriceService(WebPriceService):
     """Kraken Price Service"""
 
@@ -35,11 +30,6 @@ class KrakenSpotPriceService(WebPriceService):
         asset = asset.upper()
         currency = currency.upper()
 
-        if asset not in kraken_assets:
-            raise Exception(f"Asset not supported: {asset}")
-        if currency not in kraken_currencies:
-            raise Exception(f"Currency not supported: {currency}")
-
         url_params = urlencode({"pair": f"{asset}{currency}"})
 
         request_url = f"/0/public/Ticker?{url_params}"
@@ -54,7 +44,11 @@ class KrakenSpotPriceService(WebPriceService):
             response = d["response"]
 
             try:
-                price = float(response["result"][f"X{asset}Z{currency}"]["c"][0])
+                price = (
+                    float(response["result"][f"X{asset}Z{currency}"]["c"][0])
+                    if asset == "ETH"
+                    else float(response["result"][f"{asset}{currency}"]["c"][0])
+                )
             except KeyError as e:
                 msg = f"Error parsing Kraken API response: KeyError: {e}"
                 logger.critical(msg)

@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 nomics_coin_id = {
     "bct": "BCT5",
     "btc": "BTC",
+    "ric": "RIC4",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="nomics")[0].key
@@ -52,14 +53,14 @@ class NomicsSpotPriceService(WebPriceService):
 
         url_params = urlencode(
             {
-                "key": API_KEY,
+                "key": "561128ff5c392739fc12577dc1c4e63ccd3991fc",
                 "ids": coin_id.upper(),
                 "interval": "1d",
                 "convert": currency,
+                "per-page": 100,
             }
         )
         request_url = "/v1/currencies/ticker?{}".format(url_params)
-
         d = self.get_url(request_url)
 
         if "error" in d:
