@@ -54,7 +54,11 @@ class KrakenSpotPriceService(WebPriceService):
             response = d["response"]
 
             try:
-                price = float(response["result"][f"X{asset}Z{currency}"]["c"][0])
+                price = (
+                    float(response["result"][f"X{asset}Z{currency}"]["c"][0])
+                    if asset == "ETH"
+                    else float(response["result"][f"{asset}{currency}"]["c"][0])
+                )
             except KeyError as e:
                 msg = f"Error parsing Kraken API response: KeyError: {e}"
                 logger.critical(msg)
