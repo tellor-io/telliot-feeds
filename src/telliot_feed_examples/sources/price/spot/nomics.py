@@ -42,7 +42,7 @@ class NomicsSpotPriceService(WebPriceService):
         """
 
         if API_KEY == "":
-            logger.warn("To use the nomics source, add nomics api key to ampl.yaml")
+            logger.warn("To use the nomics source, add nomics api key to api_keys.yaml")
             return None, None
 
         asset = asset.lower()
