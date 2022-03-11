@@ -18,7 +18,7 @@ from telliot_feed_examples.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-API_KEY = TelliotConfig().api_keys.find(name="coinMarketCap")[0].key
+API_KEY = TelliotConfig().api_keys.find(name="coinmarketcap")[0].key
 
 
 class CoinMarketCapSpotPriceService(WebPriceService):
