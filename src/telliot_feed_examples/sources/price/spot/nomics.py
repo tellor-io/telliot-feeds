@@ -16,10 +16,7 @@ logger = get_logger(__name__)
 
 # Coinbase API uses the 'id' field from /coins/list.
 # Using a manual mapping for now.
-nomics_coin_id = {
-    "bct": "BCT5",
-    "btc": "BTC",
-}
+nomics_coin_id = {"bct": "BCT5", "btc": "BTC", "ric": "RIC4", "idle": "IDLE"}
 
 API_KEY = TelliotConfig().api_keys.find(name="nomics")[0].key
 
@@ -40,7 +37,7 @@ class NomicsSpotPriceService(WebPriceService):
         """
 
         if API_KEY == "":
-            logger.warn("To use the nomics source, add nomics api key to ampl.yaml")
+            logger.warn("To use the nomics source, add nomics api key to api_keys.yaml")
             return None, None
 
         asset = asset.lower()
@@ -56,14 +53,14 @@ class NomicsSpotPriceService(WebPriceService):
                 "ids": coin_id.upper(),
                 "interval": "1d",
                 "convert": currency,
+                "per-page": 100,
             }
         )
         request_url = "/v1/currencies/ticker?{}".format(url_params)
-
         d = self.get_url(request_url)
 
         if "error" in d:
-            logger.error(d["exception"].args[1])
+            logger.error(d)
             return None, None
 
         elif "response" in d:

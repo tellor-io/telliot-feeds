@@ -64,6 +64,16 @@ def nomics_key():
     return key
 
 
+@pytest.fixture()
+def coinmarketcap_key():
+    key = TelliotConfig().api_keys.find(name="coinmarketcap")[0].key
+
+    if not key and "COINMARKETCAP_KEY" in os.environ:
+        key = os.environ["COINMARKETCAP_KEY"]
+
+    return key
+
+
 @pytest.mark.asyncio
 async def test_coinbase():
     """Test retrieving from Coinbase price source."""
@@ -85,7 +95,17 @@ async def test_nomics(nomics_key):
         v, t = await get_price("btc", "usd", service["nomics"])
         validate_price(v, t)
     else:
-        print("No Nomics api key ")
+        print("No Nomics API key ")
+
+
+@pytest.mark.asyncio
+async def test_coinmarketcap(coinmarketcap_key):
+    """Test retrieving from CoinMarketCap price source."""
+    if coinmarketcap_key:
+        v, t = await get_price("bct", "usd", service["coinmarketcap"])
+        validate_price(v, t)
+    else:
+        print("No CoinMarketCap API key ")
 
 
 @pytest.mark.asyncio
