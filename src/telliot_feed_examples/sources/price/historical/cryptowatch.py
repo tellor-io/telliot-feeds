@@ -101,6 +101,7 @@ class CryptowatchHistoricalPriceService(WebPriceService):
             response = d["response"]
 
             try:
+                # Price from last trade in trades list retrieved from API
                 price = float(response["result"][str(periods)][-1][4])
             except KeyError as e:
                 msg = f"Error parsing Cryptowatch API response: KeyError: {e}"

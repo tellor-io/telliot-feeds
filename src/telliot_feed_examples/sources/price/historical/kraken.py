@@ -99,6 +99,7 @@ class KrakenHistoricalPriceService(WebPriceService):
             response = d["response"]
 
             try:
+                # Price of first trade in trades list retrieved from API
                 price = float(response["result"][f"X{asset}Z{currency}"][0][0])
             except KeyError as e:
                 msg = f"Error parsing Kraken API response: KeyError: {e}"
