@@ -108,6 +108,7 @@ class PoloniexHistoricalPriceService:
                         f"given timestamp ({ts}) & pair ({pair})."
                     )
                     return None, None
+                # Rrice from first trade in trades list retrieved from API
                 price = float(response[0]["rate"])
             except KeyError as e:
                 msg = f"Error parsing Poloniex API response: KeyError: {e}"
