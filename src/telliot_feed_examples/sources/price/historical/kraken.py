@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any
 from typing import Optional
 from urllib.parse import urlencode
+import time
 
 import requests
 from telliot_core.dtypes.datapoint import datetime_now_utc
@@ -84,6 +85,7 @@ class KrakenHistoricalPriceService(WebPriceService):
         return f"/0/public/Trades?{url_params}"
 
     def resp_price_parse(self, asset: str, currency: str, resp: dict) -> Optional[float]:
+        """Gets first price from trades data."""
         price = None
         try:
             # Price of first trade in trades list retrieved from API
@@ -94,6 +96,18 @@ class KrakenHistoricalPriceService(WebPriceService):
             logger.critical(msg)
 
         return price
+    
+    def resp_all_trades_parse(self, asset: str, currency: str, resp: dict) -> Optional[list]:
+        """Gets all trades."""
+        trades = None
+        try:
+            pair_key = f"X{asset.upper()}Z{currency.upper()}"
+            trades = resp["result"][pair_key]
+        except KeyError as e:
+            msg = f"Error parsing Kraken API response: KeyError: {e}"
+            logger.critical(msg)
+
+        return trades
 
     async def get_price(
         self, asset: str, currency: str, ts: Optional[int] = None
@@ -119,13 +133,25 @@ class KrakenHistoricalPriceService(WebPriceService):
 
         return price, datetime_now_utc()
     
-    async def get_prices(
-        self, asset: str, currency: str, window_len_seconds: int, ts: Optional[int] = None
-    ) -> OptionalDataPoint[float]:
-        """Implement PriceServiceInterface
+    async def get_trades(
+        self, asset: str, currency: str, period: int, ts: Optional[int] = None
+    ) -> Optional[list]:
+        """Retrieves list of historical prices.
 
-        This implementation gets the historical price from
-        the Kraken API using a timestamp."""
+        Gets historical prices of trades data from Kraken API using a timestamp.
+        Returns all trades data within the given period. The period is moved backwards
+        in time if current time overlaps.
+        
+        Args:
+            period: time window in seconds of retrieved trades
+            timestamp: unix timestamp, beginning of 
+            the period (time window of fetched trades data)"""
+        now = time.time()
+        if ts + period/2 > now:
+            ts = now - period
+        else:
+            ts -= period/2
+
         req_url = self.get_request_url(asset, currency, ts)
 
         d = self.get_url(req_url)
@@ -136,12 +162,12 @@ class KrakenHistoricalPriceService(WebPriceService):
 
         elif "response" in d:
             response = d["response"]
-            price = self.resp_price_parse(resp=response, asset=asset, currency=currency)
+            trades = self.resp_all_trades_parse(resp=response, asset=asset, currency=currency)
 
         else:
             raise Exception("Invalid response from get_url")
 
-        return price, datetime_now_utc()
+        return trades, datetime_now_utc()
 
 
 @dataclass

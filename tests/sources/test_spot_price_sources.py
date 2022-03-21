@@ -3,19 +3,10 @@
 """
 import os
 from datetime import datetime
-
 import pytest
+
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feed_examples.sources.price.historical.cryptowatch import (
-    CryptowatchHistoricalPriceService,
-)
-from telliot_feed_examples.sources.price.historical.kraken import (
-    KrakenHistoricalPriceService,
-)
-from telliot_feed_examples.sources.price.historical.poloniex import (
-    PoloniexHistoricalPriceService,
-)
 from telliot_feed_examples.sources.price.spot.bittrex import BittrexSpotPriceService
 from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceService
 from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceService
@@ -134,45 +125,6 @@ async def test_pancakeswap_usd():
 async def test_pancakeswap_bnb():
     """Test retrieving from Pancakeswap price source in BNB."""
     v, t = await get_price("fuse", "bnb", service["pancakeswap"])
-    validate_price(v, t)
-
-
-@pytest.mark.asyncio
-async def test_kraken_historical():
-    v, t = await KrakenHistoricalPriceService().get_price("eth", "usd", ts=1616663420)
-    validate_price(v, t)
-
-    v, t = await KrakenHistoricalPriceService().get_price("xbt", "usd", ts=1616663420)
-    validate_price(v, t)
-
-
-@pytest.mark.asyncio
-async def test_poloniex_historical():
-    v, t = await PoloniexHistoricalPriceService().get_price("eth", "dai", ts=1645813159)
-    validate_price(v, t)
-
-    v, t = await PoloniexHistoricalPriceService().get_price(
-        "eth", "tusd", ts=1645822159
-    )
-
-    v, t = await PoloniexHistoricalPriceService().get_price("btc", "dai", ts=1645813159)
-    validate_price(v, t)
-
-    v, t = await PoloniexHistoricalPriceService().get_price(
-        "btc", "tusd", ts=1645822159
-    )
-
-
-@pytest.mark.asyncio
-async def test_cryptowatch_historical():
-    v, t = await CryptowatchHistoricalPriceService().get_price(
-        "eth", "usd", ts=1646145821
-    )
-    validate_price(v, t)
-
-    v, t = await CryptowatchHistoricalPriceService().get_price(
-        "btc", "usd", ts=1646145821
-    )
     validate_price(v, t)
 
 
