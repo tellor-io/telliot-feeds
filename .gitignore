@@ -156,3 +156,4 @@ Pipfile.lock
 
 # historical price data
 *.csv
+*.zip
