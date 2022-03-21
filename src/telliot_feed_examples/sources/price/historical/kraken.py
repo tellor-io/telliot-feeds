@@ -1,4 +1,3 @@
-import time
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
@@ -12,6 +11,7 @@ from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_service import WebPriceService
 from telliot_core.pricing.price_source import PriceSource
 
+from telliot_feed_examples.sources.price.historical.utils import ensure_valid_timestamp
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -67,13 +67,8 @@ class KrakenHistoricalPriceService(WebPriceService):
             except Exception as e:
                 return {"error": str(type(e)), "exception": e}
 
-    def get_request_url(
-        self, asset: str, currency: str, ts: Optional[int] = None
-    ) -> str:
+    def get_request_url(self, asset: str, currency: str, period_start: int) -> str:
         """Assemble Kraken historical trades request url."""
-        if ts is None:
-            ts = self.ts
-
         asset = asset.upper()
         currency = currency.upper()
 
@@ -83,7 +78,7 @@ class KrakenHistoricalPriceService(WebPriceService):
             raise Exception(f"Currency not supported: {currency}")
 
         url_params = urlencode(
-            {"pair": f"{asset}{currency}", "since": ts}  # Unix timestamp
+            {"pair": f"{asset}{currency}", "since": period_start}  # Unix timestamp
         )
 
         # Source: https://docs.kraken.com/rest/#operation/getRecentTrades
@@ -125,6 +120,9 @@ class KrakenHistoricalPriceService(WebPriceService):
 
         This implementation gets the historical price from
         the Kraken API using a timestamp."""
+        if ts is None:
+            ts = self.ts
+
         req_url = self.get_request_url(asset, currency, ts)
 
         d = self.get_url(req_url)
@@ -158,13 +156,10 @@ class KrakenHistoricalPriceService(WebPriceService):
         if ts is None:
             ts = self.ts
 
-        now = int(time.time())
-        if ts + period / 2 > now:
-            ts = now - period
-        else:
-            ts -= int(period / 2)
+        ts = ensure_valid_timestamp(ts, period)
+        period_start = int(ts - period / 2)
 
-        req_url = self.get_request_url(asset, currency, ts)
+        req_url = self.get_request_url(asset, currency, period_start)
 
         d = self.get_url(req_url)
 
