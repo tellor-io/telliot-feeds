@@ -46,7 +46,7 @@ async def test_kraken_get_price():
 
 @pytest.mark.asyncio
 async def test_kraken_get_trades():
-    six_hours = 200 # seconds
+    six_hours = 60 * 60 * 6 # seconds
     trades, t = await KrakenHistoricalPriceService().get_trades(
         "eth",
         "usd",
@@ -54,6 +54,7 @@ async def test_kraken_get_trades():
         ts=1647782323,
     )
 
+    assert isinstance(t, datetime)
     assert isinstance(trades, list)
     assert len(trades) > 0
     assert isfloat(trades[0][0])
