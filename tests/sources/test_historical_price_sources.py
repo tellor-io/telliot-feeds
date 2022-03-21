@@ -14,6 +14,7 @@ from telliot_feed_examples.sources.price.historical.poloniex import (
 
 
 def isfloat(num: str) -> bool:
+    """Check if string is numeric."""
     try:
         float(num)
         return True
@@ -39,6 +40,7 @@ def validate_price(v, t):
 
 @pytest.mark.asyncio
 async def test_kraken_get_price():
+    """Retrieve singular price close to given timestamp."""
     v, t = await KrakenHistoricalPriceService().get_price("eth", "usd", ts=1616663420)
     validate_price(v, t)
 
@@ -48,6 +50,7 @@ async def test_kraken_get_price():
 
 @pytest.mark.asyncio
 async def test_kraken_get_trades():
+    """Retrieve all price data given a timestamp and surrounding time period."""
     six_hours = 60 * 60 * 6  # seconds
     trades, t = await KrakenHistoricalPriceService().get_trades(
         "eth",
@@ -62,9 +65,23 @@ async def test_kraken_get_trades():
     assert isfloat(trades[0][0])
     print("# trades in six hour window:", len(trades))
 
+    trades, t = await KrakenHistoricalPriceService().get_trades(
+        "xbt",
+        "usd",
+        period=six_hours,
+        ts=1647782323,
+    )
+
+    assert isinstance(t, datetime)
+    assert isinstance(trades, list)
+    assert len(trades) > 0
+    assert isfloat(trades[0][0])
+    print("# trades in six hour window:", len(trades))
+
 
 @pytest.mark.asyncio
-async def test_poloniex_historical():
+async def test_poloniex_get_price():
+    """Retrieve single historical price close to given timestamp."""
     v, t = await PoloniexHistoricalPriceService().get_price("eth", "dai", ts=1645813159)
     validate_price(v, t)
 
@@ -82,6 +99,7 @@ async def test_poloniex_historical():
 
 @pytest.mark.asyncio
 async def test_cryptowatch_historical():
+    """Retrieve single historical price close to given timestamp."""
     v, t = await CryptowatchHistoricalPriceService().get_price(
         "eth", "usd", ts=1646145821
     )

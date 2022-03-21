@@ -70,6 +70,7 @@ class KrakenHistoricalPriceService(WebPriceService):
     def get_request_url(
         self, asset: str, currency: str, ts: Optional[int] = None
     ) -> str:
+        """Assemble Kraken historical trades request url."""
         if ts is None:
             ts = self.ts
 
