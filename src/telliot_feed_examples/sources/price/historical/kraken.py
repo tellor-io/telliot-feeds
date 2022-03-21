@@ -152,7 +152,13 @@ class KrakenHistoricalPriceService(WebPriceService):
         Args:
             period: time window in seconds of retrieved trades
             timestamp: unix timestamp, beginning of
-            the period (time window of fetched trades data)"""
+            the period (time window of fetched trades data)
+
+        Returns:
+            trades: list of trades (sublists). The elements of a trade
+            sublist (in order) are price, volume, time, buy/sell, market/limit,
+            and miscellaneous."""
+
         if ts is None:
             ts = self.ts
 
