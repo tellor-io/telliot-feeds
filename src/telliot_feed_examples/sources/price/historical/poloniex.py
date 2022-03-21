@@ -103,7 +103,12 @@ class PoloniexHistoricalPriceService:
             return None, None
 
         elif "response" in d:
-            trades = d["response"]
+            rsp = d["response"]
+            if type(rsp) == dict and "error" in rsp:
+                logger.error(f'Error in poloniex response: {rsp["error"]}')
+                return None, None
+            trades = rsp
+
         else:
             raise Exception("Invalid response from get_url")
 
