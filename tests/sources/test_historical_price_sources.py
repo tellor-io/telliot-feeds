@@ -1,5 +1,6 @@
-import pytest
 from datetime import datetime
+
+import pytest
 
 from telliot_feed_examples.sources.price.historical.cryptowatch import (
     CryptowatchHistoricalPriceService,
@@ -18,6 +19,7 @@ def isfloat(num: str) -> bool:
         return True
     except ValueError:
         return False
+
 
 async def get_price(asset, currency, s):
     """Helper function for retrieving prices."""
@@ -46,7 +48,7 @@ async def test_kraken_get_price():
 
 @pytest.mark.asyncio
 async def test_kraken_get_trades():
-    six_hours = 60 * 60 * 6 # seconds
+    six_hours = 60 * 60 * 6  # seconds
     trades, t = await KrakenHistoricalPriceService().get_trades(
         "eth",
         "usd",

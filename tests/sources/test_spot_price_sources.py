@@ -3,8 +3,8 @@
 """
 import os
 from datetime import datetime
-import pytest
 
+import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feed_examples.sources.price.spot.bittrex import BittrexSpotPriceService
