@@ -63,14 +63,8 @@ class KrakenHistoricalPriceService(WebPriceService):
 
             except Exception as e:
                 return {"error": str(type(e)), "exception": e}
-
-    async def get_price(
-        self, asset: str, currency: str, ts: Optional[int] = None
-    ) -> OptionalDataPoint[float]:
-        """Implement PriceServiceInterface
-
-        This implementation gets the historical price from
-        the Kraken API using a timestamp."""
+    
+    def get_request_url(self, asset: str, currency: str, ts: Optional[int] = None) -> dict:
         if ts is None:
             ts = self.ts
 
@@ -87,9 +81,30 @@ class KrakenHistoricalPriceService(WebPriceService):
         )
 
         # Source: https://docs.kraken.com/rest/#operation/getRecentTrades
-        request_url = f"/0/public/Trades?{url_params}"
+        return f"/0/public/Trades?{url_params}"
 
-        d = self.get_url(request_url)
+    def resp_price_parse(self, asset: str, currency: str, resp: dict) -> Optional[float]:
+        price = None
+        try:
+            # Price of first trade in trades list retrieved from API
+            pair_key = f"X{asset.upper()}Z{currency.upper()}"
+            price = float(resp["result"][pair_key][0][0])
+        except KeyError as e:
+            msg = f"Error parsing Kraken API response: KeyError: {e}"
+            logger.critical(msg)
+
+        return price
+
+    async def get_price(
+        self, asset: str, currency: str, ts: Optional[int] = None
+    ) -> OptionalDataPoint[float]:
+        """Implement PriceServiceInterface
+
+        This implementation gets the historical price from
+        the Kraken API using a timestamp."""
+        req_url = self.get_request_url(asset, currency, ts)
+
+        d = self.get_url(req_url)
 
         if "error" in d:
             logger.error(d)
@@ -97,13 +112,31 @@ class KrakenHistoricalPriceService(WebPriceService):
 
         elif "response" in d:
             response = d["response"]
+            price = self.resp_price_parse(resp=response, asset=asset, currency=currency)
 
-            try:
-                # Price of first trade in trades list retrieved from API
-                price = float(response["result"][f"X{asset}Z{currency}"][0][0])
-            except KeyError as e:
-                msg = f"Error parsing Kraken API response: KeyError: {e}"
-                logger.critical(msg)
+        else:
+            raise Exception("Invalid response from get_url")
+
+        return price, datetime_now_utc()
+    
+    async def get_prices(
+        self, asset: str, currency: str, window_len_seconds: int, ts: Optional[int] = None
+    ) -> OptionalDataPoint[float]:
+        """Implement PriceServiceInterface
+
+        This implementation gets the historical price from
+        the Kraken API using a timestamp."""
+        req_url = self.get_request_url(asset, currency, ts)
+
+        d = self.get_url(req_url)
+
+        if "error" in d:
+            logger.error(d)
+            return None, None
+
+        elif "response" in d:
+            response = d["response"]
+            price = self.resp_price_parse(resp=response, asset=asset, currency=currency)
 
         else:
             raise Exception("Invalid response from get_url")
