@@ -6,33 +6,63 @@ from telliot_feed_examples.sources.price.historical.kraken import (
 )
 
 
-def get_trades():
-    six_hours = 60 * 60 * 6  # seconds
+def get_kraken_data(period: int, ts: int, asset: str, currency: str) -> list:
     trades, _ = asyncio.run(
         KrakenHistoricalPriceService().get_trades(
-            "eth",
-            "usd",
-            period=six_hours,
-            ts=1647782323,
+            asset,
+            currency,
+            period=period,
+            ts=ts,
         )
     )
     print("# trades in six hour window:", len(trades))
     return trades
 
 
-def generate_csv(trades: list) -> None:
-    # source: https://docs.kraken.com/rest/#operation/getRecentTrades
-    cols = ["price", "volume", "time", "buy/sell", "market/limit", "miscellaneous"]
+def get_poloniex_data(period: int, ts: int, asset: str, currency: str) -> list:
+    pass
 
-    with open("kraken_eth_usd_historical_price_source.csv", "w") as f:
+
+def get_cryptowatch_data(period: int, ts: int, asset: str, currency: str) -> list:
+    pass
+
+
+def generate_csv(file_name: str, data: list, cols: list) -> None:
+    with open(file_name, "w") as f:
         write = csv.writer(f)
         write.writerow(cols)
-        write.writerows(trades)
+        write.writerows(data)
 
 
 def main():
-    trades = get_trades()
-    generate_csv(trades)
+    time_period = 60 * 60 * 6  # Six hours in seconds
+    timestamp = 1647782323
+
+    # Kraken historical price data
+    # source: https://docs.kraken.com/rest/#operation/getRecentTrades
+    cols = ["price", "volume", "time", "buy/sell", "market/limit", "miscellaneous"]
+
+    data = get_kraken_data(
+        ts=timestamp, period=time_period, asset="eth", currency="usd"
+    )
+    generate_csv("kraken_eth_usd_historical_price_source.csv", data, cols)
+
+    data = get_kraken_data(
+        ts=timestamp, period=time_period, asset="xbt", currency="usd"
+    )
+    generate_csv("kraken_xbt_usd_historical_price_source.csv", data, cols)
+
+    # Poloniex historical price data
+    # source:
+    cols = ["price", "volume", "time", "buy/sell", "market/limit", "miscellaneous"]
+    # data = get_poloniex_data()
+    # generate_csv("kraken_eth_usd_historical_price_source.csv", data, cols)
+
+    # Cryptowatch historical price data
+    # source:
+    cols = ["price", "volume", "time", "buy/sell", "market/limit", "miscellaneous"]
+    # data = get_cryptowatch_data()
+    # generate_csv("kraken_eth_usd_historical_price_source.csv", data, cols)
 
 
 if __name__ == "__main__":
