@@ -129,7 +129,7 @@ async def test_poloniex_get_trades():
 
 
 @pytest.mark.asyncio
-async def test_cryptowatch_historical():
+async def test_cryptowatch_get_price():
     """Retrieve single historical price close to given timestamp."""
     v, t = await CryptowatchHistoricalPriceService().get_price(
         "eth", "usd", ts=1646145821
@@ -140,3 +140,34 @@ async def test_cryptowatch_historical():
         "btc", "usd", ts=1646145821
     )
     validate_price(v, t)
+
+
+@pytest.mark.asyncio
+async def test_cryptowatch_get_candles():
+    """Retrieve all price data given a timestamp and surrounding time period."""
+    six_hours = 60 * 60 * 6  # seconds
+    candles, t = await CryptowatchHistoricalPriceService().get_candles(
+        "eth",
+        "usd",
+        period=six_hours,
+        ts=1647782323,
+    )
+
+    assert isinstance(t, datetime)
+    assert isinstance(candles, list)
+    assert len(candles) > 0
+    assert isfloat(candles[-1][4])
+    print("# candles in six hour window:", len(candles))
+
+    candles, t = await CryptowatchHistoricalPriceService().get_candles(
+        "btc",
+        "usd",
+        period=six_hours,
+        ts=1647782323,
+    )
+
+    assert isinstance(t, datetime)
+    assert isinstance(candles, list)
+    assert len(candles) > 0
+    assert isfloat(candles[-1][4])
+    print("# candles in six hour window:", len(candles))
