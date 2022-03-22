@@ -10,6 +10,7 @@ from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_source import PriceSource
 
+from telliot_feed_examples.sources.price.historical.utils import ensure_valid_timestamp
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -74,6 +75,7 @@ class PoloniexHistoricalPriceService:
         The period's middle is at the given timestamp."""
         if ts is None:
             ts = self.ts
+        ts = ensure_valid_timestamp(ts, period)
 
         asset = asset.upper()
         currency = currency.upper()
