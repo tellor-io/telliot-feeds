@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 from typing import Optional
+from typing import Tuple
 from urllib.parse import urlencode
 
 import requests
@@ -9,6 +11,7 @@ from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_service import WebPriceService
 from telliot_core.pricing.price_source import PriceSource
 
+from telliot_feed_examples.sources.price.historical.utils import ensure_valid_timestamp
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -61,9 +64,9 @@ class CryptowatchHistoricalPriceService(WebPriceService):
             except Exception as e:
                 return {"error": str(type(e)), "exception": e}
 
-    async def get_price(
-        self, asset: str, currency: str, ts: Optional[int] = None
-    ) -> OptionalDataPoint[float]:
+    async def get_candles(
+        self, asset: str, currency: str, period: int = 10000, ts: Optional[int] = None
+    ) -> Tuple[Optional[list[Any]], Optional[datetime]]:
         """Implement PriceServiceInterface
 
         This implementation gets the historical price from
@@ -75,6 +78,7 @@ class CryptowatchHistoricalPriceService(WebPriceService):
         """
         if ts is None:
             ts = self.ts
+        ts = ensure_valid_timestamp(ts, period)
 
         asset = asset.lower()
         currency = currency.lower()
@@ -83,15 +87,19 @@ class CryptowatchHistoricalPriceService(WebPriceService):
         if pair not in CRYPTOWATCH_PAIRS:
             raise Exception(f"Currency pair not supported: {pair}")
 
-        periods = 1800  # 30min
+        candle_periods = 1800  # 30min
         url_params = urlencode(
-            {"after": int(ts - 1e4), "before": ts, "periods": periods}
+            {
+                "after": int(ts - period / 2),
+                "before": int(ts + period / 2),
+                "periods": candle_periods,
+            }
         )
 
         request_url = f"markets/coinbase-pro/{pair}/ohlc?{url_params}"
 
         d = self.get_url(request_url)
-        price = None
+        candles = None
 
         if "error" in d:
             logger.error(d)
@@ -101,8 +109,7 @@ class CryptowatchHistoricalPriceService(WebPriceService):
             response = d["response"]
 
             try:
-                # Price from last trade in trades list retrieved from API
-                price = float(response["result"][str(periods)][-1][4])
+                candles = response["result"][str(candle_periods)]
             except KeyError as e:
                 msg = f"Error parsing Cryptowatch API response: KeyError: {e}"
                 logger.critical(msg)
@@ -110,7 +117,41 @@ class CryptowatchHistoricalPriceService(WebPriceService):
         else:
             raise Exception("Invalid response from get_url")
 
-        return price, datetime_now_utc()
+        return candles, datetime_now_utc()
+
+    async def get_price(
+        self, asset: str, currency: str, period: int = 10000, ts: Optional[int] = None
+    ) -> OptionalDataPoint[float]:
+        """Implement PriceServiceInterface
+
+        This implementation gets the historical price from
+        the Cryptowatch API using a timestamp. Historical prices are
+        fetched from Cryptowatch's recorded Coinbase-pro data.
+
+        Documentation for Cryptowatch API:
+        https://docs.cryptowat.ch/rest-api/markets/ohlc
+        """
+        candles, dt = await self.get_candles(
+            asset=asset, currency=currency, ts=ts, period=period
+        )
+
+        if candles is not None:
+            try:
+                if len(candles) == 0:
+                    logger.warning(
+                        "No candle data from Cryptowatch historical price source"
+                        f" for given timestamp: {ts}."
+                    )
+                    return None, None
+
+                # Price from last candle in period
+                return float(candles[-1][4]), dt
+
+            except KeyError as e:
+                msg = f"Error parsing Cryptowatch API candle data: KeyError: {e}"
+                logger.critical(msg)
+
+        return None, None
 
 
 @dataclass

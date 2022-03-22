@@ -153,3 +153,7 @@ cython_debug/
 
 Pipfile
 Pipfile.lock
+
+# historical price data
+*.csv
+*.zip
