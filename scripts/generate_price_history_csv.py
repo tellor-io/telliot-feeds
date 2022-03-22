@@ -2,6 +2,9 @@ import asyncio
 import csv
 from typing import Any
 
+from telliot_feed_examples.sources.price.historical.cryptowatch import (
+    CryptowatchHistoricalPriceService,
+)
 from telliot_feed_examples.sources.price.historical.kraken import (
     KrakenHistoricalPriceService,
 )
@@ -57,7 +60,14 @@ def get_poloniex_data(period: int, ts: int, asset: str, currency: str) -> list:
 
 
 def get_cryptowatch_data(period: int, ts: int, asset: str, currency: str) -> list:
-    pass
+    candles, _ = asyncio.run(
+        CryptowatchHistoricalPriceService().get_candles(asset, currency, period, ts)
+    )
+    print(
+        f"Cryptowatch: # candles in six hour window for {asset}/{currency}:",
+        len(candles),
+    )
+    return candles
 
 
 def generate_csv(file_name: str, data: list, cols: list) -> None:
@@ -111,8 +121,23 @@ def main():
     # Cryptowatch historical price data
     # source:
     # cols = ["price", "volume", "time", "buy/sell", "market/limit", "miscellaneous"]
-    # data = get_cryptowatch_data()
-    # generate_csv("kraken_eth_usd_historical_price_source.csv", data, cols)
+    cols = [
+        "CloseTime",
+        "OpenPrice",
+        "HighPrice",
+        "LowPrice",
+        "ClosePrice",
+        "Volume",
+        "QuoteVolume",
+    ]
+    data = get_cryptowatch_data(
+        ts=timestamp, period=time_period, asset="eth", currency="usd"
+    )
+    generate_csv("cryptowatch_eth_usd_historical_price_source.csv", data, cols)
+    data = get_cryptowatch_data(
+        ts=timestamp, period=time_period, asset="btc", currency="usd"
+    )
+    generate_csv("cryptowatch_btc_usd_historical_price_source.csv", data, cols)
 
 
 if __name__ == "__main__":
