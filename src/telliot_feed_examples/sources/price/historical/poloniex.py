@@ -67,7 +67,7 @@ class PoloniexHistoricalPriceService:
         self,
         asset: str,
         currency: str,
-        period: int = 900, # 15 minutes
+        period: int = 900,  # 15 minutes
         ts: Optional[int] = None,
     ) -> Tuple[Optional[list[Any]], Optional[datetime]]:
         """Returns trade data found within a given period.
@@ -138,8 +138,8 @@ class PoloniexHistoricalPriceService:
                     )
                     return None, None
 
-                # Price from first trade in period
-                return float(trades[0]["rate"]), dt
+                # Price from last trade in period
+                return float(trades[-1]["rate"]), dt
 
             except KeyError as e:
                 msg = f"Error parsing Poloniex API response: KeyError: {e}"

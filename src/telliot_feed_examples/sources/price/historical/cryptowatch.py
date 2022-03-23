@@ -68,7 +68,7 @@ class CryptowatchHistoricalPriceService(WebPriceService):
         asset: str,
         currency: str,
         candle_periods: int = 60,  # 1 minute
-        period: int = 900, # 15 minutes
+        period: int = 900,  # 15 minutes
         ts: Optional[int] = None,
     ) -> Tuple[Optional[list[Any]], Optional[datetime]]:
         """Implement PriceServiceInterface

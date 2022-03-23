@@ -89,9 +89,9 @@ class KrakenHistoricalPriceService(WebPriceService):
         """Gets first price from trades data."""
         price = None
         try:
-            # Price of first trade in trades list retrieved from API
+            # Price of last trade in trades list retrieved from API
             pair_key = f"X{asset.upper()}Z{currency.upper()}"
-            price = float(resp["result"][pair_key][0][0])
+            price = float(resp["result"][pair_key][-1][0])
         except KeyError as e:
             msg = f"Error parsing Kraken API response: KeyError: {e}"
             logger.critical(msg)
@@ -143,8 +143,8 @@ class KrakenHistoricalPriceService(WebPriceService):
         self,
         asset: str,
         currency: str,
-        period: int = 900, # 15 minutes
-        ts: Optional[int] = None
+        period: int = 900,  # 15 minutes
+        ts: Optional[int] = None,
     ) -> Tuple[Optional[list[str]], Optional[datetime]]:
         """Retrieves list of historical prices.
 
