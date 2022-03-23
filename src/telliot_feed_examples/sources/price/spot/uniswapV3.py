@@ -65,11 +65,11 @@ class UniswapV3PriceService(WebPriceService):
                 data = {"response": res}
 
             except requests.exceptions.ConnectTimeout:
-                logger.warn("Timeout Error, No prices retrieved from Uniswap")
+                logger.warning("Timeout Error, No prices retrieved from Uniswap")
                 return None, None
 
             except Exception:
-                logger.warn("No prices retrieved from Uniswap")
+                logger.warning("No prices retrieved from Uniswap")
                 return None, None
 
         if "error" in data:
