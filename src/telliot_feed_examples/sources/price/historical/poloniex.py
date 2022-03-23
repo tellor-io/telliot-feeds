@@ -10,7 +10,6 @@ from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_source import PriceSource
 
-from telliot_feed_examples.sources.price.historical.utils import ensure_valid_timestamp
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -68,14 +67,13 @@ class PoloniexHistoricalPriceService:
         self,
         asset: str,
         currency: str,
-        period: int,
+        period: int = 900, # 15 minutes
         ts: Optional[int] = None,
     ) -> Tuple[Optional[list[Any]], Optional[datetime]]:
         """Returns trade data found within a given period.
         The period's middle is at the given timestamp."""
         if ts is None:
             ts = self.ts
-        ts = ensure_valid_timestamp(ts, period)
 
         asset = asset.upper()
         currency = currency.upper()
@@ -89,8 +87,8 @@ class PoloniexHistoricalPriceService:
         url_params = urlencode(
             {
                 "currencyPair": pair,
-                "start": ts - int(period / 2),
-                "end": ts + int(period / 2),
+                "start": int(ts - period),
+                "end": ts,
             }
         )
 

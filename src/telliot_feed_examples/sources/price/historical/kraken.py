@@ -11,7 +11,6 @@ from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_service import WebPriceService
 from telliot_core.pricing.price_source import PriceSource
 
-from telliot_feed_examples.sources.price.historical.utils import ensure_valid_timestamp
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -141,7 +140,11 @@ class KrakenHistoricalPriceService(WebPriceService):
         return price, datetime_now_utc()
 
     async def get_trades(
-        self, asset: str, currency: str, period: int, ts: Optional[int] = None
+        self,
+        asset: str,
+        currency: str,
+        period: int = 900, # 15 minutes
+        ts: Optional[int] = None
     ) -> Tuple[Optional[list[str]], Optional[datetime]]:
         """Retrieves list of historical prices.
 
@@ -162,8 +165,7 @@ class KrakenHistoricalPriceService(WebPriceService):
         if ts is None:
             ts = self.ts
 
-        ts = ensure_valid_timestamp(ts, period)
-        period_start = int(ts - period / 2)
+        period_start = int(ts - period)
 
         req_url = self.get_request_url(asset, currency, period_start)
 
