@@ -11,7 +11,6 @@ from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_service import WebPriceService
 from telliot_core.pricing.price_source import PriceSource
 
-from telliot_feed_examples.sources.price.historical.utils import ensure_valid_timestamp
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -65,7 +64,12 @@ class CryptowatchHistoricalPriceService(WebPriceService):
                 return {"error": str(type(e)), "exception": e}
 
     async def get_candles(
-        self, asset: str, currency: str, period: int = 10000, ts: Optional[int] = None
+        self,
+        asset: str,
+        currency: str,
+        candle_periods: int = 60,  # 1 minute
+        period: int = 900,  # 15 minutes
+        ts: Optional[int] = None,
     ) -> Tuple[Optional[list[Any]], Optional[datetime]]:
         """Implement PriceServiceInterface
 
@@ -78,7 +82,6 @@ class CryptowatchHistoricalPriceService(WebPriceService):
         """
         if ts is None:
             ts = self.ts
-        ts = ensure_valid_timestamp(ts, period)
 
         asset = asset.lower()
         currency = currency.lower()
@@ -87,11 +90,10 @@ class CryptowatchHistoricalPriceService(WebPriceService):
         if pair not in CRYPTOWATCH_PAIRS:
             raise Exception(f"Currency pair not supported: {pair}")
 
-        candle_periods = 1800  # 30min
         url_params = urlencode(
             {
-                "after": int(ts - period / 2),
-                "before": int(ts + period / 2),
+                "after": int(ts - period),
+                "before": ts,
                 "periods": candle_periods,
             }
         )
