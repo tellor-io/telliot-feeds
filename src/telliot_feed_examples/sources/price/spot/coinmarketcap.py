@@ -50,7 +50,9 @@ class CoinMarketCapSpotPriceService(WebPriceService):
         if currency not in coinmarketcap_currencies:
             raise Exception(f"Currency not supported: {currency}")
 
-        request_url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+        request_url = (
+            "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+        )
 
         parameters = {"symbol": asset}
         headers = {
@@ -66,7 +68,8 @@ class CoinMarketCapSpotPriceService(WebPriceService):
             data = json.loads(response.text)
 
         except (ConnectionError, Timeout, TooManyRedirects) as e:
-            print(e)
+            logger.warn(e)
+            return None, None
 
         price = data["data"][asset]["quote"][currency]["price"]
         return price, datetime_now_utc()
