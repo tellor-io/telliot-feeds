@@ -65,7 +65,12 @@ class CryptowatchHistoricalPriceService(WebPriceService):
                 return {"error": str(type(e)), "exception": e}
 
     async def get_candles(
-        self, asset: str, currency: str, period: int = 10000, ts: Optional[int] = None
+        self,
+        asset: str,
+        currency: str,
+        candle_periods: int = 60,
+        period: int = 10000,
+        ts: Optional[int] = None,
     ) -> Tuple[Optional[list[Any]], Optional[datetime]]:
         """Implement PriceServiceInterface
 
@@ -87,7 +92,6 @@ class CryptowatchHistoricalPriceService(WebPriceService):
         if pair not in CRYPTOWATCH_PAIRS:
             raise Exception(f"Currency pair not supported: {pair}")
 
-        candle_periods = 1800  # 30min
         url_params = urlencode(
             {
                 "after": int(ts - period / 2),
