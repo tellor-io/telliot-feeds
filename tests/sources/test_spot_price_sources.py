@@ -29,8 +29,9 @@ service = {
 }
 
 
-async def get_price(asset, currency, s):
+async def get_price(asset, currency, s, timeout=10.0):
     """Helper function for retrieving prices."""
+    s.timeout = timeout
     v, t = await s.get_price(asset, currency)
     return v, t
 
@@ -98,6 +99,14 @@ async def test_uniswap_usd():
     """Test retrieving from UniswapV3 price source in USD."""
     v, t = await get_price("fuse", "usd", service["uniswapV3"])
     validate_price(v, t)
+
+
+@pytest.mark.asyncio
+async def test_uniswap_timeout():
+    """Test retrieving from UniswapV3 price source in USD."""
+    v, t = await get_price("fuse", "usd", service["uniswapV3"], 0.05)
+    assert v is None
+    assert t is None
 
 
 @pytest.mark.asyncio
