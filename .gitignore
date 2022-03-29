@@ -157,3 +157,6 @@ Pipfile.lock
 # historical price data
 *.csv
 *.zip
+
+# ignore mac specific files
+.DS_Store
