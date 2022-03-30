@@ -17,6 +17,8 @@ from telliot_feed_examples.utils.log import get_logger
 
 logger = get_logger(__name__)
 
+coinmarketcap_assets = {"BCT"}
+coinmarketcap_currencies = {"USD"}
 
 API_KEY = TelliotConfig().api_keys.find(name="coinmarketcap")[0].key
 
@@ -40,8 +42,19 @@ class CoinMarketCapSpotPriceService(WebPriceService):
             )
             return None, None
 
-        url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
-        parameters = {"symbol": asset.upper()}
+        asset = asset.upper()
+        currency = currency.upper()
+
+        if asset not in coinmarketcap_assets:
+            raise Exception(f"Asset not supported: {asset}")
+        if currency not in coinmarketcap_currencies:
+            raise Exception(f"Currency not supported: {currency}")
+
+        request_url = (
+            "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+        )
+
+        parameters = {"symbol": asset}
         headers = {
             "Accepts": "application/json",
             "X-CMC_PRO_API_KEY": API_KEY,
@@ -51,13 +64,14 @@ class CoinMarketCapSpotPriceService(WebPriceService):
         session.headers.update(headers)
 
         try:
-            response = session.get(url, params=parameters)
+            response = session.get(request_url, params=parameters)
             data = json.loads(response.text)
 
         except (ConnectionError, Timeout, TooManyRedirects) as e:
-            print(e)
+            logger.warn(e)
+            return None, None
 
-        price = data["data"][asset.upper()]["quote"][currency.upper()]["price"]
+        price = data["data"][asset]["quote"][currency]["price"]
         return price, datetime_now_utc()
 
 
