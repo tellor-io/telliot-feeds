@@ -48,7 +48,10 @@ async def get_pool_params(
         logger.error("Error getting pool params from Diva contract.")
         return None
 
-    pool_params = DivaPoolParameters(reference_asset=params[0], expiry_date=params[8])
+    print("PARAMS:", params)
+    pool_params = DivaPoolParameters(
+        reference_asset=params.reference_asset, expiry_date=params.expiry_time
+    )
     if pool_params.reference_asset not in SUPPORTED_REFERENCE_ASSETS:
         logger.error(f"Reference asset not supported: {pool_params.reference_asset}")
         return None

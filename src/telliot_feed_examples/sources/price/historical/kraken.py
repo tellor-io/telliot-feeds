@@ -87,16 +87,20 @@ class KrakenHistoricalPriceService(WebPriceService):
         self, asset: str, currency: str, resp: dict[Any, Any]
     ) -> Optional[float]:
         """Gets first price from trades data."""
-        price = None
         try:
             # Price of last trade in trades list retrieved from API
             pair_key = f"X{asset.upper()}Z{currency.upper()}"
-            price = float(resp["result"][pair_key][-1][0])
+            trades = resp["result"][pair_key]
         except KeyError as e:
             msg = f"Error parsing Kraken API response: KeyError: {e}"
             logger.critical(msg)
+            return None
 
-        return price
+        if len(trades) == 0:
+            logger.warning("No trades found.")
+            return None
+
+        return float(trades[-1][0])
 
     def resp_all_trades_parse(
         self, asset: str, currency: str, resp: dict[Any, Any]

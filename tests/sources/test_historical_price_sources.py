@@ -132,12 +132,12 @@ async def test_poloniex_get_trades():
 async def test_cryptowatch_get_price():
     """Retrieve single historical price close to given timestamp."""
     v, t = await CryptowatchHistoricalPriceService().get_price(
-        "eth", "usd", ts=1647782323
+        "eth", "usd", ts=1648567107
     )
     validate_price(v, t)
 
     v, t = await CryptowatchHistoricalPriceService().get_price(
-        "btc", "usd", ts=1647782323
+        "btc", "usd", ts=1648567107
     )
     validate_price(v, t)
 
@@ -150,7 +150,7 @@ async def test_cryptowatch_get_candles():
         "eth",
         "usd",
         period=six_hours,
-        ts=1647782323,
+        ts=1648567107,
     )
 
     assert isinstance(t, datetime)
@@ -163,7 +163,7 @@ async def test_cryptowatch_get_candles():
         "btc",
         "usd",
         period=six_hours,
-        ts=1647782323,
+        ts=1648567107,
     )
 
     assert isinstance(t, datetime)

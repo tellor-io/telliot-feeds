@@ -19,4 +19,4 @@ async def test_AssetPriceFeed():
     print(source_prices)
 
     # Make sure error is less than decimal tolerance
-    assert (v - statistics.median(source_prices)) < 10 ** -6
+    assert (v - statistics.median(source_prices)) < 10**-6
