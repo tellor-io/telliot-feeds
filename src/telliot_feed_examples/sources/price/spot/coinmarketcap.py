@@ -68,7 +68,7 @@ class CoinMarketCapSpotPriceService(WebPriceService):
             data = json.loads(response.text)
 
         except (ConnectionError, Timeout, TooManyRedirects) as e:
-            logger.warn(e)
+            logger.warning(e)
             return None, None
 
         price = data["data"][asset]["quote"][currency]["price"]
