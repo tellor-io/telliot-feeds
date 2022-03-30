@@ -61,7 +61,9 @@ def get_poloniex_data(period: int, ts: int, asset: str, currency: str) -> list:
 
 def get_cryptowatch_data(period: int, ts: int, asset: str, currency: str) -> list:
     candles, _ = asyncio.run(
-        CryptowatchHistoricalPriceService().get_candles(asset=asset, currency=currency, period=period, candle_periods=60, ts=ts)
+        CryptowatchHistoricalPriceService().get_candles(
+            asset=asset, currency=currency, period=period, candle_periods=60, ts=ts
+        )
     )
     print(
         f"Cryptowatch: # candles in six hour window for {asset}/{currency}:",
