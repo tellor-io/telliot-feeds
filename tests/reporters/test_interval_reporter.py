@@ -53,7 +53,9 @@ async def test_fetch_datafeed(eth_usd_reporter):
     assert isinstance(feed, DataFeed)
 
 
-@pytest.mark.skip("Skipping because the error is from telliot-core and not from the reporter.")
+@pytest.mark.skip(
+    "Skipping because the error is from telliot-core and not from the reporter."
+)
 @pytest.mark.asyncio
 async def test_get_fee_info(eth_usd_reporter):
     info, time = await eth_usd_reporter.get_fee_info()
