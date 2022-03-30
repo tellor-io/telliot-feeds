@@ -95,9 +95,9 @@ class KrakenHistoricalPriceService(WebPriceService):
             msg = f"Error parsing Kraken API response: KeyError: {e}"
             logger.critical(msg)
             return None
-        
+
         if len(trades) == 0:
-            logger.warning(f"No trades found.")
+            logger.warning("No trades found.")
             return None
 
         return float(trades[-1][0])
