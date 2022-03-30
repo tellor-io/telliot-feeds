@@ -18,4 +18,4 @@ async def test_AssetPriceFeed():
     source_prices = [source.latest[0] for source in eth_usd_median_feed.source.sources]
 
     # Make sure error is less than decimal tolerance
-    assert (v - statistics.median(source_prices)) < 10 ** -6
+    assert (v - statistics.median(source_prices)) < 10**-6

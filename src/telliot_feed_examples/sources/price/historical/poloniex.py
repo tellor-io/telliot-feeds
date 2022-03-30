@@ -1,6 +1,8 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 from typing import Optional
+from typing import Tuple
 from urllib.parse import urlencode
 
 import requests
@@ -61,13 +63,15 @@ class PoloniexHistoricalPriceService:
             except Exception as e:
                 return {"error": str(type(e)), "exception": e}
 
-    async def get_price(
-        self, asset: str, currency: str, ts: Optional[int] = None
-    ) -> OptionalDataPoint[float]:
-        """Implement PriceServiceInterface
-
-        This implementation gets the historical price from
-        the Poloniex API using a timestamp."""
+    async def get_trades(
+        self,
+        asset: str,
+        currency: str,
+        period: int = 900,  # 15 minutes
+        ts: Optional[int] = None,
+    ) -> Tuple[Optional[list[Any]], Optional[datetime]]:
+        """Returns trade data found within a given period.
+        The period's middle is at the given timestamp."""
         if ts is None:
             ts = self.ts
 
@@ -83,40 +87,65 @@ class PoloniexHistoricalPriceService:
         url_params = urlencode(
             {
                 "currencyPair": pair,
-                "start": ts - 1e4,
-                "end": ts + 1e4,
+                "start": int(ts - period),
+                "end": ts,
             }
         )
 
-        # Source: https://docs.Poloniex.com/rest/#operation/getRecentTrades
+        # Source: https://docs.poloniex.com/#returntradehistory-public
         request_url = f"public?command=returnTradeHistory&{url_params}"
 
         d = self.get_url(request_url)
-        price = None
+        trades = []
 
         if "error" in d:
             logger.error(d)
             return None, None
 
         elif "response" in d:
-            response = d["response"]
-
-            try:
-                if len(response) == 0:
-                    logger.warning(
-                        "No data from Poloniex historical price source for"
-                        f"given timestamp ({ts}) & pair ({pair})."
-                    )
-                    return None, None
-                price = float(response[0]["rate"])
-            except KeyError as e:
-                msg = f"Error parsing Poloniex API response: KeyError: {e}"
-                logger.critical(msg)
+            rsp = d["response"]
+            if type(rsp) == dict and "error" in rsp:
+                logger.error(f'Error in poloniex response: {rsp["error"]}')
+                return None, None
+            trades = rsp
 
         else:
             raise Exception("Invalid response from get_url")
 
-        return price, datetime_now_utc()
+        return trades, datetime_now_utc()
+
+    async def get_price(
+        self,
+        asset: str,
+        currency: str,
+        period: int = 20000,
+        ts: Optional[int] = None,
+    ) -> OptionalDataPoint[float]:
+        """Implement PriceServiceInterface
+
+        This implementation gets the historical price from
+        the Poloniex API using a timestamp."""
+        trades, dt = await self.get_trades(
+            asset=asset, currency=currency, ts=ts, period=period
+        )
+
+        if trades is not None:
+            try:
+                if len(trades) == 0:
+                    logger.warning(
+                        "No data from Poloniex historical price source for"
+                        f" given timestamp: {ts}."
+                    )
+                    return None, None
+
+                # Price from last trade in period
+                return float(trades[-1]["rate"]), dt
+
+            except KeyError as e:
+                msg = f"Error parsing Poloniex API response: KeyError: {e}"
+                logger.critical(msg)
+
+        return None, None
 
 
 @dataclass

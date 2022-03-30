@@ -7,15 +7,6 @@ from datetime import datetime
 import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feed_examples.sources.price.historical.cryptowatch import (
-    CryptowatchHistoricalPriceService,
-)
-from telliot_feed_examples.sources.price.historical.kraken import (
-    KrakenHistoricalPriceService,
-)
-from telliot_feed_examples.sources.price.historical.poloniex import (
-    PoloniexHistoricalPriceService,
-)
 from telliot_feed_examples.sources.price.spot.bittrex import BittrexSpotPriceService
 from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceService
 from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceService
@@ -38,8 +29,9 @@ service = {
 }
 
 
-async def get_price(asset, currency, s):
+async def get_price(asset, currency, s, timeout=10.0):
     """Helper function for retrieving prices."""
+    s.timeout = timeout
     v, t = await s.get_price(asset, currency)
     return v, t
 
@@ -130,6 +122,14 @@ async def test_uniswap_usd():
 
 
 @pytest.mark.asyncio
+async def test_uniswap_timeout():
+    """Test retrieving from UniswapV3 price source in USD."""
+    v, t = await get_price("fuse", "usd", service["uniswapV3"], 0.05)
+    assert v is None
+    assert t is None
+
+
+@pytest.mark.asyncio
 async def test_uniswap_eth():
     """Test retrieving from UniswapV3 price source in ETH."""
     v, t = await get_price("fuse", "eth", service["uniswapV3"])
@@ -154,45 +154,6 @@ async def test_pancakeswap_usd():
 async def test_pancakeswap_bnb():
     """Test retrieving from Pancakeswap price source in BNB."""
     v, t = await get_price("fuse", "bnb", service["pancakeswap"])
-    validate_price(v, t)
-
-
-@pytest.mark.asyncio
-async def test_kraken_historical():
-    v, t = await KrakenHistoricalPriceService().get_price("eth", "usd", ts=1616663420)
-    validate_price(v, t)
-
-    v, t = await KrakenHistoricalPriceService().get_price("xbt", "usd", ts=1616663420)
-    validate_price(v, t)
-
-
-@pytest.mark.asyncio
-async def test_poloniex_historical():
-    v, t = await PoloniexHistoricalPriceService().get_price("eth", "dai", ts=1645813159)
-    validate_price(v, t)
-
-    v, t = await PoloniexHistoricalPriceService().get_price(
-        "eth", "tusd", ts=1645822159
-    )
-
-    v, t = await PoloniexHistoricalPriceService().get_price("btc", "dai", ts=1645813159)
-    validate_price(v, t)
-
-    v, t = await PoloniexHistoricalPriceService().get_price(
-        "btc", "tusd", ts=1645822159
-    )
-
-
-@pytest.mark.asyncio
-async def test_cryptowatch_historical():
-    v, t = await CryptowatchHistoricalPriceService().get_price(
-        "eth", "usd", ts=1646145821
-    )
-    validate_price(v, t)
-
-    v, t = await CryptowatchHistoricalPriceService().get_price(
-        "btc", "usd", ts=1646145821
-    )
     validate_price(v, t)
 
 

@@ -35,7 +35,7 @@ def rinkeby_cfg():
                 "git-rinkeby-key", chains=4, key=os.environ["PRIVATE_KEY"], password=""
             )
         else:
-            raise Exception("Need a mumbai account")
+            raise Exception("Need a rinkeby account")
 
     return cfg
 
@@ -98,7 +98,7 @@ def ropsten_cfg():
                 "git-ropsten-key", chains=3, key=os.environ["PRIVATE_KEY"], password=""
             )
         else:
-            raise Exception("Need a mumbai account")
+            raise Exception("Need a ropsten account")
 
     return cfg
 

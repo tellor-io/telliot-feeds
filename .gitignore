@@ -154,5 +154,9 @@ cython_debug/
 Pipfile
 Pipfile.lock
 
-# mac bin files
+# historical price data
+*.csv
+*.zip
+
+# ignore mac specific files
 .DS_Store

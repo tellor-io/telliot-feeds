@@ -27,6 +27,7 @@ class UniswapV3PriceService(WebPriceService):
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "UniswapV3 Price Service"
         kwargs["url"] = "https://api.thegraph.com"
+        kwargs["timeout"] = 10.0
         super().__init__(**kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
@@ -57,15 +58,19 @@ class UniswapV3PriceService(WebPriceService):
 
         with requests.Session() as s:
             try:
-                r = s.post(request_url, headers=headers, json=json_data, timeout=5.0)
+                r = s.post(
+                    request_url, headers=headers, json=json_data, timeout=self.timeout
+                )
                 res = r.json()
                 data = {"response": res}
 
-            except requests.exceptions.ConnectTimeout as e:
-                data = {"error": "Timeout Error", "exception": e}
+            except requests.exceptions.ConnectTimeout:
+                logger.warning("Timeout Error, No prices retrieved from Uniswap")
+                return None, None
 
-            except Exception as e:
-                data = {"error": str(type(e)), "exception": e}
+            except Exception:
+                logger.warning("No prices retrieved from Uniswap")
+                return None, None
 
         if "error" in data:
             logger.error(data)
