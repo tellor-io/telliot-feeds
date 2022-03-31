@@ -10,3 +10,4 @@ mypy-extensions
 types-requests
 types-PyYAML
 tox
+eth-brownie
