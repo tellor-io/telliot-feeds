@@ -1,13 +1,16 @@
-import pytest
-import os
 import secrets
 
-from telliot_core.apps.telliot_config import TelliotConfig
+import pytest
+from brownie import accounts
+from brownie import chain
+from brownie import StakingToken
+from brownie import TellorFlex
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
-from brownie import StakingToken, TellorFlex, accounts, chain
+from telliot_core.apps.telliot_config import TelliotConfig
 from web3 import Web3
-from eth_utils import to_checksum_address
+
+# from eth_utils import to_checksum_address
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -28,20 +31,24 @@ def local_cfg():
     accounts.add(pk)
     chained_accts = find_accounts(name="_test_account")
     print(dir(ChainedAccount))
-    if not chained_accts or chained_accts[0].address != "0x3d79f9a83c8bfc5887741a771609da1ac3101f5a":
+    if (
+        not chained_accts
+        or chained_accts[0].address != "0x3d79f9a83c8bfc5887741a771609da1ac3101f5a"
+    ):
         ChainedAccount.add("_test_account", chains=80001, key=pk, password="")
-    
+
     # Verify correct test account used
     # test_acct = find_accounts(name="_test_account")[0]
     # assert to_checksum_address(test_acct.address) == accounts[-1].address
 
-    endpoint = cfg.get_endpoint()
-    print('url:', endpoint.url)
-    chain.mine(10)
-    block = endpoint._web3.eth.get_block('latest')
-    assert block.number == 10
-    
+    # endpoint = cfg.get_endpoint()
+    # print("url:", endpoint.url)
+    # chain.mine(10)
+    # block = endpoint._web3.eth.get_block("latest")
+    # assert block.number == 10
+
     return cfg
+
 
 # if not test_acct.is_unlocked:
 #             test_acct.unlock("")
@@ -49,18 +56,19 @@ def local_cfg():
 
 def test_connect_local_web3(local_cfg):
     # w3 = Web3(Web3.WebsocketProvider('wss://127.0.0.1:8545'))
-    # w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))
+    w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
     # endpoint = local_cfg.get_endpoint()
-    # chain.mine(10)
+    chain.mine(10)
     # block = endpoint._web3.eth.get_block('latest')
+    block = w3.eth.get_block("latest")
 
     # assert w3.isConnected()
-    # assert block.number == 10
+    assert block.number == 10
     pass
 
 
 @pytest.fixture
-def trb(): # Tellor Tributes (TRB)
+def trb():  # Tellor Tributes (TRB)
     return accounts[0].deploy(StakingToken)
 
 
@@ -70,7 +78,7 @@ def tellor_flex(trb):
 
 
 def test_mint_test_token(trb):
-    trb.mint(accounts[0], 1000, {'from': accounts[0]})
+    trb.mint(accounts[0], 1000, {"from": accounts[0]})
 
     assert trb.balanceOf(accounts[0]) == 1000
 
