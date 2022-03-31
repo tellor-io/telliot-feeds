@@ -118,7 +118,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-tfe-env/
+*env/
+env*/
 
 # Spyder project settings
 .spyderproject
