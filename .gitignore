@@ -158,5 +158,10 @@ Pipfile.lock
 *.csv
 *.zip
 
-# ignore mac specific files
+# Mac OS specific files
 .DS_Store
+
+# eth-brownie related files & dependencies
+package.json
+package-lock.json
+node_modules/
