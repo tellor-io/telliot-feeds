@@ -117,6 +117,8 @@ class IntervalReporter:
         status = ResponseStatus()
 
         gas_price_gwei = await self.fetch_gas_price()
+        if gas_price_gwei is None:
+            return None, status
 
         staker_info, read_status = await self.master.read(
             func_name="getStakerInfo", _staker=self.acct_addr
@@ -242,6 +244,10 @@ class IntervalReporter:
                 gas_price = await ethgasstation(style=self.gas_price_speed)
                 self.legacy_gas_price = gas_price
 
+            if self.legacy_gas_price is None:
+                status.ok = False
+                return status
+
             logger.info(
                 f"""
                 tips: {tips / 1e18} TRB
@@ -250,7 +256,7 @@ class IntervalReporter:
                 legacy gas price: {self.legacy_gas_price}
                 """
             )
-            costs = self.gas_limit * self.legacy_gas_price  # type: ignore
+            costs = self.gas_limit * self.legacy_gas_price
 
         # Calculate profit
         revenue = tb_reward + tips
@@ -389,6 +395,9 @@ class IntervalReporter:
             # Fetch legacy gas price if not provided by user
             if not self.legacy_gas_price:
                 gas_price = await self.fetch_gas_price(self.gas_price_speed)
+                if gas_price is None:
+                    status.ok = False
+                    return None, status
             else:
                 gas_price = self.legacy_gas_price
 
