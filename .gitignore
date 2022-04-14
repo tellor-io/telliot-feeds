@@ -118,7 +118,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-tfe-env/
+env-*/
 
 # Spyder project settings
 .spyderproject
@@ -160,3 +160,8 @@ Pipfile.lock
 
 # ignore mac specific files
 .DS_Store
+
+# ignore Ganache/brownie files
+node_modules/
+package-lock.json
+package.json
