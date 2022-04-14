@@ -1,7 +1,8 @@
 import json
+from datetime import datetime
+
 import pytest
 
-from datetime import datetime
 from telliot_feed_examples.feeds.morphware import morphware_v1_feed
 
 
