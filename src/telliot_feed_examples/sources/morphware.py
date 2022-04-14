@@ -1,4 +1,6 @@
+import json
 from dataclasses import dataclass
+from typing import Any
 from typing import Optional
 
 import requests
@@ -27,12 +29,12 @@ adapter = HTTPAdapter(max_retries=retry_strategy)
 class MorphwareV1Source(DataSource[str]):
     """DataSource for Morphware query V1 expected response data."""
 
-    async def get_metadata() -> Optional[Response]:
+    async def get_metadata(self) -> Optional[Response]:
         """Returns a list of metadata strings."""
 
         with requests.Session() as s:
-            s.mount("https://", adapter)
-            # s.mount("http://", adapter)
+            # s.mount("https://", adapter)
+            s.mount("http://", adapter)
             json_data = {
                 "provider": "amazon",
                 "service": "compute",
@@ -40,7 +42,7 @@ class MorphwareV1Source(DataSource[str]):
             }
             try:
                 return s.post(
-                    "https://167.172.239.133:5000/products-2",
+                    "http://167.172.239.133:5000/products-2",
                     headers={},
                     json=json_data,
                     timeout=0.5,
@@ -49,6 +51,9 @@ class MorphwareV1Source(DataSource[str]):
             except requests.exceptions.RequestException as e:
                 logger.error(f"Morphware V1 API error: {e}")
                 return None
+
+    def adjust_data_types(self, data: list[str]) -> list[dict[str, Any]]:
+        return [json.dumps(d) for d in data]
 
     async def fetch_new_datapoint(self) -> Optional[DataPoint[float]]:
         """Retrieves Amazon EC2 instance pricing metadata from API
@@ -79,6 +84,7 @@ class MorphwareV1Source(DataSource[str]):
             logger.warning("Morphware V1 source returned no EC2 metadata")
             return None, None
 
+        ec2_metadata = self.adjust_data_types(ec2_metadata)
         datapoint = (ec2_metadata, datetime_now_utc())
         self.store_datapoint(datapoint)
 
