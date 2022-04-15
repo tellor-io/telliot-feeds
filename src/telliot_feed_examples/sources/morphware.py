@@ -30,7 +30,7 @@ class MorphwareV1Source(DataSource[str]):
     """DataSource for Morphware query V1 expected response data."""
 
     async def get_metadata(self) -> Optional[Response]:
-        """Returns a list of metadata strings."""
+        """Fetches EC2 metadata from Morphware API."""
 
         with requests.Session() as s:
             # s.mount("https://", adapter)
@@ -52,10 +52,10 @@ class MorphwareV1Source(DataSource[str]):
                 logger.error(f"Morphware V1 API error: {e}")
                 return None
 
-    def adjust_data_types(self, data: list[str]) -> list[dict[str, Any]]:
+    def adjust_data_types(self, data: list[dict[str, Any]]) -> list[str]:
         return [json.dumps(d) for d in data]
 
-    async def fetch_new_datapoint(self) -> Optional[DataPoint[float]]:
+    async def fetch_new_datapoint(self) -> Optional[DataPoint[list[str]]]:
         """Retrieves Amazon EC2 instance pricing metadata from API
         hosted by Morphware.
 

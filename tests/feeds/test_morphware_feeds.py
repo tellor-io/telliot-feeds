@@ -18,6 +18,7 @@ async def test_fetch_new_datapoint():
 
     assert len(v) == 21
     for metadata_str in v:
+        assert isinstance(metadata_str, str)
         ec2_dict = json.loads(metadata_str)
         assert "Instance Type" in ec2_dict
         assert "CUDA Cores" in ec2_dict
