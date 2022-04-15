@@ -67,6 +67,8 @@ class IntervalReporter:
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
+        self.trb_usd_median_feed = trb_usd_median_feed
+        self.eth_usd_median_feed = eth_usd_median_feed
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
@@ -118,7 +120,7 @@ class IntervalReporter:
 
         gas_price_gwei = await self.fetch_gas_price()
         if not gas_price_gwei:
-            note = "unable to fetch gas price"
+            note = "Unable to fetch gas price during during ensure_staked()"
             return False, error_status(note=note, log=logger.warning)
 
         staker_info, read_status = await self.master.read(
@@ -196,13 +198,20 @@ class IntervalReporter:
             status.e = read_status.e
             return status
 
-        # Fetch token prices in USD
-        price_feeds = [eth_usd_median_feed, trb_usd_median_feed]
+        # Fetch token prices
+        price_feeds = [self.eth_usd_median_feed, self.trb_usd_median_feed]
         _ = await asyncio.gather(
             *[feed.source.fetch_new_datapoint() for feed in price_feeds]
         )
         price_eth_usd = eth_usd_median_feed.source.latest[0]
         price_trb_usd = trb_usd_median_feed.source.latest[0]
+
+        if price_eth_usd is None:
+            note = "Unable to fetch ETH/USD price for profit calculation"
+            return error_status(note=note, log=logger.warning)
+        if price_trb_usd is None:
+            note = "Unable to fetch TRB/USD price for profit calculation"
+            return error_status(note=note, log=logger.warning)
 
         tips, tb_reward = rewards
 
@@ -246,7 +255,7 @@ class IntervalReporter:
                 self.legacy_gas_price = gas_price
 
             if not self.legacy_gas_price:
-                note = "unable to fetch gas price"
+                note = "Unable to fetch gas price for tx type 0"
                 return error_status(note, log=logger.warning)
 
             logger.info(
@@ -400,7 +409,7 @@ class IntervalReporter:
             if not self.legacy_gas_price:
                 gas_price = await self.fetch_gas_price(self.gas_price_speed)
                 if not gas_price:
-                    note = "unable to fetch gas price"
+                    note = "Unable to fetch gas price for tx type 0"
                     return None, error_status(note, log=logger.warning)
             else:
                 gas_price = self.legacy_gas_price
