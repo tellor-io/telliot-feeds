@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any
 
 import pytest
+import pytest_asyncio
 from telliot_core.apps.core import TelliotCore
 from telliot_core.datafeed import DataFeed
 from telliot_core.gas.etherscan_gas import EtherscanGasPrice
@@ -13,10 +14,11 @@ from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feed_examples.reporters import interval
 from telliot_feed_examples.reporters.interval import IntervalReporter
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def eth_usd_reporter(rinkeby_cfg):
     """Returns an instance of an IntervalReporter using
     the ETH/USD median datafeed."""
@@ -136,6 +138,23 @@ async def test_fetch_gas_price(eth_usd_reporter):
 
     assert isinstance(gas_price, int)
     assert gas_price > 0
+
+
+@pytest.mark.asyncio
+async def test_ethgasstation_error(eth_usd_reporter):
+    async def ethgasstation(style):
+        return None
+
+    r = eth_usd_reporter
+    interval.ethgasstation = ethgasstation
+    n, status = await r.ensure_staked()
+    assert not n
+    assert not status.ok
+    status = await r.ensure_profitable(eth_usd_median_feed)
+    assert not status.ok
+    n, status = await r.report_once()
+    assert not n
+    assert not status.ok
 
 
 @pytest.mark.skip("Asks for psswd")

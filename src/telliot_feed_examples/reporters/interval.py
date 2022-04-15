@@ -105,7 +105,7 @@ class IntervalReporter:
 
         return status
 
-    async def fetch_gas_price(self, speed: str = "average") -> int:
+    async def fetch_gas_price(self, speed: str = "average") -> Optional[int]:
         """Fetch gas price from ethgasstation in gwei."""
         return await ethgasstation(speed)  # type: ignore
 
@@ -118,8 +118,8 @@ class IntervalReporter:
 
         gas_price_gwei = await self.fetch_gas_price()
         if not gas_price_gwei:
-            logger.info("Unable to fetch gas price from api, retrying ...")
-            return False, status
+            note = "unable to fetch gas price"
+            return False, error_status(note=note, log=logger.warning)
 
         staker_info, read_status = await self.master.read(
             func_name="getStakerInfo", _staker=self.acct_addr
@@ -246,8 +246,8 @@ class IntervalReporter:
                 self.legacy_gas_price = gas_price
 
             if not self.legacy_gas_price:
-                note = "Unable to fetch gas price from api, retrying ..."
-                return error_status(note, log=logger.info)
+                note = "unable to fetch gas price"
+                return error_status(note, log=logger.warning)
 
             logger.info(
                 f"""
@@ -315,6 +315,9 @@ class IntervalReporter:
         # Check staker status
         staked, status = await self.ensure_staked()
         if not staked and status.ok:
+            return None, status
+        elif not staked or not status.ok:
+            logger.warning(status.error)
             return None, status
 
         status = await self.check_reporter_lock()
@@ -397,8 +400,8 @@ class IntervalReporter:
             if not self.legacy_gas_price:
                 gas_price = await self.fetch_gas_price(self.gas_price_speed)
                 if not gas_price:
-                    note = "Unable to fetch gas price from api, retrying ..."
-                    return None, error_status(note, log=logger.info)
+                    note = "unable to fetch gas price"
+                    return None, error_status(note, log=logger.warning)
             else:
                 gas_price = self.legacy_gas_price
 
