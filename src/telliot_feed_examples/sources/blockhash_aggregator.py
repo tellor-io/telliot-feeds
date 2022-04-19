@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from datetime import timezone
 from typing import Any
-from typing import Optional
 
 import requests
 from telliot_core.datasource import DataSource
@@ -10,7 +9,6 @@ from telliot_core.dtypes.datapoint import DataPoint
 from web3 import Web3
 
 from telliot_feed_examples.utils.log import get_logger
-
 
 logger = get_logger(__name__)
 

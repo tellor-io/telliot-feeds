@@ -1,9 +1,9 @@
+from datetime import datetime
+
 import pytest
 
 from telliot_feed_examples.sources import blockhash_aggregator
 from telliot_feed_examples.sources.blockhash_aggregator import TellorRNGManualSource
-
-# from telliot_feed_examples.feeds.tellor_rng_feed import tellor_rng_feed
 
 
 @pytest.mark.asyncio
@@ -18,5 +18,5 @@ async def test_rng():
         b"\xeap\xe4\xf8\xf2\xab\x89\xcb\xb0\xe6\x8cGR\x18\xf2+"
     )
 
-    assert isinstance(v, float)
-    assert isinstance(timestamp, datetime)
+    assert isinstance(v, bytes)
+    assert isinstance(t, datetime)
