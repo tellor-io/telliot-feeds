@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any
 
 import pytest
+import pytest_asyncio
 from telliot_core.apps.core import TelliotCore
 from telliot_core.datafeed import DataFeed
 from telliot_core.gas.etherscan_gas import EtherscanGasPrice
@@ -13,11 +14,12 @@ from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feed_examples.reporters import interval
 from telliot_feed_examples.reporters.interval import IntervalReporter
 
 
-@pytest.fixture
-async def eth_usd_reporter(rinkeby_cfg):
+@pytest_asyncio.fixture
+async def eth_usd_reporter(rinkeby_cfg, scope="function"):
     """Returns an instance of an IntervalReporter using
     the ETH/USD median datafeed."""
     async with TelliotCore(config=rinkeby_cfg) as core:
@@ -138,6 +140,26 @@ async def test_fetch_gas_price(eth_usd_reporter):
     assert gas_price > 0
 
 
+@pytest.mark.asyncio
+async def test_ethgasstation_error(eth_usd_reporter):
+    async def no_gas_price(style):
+        return None
+
+    r = eth_usd_reporter
+    interval.ethgasstation = no_gas_price
+
+    staked, status = await r.ensure_staked()
+    assert not staked
+    assert not status.ok
+
+    status = await r.ensure_profitable(eth_usd_median_feed)
+    assert not status.ok
+
+    tx_receipt, status = await r.report_once()
+    assert tx_receipt is None
+    assert not status.ok
+
+
 @pytest.mark.skip("Asks for psswd")
 @pytest.mark.asyncio
 async def test_interval_reporter_submit_once(eth_usd_reporter):
@@ -205,3 +227,41 @@ async def test_no_updated_value(eth_usd_reporter, bad_source):
     assert not tx_receipt
     assert not status.ok
     assert status.error == "Unable to retrieve updated datafeed value."
+
+
+@pytest.mark.asyncio
+async def test_no_token_prices_for_profit_calc(eth_usd_reporter, bad_source):
+    """Test handling for no token prices for profit calculation."""
+    r = eth_usd_reporter
+
+    # Clear latest datapoint
+    r.datafeed.source._history.clear()
+
+    # Ensure fetch_gas_price works
+    async def gas_price():
+        return 1
+
+    r.fetch_gas_price = gas_price
+
+    # Override reporter lock status
+    async def passing():
+        return ResponseStatus()
+
+    r.check_reporter_lock = passing
+
+    # Simulate TRB/USD price retrieval failure
+    r.trb_usd_median_feed.source = bad_source
+    tx_receipt, status = await r.report_once()
+
+    assert tx_receipt is None
+    assert not status.ok
+    assert status.error == "Unable to fetch TRB/USD price for profit calculation"
+
+    # Simulate ETH/USD price retrieval failure
+    r.eth_usd_median_feed.source = bad_source
+
+    tx_receipt, status = await r.report_once()
+
+    assert tx_receipt is None
+    assert not status.ok
+    assert status.error == "Unable to fetch ETH/USD price for profit calculation"
