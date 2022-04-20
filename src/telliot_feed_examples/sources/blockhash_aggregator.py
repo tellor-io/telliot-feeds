@@ -1,23 +1,18 @@
 from dataclasses import dataclass
 from datetime import datetime
 from datetime import timezone
+from re import L
 from typing import Any
 
 import requests
 from telliot_core.datasource import DataSource
 from telliot_core.dtypes.datapoint import DataPoint
+from telliot_core.apps.telliot_config import TelliotConfig
 from web3 import Web3
 
 from telliot_feed_examples.utils.log import get_logger
 
 logger = get_logger(__name__)
-
-w3 = Web3(
-    Web3.HTTPProvider(
-        "https://eth-mainnet.alchemyapi.io/v2/hP3lNPFpxPSwfwJtfaZi4ezZlPgimAnN"
-    )
-)
-
 
 @dataclass
 class TellorRNGManualSource(DataSource[Any]):
@@ -51,6 +46,13 @@ class TellorRNGManualSource(DataSource[Any]):
         return data
 
     def getEthHashByTimestamp(self, timestamp: int) -> str:
+        cfg = TelliotConfig()
+        # Override configuration for ethereum mainnet
+        cfg.main.chain_id = 1
+        cfg.get_endpoint().connect()
+        # w3 = Web3(Web3.WebsocketProvider(cfg.get_endpoint().url, websocket_timeout=60))
+        w3 = cfg.get_endpoint().web3
+
         this_block = w3.eth.get_block("latest")
         if this_block is None:
             return ""
