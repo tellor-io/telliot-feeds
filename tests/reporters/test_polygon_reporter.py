@@ -3,6 +3,7 @@ from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feed_examples.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 
 
@@ -14,6 +15,7 @@ async def polygon_reporter(mumbai_cfg):
         r = PolygonReporter(
             oracle=flex.oracle,
             token=flex.token,
+            autopay=flex.autopay,
             endpoint=core.endpoint,
             account=core.get_account(),
             chain_id=80001,
@@ -24,7 +26,7 @@ async def polygon_reporter(mumbai_cfg):
 @pytest.mark.skip("mumbai cfg error in github actions, but not locally")
 @pytest.mark.asyncio
 async def test_ensure_profitable(polygon_reporter):
-    status = await polygon_reporter.ensure_profitable(eth_usd_median_feed)
+    status = await polygon_reporter.ensure_profitable(matic_usd_median_feed)
 
     assert isinstance(status, ResponseStatus)
     assert status.ok
