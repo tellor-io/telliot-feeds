@@ -43,6 +43,14 @@ async def eth_usd_reporter(rinkeby_cfg, scope="function"):
         return r
 
 
+async def gas_price(speed="average"):
+    return 1
+
+
+async def passing():
+    return ResponseStatus()
+
+
 @pytest.mark.asyncio
 async def test_fetch_datafeed(eth_usd_reporter):
     r = eth_usd_reporter
@@ -197,7 +205,6 @@ async def test_interval_reporter_submit_once(eth_usd_reporter):
         assert status.error in EXPECTED_ERRORS
 
 
-@pytest.mark.skip("Asks for psswd")
 @pytest.mark.asyncio
 async def test_no_updated_value(eth_usd_reporter, bad_source):
     """Test handling for no updated value returned from datasource."""
@@ -210,47 +217,36 @@ async def test_no_updated_value(eth_usd_reporter, bad_source):
     # returns no updated DataPoint
     r.datafeed.source.sources = [bad_source]
 
-    # Override reporter lock status
-    async def passing():
-        return ResponseStatus()
-
-    r.check_reporter_lock = passing
-
     # Override reporter profit check
     async def profit(datafeed: DataFeed[Any]):
         return ResponseStatus()
 
+    r.fetch_gas_price = gas_price
+    r.check_reporter_lock = passing
     r.ensure_profitable = profit
 
     tx_receipt, status = await r.report_once()
 
     assert not tx_receipt
     assert not status.ok
+    print("status.error:", status.error)
     assert status.error == "Unable to retrieve updated datafeed value."
 
 
 @pytest.mark.asyncio
-async def test_no_token_prices_for_profit_calc(eth_usd_reporter, bad_source):
+async def test_no_token_prices_for_profit_calc(
+    eth_usd_reporter, bad_source, guaranteed_price_source
+):
     """Test handling for no token prices for profit calculation."""
     r = eth_usd_reporter
 
-    # Clear latest datapoint
-    r.datafeed.source._history.clear()
-
-    # Ensure fetch_gas_price works
-    async def gas_price():
-        return 1
-
     r.fetch_gas_price = gas_price
-
-    # Override reporter lock status
-    async def passing():
-        return ResponseStatus()
-
     r.check_reporter_lock = passing
 
     # Simulate TRB/USD price retrieval failure
-    r.trb_usd_median_feed.source = bad_source
+    r.trb_usd_median_feed.source._history.clear()
+    r.eth_usd_median_feed.source.sources = [guaranteed_price_source]
+    r.trb_usd_median_feed.source.sources = [bad_source]
     tx_receipt, status = await r.report_once()
 
     assert tx_receipt is None
@@ -258,8 +254,8 @@ async def test_no_token_prices_for_profit_calc(eth_usd_reporter, bad_source):
     assert status.error == "Unable to fetch TRB/USD price for profit calculation"
 
     # Simulate ETH/USD price retrieval failure
-    r.eth_usd_median_feed.source = bad_source
-
+    r.eth_usd_median_feed.source._history.clear()
+    r.eth_usd_median_feed.source.sources = [bad_source]
     tx_receipt, status = await r.report_once()
 
     assert tx_receipt is None
