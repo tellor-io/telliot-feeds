@@ -13,7 +13,7 @@ from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
-from telliot_core.reporters.reporter_utils import autopay_suggested_report
+from telliot_core.reporters.reporter_autopay_utils import autopay_suggested_report
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3.exceptions import ContractLogicError
