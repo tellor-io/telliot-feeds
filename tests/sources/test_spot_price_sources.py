@@ -72,6 +72,9 @@ async def test_coinbase():
     v, t = await get_price("btc", "usd", service["coinbase"])
     validate_price(v, t)
 
+    v, t = await get_price("trb", "usd", service["coinbase"])
+    validate_price(v, t)
+
 
 @pytest.mark.asyncio
 async def test_coingecko():
