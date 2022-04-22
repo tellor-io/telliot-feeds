@@ -14,6 +14,7 @@ from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.reporters.reporter_autopay_utils import autopay_suggested_report
+from telliot_core.reporters.reporter_autopay_utils import get_feed_details
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3.exceptions import ContractLogicError
@@ -77,103 +78,9 @@ class PolygonReporter(IntervalReporter):
         self,
         datafeed: DataFeed[Any],
     ) -> ResponseStatus:
-        """Returns a bool signifying whether submitting for a given
-        queryID would generate a net profit."""
-        status = ResponseStatus()
+        """Make profitability check always pass."""
 
-        # Get current tips for given queryID
-        tb_reward, read_status = await self.autopay.get_current_tip(
-            query_id=datafeed.query.query_id
-        )
-
-        if type(read_status.e) == ContractLogicError:
-            msg = "No tips exist for the selected query"
-            return error_status(msg, log=logger.warning)
-
-        # Log web3 errors
-        if (not read_status.ok) or (tb_reward is None):
-            status.ok = False
-            status.error = (
-                "Unable to retrieve queryID's current tips:" + read_status.error
-            )
-            logger.error(status.error)
-            status.e = read_status.e
-            return status
-
-        # Fetch token prices in USD
-        price_feeds = [matic_usd_median_feed, trb_usd_median_feed]
-        _ = await asyncio.gather(
-            *[feed.source.fetch_new_datapoint() for feed in price_feeds]
-        )
-        price_matic_usd = matic_usd_median_feed.source.latest[0]
-        price_trb_usd = trb_usd_median_feed.source.latest[0]
-
-        # Using transaction type 2 (EIP-1559)
-        if self.transaction_type == 2:
-            fee_info = await self.get_fee_info()
-            base_fee = fee_info[0].suggestBaseFee
-
-            # No miner tip provided by user
-            if self.priority_fee is None:
-                # From etherscan docs:
-                # "Safe/Proposed/Fast gas price recommendations are now modeled as Priority Fees."  # noqa: E501
-                # Source: https://docs.etherscan.io/api-endpoints/gas-tracker
-                priority_fee = fee_info[0].SafeGasPrice
-                self.priority_fee = priority_fee
-
-            if self.max_fee is None:
-                # From Alchemy docs:
-                # "maxFeePerGas = baseFeePerGas + maxPriorityFeePerGas"
-                # Source: https://docs.alchemy.com/alchemy/guides/eip-1559/maxpriorityfeepergas-vs-maxfeepergas  # noqa: E501
-                self.max_fee = self.priority_fee + base_fee
-
-            logger.info(
-                f"""
-                tips: {tb_reward} TRB
-                gas limit: {self.gas_limit}
-                base fee: {base_fee}
-                priority fee: {self.priority_fee}
-                max fee: {self.max_fee}
-                """
-            )
-
-            costs = self.gas_limit * self.max_fee
-
-        # Using transaction type 0 (legacy)
-        else:
-            # Fetch legacy gas price if not provided by user
-            if not self.legacy_gas_price:
-                gas_price = await self.fetch_gas_price()
-                self.legacy_gas_price = gas_price
-
-            if not self.legacy_gas_price:
-                note = "unable to fetch gas price from api"
-                return error_status(note, log=logger.info)
-            logger.info(
-                f"""
-                tips: {tb_reward} TRB
-                gas limit: {self.gas_limit}
-                legacy gas price: {self.legacy_gas_price}
-                """
-            )
-            costs = self.gas_limit * self.legacy_gas_price
-
-        # Calculate profit
-        rev_usd = tb_reward * price_trb_usd
-        costs_usd = costs / 1e9 * price_matic_usd
-        profit_usd = rev_usd - costs_usd
-        logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
-        logger.info(f"tb price: {rev_usd}, gas costs: {costs_usd}")
-
-        percent_profit = ((profit_usd) / costs_usd) * 100
-        logger.info(f"Estimated percent profit: {round(percent_profit, 2)}%")
-        if (self.expected_profit != "YOLO") and (percent_profit < self.expected_profit):
-            status.ok = False
-            status.error = "Estimated profitability below threshold."
-            logger.info(status.error)
-            return status
-
-        return status
+        return ResponseStatus()
 
     async def fetch_gas_price(self, speed: str = "safeLow") -> int:
         """Fetch estimated gas prices for Polygon mainnet."""
@@ -302,13 +209,109 @@ class PolygonReporter(IntervalReporter):
         return count, read_status
 
     async def fetch_datafeed(self) -> DataFeed[Any]:
+        status = ResponseStatus()
+
         if self.datafeed is not None:
             datafeed = self.datafeed
+
+            # Get current tips for given queryID
+            tb_reward, read_status = await self.autopay.get_current_tip(
+                query_id=datafeed.query.query_id
+            )
+            # Log web3 errors
+            if not read_status.ok and type(read_status.e) == ContractLogicError:
+                msg = "No tips exist for the selected query"
+                error_status(msg, log=logger.warning)
+            elif (not read_status.ok) or (tb_reward is None):
+                status.ok = False
+                status.error = (
+                    "Unable to retrieve queryID's One time current tips:"
+                    + read_status.error
+                )
+                logger.error(status.error)
+                status.e = read_status.e
+            datafeed_reward = await get_feed_details(
+                self.autopay, datafeed.query.query_id
+            )
+            tb_reward += datafeed_reward
         else:
-            suggested_qtag = await autopay_suggested_report(self.autopay)
+            suggested_qtag, tb_reward = await autopay_suggested_report(self.autopay)
             if not suggested_qtag:
                 msg = "Could not get suggested query."
                 return None, error_status(msg, log=logger.info)
             datafeed = CATALOG_FEEDS[suggested_qtag]
+
+        # Fetch token prices in USD
+        price_feeds = [matic_usd_median_feed, trb_usd_median_feed]
+        _ = await asyncio.gather(
+            *[feed.source.fetch_new_datapoint() for feed in price_feeds]
+        )
+        price_matic_usd = matic_usd_median_feed.source.latest[0]
+        price_trb_usd = trb_usd_median_feed.source.latest[0]
+
+        # Using transaction type 2 (EIP-1559)
+        if self.transaction_type == 2:
+            fee_info = await self.get_fee_info()
+            base_fee = fee_info[0].suggestBaseFee
+
+            # No miner tip provided by user
+            if self.priority_fee is None:
+                # From etherscan docs:
+                # "Safe/Proposed/Fast gas price recommendations are now modeled as Priority Fees."  # noqa: E501
+                # Source: https://docs.etherscan.io/api-endpoints/gas-tracker
+                priority_fee = fee_info[0].SafeGasPrice
+                self.priority_fee = priority_fee
+
+            if self.max_fee is None:
+                # From Alchemy docs:
+                # "maxFeePerGas = baseFeePerGas + maxPriorityFeePerGas"
+                # Source: https://docs.alchemy.com/alchemy/guides/eip-1559/maxpriorityfeepergas-vs-maxfeepergas  # noqa: E501
+                self.max_fee = self.priority_fee + base_fee
+
+            logger.info(
+                f"""
+                tips: {tb_reward} TRB
+                gas limit: {self.gas_limit}
+                base fee: {base_fee}
+                priority fee: {self.priority_fee}
+                max fee: {self.max_fee}
+                """
+            )
+
+            costs = self.gas_limit * self.max_fee
+
+        # Using transaction type 0 (legacy)
+        else:
+            # Fetch legacy gas price if not provided by user
+            if not self.legacy_gas_price:
+                gas_price = await self.fetch_gas_price()
+                self.legacy_gas_price = gas_price
+
+            if not self.legacy_gas_price:
+                note = "unable to fetch gas price from api"
+                return error_status(note, log=logger.info)
+            logger.info(
+                f"""
+                tips: {tb_reward/1e18} TRB
+                gas limit: {self.gas_limit}
+                legacy gas price: {self.legacy_gas_price}
+                """
+            )
+            costs = self.gas_limit * self.legacy_gas_price
+
+        # Calculate profit
+        rev_usd = tb_reward / 1e18 * price_trb_usd
+        costs_usd = costs / 1e9 * price_matic_usd
+        profit_usd = rev_usd - costs_usd
+        logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
+        logger.info(f"tb price: {round(rev_usd, 2)}, gas costs: {costs_usd}")
+
+        percent_profit = ((profit_usd) / costs_usd) * 100
+        logger.info(f"Estimated percent profit: {round(percent_profit, 2)}%")
+        if (self.expected_profit != "YOLO") and (percent_profit < self.expected_profit):
+            status.ok = False
+            status.error = "Estimated profitability below threshold."
+            logger.info(status.error)
+            return None
 
         return datafeed
