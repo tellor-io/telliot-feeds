@@ -1,19 +1,19 @@
 from dataclasses import dataclass
 from datetime import datetime
 from datetime import timezone
-from re import L
 from typing import Any
 from typing import Optional
 
 import requests
+from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.datasource import DataSource
 from telliot_core.dtypes.datapoint import DataPoint
-from telliot_core.apps.telliot_config import TelliotConfig
 from web3 import Web3
 
 from telliot_feed_examples.utils.log import get_logger
 
 logger = get_logger(__name__)
+
 
 @dataclass
 class TellorRNGManualSource(DataSource[Any]):
@@ -47,7 +47,7 @@ class TellorRNGManualSource(DataSource[Any]):
 
     def getEthHashByTimestamp(self, timestamp: int) -> Optional[str]:
         """Fetches next Ethereum blockhash after timestamp from API."""
-        
+
         cfg = TelliotConfig()
         # Override configuration for ethereum mainnet
         cfg.main.chain_id = 1
@@ -86,13 +86,16 @@ class TellorRNGManualSource(DataSource[Any]):
         """Fetches next Bitcoin blockhash after timestamp from API."""
 
         with requests.Session() as s:
-            try: 
+            try:
                 this_block = s.get("https://blockchain.info/latestblock").json()
                 if this_block is None:
-                    logger.error(f"Tellor RNG V1 no latest btc block returned from API")
+                    logger.error("Tellor RNG V1 no latest btc block returned from API")
                     return ""
                 if this_block["time"] < timestamp:
-                    logger.error(f"Tellor RNG V1 current btc block time, {this_block['time']}, is less than given timestamp {timestamp}")
+                    logger.error(
+                        f"Tellor RNG V1 current btc block time, {this_block['time']}"
+                        + f"is less than given timestamp {timestamp}"
+                    )
                     return ""
                 else:
                     min_num: int = 0
@@ -100,14 +103,18 @@ class TellorRNGManualSource(DataSource[Any]):
                     mid_num: int = 0
                     while max_num - min_num > 1:
                         mid_num = round((max_num + min_num) / 2)
-                        this_block = s.get(f"https://blockchain.info/rawblock/{mid_num}").json()
+                        this_block = s.get(
+                            f"https://blockchain.info/rawblock/{mid_num}"
+                        ).json()
                         if this_block is None:
                             return None
                         if this_block["time"] > timestamp:
                             max_num = mid_num
                         else:
                             min_num = mid_num
-                    this_block = s.get(f"https://blockchain.info/rawblock/{max_num}").json()
+                    this_block = s.get(
+                        f"https://blockchain.info/rawblock/{max_num}"
+                    ).json()
                     if this_block is None:
                         return None
                     return str(this_block["hash"])
@@ -128,7 +135,7 @@ class TellorRNGManualSource(DataSource[Any]):
             timestamp = self.timestamp
         eth_hash = self.getEthHashByTimestamp(timestamp)
         btc_hash = self.getBtcHashByTimestamp(timestamp)
-        
+
         if eth_hash is None:
             logger.warning("No response from TellorRNG V1 Ethereum API")
             return None, None

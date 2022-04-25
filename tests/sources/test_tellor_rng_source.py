@@ -21,11 +21,12 @@ async def test_rng():
     assert isinstance(v, bytes)
     assert isinstance(t, datetime)
 
+
 @pytest.mark.asyncio
 async def test_rng_btc_source_error():
     """Retrieve random number."""
     blockhash_aggregator.input = lambda: "1649769707"
-    
+
     rng_source = TellorRNGManualSource()
     v, t = await rng_source.fetch_new_datapoint()
 
