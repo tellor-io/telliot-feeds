@@ -233,12 +233,14 @@ class PolygonReporter(IntervalReporter):
             datafeed_reward = await get_feed_details(
                 self.autopay, datafeed.query.query_id
             )
-            tb_reward += datafeed_reward
+            if datafeed_reward:
+                tb_reward += datafeed_reward
         else:
             suggested_qtag, tb_reward = await autopay_suggested_report(self.autopay)
             if not suggested_qtag:
                 msg = "Could not get suggested query."
-                return None, error_status(msg, log=logger.info)
+                error_status(msg, log=logger.info)
+                return None
             datafeed = CATALOG_FEEDS[suggested_qtag]
 
         # Fetch token prices in USD
