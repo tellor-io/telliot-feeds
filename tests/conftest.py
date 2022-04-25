@@ -6,6 +6,7 @@ from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.datasource import DataSource
+from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 
 
@@ -114,3 +115,16 @@ def bad_source():
             return None, None
 
     return BadSource()
+
+
+@pytest.fixture(scope="session")
+def guaranteed_price_source():
+    """Used for testing no updated value for datafeeds."""
+
+    class GoodSource(DataSource[float]):
+        """Source that does not return an updated DataPoint."""
+
+        async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
+            return (1234.0, datetime_now_utc())
+
+    return GoodSource()

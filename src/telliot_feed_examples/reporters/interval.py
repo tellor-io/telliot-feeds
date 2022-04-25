@@ -203,8 +203,9 @@ class IntervalReporter:
         _ = await asyncio.gather(
             *[feed.source.fetch_new_datapoint() for feed in price_feeds]
         )
-        price_eth_usd = eth_usd_median_feed.source.latest[0]
-        price_trb_usd = trb_usd_median_feed.source.latest[0]
+
+        price_eth_usd = self.eth_usd_median_feed.source.latest[0]
+        price_trb_usd = self.trb_usd_median_feed.source.latest[0]
 
         if price_eth_usd is None:
             note = "Unable to fetch ETH/USD price for profit calculation"
@@ -251,7 +252,7 @@ class IntervalReporter:
         else:
             # Fetch legacy gas price if not provided by user
             if not self.legacy_gas_price:
-                gas_price = await ethgasstation(style=self.gas_price_speed)
+                gas_price = await self.fetch_gas_price(speed=self.gas_price_speed)
                 self.legacy_gas_price = gas_price
 
             if not self.legacy_gas_price:
