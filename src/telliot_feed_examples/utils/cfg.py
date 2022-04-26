@@ -5,7 +5,7 @@ from chained_accounts import find_accounts
 from telliot_core.apps.telliot_config import TelliotConfig
 
 
-def mainnet_config():
+def mainnet_config() -> TelliotConfig:
     cfg = TelliotConfig()
     cfg.main.chain_id = 1
     endpoint = cfg.get_endpoint()
