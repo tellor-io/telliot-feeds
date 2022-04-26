@@ -11,9 +11,7 @@ def mainnet_config():
     endpoint = cfg.get_endpoint()
 
     if "INFURA_API_KEY" in endpoint.url:
-        endpoint.url = (
-            f'wss://mainnet.infura.io/ws/v3/{os.environ["INFURA_API_KEY"]}'
-        )
+        endpoint.url = f'wss://mainnet.infura.io/ws/v3/{os.environ["INFURA_API_KEY"]}'
 
     accounts = find_accounts(chain_id=1)
     if not accounts:
