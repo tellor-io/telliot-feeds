@@ -2,6 +2,7 @@
 import os
 
 import pytest
+from brownie import chain
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from telliot_core.apps.telliot_config import TelliotConfig
@@ -128,3 +129,44 @@ def guaranteed_price_source():
             return (1234.0, datetime_now_utc())
 
     return GoodSource()
+
+
+def local_node_cfg(chain_id: int):
+    """Return a test telliot configuration for use of tellorFlex contracts. Overrides
+    the default Web3 provider with a local Ganache endpoint.
+    """
+
+    cfg = TelliotConfig()
+
+    # Use a chain_id with TellorFlex contracts deployed
+    cfg.main.chain_id = chain_id
+
+    endpt = cfg.get_endpoint()
+
+    # Configure testing using local Ganache node
+    endpt.url = "http://127.0.0.1:8545"
+
+    # Advance block number to avoid assertion error in endpoint.connect():
+    # connected = self._web3.eth.get_block_number() > 1
+    chain.mine(10)
+
+    accounts = find_accounts(chain_id=chain_id)
+    if not accounts:
+        # Create a test account using PRIVATE_KEY defined on github.
+        key = os.getenv("PRIVATE_KEY", None)
+        if key:
+            ChainedAccount.add(
+                "git-tellorflex-test-key",
+                chains=chain_id,
+                key=os.environ["PRIVATE_KEY"],
+                password="",
+            )
+        else:
+            raise Exception(f"Need an account for {chain_id}")
+
+    return cfg
+
+
+@pytest.fixture
+def mumbai_test_cfg(scope="session", autouse=True):
+    return local_node_cfg(chain_id=80001)
