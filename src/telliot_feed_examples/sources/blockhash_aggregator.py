@@ -5,14 +5,19 @@ from typing import Any
 from typing import Optional
 
 import requests
-from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.datasource import DataSource
 from telliot_core.dtypes.datapoint import DataPoint
 from web3 import Web3
 
+from telliot_feed_examples.utils.cfg import mainnet_config
 from telliot_feed_examples.utils.log import get_logger
 
 logger = get_logger(__name__)
+
+
+cfg = mainnet_config()
+cfg.get_endpoint().connect()
+w3 = cfg.get_endpoint().web3
 
 
 @dataclass
@@ -47,14 +52,6 @@ class TellorRNGManualSource(DataSource[Any]):
 
     def getEthHashByTimestamp(self, timestamp: int) -> Optional[str]:
         """Fetches next Ethereum blockhash after timestamp from API."""
-
-        cfg = TelliotConfig()
-        # Override configuration for ethereum mainnet
-        cfg.main.chain_id = 1
-        cfg.get_endpoint().connect()
-        w3 = cfg.get_endpoint().web3
-
-        # with cfg.get_endpoint().web3 as w3:
         try:
             this_block = w3.eth.get_block("latest")
             if this_block is None:
