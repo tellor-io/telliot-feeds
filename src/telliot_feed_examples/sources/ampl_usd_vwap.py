@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 from typing import List
-from typing import Mapping
 from typing import Optional
 from typing import Sequence
 from typing import Tuple
@@ -45,7 +44,7 @@ def to_unix_milli(dt: datetime.datetime) -> int:
 async def get_float_from_api(
     url: str,
     params: Sequence[Any],
-    headers: Optional[Mapping[str, str]] = None,
+    headers: Optional[dict[str, str]] = None,
 ) -> OptionalDataPoint[float]:
     """Helper function for retrieving datapoint values."""
 

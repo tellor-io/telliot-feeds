@@ -2,6 +2,7 @@
 from telliot_core.datafeed import DataFeed
 from telliot_core.queries import LegacyRequest
 
+from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceSource
 from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feed_examples.sources.price_aggregator import PriceAggregator
 
@@ -13,6 +14,7 @@ trb_usd_median_feed = DataFeed(
         algorithm="median",
         sources=[
             CoinGeckoSpotPriceSource(asset="trb", currency="usd"),
+            CoinbaseSpotPriceSource(asset="trb", currency="usd"),
         ],
     ),
 )
