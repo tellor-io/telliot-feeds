@@ -13,8 +13,6 @@ from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
-from telliot_core.reporters.reporter_autopay_utils import autopay_suggested_report
-from telliot_core.reporters.reporter_autopay_utils import get_feed_details
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3.exceptions import ContractLogicError
@@ -23,6 +21,10 @@ from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.reporters.reporter_autopay_utils import (
+    autopay_suggested_report,
+)
+from telliot_feed_examples.reporters.reporter_autopay_utils import get_feed_details
 from telliot_feed_examples.utils.log import get_logger
 
 

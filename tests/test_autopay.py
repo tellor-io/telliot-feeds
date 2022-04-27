@@ -8,12 +8,15 @@ from brownie.network.account import Account
 from eth_abi import encode_single
 from telliot_core.apps.core import TelliotCore
 from telliot_core.data.query_catalog import query_catalog
-from telliot_core.reporters.reporter_autopay_utils import autopay_suggested_report
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.tellor.tellorflex.oracle import TellorFlexOracleContract
 from telliot_core.utils.response import ResponseStatus
 from telliot_core.utils.timestamp import TimeStamp
 from web3 import Web3
+
+from telliot_feed_examples.reporters.reporter_autopay_utils import (
+    autopay_suggested_report,
+)
 
 
 @pytest.fixture(scope="module")
