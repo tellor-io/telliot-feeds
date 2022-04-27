@@ -90,6 +90,7 @@ async def test_fetch_gas_price_error(polygon_reporter, caplog):
         return None
 
     r.fetch_gas_price = lambda: _fetch_gas_price()
+    r.stake = 1e100
     staked, status = await r.ensure_staked()
     assert not staked
     assert not status.ok
