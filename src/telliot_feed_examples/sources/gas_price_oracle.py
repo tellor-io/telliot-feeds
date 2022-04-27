@@ -1,6 +1,6 @@
-import json
 from dataclasses import dataclass
-from typing import Any, Dict
+from dataclasses import field
+from typing import Dict
 from typing import Optional
 
 import requests
@@ -29,35 +29,37 @@ adapter = HTTPAdapter(max_retries=retry_strategy)
 class GasPriceOracleSource(DataSource[str]):
     """DataSource for GasPriceOracle expected response data."""
 
-    networks: Dict[int, str] = {
-        1: "eth",
-        56: "bsc",
-        43114: "avax",
-        250: "ftm",
-        137: "poly",
-        25: "cro",
-        42220: "42220",
-        128: "ht",
-        1285: "movr",
-        122: "fuse",
-    }
+    networks: Dict[int, str] = field(
+        default_factory=lambda: {
+            1: "eth",
+            56: "bsc",
+            43114: "avax",
+            250: "ftm",
+            137: "poly",
+            25: "cro",
+            42220: "42220",
+            128: "ht",
+            1285: "movr",
+            122: "fuse",
+        }
+    )
 
-    async def fetch_historical_gas_price(self, api_key:str, timestamp:int, chain_id:int) -> Optional[Response]:
+    async def fetch_historical_gas_price(
+        self, api_key: str, timestamp: int, chain_id: int
+    ) -> Optional[Response]:
         """Fetches historical gas price data from Owlracle API."""
 
+        url = f"""https://owlracle.info/
+                  {self.networks[chain_id]}
+                  /history?apikey={api_key}
+                  &from={int(timestamp)}
+                  &to={int(timestamp) + 100}"""
+
         with requests.Session() as s:
-            # s.mount("https://", adapter)
             s.mount("https://", adapter)
-            json_data = {
-                "apikey": api_key,
-                "from": timestamp,
-                "to": timestamp + 100,
-            }
             try:
-                return s.post(
-                    f"https://owlracle.info/{self.networks[chain_id]}/history/",
-                    headers={},
-                    json=json_data,
+                return s.get(
+                    url=url,
                     timeout=0.5,
                 )
 
@@ -65,27 +67,29 @@ class GasPriceOracleSource(DataSource[str]):
                 logger.error(f"GasPriceOracle API error: {e}")
                 return None
 
-    def adjust_data_types(self, data: list[dict[str, Any]]) -> list[str]:
-        return [json.dumps(d) for d in data]
-
-    async def fetch_new_datapoint(self) -> Optional[DataPoint[list[str]]]:
+    async def fetch_new_datapoint(
+        self, api_key: str, timestamp: int, chain_id: int
+    ) -> Optional[DataPoint[list[str]]]:
         """Retrieves historical gas prices from Owlracle API.
 
         Returns:
             float gas price in gwei, typically with one decimal place
         """
-        rsp = await self.fetch_historical_gas_price()
+        rsp = await self.fetch_historical_gas_price(
+            api_key=api_key, timestamp=timestamp, chain_id=chain_id
+        )
         if rsp is None:
             logger.warning("No response from GasPriceOracle V1 API")
             return None, None
 
         try:
+            print(rsp)
             historical_gas_prices = rsp.json()
         except JSONDecodeError as e:
             logger.error("GasPriceOracle source returned invalid JSON:", e.strerror)
             return None, None
 
-        if gas_prices == []:
+        if historical_gas_prices == []:
             logger.warning("GasPriceOracle source returned no historical gas prices.")
             return None, None
 
@@ -98,10 +102,9 @@ class GasPriceOracleSource(DataSource[str]):
             gas_prices.append(avg)
 
         gas_prices.sort()
-        
-        gas_price_median = gas_prices[len(gas_prices)//2]
 
-        gas_price_median = self.adjust_data_types(gas_price_median)
+        gas_price_median = gas_prices[len(gas_prices) // 2]
+
         datapoint = (gas_price_median, datetime_now_utc())
         self.store_datapoint(datapoint)
 
