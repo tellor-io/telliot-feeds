@@ -73,9 +73,20 @@ class PolygonReporter(IntervalReporter):
 
         return ResponseStatus()
 
-    async def fetch_gas_price(self, speed: str = "safeLow") -> int:
+    async def fetch_gas_price(self, speed: str = "safeLow") -> Optional[int]:
         """Fetch estimated gas prices for Polygon mainnet."""
-        prices = requests.get("https://gasstation-mainnet.matic.network").json()
+        try:
+            prices = requests.get("https://gasstation-mainnet.matic.network").json()
+        except requests.JSONDecodeError:
+            logger.error("Error decoding JSON response from matic gas station")
+            return None
+        except Exception as e:
+            logger.error(f"Error fetching matic gas prices: {e}")
+            return None
+
+        if speed not in prices:
+            logger.error(f"Invalid gas price speed for matic gasstation: {speed}")
+            return None
 
         return int(prices[speed])
 
@@ -120,6 +131,10 @@ class PolygonReporter(IntervalReporter):
             logger.info("Current stake too low. Approving & depositing stake.")
 
             gas_price_gwei = await self.fetch_gas_price()
+            if gas_price_gwei is None:
+                return False, error_status(
+                    "Unable to fetch matic gas price for staking", log=logger.info
+                )
             amount = int(self.stake * 1e18) - staker_balance
 
             _, write_status = await self.token.write(
