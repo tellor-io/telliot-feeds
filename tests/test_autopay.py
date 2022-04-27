@@ -130,7 +130,7 @@ async def test_main(
         # check success of txn
         assert status.ok
         # check tip amount
-        assert current_tip == 10
+        assert current_tip == 10e18
 
         # get suggestion from telliot on query with highest tip
         suggested_qtag, tb_reward = await autopay_suggested_report(autopay)
@@ -156,7 +156,7 @@ async def test_main(
 
         current_tip, status = await autopay.get_current_tip(ric_query_id)
         assert status.ok
-        assert current_tip == 20
+        assert current_tip == 20e18
 
         # get suggestion from telliot on query with highest tip
         suggested_qtag, tb_reward = await autopay_suggested_report(autopay)

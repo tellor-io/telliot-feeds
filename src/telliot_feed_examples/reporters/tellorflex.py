@@ -235,6 +235,7 @@ class PolygonReporter(IntervalReporter):
             datafeed_reward = await get_feed_details(
                 self.autopay, datafeed.query.query_id
             )
+            tb_reward = int(tb_reward / 1e18)
             if datafeed_reward:
                 tb_reward += datafeed_reward
         else:
