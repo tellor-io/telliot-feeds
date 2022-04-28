@@ -45,30 +45,31 @@ class GasPriceOracleSource(DataSource[str]):
     )
 
     async def fetch_historical_gas_price(
-        self, api_key: str, timestamp: int, chain_id: int
+        self, timestamp: int, chain_id: int
     ) -> Optional[Response]:
         """Fetches historical gas price data from Owlracle API."""
 
-        url = f"""https://owlracle.info/
-                  {self.networks[chain_id]}
-                  /history?apikey={api_key}
-                  &from={int(timestamp)}
-                  &to={int(timestamp) + 100}"""
+        url = (
+            f"https://owlracle.info/"
+            f"{self.networks[chain_id]}"
+            "/history?"
+            f"from={int(timestamp)}"
+            f"&to={int(timestamp) + 100}"
+        )
+
+        print(url)
 
         with requests.Session() as s:
             s.mount("https://", adapter)
             try:
-                return s.get(
-                    url=url,
-                    timeout=0.5,
-                )
+                return s.get(url=url, timeout=0.5, headers={"User-Agent": "Custom"})
 
             except requests.exceptions.RequestException as e:
                 logger.error(f"GasPriceOracle API error: {e}")
                 return None
 
     async def fetch_new_datapoint(
-        self, api_key: str, timestamp: int, chain_id: int
+        self, timestamp: int, chain_id: int
     ) -> Optional[DataPoint[list[str]]]:
         """Retrieves historical gas prices from Owlracle API.
 
@@ -76,10 +77,16 @@ class GasPriceOracleSource(DataSource[str]):
             float gas price in gwei, typically with one decimal place
         """
         rsp = await self.fetch_historical_gas_price(
-            api_key=api_key, timestamp=timestamp, chain_id=chain_id
+            timestamp=timestamp, chain_id=chain_id
         )
         if rsp is None:
-            logger.warning("No response from GasPriceOracle V1 API")
+            logger.warning("No response from GasPriceOracle API")
+            return None, None
+
+        if rsp.status_code // 100 != 2:
+            logger.warning(
+                "Invalid response from GasPriceOracle API: " + str(rsp.status_code)
+            )
             return None, None
 
         try:
@@ -105,10 +112,11 @@ class GasPriceOracleSource(DataSource[str]):
             return None, None
         except ValueError:
             logger.error(
-                """Unable to calculate median
-                             gas price from GasPriceOracle
-                            source JSON
-                            """
+                """
+                Unable to calculate median
+                gas price from GasPriceOracle
+                source JSON
+                """
             )
             return None, None
         gas_prices.sort()
