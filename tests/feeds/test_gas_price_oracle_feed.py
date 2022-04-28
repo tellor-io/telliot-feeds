@@ -8,7 +8,6 @@ from telliot_feed_examples.feeds.gas_price_oracle_feed import timestamp
 
 
 @pytest.mark.asyncio
-# @pytest.mark.skip
 async def test_fetch_new_datapoint():
     """Retrieve historical gas price data from source."""
 
