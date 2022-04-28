@@ -23,6 +23,3 @@ async def test_fetch_new_datapoint():
     assert v is not None and t is not None
     assert isinstance(v, float)
     assert isinstance(t, datetime)
-
-
-EXAMPLE_RESPONSE = 31.8

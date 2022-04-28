@@ -20,7 +20,7 @@ retry_strategy = Retry(
     total=3,
     backoff_factor=1,
     status_forcelist=[429, 500, 502, 503, 504],
-    allowed_methods=["POST"],
+    allowed_methods=["GET"],
 )
 adapter = HTTPAdapter(max_retries=retry_strategy)
 
@@ -83,7 +83,6 @@ class GasPriceOracleSource(DataSource[str]):
             return None, None
 
         try:
-            print(rsp)
             historical_gas_prices = rsp.json()
         except JSONDecodeError as e:
             logger.error("GasPriceOracle source returned invalid JSON:", e.strerror)
@@ -95,12 +94,23 @@ class GasPriceOracleSource(DataSource[str]):
 
         gas_prices = []
 
-        for i in historical_gas_prices:
-            # find avg of high and low
-            avg = (i["gasPrice"]["high"] + i["gasPrice"]["low"]) / 2
+        try:
+            for i in historical_gas_prices:
+                # find avg of high and low
+                avg = (i["gasPrice"]["high"] + i["gasPrice"]["low"]) / 2
 
-            gas_prices.append(avg)
-
+                gas_prices.append(avg)
+        except KeyError:
+            logger.error("Unable to parse GasPriceOracle source JSON")
+            return None, None
+        except ValueError:
+            logger.error(
+                """Unable to calculate median
+                             gas price from GasPriceOracle
+                            source JSON
+                            """
+            )
+            return None, None
         gas_prices.sort()
 
         gas_price_median = gas_prices[len(gas_prices) // 2]
