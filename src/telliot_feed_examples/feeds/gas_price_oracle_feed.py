@@ -16,5 +16,5 @@ chain_id = 1
 timestamp = 1648771200  # april 1, 2022 unix time
 
 gas_price_oracle_feed = DataFeed(
-    query=GasPriceOracle(chain_id, timestamp),
-    source=GasPriceOracleSource())
+    query=GasPriceOracle(chain_id, timestamp), source=GasPriceOracleSource()
+)
