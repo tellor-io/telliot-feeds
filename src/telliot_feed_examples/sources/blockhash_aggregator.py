@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from datetime import datetime
 from datetime import timezone
@@ -177,8 +178,9 @@ class TellorRNGManualSource(DataSource[Any]):
             timestamp = self.parse_user_val()
         else:
             timestamp = self.timestamp
-        eth_hash = await get_eth_hash(timestamp)
-        btc_hash = await get_btc_hash(timestamp)
+        eth_hash, btc_hash = await asyncio.gather(
+            get_eth_hash(timestamp), get_btc_hash(timestamp)
+        )
 
         if eth_hash is None:
             logger.warning("Unable to retrieve Ethereum blockhash")
