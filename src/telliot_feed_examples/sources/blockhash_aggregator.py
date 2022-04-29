@@ -22,6 +22,119 @@ cfg = mainnet_config()
 cfg.get_endpoint().connect()
 w3 = cfg.get_endpoint().web3
 
+retry_strategy = Retry(
+    total=3,
+    backoff_factor=1,
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["GET"],
+)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+
+
+def block_num_from_timestamp(timestamp: int) -> Optional[int]:
+    with requests.Session() as s:
+        s.mount("https://", adapter)
+        try:
+            rsp = s.get(
+                "https://api.etherscan.io/api"
+                "?module=block"
+                "&action=getblocknobytime"
+                f"&timestamp={timestamp}"
+                "&closest=after"
+                "&apikey="
+            )
+        except requests.exceptions.ConnectTimeout:
+            logger.error("Connection timeout getting ETH block num from timestamp")
+            return None
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Etherscan API error: {e}")
+            return None
+
+        try:
+            this_block = rsp.json()
+        except JSONDecodeError:
+            logger.error("Etherscan API returned invalid JSON")
+            return None
+
+        try:
+            if this_block["status"] != "1":
+                logger.error(f"Etherscan API returned error: {this_block['message']}")
+                return None
+        except KeyError:
+            logger.error("Etherscan API returned JSON without status")
+            return None
+
+        return int(this_block["result"])
+
+
+async def get_eth_hash(timestamp: int) -> Optional[str]:
+    """Fetches next Ethereum blockhash after timestamp from API."""
+
+    try:
+        this_block = w3.eth.get_block("latest")
+    except Exception as e:
+        logger.error(f"Unable to retrieve latest block: {e}")
+        return None
+
+    if this_block["timestamp"] < timestamp:
+        logger.error(
+            f"Timestamp {timestamp} is older than current "
+            "block timestamp {this_block['timestamp']}"
+        )
+        return None
+
+    block_num = block_num_from_timestamp(timestamp)
+    if block_num is None:
+        logger.warning("Unable to retrieve block number from Etherscan API")
+        return None
+
+    try:
+        block = w3.eth.get_block(block_num)
+    except Exception as e:
+        logger.error(f"Unable to retrieve block {block_num}: {e}")
+        return None
+
+    return str(block["hash"].hex())
+
+
+async def get_btc_hash(timestamp: int) -> Optional[str]:
+    """Fetches next Bitcoin blockhash after timestamp from API."""
+    with requests.Session() as s:
+        s.mount("https://", adapter)
+        ts = timestamp + 15 * 60
+
+        try:
+            rsp = s.get(f" https://blockchain.info/blocks/{ts * 1000}?format=json")
+        except requests.exceptions.ConnectTimeout:
+            logger.error("Connection timeout getting BTC block num from timestamp")
+            return None
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Blockchain.info API error: {e}")
+            return None
+
+        try:
+            blocks = rsp.json()
+        except JSONDecodeError:
+            logger.error("Blockchain.info API returned invalid JSON")
+            return None
+
+        if len(blocks) == 0:
+            logger.warning("Blockchain.info API returned no blocks")
+            return None
+
+        if "time" not in blocks[0]:
+            logger.warning("Blockchain.info response doesn't contain needed data")
+            return None
+
+        block: dict[str, Any]
+        for b in blocks[::-1]:
+            if b["time"] < timestamp:
+                continue
+            block = b
+            break
+
+        return str(block["hash"])
+
 
 @dataclass
 class TellorRNGManualSource(DataSource[Any]):
@@ -53,120 +166,6 @@ class TellorRNGManualSource(DataSource[Any]):
         self.timestamp = data
         return data
 
-    def block_num_from_timestamp(self, timestamp: int) -> Optional[int]:
-        retry_strategy = Retry(
-            total=3,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["GET"],
-        )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-
-        with requests.Session() as s:
-            s.mount("https://", adapter)
-            try:
-                rsp = s.get(
-                    "https://api.etherscan.io/api"
-                    "?module=block"
-                    "&action=getblocknobytime"
-                    f"&timestamp={timestamp}"
-                    "&closest=after"
-                    "&apikey="
-                )
-            except requests.exceptions.ConnectTimeout:
-                logger.error("Connection timeout getting ETH block num from timestamp")
-                return None
-            except requests.exceptions.RequestException as e:
-                logger.error(f"Etherscan API error: {e}")
-                return None
-
-            try:
-                this_block = rsp.json()
-            except JSONDecodeError as e:
-                logger.error("Etherscan API returned invalid JSON:", e.strerror)
-                return None
-
-            try:
-                if this_block["status"] != "1":
-                    logger.error(
-                        f"Etherscan API returned error: {this_block['message']}"
-                    )
-                    return None
-            except KeyError:
-                logger.error("Etherscan API returned JSON without status")
-                return None
-
-            return int(this_block["result"])
-
-    def getEthHashByTimestamp(self, timestamp: int) -> Optional[str]:
-        """Fetches next Ethereum blockhash after timestamp from API."""
-
-        try:
-            this_block = w3.eth.get_block("latest")
-        except Exception as e:
-            logger.error(f"Unable to retrieve latest block: {e}")
-            return None
-
-        if this_block["timestamp"] < timestamp:
-            logger.error(
-                f"Timestamp {timestamp} is older than current "
-                "block timestamp {this_block['timestamp']}"
-            )
-            return None
-
-        block_num = self.block_num_from_timestamp(timestamp)
-        if block_num is None:
-            logger.warning("Unable to retrieve block number from Ethereum API")
-            return None
-
-        block = w3.eth.get_block(block_num)
-        if block is None:
-            return None
-        if "hash" not in block:
-            return None
-        try:
-            blockhash_hex_str = str(block["hash"].hex())
-        except Exception as e:
-            logger.error(
-                f"Tellor RNG V1 ethereum API returned an invalid block hash: {e}"
-            )
-            return None
-
-        return blockhash_hex_str
-
-    def getBtcHashByTimestamp(self, timestamp: int) -> Optional[str]:
-        """Fetches next Bitcoin blockhash after timestamp from API."""
-        with requests.Session() as s:
-
-            ts = timestamp + 15 * 60
-            try:
-                rsp = s.get(f" https://blockchain.info/blocks/{ts * 1000}?format=json")
-            except requests.exceptions.ConnectTimeout:
-                logger.error("Connection timeout getting BTC block num from timestamp")
-                return None
-            except requests.exceptions.RequestException as e:
-                logger.error(f"Blockchain.info API error: {e}")
-                return None
-
-            try:
-                blocks = rsp.json()
-            except JSONDecodeError as e:
-                logger.error("Blockchain.info API returned invalid JSON:", e.strerror)
-                return None
-
-            if len(blocks) == 0:
-                logger.warning("Blockchain.info API returned no blocks")
-                return None
-
-            block: dict[str, Any]
-            for b in blocks[::-1]:
-                if b["time"] < timestamp:
-                    continue
-                block = b
-                break
-
-            return str(block["hash"])
-
     async def fetch_new_datapoint(self) -> DataPoint[bytes]:
         """Update current value with time-stamped value fetched from user input.
 
@@ -178,8 +177,8 @@ class TellorRNGManualSource(DataSource[Any]):
             timestamp = self.parse_user_val()
         else:
             timestamp = self.timestamp
-        eth_hash = self.getEthHashByTimestamp(timestamp)
-        btc_hash = self.getBtcHashByTimestamp(timestamp)
+        eth_hash = await get_eth_hash(timestamp)
+        btc_hash = await get_btc_hash(timestamp)
 
         if eth_hash is None:
             logger.warning("Unable to retrieve Ethereum blockhash")
