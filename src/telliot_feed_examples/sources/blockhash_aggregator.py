@@ -127,67 +127,20 @@ class TellorRNGManualSource(DataSource[Any]):
 
     def getBtcHashByTimestamp(self, timestamp: int) -> Optional[str]:
         """Fetches next Bitcoin blockhash after timestamp from API."""
-
         with requests.Session() as s:
-            try:
-                rsp = s.get(f"https://blockchain.info/blocks/{timestamp}?format=json")
-                blocks = rsp.json()
-                print(blocks)
-                return blocks["blocks"][0]["hash"]
-                # rsp = s.get("https://blockchain.info/latestblock")
-                # if rsp is None:
-                #     logger.error("Tellor RNG V1 no latest btc block returned from API")
-                #     return None
-                # try:
-                #     this_block = rsp.json()
-                # except JSONDecodeError as e:
-                #     logger.error(
-                #         "Tellor RNG V1 source returned invalid JSON:", e.strerror
-                #     )
-                #     return None
-                # if this_block["time"] < timestamp:
-                #     logger.error(
-                #         f"Tellor RNG V1 current btc block time, {this_block['time']}"
-                #         + f"is less than given timestamp {timestamp}"
-                #     )
-                #     return None
-                
 
-                # else:
-                #     min_num: int = 723976
-                #     max_num: int = this_block["height"]
-                #     mid_num: int = 0
-                #     while max_num - min_num > 1:
-                #         mid_num = round((max_num + min_num) / 2)
-                #         rsp = s.get(f"https://blockchain.info/rawblock/{mid_num}")
-                #         try:
-                #             this_block = rsp.json()
-                #         except JSONDecodeError as e:
-                #             logger.error(
-                #                 "Tellor RNG V1 source returned invalid JSON:",
-                #                 e.strerror,
-                #             )
-                #             return None
-                #         if this_block is None:
-                #             return None
-                #         if this_block["time"] > timestamp:
-                #             max_num = mid_num
-                #         else:
-                #             min_num = mid_num
-                #     rsp = s.get(f"https://blockchain.info/rawblock/{max_num}")
-                #     try:
-                #         this_block = rsp.json()
-                #     except JSONDecodeError as e:
-                #         logger.error(
-                #             "Tellor RNG V1 source returned invalid JSON:", e.strerror
-                #         )
-                #         return None
-                #     if this_block is None:
-                #         return None
-                #     return str(this_block["hash"])
-            except requests.exceptions.RequestException as e:
-                logger.error(f"Tellor RNG V1 bitcoin API error: {e}")
-                return ""
+            ts = timestamp + 15 * 60
+            rsp = s.get(f" https://blockchain.info/blocks/{ts * 1000}?format=json")
+
+            blocks = rsp.json()
+            block: dict[str, Any]
+            for b in blocks[::-1]:
+                if b["time"] < timestamp:
+                    continue
+                block = b
+                break
+
+            return str(block["hash"])
 
     async def fetch_new_datapoint(self) -> DataPoint[bytes]:
         """Update current value with time-stamped value fetched from user input.
