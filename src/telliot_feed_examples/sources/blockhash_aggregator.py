@@ -73,24 +73,30 @@ class TellorRNGManualSource(DataSource[Any]):
                     "&closest=after"
                     "&apikey="
                 )
-                if rsp is None:
-                    logger.error("No response from Etherscan API")
-                    return None
-                try:
-                    this_block = rsp.json()
-                except JSONDecodeError as e:
-                    logger.error("Etherscan API returned invalid JSON:", e.strerror)
-                    return None
+            except requests.exceptions.ConnectTimeout:
+                logger.error("Connection timeout getting ETH block num from timestamp")
+                return None
+            except requests.exceptions.RequestException as e:
+                logger.error(f"Etherscan API error: {e}")
+                return None
+
+            try:
+                this_block = rsp.json()
+            except JSONDecodeError as e:
+                logger.error("Etherscan API returned invalid JSON:", e.strerror)
+                return None
+
+            try:
                 if this_block["status"] != "1":
                     logger.error(
                         f"Etherscan API returned error: {this_block['message']}"
                     )
                     return None
-
-                return int(this_block["result"])
-            except requests.exceptions.RequestException as e:
-                logger.error(f"Etherscan API error: {e}")
+            except KeyError:
+                logger.error("Etherscan API returned JSON without status")
                 return None
+
+            return int(this_block["result"])
 
     def getEthHashByTimestamp(self, timestamp: int) -> Optional[str]:
         """Fetches next Ethereum blockhash after timestamp from API."""
@@ -109,6 +115,9 @@ class TellorRNGManualSource(DataSource[Any]):
             return None
 
         block_num = self.block_num_from_timestamp(timestamp)
+        if block_num is None:
+            logger.warning("Unable to retrieve block number from Ethereum API")
+            return None
 
         block = w3.eth.get_block(block_num)
         if block is None:
@@ -130,9 +139,25 @@ class TellorRNGManualSource(DataSource[Any]):
         with requests.Session() as s:
 
             ts = timestamp + 15 * 60
-            rsp = s.get(f" https://blockchain.info/blocks/{ts * 1000}?format=json")
+            try:
+                rsp = s.get(f" https://blockchain.info/blocks/{ts * 1000}?format=json")
+            except requests.exceptions.ConnectTimeout:
+                logger.error("Connection timeout getting BTC block num from timestamp")
+                return None
+            except requests.exceptions.RequestException as e:
+                logger.error(f"Blockchain.info API error: {e}")
+                return None
 
-            blocks = rsp.json()
+            try:
+                blocks = rsp.json()
+            except JSONDecodeError as e:
+                logger.error("Blockchain.info API returned invalid JSON:", e.strerror)
+                return None
+
+            if len(blocks) == 0:
+                logger.warning("Blockchain.info API returned no blocks")
+                return None
+
             block: dict[str, Any]
             for b in blocks[::-1]:
                 if b["time"] < timestamp:
@@ -157,10 +182,10 @@ class TellorRNGManualSource(DataSource[Any]):
         btc_hash = self.getBtcHashByTimestamp(timestamp)
 
         if eth_hash is None:
-            logger.warning("No response from TellorRNG V1 Ethereum API")
+            logger.warning("Unable to retrieve Ethereum blockhash")
             return None, None
         if btc_hash is None:
-            logger.warning("No response from TellorRNG V1 Bitcoin API")
+            logger.warning("Unable to retrieve Bitcoin blockhash")
             return None, None
 
         data = Web3.solidityKeccak(["string", "string"], [eth_hash, btc_hash])
