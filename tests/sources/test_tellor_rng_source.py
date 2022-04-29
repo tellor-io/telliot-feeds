@@ -9,7 +9,7 @@ from telliot_feed_examples.sources.blockhash_aggregator import TellorRNGManualSo
 @pytest.mark.asyncio
 async def test_rng():
     """Retrieve random number."""
-    blockhash_aggregator.input = lambda: "1649769707"
+    blockhash_aggregator.input = lambda: "1649769707"  # BCT block num: 731547
     rng_source = TellorRNGManualSource()
     v, t = await rng_source.fetch_new_datapoint()
 
