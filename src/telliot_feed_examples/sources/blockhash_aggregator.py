@@ -6,8 +6,10 @@ from typing import Optional
 
 import requests
 from requests import JSONDecodeError
+from requests.adapters import HTTPAdapter
 from telliot_core.datasource import DataSource
 from telliot_core.dtypes.datapoint import DataPoint
+from urllib3.util import Retry
 from web3 import Web3
 
 from telliot_feed_examples.utils.cfg import mainnet_config
@@ -51,110 +53,138 @@ class TellorRNGManualSource(DataSource[Any]):
         self.timestamp = data
         return data
 
-    def getEthHashByTimestamp(self, timestamp: int) -> Optional[str]:
-        """Fetches next Ethereum blockhash after timestamp from API."""
-        try:
-            this_block = w3.eth.get_block("latest")
-            if this_block is None:
-                return None
-            if "timestamp" not in this_block:
-                return None
-            if "number" not in this_block:
-                return None
-            if type(this_block["timestamp"]) is not int:
-                return None
-            if type(this_block["number"]) is not int:
-                return None
-            if this_block["timestamp"] < timestamp:
-                return None
-            else:
-                min_num: int = 14552248
-                max_num: int = this_block["number"]
-                mid_num: int = 0
-                while max_num - min_num > 1:
-                    mid_num = round((max_num + min_num) / 2)
-                    this_block = w3.eth.get_block(mid_num)
-                    if this_block is None:
-                        return None
-                    if "timestamp" not in this_block:
-                        return None
-                    if type(this_block["timestamp"]) is not int:
-                        return None
-                    if this_block["timestamp"] > timestamp:
-                        max_num = mid_num
-                    else:
-                        min_num = mid_num
-                this_block = w3.eth.get_block(max_num)
-                if this_block is None:
-                    return None
-                if "hash" not in this_block:
+    def block_num_from_timestamp(self, timestamp: int) -> Optional[int]:
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET"],
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+
+        with requests.Session() as s:
+            s.mount("https://", adapter)
+            try:
+                rsp = s.get(
+                    "https://api.etherscan.io/api"
+                    "?module=block"
+                    "&action=getblocknobytime"
+                    f"&timestamp={timestamp}"
+                    "&closest=after"
+                    "&apikey="
+                )
+                if rsp is None:
+                    logger.error("No response from Etherscan API")
                     return None
                 try:
-                    blockhash_hex_str = str(this_block["hash"].hex())
-                    return blockhash_hex_str
-                except Exception as e:
+                    this_block = rsp.json()
+                except JSONDecodeError as e:
+                    logger.error("Etherscan API returned invalid JSON:", e.strerror)
+                    return None
+                if this_block["status"] != "1":
                     logger.error(
-                        f"Tellor RNG V1 ethereum API returned an invalid block hash: {e}"
+                        f"Etherscan API returned error: {this_block['message']}"
                     )
                     return None
+
+                return int(this_block["result"])
+            except requests.exceptions.RequestException as e:
+                logger.error(f"Etherscan API error: {e}")
+                return None
+
+    def getEthHashByTimestamp(self, timestamp: int) -> Optional[str]:
+        """Fetches next Ethereum blockhash after timestamp from API."""
+
+        try:
+            this_block = w3.eth.get_block("latest")
         except Exception as e:
-            logger.error(f"Tellor RNG V1 ethereum API error: {e}")
+            logger.error(f"Unable to retrieve latest block: {e}")
             return None
+
+        if this_block["timestamp"] < timestamp:
+            logger.error(
+                f"Timestamp {timestamp} is older than current "
+                "block timestamp {this_block['timestamp']}"
+            )
+            return None
+
+        block_num = self.block_num_from_timestamp(timestamp)
+
+        block = w3.eth.get_block(block_num)
+        if block is None:
+            return None
+        if "hash" not in block:
+            return None
+        try:
+            blockhash_hex_str = str(block["hash"].hex())
+        except Exception as e:
+            logger.error(
+                f"Tellor RNG V1 ethereum API returned an invalid block hash: {e}"
+            )
+            return None
+
+        return blockhash_hex_str
 
     def getBtcHashByTimestamp(self, timestamp: int) -> Optional[str]:
         """Fetches next Bitcoin blockhash after timestamp from API."""
 
         with requests.Session() as s:
             try:
-                rsp = s.get("https://blockchain.info/latestblock")
-                if rsp is None:
-                    logger.error("Tellor RNG V1 no latest btc block returned from API")
-                    return None
-                try:
-                    this_block = rsp.json()
-                except JSONDecodeError as e:
-                    logger.error(
-                        "Tellor RNG V1 source returned invalid JSON:", e.strerror
-                    )
-                    return None
-                if this_block["time"] < timestamp:
-                    logger.error(
-                        f"Tellor RNG V1 current btc block time, {this_block['time']}"
-                        + f"is less than given timestamp {timestamp}"
-                    )
-                    return None
-                else:
-                    min_num: int = 723976
-                    max_num: int = this_block["height"]
-                    mid_num: int = 0
-                    while max_num - min_num > 1:
-                        mid_num = round((max_num + min_num) / 2)
-                        rsp = s.get(f"https://blockchain.info/rawblock/{mid_num}")
-                        try:
-                            this_block = rsp.json()
-                        except JSONDecodeError as e:
-                            logger.error(
-                                "Tellor RNG V1 source returned invalid JSON:",
-                                e.strerror,
-                            )
-                            return None
-                        if this_block is None:
-                            return None
-                        if this_block["time"] > timestamp:
-                            max_num = mid_num
-                        else:
-                            min_num = mid_num
-                    rsp = s.get(f"https://blockchain.info/rawblock/{max_num}")
-                    try:
-                        this_block = rsp.json()
-                    except JSONDecodeError as e:
-                        logger.error(
-                            "Tellor RNG V1 source returned invalid JSON:", e.strerror
-                        )
-                        return None
-                    if this_block is None:
-                        return None
-                    return str(this_block["hash"])
+                rsp = s.get(f"https://blockchain.info/blocks/{timestamp}?format=json")
+                blocks = rsp.json()
+                print(blocks)
+                return blocks["blocks"][0]["hash"]
+                # rsp = s.get("https://blockchain.info/latestblock")
+                # if rsp is None:
+                #     logger.error("Tellor RNG V1 no latest btc block returned from API")
+                #     return None
+                # try:
+                #     this_block = rsp.json()
+                # except JSONDecodeError as e:
+                #     logger.error(
+                #         "Tellor RNG V1 source returned invalid JSON:", e.strerror
+                #     )
+                #     return None
+                # if this_block["time"] < timestamp:
+                #     logger.error(
+                #         f"Tellor RNG V1 current btc block time, {this_block['time']}"
+                #         + f"is less than given timestamp {timestamp}"
+                #     )
+                #     return None
+                
+
+                # else:
+                #     min_num: int = 723976
+                #     max_num: int = this_block["height"]
+                #     mid_num: int = 0
+                #     while max_num - min_num > 1:
+                #         mid_num = round((max_num + min_num) / 2)
+                #         rsp = s.get(f"https://blockchain.info/rawblock/{mid_num}")
+                #         try:
+                #             this_block = rsp.json()
+                #         except JSONDecodeError as e:
+                #             logger.error(
+                #                 "Tellor RNG V1 source returned invalid JSON:",
+                #                 e.strerror,
+                #             )
+                #             return None
+                #         if this_block is None:
+                #             return None
+                #         if this_block["time"] > timestamp:
+                #             max_num = mid_num
+                #         else:
+                #             min_num = mid_num
+                #     rsp = s.get(f"https://blockchain.info/rawblock/{max_num}")
+                #     try:
+                #         this_block = rsp.json()
+                #     except JSONDecodeError as e:
+                #         logger.error(
+                #             "Tellor RNG V1 source returned invalid JSON:", e.strerror
+                #         )
+                #         return None
+                #     if this_block is None:
+                #         return None
+                #     return str(this_block["hash"])
             except requests.exceptions.RequestException as e:
                 logger.error(f"Tellor RNG V1 bitcoin API error: {e}")
                 return ""
@@ -180,7 +210,7 @@ class TellorRNGManualSource(DataSource[Any]):
             logger.warning("No response from TellorRNG V1 Bitcoin API")
             return None, None
 
-        data = Web3.solidityKeccak(["string", "string"], [eth_hash, str(btc_hash)])
+        data = Web3.solidityKeccak(["string", "string"], [eth_hash, btc_hash])
         dt = datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
         datapoint = (data, dt)
 
