@@ -9,6 +9,8 @@ from telliot_core.datasource import DataSource
 from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 
+from telliot_feed_examples.utils.cfg import mainnet_config
+
 
 @pytest.fixture(scope="session", autouse=True)
 def rinkeby_cfg():
@@ -39,6 +41,15 @@ def rinkeby_cfg():
             raise Exception("Need a rinkeby account")
 
     return cfg
+
+
+@pytest.fixture(scope="session", autouse=True)
+def mainnet_test_cfg():
+    """Get mainnet endpoint from config
+
+    If environment variables are defined, they will override the values in config files
+    """
+    return mainnet_config()
 
 
 @pytest.fixture(scope="session", autouse=True)
