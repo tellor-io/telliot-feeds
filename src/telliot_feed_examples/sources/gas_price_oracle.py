@@ -57,8 +57,6 @@ class GasPriceOracleSource(DataSource[str]):
             f"&to={int(timestamp) + 100}"
         )
 
-        print(url)
-
         with requests.Session() as s:
             s.mount("https://", adapter)
             try:
