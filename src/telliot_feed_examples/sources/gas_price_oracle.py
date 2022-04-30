@@ -110,11 +110,7 @@ class GasPriceOracleSource(DataSource[str]):
             return None, None
         except ValueError:
             logger.error(
-                """
-                Unable to calculate median
-                gas price from GasPriceOracle
-                source JSON
-                """
+                "Unable to calculate median gas price from GasPriceOracle source JSON"
             )
             return None, None
         gas_prices.sort()
