@@ -91,6 +91,7 @@ async def test_main(
         )
         # check txn is successful
         assert status.ok
+        chain.mine(3)
 
         # check staker information
         staker_info, status = await oracle.get_staker_info(
@@ -124,6 +125,7 @@ async def test_main(
         )
         # check txn is successful
         assert status.ok
+        chain.mine(3)
 
         # submit a tip in autopay for reporter to report mkr/usd price
         current_tip, status = await autopay.get_current_tip(mkr_query_id)
@@ -153,7 +155,7 @@ async def test_main(
         )
 
         assert status.ok
-
+        chain.mine(3)
         current_tip, status = await autopay.get_current_tip(ric_query_id)
         assert status.ok
         assert current_tip == 20e18
@@ -188,7 +190,7 @@ async def test_main(
             _queryData=trb_query_data,
         )
         assert status.ok
-
+        chain.mine(3)
         # encode feed variables, then hash to get feed id
         feed_data = encode_single(
             "(bytes32,uint256,uint256,uint256,uint256,uint256)",
@@ -213,7 +215,7 @@ async def test_main(
             _amount=50 * 10**18,
         )
         assert status.ok
-
+        chain.mine(3)
         # get suggestion from telliot on query with highest tip
         suggested_qtag, tb_reward = await autopay_suggested_report(autopay)
         assert suggested_qtag == "trb-usd-legacy"
@@ -229,7 +231,7 @@ async def test_main(
             _nonce=0,
             _queryData=trb_query_data,
         )
-
+        chain.mine(3)
         # get suggestion from telliot on query with highest tip
         suggested_qtag, tb_reward = await autopay_suggested_report(autopay)
         assert suggested_qtag == "ric-usd-spot"
@@ -253,7 +255,7 @@ async def test_main(
             _timestamps=[read_timestamp[2]],
         )
         assert status.ok
-
+        chain.mine(3)
         # get suggestion from telliot on query with highest tip
         suggested_qtag, tb_reward = await autopay_suggested_report(autopay)
         assert suggested_qtag == "ric-usd-spot"
@@ -271,7 +273,7 @@ async def test_main(
             _queryData=ric_query_data,
         )
         assert status.ok
-
+        chain.mine(3)
         # get suggestion from telliot on query with highest tip
         suggested_qtag, tb_reward = await autopay_suggested_report(autopay)
         assert suggested_qtag == "mkr-usd-spot"
@@ -292,7 +294,7 @@ async def test_main(
             _queryData=mkr_query_data,
         )
         assert status.ok
-
+        chain.mine(3)
         # get suggestion from telliot on query with highest tip
         suggested_qtag, tb_reward = await autopay_suggested_report(autopay)
         assert suggested_qtag is None
