@@ -92,7 +92,6 @@ async def test_main(
         # check txn is successful
         assert status.ok
 
-
         # check staker information
         staker_info, status = await oracle.get_staker_info(
             Web3.toChecksumAddress(core.get_account().address)
@@ -125,7 +124,6 @@ async def test_main(
         )
         # check txn is successful
         assert status.ok
-
 
         # submit a tip in autopay for reporter to report mkr/usd price
         current_tip, status = await autopay.get_current_tip(mkr_query_id)
@@ -273,7 +271,7 @@ async def test_main(
             _queryData=ric_query_data,
         )
         assert status.ok
- 
+
         # get suggestion from telliot on query with highest tip
         suggested_qtag, tb_reward = await autopay_suggested_report(autopay)
         assert suggested_qtag == "mkr-usd-spot"

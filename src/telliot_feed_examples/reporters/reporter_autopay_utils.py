@@ -116,7 +116,9 @@ async def get_feed_details(
                 error_status(note=msg, log=logger.warning)
                 return None
 
-            if (feed_details[detail.balance] <= 0 and feed_details[detail.reward] <= 0) or feed_details[detail.balance] < feed_details[detail.reward]:
+            if (
+                feed_details[detail.balance] <= 0 and feed_details[detail.reward] <= 0
+            ) or feed_details[detail.balance] < feed_details[detail.reward]:
                 msg = f"{feed_id}, feed has no remaining balance"
                 error_status(note=msg, log=logger.warning)
                 return None
