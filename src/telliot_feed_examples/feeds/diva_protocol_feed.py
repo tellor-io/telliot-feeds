@@ -6,7 +6,7 @@ from typing import Optional
 from chained_accounts import ChainedAccount
 from telliot_core.api import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
-from telliot_core.queries.diva_protocol import divaProtocolPolygon
+from telliot_core.queries.diva_protocol import DIVAProtocolPolygon
 from telliot_core.tellor.tellorflex.diva import DivaProtocolContract
 
 from telliot_feed_examples.sources.price.historical.cryptowatch import (
@@ -48,7 +48,6 @@ async def get_pool_params(
         logger.error("Error getting pool params from Diva contract.")
         return None
 
-    print("PARAMS:", params)
     pool_params = DivaPoolParameters(
         reference_asset=params.reference_asset, expiry_date=params.expiry_time
     )
@@ -95,7 +94,7 @@ async def assemble_diva_datafeed(
     ts = params.expiry_date
 
     feed = DataFeed(
-        query=divaProtocolPolygon(pool_id),
+        query=DIVAProtocolPolygon(pool_id),
         source=get_source(asset, ts),
     )
 
