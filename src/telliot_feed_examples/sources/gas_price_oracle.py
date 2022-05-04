@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from dataclasses import field
 from time import time
-from typing import Dict
 from typing import Optional
 
 import requests
