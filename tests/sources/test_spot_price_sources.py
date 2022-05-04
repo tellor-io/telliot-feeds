@@ -3,6 +3,7 @@
 """
 import os
 from datetime import datetime
+from pydantic import NoneIsAllowedError
 
 import pytest
 from requests import JSONDecodeError
@@ -188,3 +189,15 @@ async def test_coingecko_price_service_rate_limit(caplog):
     assert v is None
     assert dt is None
     assert "CoinGecko API rate limit exceeded" in caplog.text
+
+@pytest.mark.asyncio
+async def test_failed_price_service_request():
+    '''Assert web price service catches failed requests'''
+
+    invalid_token_ticker = "abcxyz"
+
+    v, t = await get_price(invalid_token_ticker, "usd", service["gemini"])
+
+    assert v is None
+    assert t is None
+

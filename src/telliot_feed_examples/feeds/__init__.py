@@ -15,6 +15,7 @@ from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feed_examples.feeds.uspce_feed import uspce_feed
 from telliot_feed_examples.feeds.vesq import vsq_usd_median_feed
+from telliot_feed_examples.feeds.gas_price_oracle_feed import gas_price_oracle_feed
 
 
 # Supported legacy feeds
@@ -45,4 +46,5 @@ CATALOG_FEEDS = {
     "matic-usd-spot": matic_usd_median_feed,
     "usdc-usd-spot": usdc_usd_median_feed,
     "morphware-v1": morphware_v1_feed,
+    "gas-price-oracle-example": gas_price_oracle_feed,
 }
