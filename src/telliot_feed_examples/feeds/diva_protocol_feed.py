@@ -48,7 +48,6 @@ async def get_pool_params(
         logger.error("Error getting pool params from Diva contract.")
         return None
 
-    print("PARAMS:", params)
     pool_params = DivaPoolParameters(
         reference_asset=params.reference_asset, expiry_date=params.expiry_time
     )
