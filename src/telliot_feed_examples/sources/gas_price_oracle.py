@@ -1,6 +1,5 @@
+import time
 from dataclasses import dataclass
-from dataclasses import field
-from typing import Dict
 from typing import Optional
 
 import requests
@@ -29,32 +28,33 @@ adapter = HTTPAdapter(max_retries=retry_strategy)
 class GasPriceOracleSource(DataSource[str]):
     """DataSource for GasPriceOracle expected response data."""
 
-    networks: Dict[int, str] = field(
-        default_factory=lambda: {
+    chain_id: int = 1
+    timestamp: int = int(time.time())
+
+    async def fetch_historical_gas_price(
+        self,
+    ) -> Optional[Response]:
+        """Fetches historical gas price data from Owlracle API."""
+
+        networks = {
             1: "eth",
             56: "bsc",
             43114: "avax",
             250: "ftm",
             137: "poly",
             25: "cro",
-            42220: "42220",
+            42220: "one",
             128: "ht",
             1285: "movr",
             122: "fuse",
         }
-    )
-
-    async def fetch_historical_gas_price(
-        self, timestamp: int, chain_id: int
-    ) -> Optional[Response]:
-        """Fetches historical gas price data from Owlracle API."""
 
         url = (
             f"https://owlracle.info/"
-            f"{self.networks[chain_id]}"
+            f"{networks[self.chain_id]}"
             "/history?"
-            f"from={int(timestamp)}"
-            f"&to={int(timestamp) + 100}"
+            f"from={int(self.timestamp)}"
+            f"&to={int(self.timestamp) + 100}"
         )
 
         with requests.Session() as s:
@@ -67,16 +67,14 @@ class GasPriceOracleSource(DataSource[str]):
                 return None
 
     async def fetch_new_datapoint(
-        self, timestamp: int, chain_id: int
+        self,
     ) -> Optional[DataPoint[list[str]]]:
         """Retrieves historical gas prices from Owlracle API.
 
         Returns:
             float gas price in gwei, typically with one decimal place
         """
-        rsp = await self.fetch_historical_gas_price(
-            timestamp=timestamp, chain_id=chain_id
-        )
+        rsp = await self.fetch_historical_gas_price()
         if rsp is None:
             logger.warning("No response from GasPriceOracle API")
             return None, None
