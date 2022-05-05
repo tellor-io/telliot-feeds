@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from telliot_core.api import DataFeed
 from telliot_core.apps.core import TelliotCore
-from telliot_core.queries.diva_protocol import divaProtocolPolygon
+from telliot_core.queries.diva_protocol import DIVAProtocolPolygon
 
 from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feed_examples.feeds.diva_protocol_feed import DivaPoolParameters
@@ -41,7 +41,7 @@ async def test_diva_datafeed(ropsten_cfg) -> None:
         )
 
         assert isinstance(feed, DataFeed)
-        assert isinstance(feed.query, divaProtocolPolygon)
+        assert isinstance(feed.query, DIVAProtocolPolygon)
         assert isinstance(feed.source.sources[3], PoloniexHistoricalPriceSource)
         assert isinstance(feed.source.sources[0].ts, int)
         assert feed.source.asset == "eth"
