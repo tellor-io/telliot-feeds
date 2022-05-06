@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from time import time
 from typing import Optional
@@ -43,7 +44,7 @@ class GasPriceOracleSource(DataSource[str]):
             250: "ftm",
             137: "poly",
             25: "cro",
-            42220: "42220",
+            42220: "one",
             128: "ht",
             1285: "movr",
             122: "fuse",
