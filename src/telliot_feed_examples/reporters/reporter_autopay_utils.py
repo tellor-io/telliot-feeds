@@ -43,8 +43,10 @@ async def single_tip_suggested_query_id(
     contract, checks if query ids exist in the query catalog,
     then sorts them from highest tip amount to lowest
     """
-
-    assert isinstance(autopay, TellorFlexAutopayContract)
+    if not autopay.connect().ok:
+        msg = "can't suggest single tip query id, autopay contract not connected"
+        error_status(note=msg, log=logger.critical)
+        return None, None
     query_id_lis, status = await autopay.read("getFundedQueryIds")
     tips_dictionary = {}
     current_time = TimeStamp.now().ts
@@ -82,8 +84,6 @@ async def single_tip_suggested_query_id(
         if tips_sorted:
             suggested_qtag = f"0x{tips_sorted[0][0].hex()}"
             suggested_qtag_tip = int(tips_sorted[0][1])
-            assert isinstance(suggested_qtag, str)
-            assert isinstance(suggested_qtag_tip, int)
             return query_ids_in_catalog[suggested_qtag], int(suggested_qtag_tip * 1e18)
         else:
             return None, None
@@ -96,7 +96,11 @@ async def single_tip_suggested_query_id(
 async def get_feed_details(
     query_id: str, autopay: TellorFlexAutopayContract
 ) -> Optional[int]:
-    assert isinstance(autopay, TellorFlexAutopayContract)
+
+    if not autopay.connect().ok:
+        msg = "can't suggest feed, autopay contract not connected"
+        error_status(note=msg, log=logger.critical)
+        return None
     current_time = TimeStamp.now().ts
     feed_ids, status = await autopay.read("getCurrentFeeds", _queryId=query_id)
 
@@ -123,11 +127,14 @@ async def get_feed_details(
                 error_status(note=msg, log=logger.warning)
                 return None
 
-        # contract rounds down so matching it here
+        # next two variables are used to check if value to be submitted
+        # is first in interval window to be eligible for tip
+        # finds closest interval n to timestamp
         n = math.floor(
             (current_time - feed_details[detail.startTime])
             / feed_details[detail.interval]
         )
+        # finds timestamp c of interval n
         c = feed_details[detail.startTime] + (feed_details[detail.interval] * n)
         response, status = await autopay.read("getCurrentValue", _queryId=query_id)
 
@@ -158,6 +165,10 @@ async def get_feed_details(
         else:
             datafeed = CATALOG_FEEDS[query_ids_in_catalog[query_id]]
             value_now = await datafeed.source.fetch_new_datapoint()
+            if value_now is None:
+                note = f"Unable to fetch {datafeed} price for tip calculation"
+                error_status(note=note, log=logger.warning)
+                return None
             value_now = value_now[0]
 
             if value_before_now == 0:
@@ -195,6 +206,7 @@ async def autopay_suggested_report(
         datafeed_dict = {
             j: await get_feed_details(i, autopay)
             for i, j in query_ids_in_catalog.items()
+            if "legacy" in j or "spot" in j
         }
         datafeed_suggestion = {i: j for i, j in datafeed_dict.items() if j}
         datafeed_tips_sorted = sorted(
@@ -204,21 +216,24 @@ async def autopay_suggested_report(
             single_suggested_qtag,
             single_suggested_tip,
         ) = await single_tip_suggested_query_id(autopay=autopay)
+        # checks if there is a suggested multitip feed
+        # to compare with suggested single tip
         if datafeed_tips_sorted:
-            datafeed_suggested_qtag, datafeed_suggested_tip = datafeed_tips_sorted[0]
+            multitip_suggested_qtag, multitip_suggested_tip = datafeed_tips_sorted[0]
         else:
             return single_suggested_qtag, single_suggested_tip
-
+        # checks if there is a suggested single tip feed to compare with multitip feed
         if not single_suggested_qtag:
-            return datafeed_suggested_qtag, datafeed_suggested_tip
+            return multitip_suggested_qtag, multitip_suggested_tip
 
-        if datafeed_suggested_qtag == single_suggested_qtag:
-            return datafeed_suggested_qtag, (
-                datafeed_suggested_tip + single_suggested_tip  # type: ignore
+        # checks if suggested multtip and single tip are the same and adds tip
+        if multitip_suggested_qtag == single_suggested_qtag:
+            return multitip_suggested_qtag, (
+                multitip_suggested_tip + single_suggested_tip  # type: ignore
             )
-
-        elif datafeed_suggested_tip > single_suggested_tip:  # type: ignore
-            return datafeed_suggested_qtag, datafeed_suggested_tip
+        # checks if suggested multitip feed is greater than suggested single tip feed
+        elif multitip_suggested_tip > single_suggested_tip:  # type: ignore
+            return multitip_suggested_qtag, multitip_suggested_tip
         else:
             return single_suggested_qtag, single_suggested_tip
 

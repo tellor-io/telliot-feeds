@@ -1,3 +1,5 @@
+from time import sleep
+
 import pytest
 from brownie import accounts
 from brownie import Autopay
@@ -213,7 +215,7 @@ async def test_main(
             _amount=50 * 10**18,
         )
         assert status.ok
-
+        sleep(5)
         # get suggestion from telliot on query with highest tip
         suggested_qtag, tb_reward = await autopay_suggested_report(autopay)
         assert suggested_qtag == "trb-usd-legacy"
