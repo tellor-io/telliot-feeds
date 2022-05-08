@@ -2,7 +2,11 @@
 import os
 
 import pytest
+from brownie import accounts
+from brownie import Autopay
 from brownie import chain
+from brownie import StakingToken
+from brownie import TellorFlex
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from telliot_core.apps.telliot_config import TelliotConfig
@@ -181,3 +185,29 @@ def local_node_cfg(chain_id: int):
 @pytest.fixture
 def mumbai_test_cfg(scope="session", autouse=True):
     return local_node_cfg(chain_id=80001)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def mock_token_contract():
+    """mock token to use for staking"""
+    return accounts[0].deploy(StakingToken)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def mock_flex_contract(mock_token_contract):
+    """mock oracle(TellorFlex) contract to stake in"""
+    return accounts[0].deploy(
+        TellorFlex, mock_token_contract.address, accounts[0], 10e18, 60
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def mock_autopay_contract(mock_flex_contract, mock_token_contract):
+    """mock payments(Autopay) contract for tipping and claiming tips"""
+    return accounts[0].deploy(
+        Autopay,
+        mock_flex_contract.address,
+        mock_token_contract.address,
+        accounts[0],
+        20,
+    )

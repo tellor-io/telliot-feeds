@@ -1,4 +1,5 @@
 import math
+from typing import Any
 from typing import Optional
 from typing import Tuple
 
@@ -34,66 +35,71 @@ class DetailsMap:
 detail = DetailsMap()
 
 
-async def single_tip_suggested_query_id(
+async def get_single_tip(
+    query_id: bytes,
     autopay: TellorFlexAutopayContract,
-) -> Tuple[Optional[str], Optional[int]]:
-    """Returns the currently suggested query to for a single tip report against.
+) -> Optional[int]:
+    """Returns a suggested query with a single tip to report.
 
     Pulls query_ids with tips available from the tellor autopay
-    contract, checks if query ids exist in the query catalog,
-    then sorts them from highest tip amount to lowest
+    contract, checks if query catalog items have a tip and returns tip amount
     """
     if not autopay.connect().ok:
-        msg = "can't suggest single tip query id, autopay contract not connected"
+        msg = "can't suggest single tip for autopay contract not connected"
         error_status(note=msg, log=logger.critical)
-        return None, None
+        return None
     query_id_lis, status = await autopay.read("getFundedQueryIds")
-    tips_dictionary = {}
-    current_time = TimeStamp.now().ts
-    for i in query_id_lis:
-        query_id = f"0x{i.hex()}"
-        if query_id in query_ids_in_catalog:
-            length = await autopay.read("getPastTipCount", _queryId=i)
-            count = length[0]
-            if count > 0:
-                mini = 0
-                maxi = count
-                while maxi - mini > 1:
-                    mid = int((maxi + mini) / 2)
-                    tip_info, status = await autopay.read("tips", query_id, mid)
-                    if tip_info[1] > current_time:
-                        maxi = mid
-                    else:
-                        mini = mid
-
-                timestamp_before, status = await autopay.read(
-                    "getCurrentValue", _queryId=i
-                )
-                tip_info, status = await autopay.read("tips", i, mini)
-                if timestamp_before[2] < tip_info[1]:
-                    tips_dictionary[i] = tip_info[0] / 1e18
-                else:
-                    continue
-
-    if status.ok:
-        tips_sorted = sorted(
-            tips_dictionary.items(),
-            key=lambda item: item[1],  # type: ignore
-            reverse=True,
-        )
-        if tips_sorted:
-            suggested_qtag = f"0x{tips_sorted[0][0].hex()}"
-            suggested_qtag_tip = int(tips_sorted[0][1])
-            return query_ids_in_catalog[suggested_qtag], int(suggested_qtag_tip * 1e18)
-        else:
-            return None, None
-    else:
-        msg = "can't get FundedQueryIds"
+    if not status.ok:
+        msg = "unable to read getFundedQueryIds from autopay"
         error_status(note=msg, log=logger.warning)
-        return None, None
+        return None
+    current_time = TimeStamp.now().ts
+    if query_id in query_id_lis:
+        count, status = await autopay.read("getPastTipCount", _queryId=query_id)
+        if not status.ok:
+            msg = "unable to read getPastTipCount in autopay"
+            error_status(note=msg, log=logger.warning)
+            return None
+        if count > 0:
+            mini = 0
+            maxi = count
+            while maxi - mini > 1:
+                mid = int((maxi + mini) / 2)
+                tip_info, status = await autopay.read("tips", query_id, mid)
+                logger.critical(tip_info)
+                if not status.ok:
+                    msg = "unable to read tips function in autopay"
+                    error_status(note=msg, log=logger.warning)
+                    return None
+                if tip_info[1] > current_time:
+                    maxi = mid
+                else:
+                    mini = mid
+
+            timestamp_before, status = await autopay.read(
+                "getCurrentValue", _queryId=query_id
+            )
+            if not status.ok:
+                msg = "unable to read current value"
+                error_status(note=msg, log=logger.warning)
+                return None
+            tip_info, status = await autopay.read("tips", query_id, mini)
+            if not status.ok:
+                msg = "unable to read tips function in autopay contract"
+                error_status(note=msg, log=logger.warning)
+                return None
+            if timestamp_before[2] < tip_info[1]:
+                logger.info(
+                    msg=f"{query_ids_in_catalog['0x'+query_id.hex()]}\
+                         has {tip_info[0]/1e18} in potential tips"
+                )
+                return int(tip_info[0])
+    else:
+        return None
+    return None
 
 
-async def get_feed_details(
+async def get_feed_tip(
     query_id: str, autopay: TellorFlexAutopayContract
 ) -> Optional[int]:
 
@@ -123,7 +129,7 @@ async def get_feed_details(
             if (
                 feed_details[detail.balance] <= 0 and feed_details[detail.reward] <= 0
             ) or feed_details[detail.balance] < feed_details[detail.reward]:
-                msg = f"{feed_id}, feed has no remaining balance"
+                msg = f"{query_ids_in_catalog[query_id]}, feed has no remaining balance"
                 error_status(note=msg, log=logger.warning)
                 return None
 
@@ -142,7 +148,7 @@ async def get_feed_details(
             msg = "couldn't get value before from getCurrentValue"
             error_status(note=msg, log=logger.warning)
             return None
-
+        # if submission will be first set before values to zero
         if not response[0]:
             value_before_now = 0
             timestamp_before_now = 0
@@ -165,7 +171,7 @@ async def get_feed_details(
         else:
             datafeed = CATALOG_FEEDS[query_ids_in_catalog[query_id]]
             value_now = await datafeed.source.fetch_new_datapoint()
-            if value_now is None:
+            if not value_now:
                 note = f"Unable to fetch {datafeed} price for tip calculation"
                 error_status(note=note, log=logger.warning)
                 return None
@@ -198,44 +204,52 @@ async def get_feed_details(
 
 async def autopay_suggested_report(
     autopay: TellorFlexAutopayContract,
-) -> Tuple[Optional[str], Optional[int]]:
+) -> Tuple[Optional[str], Any]:
     chain = autopay.node.chain_id
 
     if chain in (137, 80001):
         assert isinstance(autopay, TellorFlexAutopayContract)
+
+        # helper function to add values when combining dicts with same key
+        def add_values(val_1: Optional[int], val_2: Optional[int]) -> Optional[int]:
+            if not val_1:
+                return val_2
+            elif not val_2:
+                return val_1
+            else:
+                return val_1 + val_2
+
+        # get query_ids with one time tips
+        singletip_dict = {
+            j: await get_single_tip(bytes.fromhex(i[2:]), autopay)
+            for i, j in query_ids_in_catalog.items()
+        }
+        # get query_ids with active feeds
         datafeed_dict = {
-            j: await get_feed_details(i, autopay)
+            j: await get_feed_tip(i, autopay)
             for i, j in query_ids_in_catalog.items()
             if "legacy" in j or "spot" in j
         }
+
+        # remove none type
+        single_tip_suggestion = {i: j for i, j in singletip_dict.items() if j}
         datafeed_suggestion = {i: j for i, j in datafeed_dict.items() if j}
-        datafeed_tips_sorted = sorted(
+
+        # combine feed dicts and add tips for duplicate query ids
+        datafeed_suggestion = {
+            key: add_values(
+                single_tip_suggestion.get(key), datafeed_suggestion.get(key)
+            )
+            for key in single_tip_suggestion | datafeed_suggestion
+        }
+        # get feed with most tips
+        tips_sorted = sorted(
             datafeed_suggestion.items(), key=lambda item: item[1], reverse=True
         )
-        (
-            single_suggested_qtag,
-            single_suggested_tip,
-        ) = await single_tip_suggested_query_id(autopay=autopay)
-        # checks if there is a suggested multitip feed
-        # to compare with suggested single tip
-        if datafeed_tips_sorted:
-            multitip_suggested_qtag, multitip_suggested_tip = datafeed_tips_sorted[0]
+        if tips_sorted:
+            suggested_feed = tips_sorted[0]
+            return suggested_feed[0], suggested_feed[1]
         else:
-            return single_suggested_qtag, single_suggested_tip
-        # checks if there is a suggested single tip feed to compare with multitip feed
-        if not single_suggested_qtag:
-            return multitip_suggested_qtag, multitip_suggested_tip
-
-        # checks if suggested multtip and single tip are the same and adds tip
-        if multitip_suggested_qtag == single_suggested_qtag:
-            return multitip_suggested_qtag, (
-                multitip_suggested_tip + single_suggested_tip  # type: ignore
-            )
-        # checks if suggested multitip feed is greater than suggested single tip feed
-        elif multitip_suggested_tip > single_suggested_tip:  # type: ignore
-            return multitip_suggested_qtag, multitip_suggested_tip
-        else:
-            return single_suggested_qtag, single_suggested_tip
-
+            return None, None
     else:
         return None, None

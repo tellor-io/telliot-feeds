@@ -15,7 +15,6 @@ from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
-from web3.exceptions import ContractLogicError
 
 from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.feeds.matic_usd_feed import matic_usd_median_feed
@@ -24,7 +23,8 @@ from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.reporter_autopay_utils import (
     autopay_suggested_report,
 )
-from telliot_feed_examples.reporters.reporter_autopay_utils import get_feed_details
+from telliot_feed_examples.reporters.reporter_autopay_utils import get_feed_tip
+from telliot_feed_examples.reporters.reporter_autopay_utils import get_single_tip
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -230,31 +230,15 @@ class PolygonReporter(IntervalReporter):
 
         if self.datafeed is not None:
             datafeed = self.datafeed
-
-            # Get current tips for given queryID
-            tb_reward, read_status = await self.autopay.get_current_tip(
-                query_id=datafeed.query.query_id
-            )
-            # Log web3 errors
-            if not read_status.ok and type(read_status.e) == ContractLogicError:
-                msg = "No tips exist for the selected query"
-                error_status(msg, log=logger.warning)
-            elif (not read_status.ok) or (tb_reward is None):
-                status.ok = False
-                status.error = (
-                    "Unable to retrieve queryID's One time current tips:"
-                    + read_status.error
-                )
-                logger.error(status.error)
-                status.e = read_status.e
-            datafeed_reward = await get_feed_details(
-                self.autopay, datafeed.query.query_id
-            )
-            tb_reward = int(tb_reward / 1e18)
-            if datafeed_reward:
-                tb_reward += datafeed_reward
+            tip = 0
+            single_tip = await get_single_tip(datafeed.query.query_id, self.autopay)
+            if single_tip:
+                tip = single_tip
+            feed_tip = await get_feed_tip(datafeed.query.query_id, self.autopay)
+            if feed_tip:
+                tip += feed_tip
         else:
-            suggested_qtag, tb_reward = await autopay_suggested_report(self.autopay)
+            suggested_qtag, tip = await autopay_suggested_report(self.autopay)
             if not suggested_qtag:
                 msg = "Could not get suggested query."
                 error_status(msg, log=logger.info)
@@ -290,7 +274,7 @@ class PolygonReporter(IntervalReporter):
 
             logger.info(
                 f"""
-                tips: {tb_reward} TRB
+                tips: {tip} TRB
                 gas limit: {self.gas_limit}
                 base fee: {base_fee}
                 priority fee: {self.priority_fee}
@@ -312,7 +296,7 @@ class PolygonReporter(IntervalReporter):
                 return error_status(note, log=logger.info)
             logger.info(
                 f"""
-                tips: {tb_reward/1e18} TRB
+                tips: {tip/1e18} TRB
                 gas limit: {self.gas_limit}
                 legacy gas price: {self.legacy_gas_price}
                 """
@@ -320,11 +304,11 @@ class PolygonReporter(IntervalReporter):
             costs = self.gas_limit * self.legacy_gas_price
 
         # Calculate profit
-        rev_usd = tb_reward / 1e18 * price_trb_usd
+        rev_usd = tip / 1e18 * price_trb_usd
         costs_usd = costs / 1e9 * price_matic_usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
-        logger.info(f"tb price: {round(rev_usd, 2)}, gas costs: {costs_usd}")
+        logger.info(f"tip price: {round(rev_usd, 2)}, gas costs: {costs_usd}")
 
         percent_profit = ((profit_usd) / costs_usd) * 100
         logger.info(f"Estimated percent profit: {round(percent_profit, 2)}%")
