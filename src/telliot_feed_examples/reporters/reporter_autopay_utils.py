@@ -236,7 +236,7 @@ async def autopay_suggested_report(
         datafeed_suggestion = {i: j for i, j in datafeed_dict.items() if j}
 
         # combine feed dicts and add tips for duplicate query ids
-        datafeed_suggestion = {
+        combined_dict = {
             key: add_values(
                 single_tip_suggestion.get(key), datafeed_suggestion.get(key)
             )
@@ -244,7 +244,7 @@ async def autopay_suggested_report(
         }
         # get feed with most tips
         tips_sorted = sorted(
-            datafeed_suggestion.items(), key=lambda item: item[1], reverse=True
+            combined_dict.items(), key=lambda item: item[1], reverse=True  # type: ignore
         )
         if tips_sorted:
             suggested_feed = tips_sorted[0]
