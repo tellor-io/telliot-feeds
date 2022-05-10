@@ -1,5 +1,5 @@
-import time
 from dataclasses import dataclass
+from time import time
 from typing import Optional
 
 import requests
@@ -29,7 +29,7 @@ class GasPriceOracleSource(DataSource[str]):
     """DataSource for GasPriceOracle expected response data."""
 
     chain_id: int = 1
-    timestamp: int = int(time.time())
+    timestamp: int = int(time())
 
     async def fetch_historical_gas_price(
         self,
