@@ -36,8 +36,8 @@ async def test_main(
         assert mock_token_contract.balanceOf(account.address) == 1000e18
 
         # send eth from brownie address to reporter address for txn fees
-        accounts[0].transfer(account.address, "10 ether")
-        assert Account(account.address).balance() == 10e18
+        accounts[0].transfer(account.address, "1 ether")
+        assert Account(account.address).balance() == 1e18
 
         # check governance address is brownie address
         governance_address = await flex.oracle.get_governance_address()

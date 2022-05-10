@@ -38,7 +38,7 @@ async def polygon_reporter(
         mock_token_contract.mint(account.address, 1000e18)
 
         # send eth from brownie address to reporter address for txn fees
-        accounts[0].transfer(account.address, "10 ether")
+        accounts[1].transfer(account.address, "1 ether")
 
         return r
 
