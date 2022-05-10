@@ -18,7 +18,7 @@ from telliot_feed_examples.reporters import interval
 from telliot_feed_examples.reporters.interval import IntervalReporter
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="function")
 async def eth_usd_reporter(rinkeby_cfg, scope="function"):
     """Returns an instance of an IntervalReporter using
     the ETH/USD median datafeed."""
@@ -206,7 +206,7 @@ async def test_interval_reporter_submit_once(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_no_updated_value(eth_usd_reporter, bad_source):
+async def test_no_updated_value(eth_usd_reporter, bad_datasource):
     """Test handling for no updated value returned from datasource."""
     r = eth_usd_reporter
 
@@ -215,7 +215,7 @@ async def test_no_updated_value(eth_usd_reporter, bad_source):
 
     # Replace PriceAggregator's sources with test source that
     # returns no updated DataPoint
-    r.datafeed.source.sources = [bad_source]
+    r.datafeed.source.sources = [bad_datasource]
 
     # Override reporter profit check
     async def profit(datafeed: DataFeed[Any]):
@@ -235,7 +235,7 @@ async def test_no_updated_value(eth_usd_reporter, bad_source):
 
 @pytest.mark.asyncio
 async def test_no_token_prices_for_profit_calc(
-    eth_usd_reporter, bad_source, guaranteed_price_source
+    eth_usd_reporter, bad_datasource, guaranteed_price_source
 ):
     """Test handling for no token prices for profit calculation."""
     r = eth_usd_reporter
@@ -246,7 +246,7 @@ async def test_no_token_prices_for_profit_calc(
     # Simulate TRB/USD price retrieval failure
     r.trb_usd_median_feed.source._history.clear()
     r.eth_usd_median_feed.source.sources = [guaranteed_price_source]
-    r.trb_usd_median_feed.source.sources = [bad_source]
+    r.trb_usd_median_feed.source.sources = [bad_datasource]
     tx_receipt, status = await r.report_once()
 
     assert tx_receipt is None
@@ -255,7 +255,7 @@ async def test_no_token_prices_for_profit_calc(
 
     # Simulate ETH/USD price retrieval failure
     r.eth_usd_median_feed.source._history.clear()
-    r.eth_usd_median_feed.source.sources = [bad_source]
+    r.eth_usd_median_feed.source.sources = [bad_datasource]
     tx_receipt, status = await r.report_once()
 
     assert tx_receipt is None

@@ -48,7 +48,7 @@ def validate_price(v, t):
     print(t)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def nomics_key():
     key = TelliotConfig().api_keys.find(name="nomics")[0].key
 
@@ -58,7 +58,7 @@ def nomics_key():
     return key
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def coinmarketcap_key():
     key = TelliotConfig().api_keys.find(name="coinmarketcap")[0].key
 
