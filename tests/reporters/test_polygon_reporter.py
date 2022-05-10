@@ -8,7 +8,7 @@ from telliot_feed_examples.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 async def polygon_reporter(
     mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract
 ):

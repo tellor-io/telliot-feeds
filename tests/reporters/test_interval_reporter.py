@@ -18,7 +18,7 @@ from telliot_feed_examples.reporters import interval
 from telliot_feed_examples.reporters.interval import IntervalReporter
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="function")
 async def eth_usd_reporter(rinkeby_cfg, scope="function"):
     """Returns an instance of an IntervalReporter using
     the ETH/USD median datafeed."""

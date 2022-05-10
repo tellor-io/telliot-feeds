@@ -9,7 +9,7 @@ from telliot_feed_examples.sources.ampl_usd_vwap import AnyBlockSource
 from telliot_feed_examples.sources.ampl_usd_vwap import BraveNewCoinSource
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def keys_dict():
     keys = TelliotConfig().api_keys
     anyblock_key = keys.find("anyblock")[0].key
