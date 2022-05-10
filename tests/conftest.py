@@ -1,4 +1,5 @@
 """Pytest Fixtures used for testing Pytelliot"""
+import asyncio
 import os
 
 import pytest
@@ -17,7 +18,17 @@ from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_feed_examples.utils.cfg import mainnet_config
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
+def shared_setup(module_isolation):
+    pass
+
+
+@pytest.fixture(scope="module", autouse=True)
+def event_loop():
+    return asyncio.get_event_loop()
+
+
+@pytest.fixture(scope="module", autouse=True)
 def rinkeby_cfg():
     """Get rinkeby endpoint from config
 
@@ -48,7 +59,7 @@ def rinkeby_cfg():
     return cfg
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def mainnet_test_cfg():
     """Get mainnet endpoint from config
 
@@ -57,7 +68,7 @@ def mainnet_test_cfg():
     return mainnet_config()
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def mumbai_cfg():
     """Return a test telliot configuration for use on polygon-mumbai
 
@@ -91,7 +102,7 @@ def mumbai_cfg():
     return cfg
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def ropsten_cfg():
     """Return a test telliot configuration for use on polygon-mumbai
 
@@ -120,7 +131,7 @@ def ropsten_cfg():
     return cfg
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def bad_source():
     """Used for testing no updated value for datafeeds."""
 
@@ -133,7 +144,7 @@ def bad_source():
     return BadSource()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def guaranteed_price_source():
     """Used for testing no updated value for datafeeds."""
 
@@ -183,17 +194,17 @@ def local_node_cfg(chain_id: int):
 
 
 @pytest.fixture
-def mumbai_test_cfg(scope="session", autouse=True):
+def mumbai_test_cfg(scope="function", autouse=True):
     return local_node_cfg(chain_id=80001)
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def mock_token_contract():
     """mock token to use for staking"""
     return accounts[0].deploy(StakingToken)
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def mock_flex_contract(mock_token_contract):
     """mock oracle(TellorFlex) contract to stake in"""
     return accounts[0].deploy(
@@ -201,7 +212,7 @@ def mock_flex_contract(mock_token_contract):
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def mock_autopay_contract(mock_flex_contract, mock_token_contract):
     """mock payments(Autopay) contract for tipping and claiming tips"""
     return accounts[0].deploy(
