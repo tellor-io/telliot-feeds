@@ -62,6 +62,7 @@ class GeminiSpotPriceService(WebPriceService):
                 r = GeminiPriceResponse.parse_obj(d["response"])
             except ValidationError:
                 logger.error("Error parsing response from Gemini API")
+                return None, None
 
             if r.last is not None:
                 return r.last, datetime_now_utc()
