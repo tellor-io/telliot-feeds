@@ -6,6 +6,7 @@ from telliot_core.queries.query import OracleQuery
 from telliot_feed_examples.feeds.btc_usd_feed import btc_usd_median_feed
 
 
+@pytest.mark.skip("Skip while gemini rate limiting")
 @pytest.mark.asyncio
 async def test_AssetPriceFeed():
     """Retrieve median BTC price from example datafeed &

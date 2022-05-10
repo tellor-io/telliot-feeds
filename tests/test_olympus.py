@@ -1,12 +1,12 @@
 import pytest
+from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
 from telliot_feed_examples.feeds.olympus import ohm_eth_median_feed
-from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 
 
-@pytest.mark.skip("Avoid coingecko rate limits")
 @pytest.mark.asyncio
 async def test_fetch_price():
     (value, _) = await ohm_eth_median_feed.source.fetch_new_datapoint()
@@ -30,51 +30,44 @@ def test_query_info():
     )
 
 
-@pytest.mark.skip("Asks for psswd")
 @pytest.mark.asyncio
-async def test_ohm_eth_reporter_submit_once(rinkeby_cfg):
+async def test_ohm_eth_reporter_submit_once(
+    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract
+):
     """Test reporting AMPL/USD/VWAP to the TellorX Oracle on Rinkeby."""
-    async with TelliotCore(config=rinkeby_cfg) as core:
+    async with TelliotCore(config=mumbai_test_cfg) as core:
         account = core.get_account()
-        tellorx = core.get_tellorx_contracts()
-        r = IntervalReporter(
-            endpoint=core.config.get_endpoint(),
+
+        flex = core.get_tellorflex_contracts()
+        flex.oracle.address = mock_flex_contract.address
+        flex.autopay.address = mock_autopay_contract.address
+        flex.token.address = mock_token_contract.address
+
+        flex.oracle.connect()
+        flex.token.connect()
+        flex.autopay.connect()
+
+        # mint token and send to reporter address
+        mock_token_contract.mint(account.address, 1000e18)
+
+        # send eth from brownie address to reporter address for txn fees
+        accounts[1].transfer(account.address, "1 ether")
+
+        r = PolygonReporter(
+            endpoint=core.endpoint,
             account=account,
-            master=tellorx.master,
-            oracle=tellorx.oracle,
-            datafeed=ohm_eth_median_feed,
-            expected_profit="YOLO",
+            chain_id=80001,
+            oracle=flex.oracle,
+            token=flex.token,
+            autopay=flex.autopay,
             transaction_type=0,
-            gas_limit=400000,
-            max_fee=None,
-            priority_fee=None,
-            legacy_gas_price=None,
-            gas_price_speed="safeLow",
-            chain_id=core.config.main.chain_id,
+            datafeed=ohm_eth_median_feed,
+            max_fee=100,
         )
-
-        EXPECTED_ERRORS = {
-            "Current addess disputed. Switch address to continue reporting.",
-            "Current address is locked in dispute or for withdrawal.",
-            "Current address is in reporter lock.",
-            "Estimated profitability below threshold.",
-            "Estimated gas price is above maximum gas price.",
-            "Unable to retrieve updated datafeed value.",
-        }
-
-        ORACLE_ADDRESSES = {
-            "0xe8218cACb0a5421BC6409e498d9f8CC8869945ea",  # mainnet
-            "0x18431fd88adF138e8b979A7246eb58EA7126ea16",  # rinkeby
-        }
 
         tx_receipt, status = await r.report_once()
 
         # Reporter submitted
         if tx_receipt is not None and status.ok:
             assert isinstance(tx_receipt, AttributeDict)
-            assert tx_receipt.to in ORACLE_ADDRESSES
-        # Reporter did not submit
-        else:
-            assert not tx_receipt
-            assert not status.ok
-            assert status.error in EXPECTED_ERRORS
+            assert tx_receipt.to in mock_flex_contract.address
