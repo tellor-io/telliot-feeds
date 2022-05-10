@@ -387,7 +387,9 @@ async def report(
             reporter = PolygonReporter(
                 oracle=tellorflex.oracle,
                 token=tellorflex.token,
+                autopay=tellorflex.autopay,
                 stake=stake,
+                expected_profit=expected_profit,
                 **common_reporter_kwargs,
             )
         # Report to TellorX
