@@ -135,13 +135,13 @@ def ropsten_cfg():
 def bad_source():
     """Used for testing no updated value for datafeeds."""
 
-    class BadSource(DataSource[float]):
+    class BadDataSource(DataSource[float]):
         """Source that does not return an updated DataPoint."""
 
         async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
             return None, None
 
-    return BadSource()
+    return BadDataSource()
 
 
 @pytest.fixture(scope="module")
