@@ -3,7 +3,6 @@ import pytest
 from telliot_feed_examples.feeds.usdc_usd_feed import usdc_usd_median_feed
 
 
-@pytest.mark.skip("Avoid coingecko rate limits")
 @pytest.mark.asyncio
 async def test_fetch_price():
     (value, _) = await usdc_usd_median_feed.source.fetch_new_datapoint()
