@@ -2,8 +2,10 @@
 Tests covering the IntervalReporter class from
 telliot's reporters subpackage.
 """
+import asyncio
 from datetime import datetime
 from typing import Any
+from unittest import mock
 
 import pytest
 import pytest_asyncio
@@ -261,3 +263,20 @@ async def test_no_token_prices_for_profit_calc(
     assert tx_receipt is None
     assert not status.ok
     assert status.error == "Unable to fetch ETH/USD price for profit calculation"
+
+
+@pytest.mark.asyncio
+async def test_handle_contract_master_read_timeout(eth_usd_reporter):
+    """Test handling for contract master read timeout."""
+
+    def conn_timeout(url, *args, **kwargs):
+        raise asyncio.exceptions.TimeoutError()
+
+    with mock.patch("web3.contract.ContractFunction.call", side_effect=conn_timeout):
+        r = eth_usd_reporter
+        r.fetch_gas_price = gas_price
+        staked, status = await r.ensure_staked()
+
+        assert not staked
+        assert not status.ok
+        assert "Unable to read reporters staker status" in status.error
