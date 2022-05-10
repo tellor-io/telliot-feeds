@@ -78,13 +78,13 @@ async def test_ampl_usd_vwap_source(keys_dict):
 
 
 @pytest.mark.asyncio
-async def test_no_updated_value(bad_source):
+async def test_no_updated_value(bad_datasource):
     """Test no AMPL/USD/VWAP value retrieved."""
 
     ampl_source = AMPLUSDVWAPSource()
 
     # Switch source to test one that doesn't return an updated value
-    ampl_source.sources = [bad_source]
+    ampl_source.sources = [bad_datasource]
 
     value, timestamp = await ampl_source.fetch_new_datapoint()
 
