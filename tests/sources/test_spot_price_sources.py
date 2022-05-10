@@ -112,6 +112,7 @@ async def test_bittrex():
     validate_price(v, t)
 
 
+@pytest.mark.skip("Getting rate limited from Gemini")
 @pytest.mark.asyncio
 async def test_gemini():
     """Test retrieving from Gemini price source."""
