@@ -4,6 +4,7 @@ from typing import Any
 from typing import Dict
 
 from pydantic import BaseModel
+from pydantic import ValidationError
 from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.pricing.price_service import WebPriceService
@@ -57,7 +58,11 @@ class GeminiSpotPriceService(WebPriceService):
             return None, None
 
         else:
-            r = GeminiPriceResponse.parse_obj(d["response"])
+            try:
+                r = GeminiPriceResponse.parse_obj(d["response"])
+            except ValidationError:
+                logger.error("Error parsing response from Gemini API")
+                return None, None
 
             if r.last is not None:
                 return r.last, datetime_now_utc()

@@ -1,8 +1,12 @@
 from datetime import datetime
+from unittest import mock
 
 import pytest
+import requests
 
 from telliot_feed_examples.sources import blockhash_aggregator
+from telliot_feed_examples.sources.blockhash_aggregator import get_btc_hash
+from telliot_feed_examples.sources.blockhash_aggregator import get_eth_hash
 from telliot_feed_examples.sources.blockhash_aggregator import TellorRNGManualSource
 
 
@@ -20,3 +24,36 @@ async def test_rng():
 
     assert isinstance(v, bytes)
     assert isinstance(t, datetime)
+
+
+@pytest.mark.asyncio
+async def test_rng_failures(caplog):
+    """Simulate API failures."""
+    timestamp = 1649769707
+
+    def conn_timeout(url, *args, **kwargs):
+        raise requests.exceptions.ConnectTimeout()
+
+    with mock.patch("requests.Session.get", side_effect=conn_timeout):
+        for hash_source in [
+            get_eth_hash,
+            get_btc_hash,
+        ]:
+            h = await hash_source(timestamp)
+            assert h is None
+            assert "Connection timeout" in caplog.text
+
+    def bad_json(url, *args, **kwargs):
+        rsp = requests.Response()
+        rsp.status_code = 200
+        rsp.data = "<!DOCTYPE html>"
+        return rsp
+
+    with mock.patch("requests.Session.get", side_effect=bad_json):
+        for hash_source in [
+            get_eth_hash,
+            get_btc_hash,
+        ]:
+            h = await hash_source(timestamp)
+            assert h is None
+            assert "invalid JSON" in caplog.text

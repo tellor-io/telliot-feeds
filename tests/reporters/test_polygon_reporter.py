@@ -1,36 +1,56 @@
 import pytest
+from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feed_examples.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 
 
-@pytest.mark.skip("mumbai cfg error in github actions, but not locally")
-@pytest.fixture
-async def polygon_reporter(mumbai_cfg):
-    async with TelliotCore(config=mumbai_cfg) as core:
+@pytest.fixture(scope="function")
+async def polygon_reporter(
+    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract
+):
+    async with TelliotCore(config=mumbai_test_cfg) as core:
+
+        account = core.get_account()
+
         flex = core.get_tellorflex_contracts()
+        flex.oracle.address = mock_flex_contract.address
+        flex.autopay.address = mock_autopay_contract.address
+        flex.token.address = mock_token_contract.address
+
+        flex.oracle.connect()
+        flex.token.connect()
+        flex.autopay.connect()
+        flex = core.get_tellorflex_contracts()
+
         r = PolygonReporter(
             oracle=flex.oracle,
             token=flex.token,
+            autopay=flex.autopay,
             endpoint=core.endpoint,
-            account=core.get_account(),
+            account=account,
             chain_id=80001,
         )
+        # mint token and send to reporter address
+        mock_token_contract.mint(account.address, 1000e18)
+
+        # send eth from brownie address to reporter address for txn fees
+        accounts[1].transfer(account.address, "1 ether")
+
         return r
 
 
-@pytest.mark.skip("mumbai cfg error in github actions, but not locally")
 @pytest.mark.asyncio
 async def test_ensure_profitable(polygon_reporter):
-    status = await polygon_reporter.ensure_profitable(eth_usd_median_feed)
+    status = await polygon_reporter.ensure_profitable(matic_usd_median_feed)
 
     assert isinstance(status, ResponseStatus)
     assert status.ok
 
 
-@pytest.mark.skip("mumbai cfg error in github actions, but not locally")
 @pytest.mark.asyncio
 async def test_fetch_gas_price(polygon_reporter):
     price = await polygon_reporter.fetch_gas_price()
@@ -39,7 +59,6 @@ async def test_fetch_gas_price(polygon_reporter):
     assert price > 0
 
 
-@pytest.mark.skip("mumbai cfg error in github actions, but not locally")
 @pytest.mark.asyncio
 async def test_ensure_staked(polygon_reporter):
     staked, status = await polygon_reporter.ensure_staked()
@@ -52,7 +71,6 @@ async def test_ensure_staked(polygon_reporter):
         assert "Unable to approve staking" in status.error
 
 
-@pytest.mark.skip("mumbai cfg error in github actions, but not locally")
 @pytest.mark.asyncio
 async def test_check_reporter_lock(polygon_reporter):
     status = await polygon_reporter.check_reporter_lock()
@@ -64,7 +82,6 @@ async def test_check_reporter_lock(polygon_reporter):
         )
 
 
-@pytest.mark.skip("mumbai cfg error in github actions, but not locally")
 @pytest.mark.asyncio
 async def test_get_num_reports_by_id(polygon_reporter):
     qid = eth_usd_median_feed.query.query_id
@@ -75,3 +92,23 @@ async def test_get_num_reports_by_id(polygon_reporter):
         assert isinstance(count, int)
     else:
         assert count is None
+
+
+@pytest.mark.asyncio
+async def test_fetch_gas_price_error(polygon_reporter, caplog):
+    # Test invalid gas price speed
+    r = polygon_reporter
+    gp = await r.fetch_gas_price("blah")
+    assert gp is None
+    assert "Invalid gas price speed for matic gasstation: blah" in caplog.text
+
+    # Test fetch gas price failure
+    async def _fetch_gas_price():
+        return None
+
+    r.fetch_gas_price = lambda: _fetch_gas_price()
+    r.stake = 1e100
+    staked, status = await r.ensure_staked()
+    assert not staked
+    assert not status.ok
+    assert "Unable to fetch matic gas price for staking" in status.error

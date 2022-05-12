@@ -128,10 +128,10 @@ class IntervalReporter:
         )
 
         if (not read_status.ok) or (staker_info is None):
-            status.ok = False
-            status.error = (
+            msg = (
                 "Unable to read reporters staker status: " + read_status.error
             )  # error won't be none # noqa: E501
+            status = error_status(msg, log=logger.info)
             status.e = read_status.e
             return False, status
 
@@ -336,6 +336,9 @@ class IntervalReporter:
 
         # Get suggested datafeed if none provided
         datafeed = await self.fetch_datafeed()
+        if not datafeed:
+            msg = "unable to fetch datafeed suggestion"
+            return None, error_status(note=msg, log=logger.critical)
 
         logger.info(f"Current query: {datafeed.query.descriptor}")
 

@@ -3,7 +3,6 @@ import pytest
 from telliot_feed_examples.feeds.sushi_usd_feed import sushi_usd_median_feed
 
 
-@pytest.mark.skip("Avoid coingecko rate limits")
 @pytest.mark.asyncio
 async def test_fetch_price():
     (value, _) = await sushi_usd_median_feed.source.fetch_new_datapoint()
