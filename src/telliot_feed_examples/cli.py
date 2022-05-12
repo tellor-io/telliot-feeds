@@ -19,12 +19,12 @@ from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 
 from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
+from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
-
 
 logger = get_logger(__name__)
 
@@ -87,6 +87,7 @@ def print_reporter_settings(
     legacy_gas_price: Optional[int],
     gas_price_speed: str,
     diva_pool_id: Optional[int],
+    rng_timestamp: Optional[int],
 ) -> None:
     """Print user settings to console."""
     click.echo("")
@@ -263,6 +264,14 @@ def cli(
     nargs=1,
     type=int,
 )
+@click.option(
+    "--rng-timestamp",
+    "-rngts",
+    "rng_timestamp",
+    help="timestamp for Tellor RNG",
+    nargs=1,
+    type=int,
+)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pwd", "--password", type=str)
 @click.option("-spwd", "--signature-password", type=str)
@@ -280,6 +289,7 @@ async def report(
     submit_once: bool,
     gas_price_speed: str,
     diva_pool_id: int,
+    rng_timestamp: int,
     password: str,
     signature_password: str,
 ) -> None:
@@ -343,6 +353,10 @@ async def report(
             chosen_feed = await assemble_diva_datafeed(
                 pool_id=diva_pool_id, node=core.endpoint, account=account
             )
+        elif rng_timestamp is not None:
+            chosen_feed = await assemble_rng_datafeed(
+                timestamp=rng_timestamp, node=core.endpoint, account=account
+            )
         else:
             chosen_feed = None
 
@@ -358,6 +372,7 @@ async def report(
             chain_id=cid,
             gas_price_speed=gas_price_speed,
             diva_pool_id=diva_pool_id,
+            rng_timestamp=rng_timestamp,
         )
 
         _ = input("Press [ENTER] to confirm settings.")
@@ -474,6 +489,15 @@ async def tip(
     "-pid",
     "pool_id",
     help="pool ID for Diva Protocol on Polygon",
+    nargs=1,
+    type=int,
+    required=True,
+)
+@click.option(
+    "--rng-timestamp",
+    "-rngts",
+    "rng_timestamp",
+    help="timestamp for Tellor RNG",
     nargs=1,
     type=int,
     required=True,

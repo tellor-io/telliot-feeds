@@ -142,6 +142,9 @@ class TellorRNGManualSource(DataSource[Any]):
 
             return str(block["hash"])
 
+    def setTimestamp(self, timestamp: int) -> None:
+        self.timestamp = timestamp
+
     async def fetch_new_datapoint(self) -> DataPoint[bytes]:
         """Update current value with time-stamped value fetched from user input.
 
