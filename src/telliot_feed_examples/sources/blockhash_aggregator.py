@@ -102,7 +102,7 @@ async def get_btc_hash(timestamp: int) -> Optional[str]:
     """Fetches next Bitcoin blockhash after timestamp from API."""
     with requests.Session() as s:
         s.mount("https://", adapter)
-        ts = timestamp + 15 * 60
+        ts = timestamp + 30 * 60
 
         try:
             rsp = s.get(f" https://blockchain.info/blocks/{ts * 1000}?format=json")
@@ -127,7 +127,7 @@ async def get_btc_hash(timestamp: int) -> Optional[str]:
             logger.warning("Blockchain.info response doesn't contain needed data")
             return None
 
-        block: dict[str, Any]
+        block = blocks[0]
         for b in blocks[::-1]:
             if b["time"] < timestamp:
                 continue
