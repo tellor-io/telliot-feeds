@@ -263,6 +263,14 @@ def cli(
     nargs=1,
     type=int,
 )
+@click.option(
+    "-wp",
+    "--wait-period",
+    help="wait period between feed suggestion calls",
+    nargs=1,
+    type=int,
+    default=7,
+)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pwd", "--password", type=str)
 @click.option("-spwd", "--signature-password", type=str)
@@ -278,6 +286,7 @@ async def report(
     legacy_gas_price: Optional[int],
     expected_profit: str,
     submit_once: bool,
+    wait_period: int,
     gas_price_speed: str,
     diva_pool_id: int,
     password: str,
@@ -390,6 +399,7 @@ async def report(
                 autopay=tellorflex.autopay,
                 stake=stake,
                 expected_profit=expected_profit,
+                wait_period=wait_period,
                 **common_reporter_kwargs,
             )
         # Report to TellorX

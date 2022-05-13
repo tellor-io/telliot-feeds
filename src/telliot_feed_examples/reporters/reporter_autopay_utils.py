@@ -66,7 +66,6 @@ async def get_single_tip(
             while maxi - mini > 1:
                 mid = int((maxi + mini) / 2)
                 tip_info, status = await autopay.read("tips", query_id, mid)
-                logger.critical(tip_info)
                 if not status.ok:
                     msg = "unable to read tips function in autopay"
                     error_status(note=msg, log=logger.warning)
@@ -113,6 +112,8 @@ async def get_feed_tip(
     if not status.ok:
         msg = "can't get feed details to calculate tips"
         error_status(note=msg, log=logger.warning)
+        return None
+    if not feed_ids:
         return None
 
     feed_query_dict = {}
