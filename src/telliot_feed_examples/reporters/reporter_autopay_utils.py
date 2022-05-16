@@ -55,21 +55,18 @@ async def get_single_tip(
         return None
     current_time = TimeStamp.now().ts
     if query_id in query_id_lis:
-        count, status = await autopay.read("getPastTipCount", _queryId=query_id)
+        tips, status = await autopay.read("getPastTips", _queryId=query_id)
         if not status.ok:
             msg = "unable to read getPastTipCount in autopay"
             error_status(note=msg, log=logger.warning)
             return None
+        count = len(tips)
         if count > 0:
             mini = 0
             maxi = count
             while maxi - mini > 1:
                 mid = int((maxi + mini) / 2)
-                tip_info, status = await autopay.read("tips", query_id, mid)
-                if not status.ok:
-                    msg = "unable to read tips function in autopay"
-                    error_status(note=msg, log=logger.warning)
-                    return None
+                tip_info = tips[mid]
                 if tip_info[1] > current_time:
                     maxi = mid
                 else:
@@ -82,11 +79,7 @@ async def get_single_tip(
                 msg = "unable to read current value"
                 error_status(note=msg, log=logger.warning)
                 return None
-            tip_info, status = await autopay.read("tips", query_id, mini)
-            if not status.ok:
-                msg = "unable to read tips function in autopay contract"
-                error_status(note=msg, log=logger.warning)
-                return None
+            tip_info = tips[mini]
             if timestamp_before[2] < tip_info[1]:
                 logger.info(
                     msg=f"{query_ids_in_catalog['0x'+query_id.hex()]}\
@@ -112,8 +105,6 @@ async def get_feed_tip(
     if not status.ok:
         msg = "can't get feed details to calculate tips"
         error_status(note=msg, log=logger.warning)
-        return None
-    if not feed_ids:
         return None
 
     feed_query_dict = {}
