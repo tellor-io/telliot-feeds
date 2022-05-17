@@ -1,5 +1,6 @@
 import json
 from dataclasses import dataclass
+from typing import Optional, Any, List
 
 import requests
 from telliot_core.datasource import DataSource
@@ -8,58 +9,75 @@ from telliot_core.dtypes.datapoint import datetime_now_utc
 
 from telliot_feed_examples.utils.log import get_logger
 
+logger = get_logger(__name__)
 
-# recursive lookup function that will search JSON dict for instance of key, can handle one or multiple keys as well as nested lists
+'''
+url : str = api url to request. returns none and displays error code if exception thrown
+'''
 
 
-def recursive_lookup(search_dict: dict, field: str) -> list:
-    found = []
-    for key, value in search_dict.items():
+def api_call(url: str) -> Optional[Any]:
+    try:
+        r = requests.get(url)
+        r.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        logger.error(e)
+        return None
+    # can make exceptions more specific if needed
 
-        if key == field:
-            found.append(value)
+    files = r.json()
+    return files
 
-        elif isinstance(value, dict):
-            results = recursive_lookup(value, field)
-            for result in results:
-                found.append(result)
 
-        elif isinstance(value, list):
-            for item in value:
-                if isinstance(item, dict):
-                    more_results = recursive_lookup(item, field)
-                    for another_result in more_results:
-                        found.append(another_result)
-    return found
+'''
+key: str = key whose corresponding value we are searching for
+json_dict: dict = api response dict we will be searching through for value of said key
+'''
+
+
+def find_values(key: str, json_dict: dict[Any, Any]) -> list[Any]:
+    vals = []
+
+    def decode_dict(ex_dict: dict[Any, Any]) -> dict[Any, Any]:
+        try:
+            vals.append(ex_dict[key])
+        except KeyError:
+            pass
+        return ex_dict
+
+    json.loads(json.dumps(json_dict, indent=1), object_hook=decode_dict)  # Return value ignored.
+    return vals
 
 
 @dataclass
 class APIQuerySource(DataSource):
     #: URL to call and receive JSON dict to be parsed
-    api_url: str = ""
+    url: str = ""
 
-    #: string of comma separated args looking to find vals in API return
-    arg_string: str = ""
+    #: string of comma separated keys looking to find corresponding vals in API return
+    key_str: str = ""
 
-    def api_call(self, url: str) -> dict:
-        r = requests.get(url)
-        files = r.json()
-        return files
+    def main_parser(self) -> Optional[Any]:
+        # request url, handle exceptions
+        files = api_call(self.url)
+        json_obj = json.dumps(files, indent=1)
 
-    def parser(self, json_dict: dict, arg_string: str) -> list:
-        args = arg_string.split(",")
-        results = [
-            recursive_lookup(json_dict, arg.strip())
-            for arg in args
-            if arg.strip() != ""
-        ]
-        flat_results = [item for elem in results for item in elem]
-        return flat_results
+        if self.key_str == "":
+            return json_obj
 
-    def fetch_new_datapoint(self, api_url: str, arg_string: str) -> DataPoint:
-        val = self.parser(self.api_call(api_url), arg_string)
+        # create iterative list from key_str
+        key_list = [key.strip() for key in self.key_str.split(',')]
 
-        datapoint = (val, datetime_now_utc())
+        # find all vals that correspond with given keys, return them all as nested list
+        results = [find_values(key, files) for key in key_list]
+        results_fin = [val[0] if len(val) == 1 else val for val in results]
+
+        return results_fin
+
+    async def fetch_new_datapoint(self) -> DataPoint:
+        val = self.main_parser()
+
+        datapoint = (str(val), datetime_now_utc())
         self.store_datapoint(datapoint)
 
         logger.info(f"API info {datapoint[0]} retrieved at time {datapoint[1]}")
