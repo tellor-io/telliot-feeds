@@ -1,15 +1,34 @@
 """Pytest Fixtures used for testing Pytelliot"""
+import asyncio
 import os
 
 import pytest
+from brownie import accounts
+from brownie import Autopay
+from brownie import chain
+from brownie import StakingToken
+from brownie import TellorFlex
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.datasource import DataSource
+from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 
+from telliot_feed_examples.utils.cfg import mainnet_config
 
-@pytest.fixture(scope="session", autouse=True)
+
+@pytest.fixture(scope="module", autouse=True)
+def shared_setup(module_isolation):
+    pass
+
+
+@pytest.fixture(scope="module", autouse=True)
+def event_loop():
+    return asyncio.get_event_loop()
+
+
+@pytest.fixture(scope="module", autouse=True)
 def rinkeby_cfg():
     """Get rinkeby endpoint from config
 
@@ -40,7 +59,16 @@ def rinkeby_cfg():
     return cfg
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
+def mainnet_test_cfg():
+    """Get mainnet endpoint from config
+
+    If environment variables are defined, they will override the values in config files
+    """
+    return mainnet_config()
+
+
+@pytest.fixture(scope="module", autouse=True)
 def mumbai_cfg():
     """Return a test telliot configuration for use on polygon-mumbai
 
@@ -74,7 +102,7 @@ def mumbai_cfg():
     return cfg
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def ropsten_cfg():
     """Return a test telliot configuration for use on polygon-mumbai
 
@@ -103,14 +131,95 @@ def ropsten_cfg():
     return cfg
 
 
-@pytest.fixture(scope="session")
-def bad_source():
+class BadDataSource(DataSource[float]):
+    """Source that does not return an updated DataPoint."""
+
+    async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
+        return None, None
+
+
+@pytest.fixture(scope="module")
+def bad_datasource():
     """Used for testing no updated value for datafeeds."""
 
-    class BadSource(DataSource[float]):
+    return BadDataSource()
+
+
+@pytest.fixture(scope="module")
+def guaranteed_price_source():
+    """Used for testing no updated value for datafeeds."""
+
+    class GoodSource(DataSource[float]):
         """Source that does not return an updated DataPoint."""
 
         async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
-            return None, None
+            return (1234.0, datetime_now_utc())
 
-    return BadSource()
+    return GoodSource()
+
+
+def local_node_cfg(chain_id: int):
+    """Return a test telliot configuration for use of tellorFlex contracts. Overrides
+    the default Web3 provider with a local Ganache endpoint.
+    """
+
+    cfg = TelliotConfig()
+
+    # Use a chain_id with TellorFlex contracts deployed
+    cfg.main.chain_id = chain_id
+
+    endpt = cfg.get_endpoint()
+
+    # Configure testing using local Ganache node
+    endpt.url = "http://127.0.0.1:8545"
+
+    # Advance block number to avoid assertion error in endpoint.connect():
+    # connected = self._web3.eth.get_block_number() > 1
+    chain.mine(10)
+
+    accounts = find_accounts(chain_id=chain_id)
+    if not accounts:
+        # Create a test account using PRIVATE_KEY defined on github.
+        key = os.getenv("PRIVATE_KEY", None)
+        if key:
+            ChainedAccount.add(
+                "git-tellorflex-test-key",
+                chains=chain_id,
+                key=os.environ["PRIVATE_KEY"],
+                password="",
+            )
+        else:
+            raise Exception(f"Need an account for {chain_id}")
+
+    return cfg
+
+
+@pytest.fixture
+def mumbai_test_cfg(scope="function", autouse=True):
+    return local_node_cfg(chain_id=80001)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def mock_token_contract():
+    """mock token to use for staking"""
+    return accounts[0].deploy(StakingToken)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def mock_flex_contract(mock_token_contract):
+    """mock oracle(TellorFlex) contract to stake in"""
+    return accounts[0].deploy(
+        TellorFlex, mock_token_contract.address, accounts[0], 10e18, 60
+    )
+
+
+@pytest.fixture(scope="module", autouse=True)
+def mock_autopay_contract(mock_flex_contract, mock_token_contract):
+    """mock payments(Autopay) contract for tipping and claiming tips"""
+    return accounts[0].deploy(
+        Autopay,
+        mock_flex_contract.address,
+        mock_token_contract.address,
+        accounts[0],
+        20,
+    )

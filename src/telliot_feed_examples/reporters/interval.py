@@ -67,6 +67,8 @@ class IntervalReporter:
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
+        self.trb_usd_median_feed = trb_usd_median_feed
+        self.eth_usd_median_feed = eth_usd_median_feed
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
@@ -105,7 +107,7 @@ class IntervalReporter:
 
         return status
 
-    async def fetch_gas_price(self, speed: str = "average") -> int:
+    async def fetch_gas_price(self, speed: str = "average") -> Optional[int]:
         """Fetch gas price from ethgasstation in gwei."""
         return await ethgasstation(speed)  # type: ignore
 
@@ -117,16 +119,19 @@ class IntervalReporter:
         status = ResponseStatus()
 
         gas_price_gwei = await self.fetch_gas_price()
+        if not gas_price_gwei:
+            note = "Unable to fetch gas price during during ensure_staked()"
+            return False, error_status(note=note, log=logger.warning)
 
         staker_info, read_status = await self.master.read(
             func_name="getStakerInfo", _staker=self.acct_addr
         )
 
         if (not read_status.ok) or (staker_info is None):
-            status.ok = False
-            status.error = (
+            msg = (
                 "Unable to read reporters staker status: " + read_status.error
             )  # error won't be none # noqa: E501
+            status = error_status(msg, log=logger.info)
             status.e = read_status.e
             return False, status
 
@@ -193,13 +198,21 @@ class IntervalReporter:
             status.e = read_status.e
             return status
 
-        # Fetch token prices in USD
-        price_feeds = [eth_usd_median_feed, trb_usd_median_feed]
+        # Fetch token prices
+        price_feeds = [self.eth_usd_median_feed, self.trb_usd_median_feed]
         _ = await asyncio.gather(
             *[feed.source.fetch_new_datapoint() for feed in price_feeds]
         )
-        price_eth_usd = eth_usd_median_feed.source.latest[0]
-        price_trb_usd = trb_usd_median_feed.source.latest[0]
+
+        price_eth_usd = self.eth_usd_median_feed.source.latest[0]
+        price_trb_usd = self.trb_usd_median_feed.source.latest[0]
+
+        if price_eth_usd is None:
+            note = "Unable to fetch ETH/USD price for profit calculation"
+            return error_status(note=note, log=logger.warning)
+        if price_trb_usd is None:
+            note = "Unable to fetch TRB/USD price for profit calculation"
+            return error_status(note=note, log=logger.warning)
 
         tips, tb_reward = rewards
 
@@ -239,8 +252,12 @@ class IntervalReporter:
         else:
             # Fetch legacy gas price if not provided by user
             if not self.legacy_gas_price:
-                gas_price = await ethgasstation(style=self.gas_price_speed)
+                gas_price = await self.fetch_gas_price(speed=self.gas_price_speed)
                 self.legacy_gas_price = gas_price
+
+            if not self.legacy_gas_price:
+                note = "Unable to fetch gas price for tx type 0"
+                return error_status(note, log=logger.warning)
 
             logger.info(
                 f"""
@@ -250,7 +267,7 @@ class IntervalReporter:
                 legacy gas price: {self.legacy_gas_price}
                 """
             )
-            costs = self.gas_limit * self.legacy_gas_price  # type: ignore
+            costs = self.gas_limit * self.legacy_gas_price
 
         # Calculate profit
         revenue = tb_reward + tips
@@ -309,6 +326,9 @@ class IntervalReporter:
         staked, status = await self.ensure_staked()
         if not staked and status.ok:
             return None, status
+        elif not staked or not status.ok:
+            logger.warning(status.error)
+            return None, status
 
         status = await self.check_reporter_lock()
         if not status.ok:
@@ -316,6 +336,9 @@ class IntervalReporter:
 
         # Get suggested datafeed if none provided
         datafeed = await self.fetch_datafeed()
+        if not datafeed:
+            msg = "unable to fetch datafeed suggestion"
+            return None, error_status(note=msg, log=logger.critical)
 
         logger.info(f"Current query: {datafeed.query.descriptor}")
 
@@ -389,6 +412,9 @@ class IntervalReporter:
             # Fetch legacy gas price if not provided by user
             if not self.legacy_gas_price:
                 gas_price = await self.fetch_gas_price(self.gas_price_speed)
+                if not gas_price:
+                    note = "Unable to fetch gas price for tx type 0"
+                    return None, error_status(note, log=logger.warning)
             else:
                 gas_price = self.legacy_gas_price
 

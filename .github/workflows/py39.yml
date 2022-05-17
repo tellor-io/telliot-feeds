@@ -32,6 +32,8 @@ jobs:
           python-version: "${{ matrix.python-version }}"
       - name: "Install dependencies"
         run: |
+          apt-get update && apt-get install -y npm
+          npm install -g ganache-cli
           python -m pip install --upgrade pip
           python -m pip install --upgrade tox tox-gh-actions          
 

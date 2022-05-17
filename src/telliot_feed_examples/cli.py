@@ -329,7 +329,13 @@ async def report(
 
         # Use selected feed, or choose automatically
         if query_tag is not None:
-            chosen_feed = CATALOG_FEEDS[query_tag]
+            try:
+                chosen_feed = CATALOG_FEEDS[query_tag]
+            except KeyError:
+                click.echo(
+                    f"No corresponding datafeed found for given query tag: {query_tag}\n"
+                )
+                return
         elif diva_pool_id is not None:
             if not valid_diva_chain(chain_id=cid):
                 return
@@ -381,7 +387,9 @@ async def report(
             reporter = PolygonReporter(
                 oracle=tellorflex.oracle,
                 token=tellorflex.token,
+                autopay=tellorflex.autopay,
                 stake=stake,
+                expected_profit=expected_profit,
                 **common_reporter_kwargs,
             )
         # Report to TellorX

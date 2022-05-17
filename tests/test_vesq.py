@@ -1,4 +1,5 @@
 import pytest
+from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
@@ -6,7 +7,6 @@ from telliot_feed_examples.feeds.vesq import vsq_usd_median_feed
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 
 
-@pytest.mark.skip("Avoid coingecko rate limits")
 @pytest.mark.asyncio
 async def test_fetch_price():
     (value, _) = await vsq_usd_median_feed.source.fetch_new_datapoint()
@@ -26,39 +26,44 @@ def test_query_info():
     assert q.query_data.hex() == exp_data_hex
 
 
-@pytest.mark.skip("Asks for password")
 @pytest.mark.asyncio
-async def test_vsq_usd_reporter_submit_once(mumbai_cfg):
-    """Test reporting Vesq on mumbai."""
-    async with TelliotCore(config=mumbai_cfg) as core:
+async def test_vsq_usd_reporter_submit_once(
+    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract
+):
+    """Test reporting AMPL/USD/VWAP to the TellorX Oracle on Rinkeby."""
+    async with TelliotCore(config=mumbai_test_cfg) as core:
+        account = core.get_account()
+
         flex = core.get_tellorflex_contracts()
+        flex.oracle.address = mock_flex_contract.address
+        flex.autopay.address = mock_autopay_contract.address
+        flex.token.address = mock_token_contract.address
+
+        flex.oracle.connect()
+        flex.token.connect()
+        flex.autopay.connect()
+
+        # mint token and send to reporter address
+        mock_token_contract.mint(account.address, 1000e18)
+
+        # send eth from brownie address to reporter address for txn fees
+        accounts[1].transfer(account.address, "1 ether")
+
         r = PolygonReporter(
             endpoint=core.endpoint,
-            account=core.get_account(),
+            account=account,
             chain_id=80001,
             oracle=flex.oracle,
             token=flex.token,
+            autopay=flex.autopay,
+            transaction_type=0,
             datafeed=vsq_usd_median_feed,
             max_fee=100,
         )
-
-        ORACLE_ADDRESSES = {
-            "0xFd45Ae72E81Adaaf01cC61c8bCe016b7060DD537",  # polygon
-            "0x41b66dd93b03e89D29114a7613A6f9f0d4F40178",  # mumbai
-        }
 
         tx_receipt, status = await r.report_once()
 
         # Reporter submitted
         if tx_receipt is not None and status.ok:
             assert isinstance(tx_receipt, AttributeDict)
-            assert tx_receipt.to in ORACLE_ADDRESSES
-        # Reporter did not submit
-        else:
-            assert not tx_receipt
-            assert not status.ok
-            assert (
-                ("Currently in reporter lock." in status.error)
-                or ("Current addess disputed" in status.error)
-                or ("Unable to retrieve updated datafeed" in status.error)
-            )
+            assert tx_receipt.to in mock_flex_contract.address
