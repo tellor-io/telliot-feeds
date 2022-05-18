@@ -50,6 +50,7 @@ async def test_uspce_interval_reporter_submit_once(
             "Estimated profitability below threshold.",
             "Estimated gas price is above maximum gas price.",
             "Unable to retrieve updated datafeed value.",
+            "Unable to fetch ETH/USD price for profit calculation",
         }
 
         ORACLE_ADDRESSES = {r.oracle.address}
