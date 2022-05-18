@@ -19,7 +19,7 @@ async def assemble_rng_datafeed(
     timestamp: int, node: RPCEndpoint, account: chained_accounts
 ) -> Optional[DataFeed[float]]:
     """Assembles a TellorRNG datafeed for the given timestamp."""
-    local_source.setTimestamp(timestamp)
+    local_source.set_timestamp(timestamp)
     feed = DataFeed(source=local_source, query=TellorRNG(timestamp=timestamp))
 
     return feed

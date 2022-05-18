@@ -144,7 +144,7 @@ class TellorRNGManualSource(DataSource[Any]):
 
     timestamp = 0
 
-    def setTimestamp(self, timestamp: int) -> None:
+    def set_timestamp(self, timestamp: int) -> None:
         self.timestamp = timestamp
 
     def parse_user_val(self) -> int:

@@ -506,15 +506,6 @@ async def tip(
     required=True,
 )
 @click.option(
-    "--rng-timestamp",
-    "-rngts",
-    "rng_timestamp",
-    help="timestamp for Tellor RNG",
-    nargs=1,
-    type=int,
-    required=True,
-)
-@click.option(
     "--gas-price",
     "-gp",
     "legacy_gas_price",
