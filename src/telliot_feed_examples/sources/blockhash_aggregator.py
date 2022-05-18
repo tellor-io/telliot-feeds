@@ -4,6 +4,7 @@ from datetime import datetime
 from datetime import timezone
 from typing import Any
 from typing import Optional
+from typing import Tuple
 
 import requests
 from requests import JSONDecodeError
@@ -41,7 +42,7 @@ def block_num_from_timestamp(timestamp: int) -> Optional[int]:
                 "?module=block"
                 "&action=getblocknobytime"
                 f"&timestamp={timestamp}"
-                "&closest=after"
+                "&closest=before"
                 "&apikey="
             )
         except requests.exceptions.ConnectTimeout:
@@ -98,7 +99,7 @@ async def get_eth_hash(timestamp: int) -> Optional[str]:
     return str(block["hash"].hex())
 
 
-async def get_btc_hash(timestamp: int) -> Optional[str]:
+async def get_btc_hash(timestamp: int) -> Tuple[Optional[str], Optional[int]]:
     """Fetches next Bitcoin blockhash after timestamp from API."""
     with requests.Session() as s:
         s.mount("https://", adapter)
@@ -108,24 +109,24 @@ async def get_btc_hash(timestamp: int) -> Optional[str]:
             rsp = s.get(f" https://blockchain.info/blocks/{ts * 1000}?format=json")
         except requests.exceptions.ConnectTimeout:
             logger.error("Connection timeout getting BTC block num from timestamp")
-            return None
+            return None, None
         except requests.exceptions.RequestException as e:
             logger.error(f"Blockchain.info API error: {e}")
-            return None
+            return None, None
 
         try:
             blocks = rsp.json()
         except JSONDecodeError:
             logger.error("Blockchain.info API returned invalid JSON")
-            return None
+            return None, None
 
         if len(blocks) == 0:
             logger.warning("Blockchain.info API returned no blocks")
-            return None
+            return None, None
 
         if "time" not in blocks[0]:
             logger.warning("Blockchain.info response doesn't contain needed data")
-            return None
+            return None, None
 
         block = blocks[0]
         for b in blocks[::-1]:
@@ -134,7 +135,7 @@ async def get_btc_hash(timestamp: int) -> Optional[str]:
             block = b
             break
 
-        return str(block["hash"])
+        return str(block["hash"]), block["time"]
 
 
 @dataclass
@@ -181,15 +182,18 @@ class TellorRNGManualSource(DataSource[Any]):
             timestamp = self.parse_user_val()
         else:
             timestamp = self.timestamp
-        eth_hash, btc_hash = await asyncio.gather(
-            get_eth_hash(timestamp), get_btc_hash(timestamp)
-        )
 
-        if eth_hash is None:
-            logger.warning("Unable to retrieve Ethereum blockhash")
-            return None, None
+        btc_hash, btc_timestamp = await get_btc_hash(timestamp)
+
         if btc_hash is None:
             logger.warning("Unable to retrieve Bitcoin blockhash")
+            return None, None
+        if btc_timestamp is None:
+            logger.warning("Unable to retrieve Bitcoin timestamp")
+            return None, None
+        eth_hash = await get_eth_hash(btc_timestamp)
+        if eth_hash is None:
+            logger.warning("Unable to retrieve Ethereum blockhash")
             return None, None
 
         data = Web3.solidityKeccak(["string", "string"], [eth_hash, btc_hash])
@@ -199,5 +203,15 @@ class TellorRNGManualSource(DataSource[Any]):
         self.store_datapoint(datapoint)
 
         logger.info(f"Stored random number for timestamp {timestamp}: {data}")
-
         return datapoint
+
+
+async def main() -> None:
+    """Runs the data source."""
+    source = TellorRNGManualSource()
+    await source.fetch_new_datapoint()
+
+
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())
