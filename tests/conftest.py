@@ -8,6 +8,8 @@ from brownie import Autopay
 from brownie import chain
 from brownie import StakingToken
 from brownie import TellorFlex
+from brownie import TellorXMasterMock
+from brownie import TellorXOracleMock
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from telliot_core.apps.telliot_config import TelliotConfig
@@ -199,6 +201,16 @@ def mumbai_test_cfg(scope="function", autouse=True):
     return local_node_cfg(chain_id=80001)
 
 
+@pytest.fixture
+def rinkeby_test_cfg(scope="function", autouse=True):
+    return local_node_cfg(chain_id=4)
+
+
+@pytest.fixture
+def ropsten_test_cfg(scope="function", autouse=True):
+    return local_node_cfg(chain_id=3)
+
+
 @pytest.fixture(scope="module", autouse=True)
 def mock_token_contract():
     """mock token to use for staking"""
@@ -223,3 +235,13 @@ def mock_autopay_contract(mock_flex_contract, mock_token_contract):
         accounts[0],
         20,
     )
+
+
+@pytest.fixture
+def tellorx_oracle_mock_contract():
+    return accounts[0].deploy(TellorXOracleMock)
+
+
+@pytest.fixture
+def tellorx_master_mock_contract():
+    return accounts[0].deploy(TellorXMasterMock)
