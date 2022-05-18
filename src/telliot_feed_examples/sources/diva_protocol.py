@@ -55,5 +55,6 @@ class DivaManualSource(DataSource[Any]):
         self.store_datapoint(datapoint)
 
         logger.info(f"Stored price of {self.reference_asset} at {dt}: {data}")
+        # Also fetch collateral token price
 
         return datapoint
