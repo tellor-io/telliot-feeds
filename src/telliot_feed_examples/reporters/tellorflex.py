@@ -52,6 +52,7 @@ class PolygonReporter(IntervalReporter):
         priority_fee: int = 100,
         legacy_gas_price: Optional[int] = None,
         gas_price_speed: str = "safeLow",
+        wait_period: int = 7,
     ) -> None:
 
         self.endpoint = endpoint
@@ -67,6 +68,7 @@ class PolygonReporter(IntervalReporter):
         self.transaction_type = transaction_type
         self.gas_limit = gas_limit
         self.max_fee = max_fee
+        self.wait_period = wait_period
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
@@ -240,7 +242,7 @@ class PolygonReporter(IntervalReporter):
         else:
             suggested_qtag, tip = await autopay_suggested_report(self.autopay)
             if not suggested_qtag:
-                msg = "Could not get suggested query."
+                msg = "No feed suggestions available."
                 error_status(msg, log=logger.info)
                 return None
             datafeed = CATALOG_FEEDS[suggested_qtag]
@@ -319,3 +321,10 @@ class PolygonReporter(IntervalReporter):
             return None
 
         return datafeed
+
+    async def report(self) -> None:
+        """Submit latest values to the TellorFlex oracle."""
+
+        while True:
+            _, _ = await self.report_once()
+            await asyncio.sleep(self.wait_period)
