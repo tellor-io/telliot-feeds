@@ -265,6 +265,14 @@ def cli(
     type=int,
 )
 @click.option(
+    "-wp",
+    "--wait-period",
+    help="wait period between feed suggestion calls",
+    nargs=1,
+    type=int,
+    default=7,
+)
+@click.option(
     "--rng-timestamp",
     "-rngts",
     "rng_timestamp",
@@ -287,6 +295,7 @@ async def report(
     legacy_gas_price: Optional[int],
     expected_profit: str,
     submit_once: bool,
+    wait_period: int,
     gas_price_speed: str,
     diva_pool_id: int,
     rng_timestamp: int,
@@ -405,6 +414,7 @@ async def report(
                 autopay=tellorflex.autopay,
                 stake=stake,
                 expected_profit=expected_profit,
+                wait_period=wait_period,
                 **common_reporter_kwargs,
             )
         # Report to TellorX

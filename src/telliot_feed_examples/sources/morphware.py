@@ -43,7 +43,7 @@ class MorphwareV1Source(DataSource[str]):
             try:
                 return s.post(
                     "http://167.172.239.133:5000/products-2",
-                    headers={},
+                    headers=None,
                     json=json_data,
                     timeout=0.5,
                 )
