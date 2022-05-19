@@ -9,9 +9,11 @@ from unittest import mock
 
 import pytest
 import pytest_asyncio
+from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from telliot_core.datafeed import DataFeed
 from telliot_core.gas.etherscan_gas import EtherscanGasPrice
+from telliot_core.gas.legacy_gas import ethgasstation
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
@@ -21,12 +23,20 @@ from telliot_feed_examples.reporters.interval import IntervalReporter
 
 
 @pytest_asyncio.fixture(scope="function")
-async def eth_usd_reporter(rinkeby_cfg, scope="function"):
+async def eth_usd_reporter(
+    rinkeby_test_cfg,
+    tellorx_master_mock_contract,
+    tellorx_oracle_mock_contract,
+):
     """Returns an instance of an IntervalReporter using
     the ETH/USD median datafeed."""
-    async with TelliotCore(config=rinkeby_cfg) as core:
+    async with TelliotCore(config=rinkeby_test_cfg) as core:
         account = core.get_account()
         tellorx = core.get_tellorx_contracts()
+        tellorx.master.address = tellorx_master_mock_contract.address
+        tellorx.oracle.address = tellorx_oracle_mock_contract.address
+        tellorx.master.connect()
+        tellorx.oracle.connect()
         r = IntervalReporter(
             endpoint=core.config.get_endpoint(),
             account=account,
@@ -42,6 +52,8 @@ async def eth_usd_reporter(rinkeby_cfg, scope="function"):
             gas_price_speed="safeLow",
             chain_id=core.config.main.chain_id,
         )
+        # send eth from brownie address to reporter address for txn fees
+        accounts[1].transfer(account.address, "1 ether")
         return r
 
 
@@ -65,9 +77,6 @@ async def test_fetch_datafeed(eth_usd_reporter):
     assert isinstance(feed, DataFeed)
 
 
-@pytest.mark.skip(
-    "Skipping because the error is from telliot-core and not from the reporter."
-)
 @pytest.mark.asyncio
 async def test_get_fee_info(eth_usd_reporter):
     info, time = await eth_usd_reporter.get_fee_info()
@@ -152,7 +161,7 @@ async def test_fetch_gas_price(eth_usd_reporter):
 
 @pytest.mark.asyncio
 async def test_ethgasstation_error(eth_usd_reporter):
-    async def no_gas_price(style):
+    async def no_gas_price(speed):
         return None
 
     r = eth_usd_reporter
@@ -168,9 +177,9 @@ async def test_ethgasstation_error(eth_usd_reporter):
     tx_receipt, status = await r.report_once()
     assert tx_receipt is None
     assert not status.ok
+    interval.ethgasstation = ethgasstation
 
 
-@pytest.mark.skip("Asks for psswd")
 @pytest.mark.asyncio
 async def test_interval_reporter_submit_once(eth_usd_reporter):
     """Test reporting once to the TellorX playground on Rinkeby
@@ -189,10 +198,7 @@ async def test_interval_reporter_submit_once(eth_usd_reporter):
         "Unable to retrieve updated datafeed value.",
     }
 
-    ORACLE_ADDRESSES = {
-        "0xe8218cACb0a5421BC6409e498d9f8CC8869945ea",  # mainnet
-        "0x18431fd88adF138e8b979A7246eb58EA7126ea16",  # rinkeby
-    }
+    ORACLE_ADDRESSES = {r.oracle.address}
 
     tx_receipt, status = await r.report_once()
 

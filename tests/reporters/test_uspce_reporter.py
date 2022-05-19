@@ -1,4 +1,5 @@
 import pytest
+from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
@@ -7,17 +8,22 @@ from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.sources import uspce
 
 
-@pytest.mark.skip("Asks for psswd")
 @pytest.mark.asyncio
-async def test_uspce_interval_reporter_submit_once(rinkeby_cfg):
+async def test_uspce_interval_reporter_submit_once(
+    rinkeby_test_cfg, tellorx_master_mock_contract, tellorx_oracle_mock_contract
+):
     """test report of uspce manual price"""
     # Override Python built-in input method
     uspce.input = lambda: "123.456"
 
-    async with TelliotCore(config=rinkeby_cfg) as core:
+    async with TelliotCore(config=rinkeby_test_cfg) as core:
 
         account = core.get_account()
         tellorx = core.get_tellorx_contracts()
+        tellorx.master.address = tellorx_master_mock_contract.address
+        tellorx.oracle.address = tellorx_oracle_mock_contract.address
+        tellorx.master.connect()
+        tellorx.oracle.connect()
         r = IntervalReporter(
             endpoint=core.config.get_endpoint(),
             account=account,
@@ -34,6 +40,9 @@ async def test_uspce_interval_reporter_submit_once(rinkeby_cfg):
             chain_id=core.config.main.chain_id,
         )
 
+        # send eth from brownie address to reporter address for txn fees
+        accounts[0].transfer(account.address, "1 ether")
+
         EXPECTED_ERRORS = {
             "Current addess disputed. Switch address to continue reporting.",
             "Current address is locked in dispute or for withdrawal.",
@@ -41,12 +50,10 @@ async def test_uspce_interval_reporter_submit_once(rinkeby_cfg):
             "Estimated profitability below threshold.",
             "Estimated gas price is above maximum gas price.",
             "Unable to retrieve updated datafeed value.",
+            "Unable to fetch ETH/USD price for profit calculation",
         }
 
-        ORACLE_ADDRESSES = {
-            "0xe8218cACb0a5421BC6409e498d9f8CC8869945ea",  # mainnet
-            "0x18431fd88adF138e8b979A7246eb58EA7126ea16",  # rinkeby
-        }
+        ORACLE_ADDRESSES = {r.oracle.address}
 
         tx_receipt, status = await r.report_once()
 

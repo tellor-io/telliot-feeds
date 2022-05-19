@@ -1,4 +1,5 @@
 import pytest
+from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
@@ -7,12 +8,12 @@ from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.utils.oracle_write import tip_query
 
 
-@pytest.mark.skip("Get rid of passwd ask for tests")
 @pytest.mark.asyncio
-async def test_tip_query(rinkeby_cfg):
+async def test_tip_query(rinkeby_test_cfg):
     """Test tipping ETH/USD price."""
 
-    async with TelliotCore(config=rinkeby_cfg) as core:
+    async with TelliotCore(config=rinkeby_test_cfg) as core:
+        accounts[1].transfer(core.get_account().address, "1 ether")
         tellorx = core.get_tellorx_contracts()
         tip = int(0.0001 * 1e18)
         tx_receipt, status = await tip_query(
