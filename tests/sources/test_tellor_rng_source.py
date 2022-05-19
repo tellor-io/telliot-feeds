@@ -13,13 +13,13 @@ from telliot_feed_examples.sources.blockhash_aggregator import TellorRNGManualSo
 @pytest.mark.asyncio
 async def test_rng():
     """Retrieve random number."""
-    blockhash_aggregator.input = lambda: "1649769707"  # BCT block num: 731547
+    blockhash_aggregator.input = lambda: "1652075943"  # BCT block num: 731547
     rng_source = TellorRNGManualSource()
     v, t = await rng_source.fetch_new_datapoint()
 
     assert v == (
-        b"Ad\x81\xc2\x9d\xab\x8a\xf6\x8fN^\xcd\xb9g\xdf{"
-        b"\xeap\xe4\xf8\xf2\xab\x89\xcb\xb0\xe6\x8cGR\x18\xf2+"
+        b"\x9diF\xd9R\xf1>q%\x13F\x11\xad\x9f]\xccA\x08"
+        b"\xd9\x03Y\xb0#\x94\xd8\xefgi\xcc\x85t\xb3"
     )
 
     assert isinstance(v, bytes)
@@ -37,9 +37,14 @@ async def test_rng_failures(caplog):
     with mock.patch("requests.Session.get", side_effect=conn_timeout):
         for hash_source in [
             get_eth_hash,
-            get_btc_hash,
         ]:
             h = await hash_source(timestamp)
+            assert h is None
+            assert "Connection timeout" in caplog.text
+        for hash_source in [
+            get_btc_hash,
+        ]:
+            h, j = await hash_source(timestamp)
             assert h is None
             assert "Connection timeout" in caplog.text
 
@@ -52,8 +57,13 @@ async def test_rng_failures(caplog):
     with mock.patch("requests.Session.get", side_effect=bad_json):
         for hash_source in [
             get_eth_hash,
-            get_btc_hash,
         ]:
             h = await hash_source(timestamp)
+            assert h is None
+            assert "invalid JSON" in caplog.text
+        for hash_source in [
+            get_btc_hash,
+        ]:
+            h, j = await hash_source(timestamp)
             assert h is None
             assert "invalid JSON" in caplog.text
