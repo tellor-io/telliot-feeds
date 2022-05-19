@@ -36,11 +36,16 @@ class DivaPoolParameters:
 
 
 async def get_pool_params(
-    pool_id: int, node: RPCEndpoint, account: ChainedAccount
+    pool_id: int,
+    node: RPCEndpoint,
+    account: ChainedAccount,
+    diva_address: Optional[str] = None,
 ) -> Optional[DivaPoolParameters]:
     """Fetches and parses needed parameters for a given pool."""
 
     diva = DivaProtocolContract(node, account)
+    if diva_address is not None:
+        diva.address = diva_address
     diva.connect()
 
     params = await diva.get_pool_parameters(pool_id)
@@ -78,14 +83,17 @@ def get_source(asset: str, ts: int) -> PriceAggregator:
 
 
 async def assemble_diva_datafeed(
-    pool_id: int, node: RPCEndpoint, account: ChainedAccount
+    pool_id: int,
+    node: RPCEndpoint,
+    account: ChainedAccount,
+    diva_address: Optional[str] = None,
 ) -> Optional[DataFeed[float]]:
     """Returns datafeed using user input pool ID and corresponding
     asset information.
 
     Reference assets are currently whitelisted & hard-coded."""
 
-    params = await get_pool_params(pool_id, node, account)
+    params = await get_pool_params(pool_id, node, account, diva_address)
     if params is None:
         logger.error("Error getting pool parameters.")
         return None
