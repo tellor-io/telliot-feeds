@@ -23,7 +23,7 @@ from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
-from telliot_feed_examples.utils.log import get_logger
+from telliot_core.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
 logger = get_logger(__name__)

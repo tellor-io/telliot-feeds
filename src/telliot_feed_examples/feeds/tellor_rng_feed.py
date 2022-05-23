@@ -6,7 +6,7 @@ from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.queries.tellor_rng import TellorRNG
 
-from telliot_feed_examples.sources.blockhash_aggregator import TellorRNGManualSource
+from telliot_core.sources.blockhash_aggregator import TellorRNGManualSource
 
 local_source = TellorRNGManualSource()
 

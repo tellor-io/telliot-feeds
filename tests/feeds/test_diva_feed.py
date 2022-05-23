@@ -11,7 +11,7 @@ from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafee
 from telliot_feed_examples.feeds.diva_protocol_feed import DivaPoolParameters
 from telliot_feed_examples.feeds.diva_protocol_feed import get_pool_params
 from telliot_feed_examples.feeds.diva_protocol_feed import get_source
-from telliot_feed_examples.sources.price.historical.poloniex import (
+from telliot_core.sources.price.historical.poloniex import (
     PoloniexHistoricalPriceSource,
 )
 

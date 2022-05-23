@@ -11,7 +11,7 @@ from telliot_core.utils.abi import rinkeby_tellor_oracle
 
 from telliot_feed_examples.feeds.usd_vwap import ampl_usd_vwap_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
-from telliot_feed_examples.utils.log import get_logger
+from telliot_core.utils.log import get_logger
 
 
 logger = get_logger(__name__)

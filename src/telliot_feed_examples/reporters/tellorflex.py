@@ -25,7 +25,7 @@ from telliot_feed_examples.reporters.reporter_autopay_utils import (
 )
 from telliot_feed_examples.reporters.reporter_autopay_utils import get_feed_tip
 from telliot_feed_examples.reporters.reporter_autopay_utils import get_single_tip
-from telliot_feed_examples.utils.log import get_logger
+from telliot_core.utils.log import get_logger
 
 
 logger = get_logger(__name__)

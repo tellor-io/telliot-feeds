@@ -10,7 +10,7 @@ from telliot_core.utils.response import error_status
 from telliot_core.utils.timestamp import TimeStamp
 
 from telliot_feed_examples.feeds import CATALOG_FEEDS
-from telliot_feed_examples.utils.log import get_logger
+from telliot_core.utils.log import get_logger
 
 
 logger = get_logger(__name__)

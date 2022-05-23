@@ -17,7 +17,7 @@ from telliot_core.datasource import DataSource
 from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 
-from telliot_feed_examples.utils.cfg import mainnet_config
+from telliot_core.utils.cfg import mainnet_config
 
 
 @pytest.fixture(scope="module", autouse=True)

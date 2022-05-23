@@ -1,13 +1,13 @@
 from telliot_core.datafeed import DataFeed
 from telliot_core.queries import SpotPrice
 
-from telliot_feed_examples.sources.price.spot.binance import BinanceSpotPriceSource
-from telliot_feed_examples.sources.price.spot.bittrex import BittrexSpotPriceSource
-from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceSource
-from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
-from telliot_feed_examples.sources.price.spot.gemini import GeminiSpotPriceSource
-from telliot_feed_examples.sources.price.spot.kraken import KrakenSpotPriceSource
-from telliot_feed_examples.sources.price_aggregator import PriceAggregator
+from telliot_core.sources.price.spot.binance import BinanceSpotPriceSource
+from telliot_core.sources.price.spot.bittrex import BittrexSpotPriceSource
+from telliot_core.sources.price.spot.coinbase import CoinbaseSpotPriceSource
+from telliot_core.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
+from telliot_core.sources.price.spot.gemini import GeminiSpotPriceSource
+from telliot_core.sources.price.spot.kraken import KrakenSpotPriceSource
+from telliot_core.sources.price_aggregator import PriceAggregator
 
 matic_usd_median_feed = DataFeed(
     query=SpotPrice(asset="MATIC", currency="USD"),

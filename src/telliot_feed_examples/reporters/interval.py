@@ -25,7 +25,7 @@ from web3.datastructures import AttributeDict
 from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
-from telliot_feed_examples.utils.log import get_logger
+from telliot_core.utils.log import get_logger
 
 
 logger = get_logger(__name__)

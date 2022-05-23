@@ -23,7 +23,7 @@ from web3.exceptions import TransactionNotFound
 from telliot_feed_examples.flashbots import flashbot  # type: ignore
 from telliot_feed_examples.flashbots.provider import get_default_endpoint  # type: ignore
 from telliot_feed_examples.reporters.interval import IntervalReporter
-from telliot_feed_examples.utils.log import get_logger
+from telliot_core.utils.log import get_logger
 
 
 logger = get_logger(__name__)

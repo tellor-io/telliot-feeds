@@ -2,11 +2,11 @@
 from telliot_core.datafeed import DataFeed
 from telliot_core.queries.legacy_query import LegacyRequest
 
-from telliot_feed_examples.sources.price.spot.bittrex import BittrexSpotPriceSource
-from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceSource
-from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
-from telliot_feed_examples.sources.price.spot.gemini import GeminiSpotPriceSource
-from telliot_feed_examples.sources.price_aggregator import PriceAggregator
+from telliot_core.sources.price.spot.bittrex import BittrexSpotPriceSource
+from telliot_core.sources.price.spot.coinbase import CoinbaseSpotPriceSource
+from telliot_core.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
+from telliot_core.sources.price.spot.gemini import GeminiSpotPriceSource
+from telliot_core.sources.price_aggregator import PriceAggregator
 
 btc_usd_median_feed = DataFeed(
     query=LegacyRequest(legacy_id=2),

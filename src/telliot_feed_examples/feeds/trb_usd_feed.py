@@ -2,9 +2,9 @@
 from telliot_core.datafeed import DataFeed
 from telliot_core.queries import LegacyRequest
 
-from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceSource
-from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
-from telliot_feed_examples.sources.price_aggregator import PriceAggregator
+from telliot_core.sources.price.spot.coinbase import CoinbaseSpotPriceSource
+from telliot_core.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
+from telliot_core.sources.price_aggregator import PriceAggregator
 
 trb_usd_median_feed = DataFeed(
     query=LegacyRequest(legacy_id=50),
