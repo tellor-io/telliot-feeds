@@ -1,6 +1,8 @@
 import json
 from dataclasses import dataclass
-from typing import Any, Optional, Union
+from typing import Any
+from typing import Optional
+from typing import Union
 
 import requests
 from telliot_core.datasource import DataSource
