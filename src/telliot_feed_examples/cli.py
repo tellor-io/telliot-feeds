@@ -24,6 +24,7 @@ from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
+from telliot_feed_examples.reporters.rng_interval import RNGReporter
 from telliot_feed_examples.utils.oracle_write import tip_query
 
 logger = get_logger(__name__)
@@ -280,6 +281,7 @@ def cli(
     nargs=1,
     type=int,
 )
+@click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pwd", "--password", type=str)
 @click.option("-spwd", "--signature-password", type=str)
@@ -301,6 +303,7 @@ async def report(
     rng_timestamp: int,
     password: str,
     signature_password: str,
+    rng_auto: bool,
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
@@ -408,15 +411,26 @@ async def report(
             # Type 2 transactions unsupported currently
             common_reporter_kwargs["transaction_type"] = 0
 
-            reporter = PolygonReporter(
-                oracle=tellorflex.oracle,
-                token=tellorflex.token,
-                autopay=tellorflex.autopay,
-                stake=stake,
-                expected_profit=expected_profit,
-                wait_period=wait_period,
-                **common_reporter_kwargs,
-            )
+            if rng_auto:
+                reporter = RNGReporter(
+                    oracle=tellorflex.oracle,
+                    token=tellorflex.token,
+                    autopay=tellorflex.autopay,
+                    stake=stake,
+                    expected_profit=expected_profit,
+                    wait_period=wait_period,
+                    **common_reporter_kwargs,
+                )
+            else: 
+                reporter = PolygonReporter(
+                    oracle=tellorflex.oracle,
+                    token=tellorflex.token,
+                    autopay=tellorflex.autopay,
+                    stake=stake,
+                    expected_profit=expected_profit,
+                    wait_period=wait_period,
+                    **common_reporter_kwargs,
+                )
         # Report to TellorX
         else:
             tellorx = core.get_tellorx_contracts()
