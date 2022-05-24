@@ -13,6 +13,7 @@ from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
+from telliot_core.utils.log import get_logger
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
@@ -25,7 +26,6 @@ from telliot_feed_examples.reporters.reporter_autopay_utils import (
 )
 from telliot_feed_examples.reporters.reporter_autopay_utils import get_feed_tip
 from telliot_feed_examples.reporters.reporter_autopay_utils import get_single_tip
-from telliot_feed_examples.utils.log import get_logger
 
 
 logger = get_logger(__name__)
