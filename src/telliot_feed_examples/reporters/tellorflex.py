@@ -13,6 +13,7 @@ from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
+from telliot_core.reporters.reporter_utils import tellor_suggested_report
 from telliot_core.utils.log import get_logger
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
@@ -241,10 +242,16 @@ class PolygonReporter(IntervalReporter):
                 tip += feed_tip
         else:
             suggested_qtag, tip = await autopay_suggested_report(self.autopay)
+            if not suggested_qtag and self.expected_profit == "YOLO":
+                suggested_qtag = await tellor_suggested_report(self.oracle)
+                datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
+                tip = 0
+
             if not suggested_qtag:
-                msg = "No feed suggestions available."
+                msg = "Could not get suggested query."
                 error_status(msg, log=logger.info)
                 return None
+
             datafeed = CATALOG_FEEDS[suggested_qtag]
 
         # Fetch token prices in USD

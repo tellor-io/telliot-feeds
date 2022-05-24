@@ -178,6 +178,7 @@ async def test_ethgasstation_error(eth_usd_reporter):
     assert tx_receipt is None
     assert not status.ok
     interval.ethgasstation = ethgasstation
+    yield
 
 
 @pytest.mark.asyncio
@@ -269,6 +270,7 @@ async def test_no_token_prices_for_profit_calc(
     assert tx_receipt is None
     assert not status.ok
     assert status.error == "Unable to fetch ETH/USD price for profit calculation"
+    yield
 
 
 @pytest.mark.asyncio

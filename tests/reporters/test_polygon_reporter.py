@@ -1,6 +1,7 @@
 import pytest
 from brownie import accounts
 from telliot_core.apps.core import TelliotCore
+from telliot_core.datafeed import DataFeed
 from telliot_core.utils.response import ResponseStatus
 
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
@@ -42,6 +43,15 @@ async def polygon_reporter(
         accounts[1].transfer(account.address, "1 ether")
 
         return r
+
+
+@pytest.mark.asyncio
+async def test_YOLO_feed_suggestion(polygon_reporter):
+    polygon_reporter.expected_profit = "YOLO"
+    feed = await polygon_reporter.fetch_datafeed()
+
+    assert feed is not None
+    assert isinstance(feed, DataFeed)
 
 
 @pytest.mark.asyncio
