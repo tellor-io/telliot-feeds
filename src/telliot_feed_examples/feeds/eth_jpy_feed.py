@@ -1,7 +1,6 @@
 """Datafeed for current price of ETH in JPY used by LegacyQueryReporter."""
 from telliot_core.datafeed import DataFeed
 from telliot_core.queries import LegacyRequest
-
 from telliot_core.sources.price.spot.bitfinex import BitfinexSpotPriceSource
 from telliot_core.sources.price.spot.bitflyer import BitflyerSpotPriceSource
 from telliot_core.sources.price.spot.coingecko import CoinGeckoSpotPriceSource

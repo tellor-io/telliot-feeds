@@ -3,7 +3,6 @@
 More info: """
 from telliot_core.datafeed import DataFeed
 from telliot_core.queries.morphware import Morphware
-
 from telliot_core.sources.morphware import MorphwareV1Source
 
 

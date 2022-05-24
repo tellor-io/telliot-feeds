@@ -5,7 +5,6 @@ import chained_accounts
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.queries.tellor_rng import TellorRNG
-
 from telliot_core.sources.blockhash_aggregator import TellorRNGManualSource
 
 local_source = TellorRNGManualSource()

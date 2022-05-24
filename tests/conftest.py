@@ -16,7 +16,6 @@ from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.datasource import DataSource
 from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.dtypes.datapoint import OptionalDataPoint
-
 from telliot_core.utils.cfg import mainnet_config
 
 
