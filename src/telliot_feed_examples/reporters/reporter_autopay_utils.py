@@ -48,46 +48,41 @@ async def get_single_tip(
         msg = "can't suggest single tip for autopay contract not connected"
         error_status(note=msg, log=logger.critical)
         return None
-    query_id_lis, status = await autopay.read("getFundedQueryIds")
+
+    current_time = TimeStamp.now().ts
+
+    tips, status = await autopay.read("getPastTips", _queryId=query_id)
     if not status.ok:
-        msg = "unable to read getFundedQueryIds from autopay"
+        msg = "unable to read getPastTipCount in autopay"
         error_status(note=msg, log=logger.warning)
         return None
-    current_time = TimeStamp.now().ts
-    if query_id in query_id_lis:
-        tips, status = await autopay.read("getPastTips", _queryId=query_id)
+    count = len(tips)
+    if count > 0:
+        mini = 0
+        maxi = count
+        while maxi - mini > 1:
+            mid = int((maxi + mini) / 2)
+            tip_info = tips[mid]
+            if tip_info[1] > current_time:
+                maxi = mid
+            else:
+                mini = mid
+
+        timestamp_before, status = await autopay.read(
+            "getCurrentValue", _queryId=query_id
+        )
         if not status.ok:
-            msg = "unable to read getPastTipCount in autopay"
+            msg = "unable to read current value"
             error_status(note=msg, log=logger.warning)
             return None
-        count = len(tips)
-        if count > 0:
-            mini = 0
-            maxi = count
-            while maxi - mini > 1:
-                mid = int((maxi + mini) / 2)
-                tip_info = tips[mid]
-                if tip_info[1] > current_time:
-                    maxi = mid
-                else:
-                    mini = mid
-
-            timestamp_before, status = await autopay.read(
-                "getCurrentValue", _queryId=query_id
+        tip_info = tips[mini]
+        if timestamp_before[2] < tip_info[1]:
+            logger.info(
+                msg=f"{query_ids_in_catalog['0x'+query_id.hex()]}\
+                        has {tip_info[0]/1e18} in potential tips"
             )
-            if not status.ok:
-                msg = "unable to read current value"
-                error_status(note=msg, log=logger.warning)
-                return None
-            tip_info = tips[mini]
-            if timestamp_before[2] < tip_info[1]:
-                logger.info(
-                    msg=f"{query_ids_in_catalog['0x'+query_id.hex()]}\
-                         has {tip_info[0]/1e18} in potential tips"
-                )
-                return int(tip_info[0])
-    else:
-        return None
+            return int(tip_info[0])
+
     return None
 
 
@@ -211,10 +206,13 @@ async def autopay_suggested_report(
             else:
                 return val_1 + val_2
 
+        query_id_lis, status = await autopay.read("getFundedQueryIds")
+
         # get query_ids with one time tips
         singletip_dict = {
             j: await get_single_tip(bytes.fromhex(i[2:]), autopay)
             for i, j in query_ids_in_catalog.items()
+            if bytes.fromhex(i[2:]) in query_id_lis
         }
         # get query_ids with active feeds
         datafeed_dict = {
