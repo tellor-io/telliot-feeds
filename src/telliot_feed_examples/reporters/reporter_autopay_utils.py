@@ -9,8 +9,11 @@ from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.utils.log import get_logger
 from telliot_core.utils.response import error_status
 from telliot_core.utils.timestamp import TimeStamp
+from web3.providers.rpc import HTTPProvider
 
 from telliot_feed_examples.feeds import CATALOG_FEEDS
+from telliot_feed_examples.reporters.tip_listener.event_scanner import EventScanner
+from telliot_feed_examples.reporters.tip_listener.json_state import JSONifiedState
 
 
 logger = get_logger(__name__)
@@ -48,46 +51,40 @@ async def get_single_tip(
         msg = "can't suggest single tip for autopay contract not connected"
         error_status(note=msg, log=logger.critical)
         return None
-    query_id_lis, status = await autopay.read("getFundedQueryIds")
+
+    current_time = TimeStamp.now().ts
+    tips, status = await autopay.read("getPastTips", _queryId=query_id)
     if not status.ok:
-        msg = "unable to read getFundedQueryIds from autopay"
+        msg = "unable to read getPastTipCount in autopay"
         error_status(note=msg, log=logger.warning)
         return None
-    current_time = TimeStamp.now().ts
-    if query_id in query_id_lis:
-        tips, status = await autopay.read("getPastTips", _queryId=query_id)
+    count = len(tips)
+    if count > 0:
+        mini = 0
+        maxi = count
+        while maxi - mini > 1:
+            mid = int((maxi + mini) / 2)
+            tip_info = tips[mid]
+            if tip_info[1] > current_time:
+                maxi = mid
+            else:
+                mini = mid
+
+        timestamp_before, status = await autopay.read(
+            "getCurrentValue", _queryId=query_id
+        )
         if not status.ok:
-            msg = "unable to read getPastTipCount in autopay"
+            msg = "unable to read current value"
             error_status(note=msg, log=logger.warning)
             return None
-        count = len(tips)
-        if count > 0:
-            mini = 0
-            maxi = count
-            while maxi - mini > 1:
-                mid = int((maxi + mini) / 2)
-                tip_info = tips[mid]
-                if tip_info[1] > current_time:
-                    maxi = mid
-                else:
-                    mini = mid
-
-            timestamp_before, status = await autopay.read(
-                "getCurrentValue", _queryId=query_id
+        tip_info = tips[mini]
+        if timestamp_before[2] < tip_info[1]:
+            logger.info(
+                msg=f"{query_ids_in_catalog['0x'+query_id.hex()]}\
+                        has {tip_info[0]/1e18} in potential tips"
             )
-            if not status.ok:
-                msg = "unable to read current value"
-                error_status(note=msg, log=logger.warning)
-                return None
-            tip_info = tips[mini]
-            if timestamp_before[2] < tip_info[1]:
-                logger.info(
-                    msg=f"{query_ids_in_catalog['0x'+query_id.hex()]}\
-                         has {tip_info[0]/1e18} in potential tips"
-                )
-                return int(tip_info[0])
-    else:
-        return None
+            return int(tip_info[0])
+
     return None
 
 
@@ -211,21 +208,83 @@ async def autopay_suggested_report(
             else:
                 return val_1 + val_2
 
-        # get query_ids with one time tips
-        singletip_dict = {
-            j: await get_single_tip(bytes.fromhex(i[2:]), autopay)
-            for i, j in query_ids_in_catalog.items()
-        }
-        # get query_ids with active feeds
-        datafeed_dict = {
-            j: await get_feed_tip(i, autopay)
-            for i, j in query_ids_in_catalog.items()
-            if "legacy" in j or "spot" in j
-        }
+        # Remove the default JSON-RPC retry middleware
+        # as it correctly cannot handle eth_getLogs block range
+        # throttle down.
+        HTTPProvider(autopay.node.url).middlewares.clear()  # type: ignore
 
-        # remove none type
-        single_tip_suggestion = {i: j for i, j in singletip_dict.items() if j}
-        datafeed_suggestion = {i: j for i, j in datafeed_dict.items() if j}
+        state = JSONifiedState()
+        state.restore()
+
+        scanner = EventScanner(
+            web3=autopay.node.web3,
+            state=state,
+            contract=autopay.contract,
+            events=[
+                autopay.contract.events.DataFeedFunded,
+                autopay.contract.events.TipAdded,
+            ],
+            filters={"address": autopay.address},
+            # Infura max block range
+            max_chunk_scan_size=3499,
+        )
+
+        # Assume we might have scanned the blocks all the way to the last Ethereum block
+        # that mined a few seconds before the previous scan run ended.
+        # Because there might have been a minor Etherueum chain reorganisations
+        # since the last scan ended, we need to discard
+        # the last few blocks from the previous scan results.
+        chain_reorg_safety_blocks = 10
+        scanner.delete_potentially_forked_block_data(
+            state.get_last_scanned_block() - chain_reorg_safety_blocks
+        )
+
+        # Scan from [last block scanned] - [latest ethereum block]
+        # Note that our chain reorg safety blocks cannot go negative
+        start_block = max(state.get_last_scanned_block() - chain_reorg_safety_blocks, 0)
+        end_block = scanner.get_suggested_scan_end_block()
+
+        # Run the scan
+        scanner.scan(start_block, end_block)
+
+        if state.one_time_tips_count() > 10:
+            # get query_ids with one time tips
+            query_id_lis, status = await autopay.read("getFundedQueryIds")
+            if status.ok:
+                msg = "unable to read getFundedQueryIds from autopay"
+                error_status(note=msg, log=logger.warning)
+                singletip_dict = {}
+            singletip_dict = {
+                j: await get_single_tip(bytes.fromhex(i[2:]), autopay)
+                for i, j in query_ids_in_catalog.items()
+                if bytes.fromhex(i[2:]) in query_id_lis
+            }
+            single_tip_suggestion = {i: j for i, j in singletip_dict.items() if j}
+
+            if single_tip_suggestion:
+                state.decrement_one_time_tip()
+            else:
+                state.reset_one_time_tip_count()
+        else:
+            single_tip_suggestion = {}
+
+        if state.continuous_feed_count() > 0:
+            # get query_ids with active feeds
+            datafeed_dict = {
+                j: await get_feed_tip(i, autopay)
+                for i, j in query_ids_in_catalog.items()
+                if "legacy" in j or "spot" in j
+            }
+
+            datafeed_suggestion = {i: j for i, j in datafeed_dict.items() if j}
+
+            if datafeed_suggestion:
+                state.decrement_continuous_feed()
+            else:
+                state.reset_continuous_feed_count()
+
+        else:
+            datafeed_suggestion = {}
 
         # combine feed dicts and add tips for duplicate query ids
         combined_dict = {
@@ -238,6 +297,7 @@ async def autopay_suggested_report(
         tips_sorted = sorted(
             combined_dict.items(), key=lambda item: item[1], reverse=True  # type: ignore
         )
+
         if tips_sorted:
             suggested_feed = tips_sorted[0]
             return suggested_feed[0], suggested_feed[1]
