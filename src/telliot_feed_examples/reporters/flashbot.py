@@ -14,6 +14,7 @@ from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
+from telliot_core.utils.log import get_logger
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
@@ -23,7 +24,6 @@ from web3.exceptions import TransactionNotFound
 from telliot_feed_examples.flashbots import flashbot  # type: ignore
 from telliot_feed_examples.flashbots.provider import get_default_endpoint  # type: ignore
 from telliot_feed_examples.reporters.interval import IntervalReporter
-from telliot_feed_examples.utils.log import get_logger
 
 
 logger = get_logger(__name__)
