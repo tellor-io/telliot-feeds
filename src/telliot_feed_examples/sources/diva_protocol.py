@@ -12,6 +12,19 @@ from telliot_feed_examples.utils.log import get_logger
 logger = get_logger(__name__)
 
 
+# collateral tokens whitelist
+#         "id": "0xad6d458402f60fd3bd25163575031acdce07538d",
+#     "name": "DAI",
+#     "symbol": "DAI",
+#     "decimals": 18
+#   },
+#   {
+#     "id": "0xc778417e063141139fce010982780140aa0cd5ab",
+#     "name": "Wrapped Ether",
+#     "symbol": "WETH",
+#     "decimals": 18
+
+
 @dataclass
 class DivaManualSource(DataSource[Any]):
     """DataSource for Diva Protocol manually-entered data."""
