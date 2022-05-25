@@ -38,7 +38,7 @@ detail = DetailsMap()
 async def get_single_tip(
     query_id: bytes,
     autopay: TellorFlexAutopayContract,
-) -> Optional[int]:
+) -> Optional[Any]:
     """Returns a suggested query with a single tip to report.
 
     Pulls query_ids with tips available from the tellor autopay
