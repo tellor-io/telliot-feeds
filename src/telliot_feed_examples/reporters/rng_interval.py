@@ -2,8 +2,8 @@
 submits TellorRNG values at a fixed time interval
 """
 import asyncio
-import time
 import calendar
+import time
 from datetime import timedelta
 from typing import Any
 from typing import Optional
@@ -16,24 +16,24 @@ from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
+from telliot_core.queries.tellor_rng import TellorRNG
 from telliot_core.utils.log import get_logger
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
-from telliot_core.queries.tellor_rng import TellorRNG
 
-from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.feeds.matic_usd_feed import matic_usd_median_feed
+from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.reporter_autopay_utils import get_feed_tip
 from telliot_feed_examples.reporters.reporter_autopay_utils import get_single_tip
-from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
 
 
 logger = get_logger(__name__)
 
-INTERVAL = 60 * 30 # 30 minutes
-START_TIME = 1653350400 # 2022-5-24 00:00:00 GMT
+INTERVAL = 60 * 30  # 30 minutes
+START_TIME = 1653350400  # 2022-5-24 00:00:00 GMT
+
 
 def get_next_timestamp() -> int:
     """get next target timestamp"""
@@ -63,7 +63,7 @@ class RNGReporter(IntervalReporter):
         priority_fee: int = 100,
         legacy_gas_price: Optional[int] = None,
         gas_price_speed: str = "safeLow",
-        wait_period: int = 300,
+        wait_period: int = 120,
     ) -> None:
 
         self.endpoint = endpoint
@@ -79,7 +79,7 @@ class RNGReporter(IntervalReporter):
         self.transaction_type = transaction_type
         self.gas_limit = gas_limit
         self.max_fee = max_fee
-        self.wait_period = wait_period
+        self.wait_period = 120
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
@@ -252,17 +252,17 @@ class RNGReporter(IntervalReporter):
             logger.error(status.error)
             status.e = read_status.e
             return None
-        
+
         if report_count > 0:
             status.ok = False
-            status.error = "Already reported."
+            status.error = "Latest timestamp in interval already reported."
             logger.info(status.error)
             return None
 
         self.datafeed = await assemble_rng_datafeed(
-                timestamp=rng_timestamp, node=self.endpoint, account=self.account
+            timestamp=rng_timestamp, node=self.endpoint, account=self.account
         )
-        datafeed = self.datafeed
+        datafeed: DataFeed = self.datafeed
         tip = 0
         single_tip = await get_single_tip(datafeed.query.query_id, self.autopay)
         if single_tip:
@@ -351,4 +351,5 @@ class RNGReporter(IntervalReporter):
 
         while True:
             _, _ = await self.report_once()
+            logger.info(f"Sleeping for {self.wait_period} seconds")
             await asyncio.sleep(self.wait_period)

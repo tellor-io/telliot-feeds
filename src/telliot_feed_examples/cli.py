@@ -23,8 +23,8 @@ from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafee
 from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
-from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 from telliot_feed_examples.reporters.rng_interval import RNGReporter
+from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 from telliot_feed_examples.utils.oracle_write import tip_query
 
 logger = get_logger(__name__)
@@ -421,7 +421,7 @@ async def report(
                     wait_period=wait_period,
                     **common_reporter_kwargs,
                 )
-            else: 
+            else:
                 reporter = PolygonReporter(
                     oracle=tellorflex.oracle,
                     token=tellorflex.token,
@@ -430,7 +430,7 @@ async def report(
                     expected_profit=expected_profit,
                     wait_period=wait_period,
                     **common_reporter_kwargs,
-                )
+                )  # type: ignore
         # Report to TellorX
         else:
             tellorx = core.get_tellorx_contracts()
