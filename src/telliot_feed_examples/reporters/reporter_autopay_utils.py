@@ -68,6 +68,8 @@ async def get_feed_tip(
         error_status(note=msg, log=logger.critical)
         return None
     current_time = TimeStamp.now().ts
+
+    # list of feed ids where a query id has tips
     feed_ids, status = await autopay.read("getCurrentFeeds", _queryId=query_id)
 
     if not status.ok:
@@ -77,21 +79,18 @@ async def get_feed_tip(
 
     feed_query_dict = {}
     for i in feed_ids:
-        if i:
-            feed_id = f"0x{i.hex()}"
-            feed_details, status = await autopay.read("getDataFeed", _feedId=feed_id)
+        # loop over the feed ids and get a tips sum for a query id
+        feed_id = f"0x{i.hex()}"
+        feed_details, status = await autopay.read("getDataFeed", _feedId=feed_id)
+        if not status.ok:
+            msg = "couldn't get feed details from contract"
+            error_status(note=msg, log=logger.warning)
+            continue
 
-            if not status.ok:
-                msg = "couldn't get feed details from contract"
-                error_status(note=msg, log=logger.warning)
-                return None
-
-            if (
-                feed_details[detail.balance] <= 0 and feed_details[detail.reward] <= 0
-            ) or feed_details[detail.balance] < feed_details[detail.reward]:
-                msg = f"{query_ids_in_catalog[query_id]}, feed has no remaining balance"
-                error_status(note=msg, log=logger.warning)
-                return None
+        if feed_details[detail.balance] <= 0:
+            msg = f"{query_ids_in_catalog[query_id]}, feed has no remaining balance"
+            error_status(note=msg, log=logger.warning)
+            continue
 
         # next two variables are used to check if value to be submitted
         # is first in interval window to be eligible for tip
@@ -107,7 +106,7 @@ async def get_feed_tip(
         if not status.ok:
             msg = "couldn't get value before from getCurrentValue"
             error_status(note=msg, log=logger.warning)
-            return None
+            continue
         # if submission will be first set before values to zero
         if not response[0]:
             value_before_now = 0
@@ -124,7 +123,7 @@ async def get_feed_tip(
         if not all(rules):
             msg = f"{query_ids_in_catalog[query_id]}, isn't eligible for a tip"
             error_status(note=msg, log=logger.info)
-            return None
+            continue
 
         if feed_details[detail.priceThreshold] == 0:
             feed_query_dict[i] = feed_details[detail.reward]
@@ -134,7 +133,7 @@ async def get_feed_tip(
             if not value_now:
                 note = f"Unable to fetch {datafeed} price for tip calculation"
                 error_status(note=note, log=logger.warning)
-                return None
+                continue
             value_now = value_now[0]
 
             if value_before_now == 0:
