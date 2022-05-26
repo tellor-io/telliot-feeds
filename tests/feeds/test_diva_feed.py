@@ -6,24 +6,22 @@ from brownie import DIVAProtocolMock
 from telliot_core.api import DataFeed
 from telliot_core.apps.core import TelliotCore
 from telliot_core.queries.diva_protocol import DIVAProtocolPolygon
-from telliot_core.sources.price.historical.poloniex import (
-    PoloniexHistoricalPriceSource,
-)
 
 from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feed_examples.feeds.diva_protocol_feed import DivaPoolParameters
 from telliot_feed_examples.feeds.diva_protocol_feed import get_pool_params
 from telliot_feed_examples.feeds.diva_protocol_feed import get_source
+from telliot_feed_examples.sources.price.historical.poloniex import (
+    PoloniexHistoricalPriceSource,
+)
 
 
 @pytest.fixture
 def diva_mock_contract():
-    """Test fixture for deployed DIVAProtocolMock contract."""
     return accounts[0].deploy(DIVAProtocolMock)
 
 
 def test_get_source() -> None:
-    """Test get_source()."""
     source = get_source("btc", 1243)
 
     assert source.sources[1].asset == "xbt"
@@ -32,7 +30,6 @@ def test_get_source() -> None:
 
 @pytest.mark.asyncio
 async def test_get_pool_parameters(ropsten_test_cfg, diva_mock_contract) -> None:
-    """Test get_pool_parameters()."""
     async with TelliotCore(config=ropsten_test_cfg) as core:
         account = core.get_account()
         params = await get_pool_params(
@@ -46,7 +43,6 @@ async def test_get_pool_parameters(ropsten_test_cfg, diva_mock_contract) -> None
 
 @pytest.mark.asyncio
 async def test_diva_datafeed(ropsten_test_cfg, diva_mock_contract) -> None:
-    """Test fetch_new_datapoint() implementation."""
     async with TelliotCore(config=ropsten_test_cfg) as core:
         account = core.get_account()
         feed = await assemble_diva_datafeed(
