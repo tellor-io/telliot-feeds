@@ -23,12 +23,10 @@ load_dotenv(find_dotenv())
 
 
 def env(key: str) -> str:
-    """Simpler env var access."""
     return os.environ.get(key)
 
 
 async def main() -> None:
-    """Send transactions using EIP-1559 types."""
     # account to send the transfer and sign transactions
     sender: LocalAccount = Account.from_key(env("SENDER_PRIVATE_KEY"))
     # account to receive the transfer

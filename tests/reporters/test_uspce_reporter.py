@@ -1,11 +1,11 @@
 import pytest
 from brownie import accounts
 from telliot_core.apps.core import TelliotCore
-from telliot_core.sources import uspce
 from web3.datastructures import AttributeDict
 
 from telliot_feed_examples.feeds.uspce_feed import uspce_feed
 from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.sources import uspce
 
 
 @pytest.mark.asyncio

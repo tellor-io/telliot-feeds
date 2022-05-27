@@ -12,7 +12,6 @@ from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 async def polygon_reporter(
     mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract
 ):
-    """Test fixture for PolygonReporter"""
     async with TelliotCore(config=mumbai_test_cfg) as core:
 
         account = core.get_account()
@@ -46,7 +45,6 @@ async def polygon_reporter(
 
 @pytest.mark.asyncio
 async def test_ensure_profitable(polygon_reporter):
-    """Test ensure_profitable()"""
     status = await polygon_reporter.ensure_profitable(matic_usd_median_feed)
 
     assert isinstance(status, ResponseStatus)
@@ -55,7 +53,6 @@ async def test_ensure_profitable(polygon_reporter):
 
 @pytest.mark.asyncio
 async def test_fetch_gas_price(polygon_reporter):
-    """Test fetch_gas_price()"""
     price = await polygon_reporter.fetch_gas_price()
 
     assert isinstance(price, int)
@@ -64,7 +61,6 @@ async def test_fetch_gas_price(polygon_reporter):
 
 @pytest.mark.asyncio
 async def test_ensure_staked(polygon_reporter):
-    """Test ensure_staked()"""
     staked, status = await polygon_reporter.ensure_staked()
 
     assert isinstance(status, ResponseStatus)
@@ -77,7 +73,6 @@ async def test_ensure_staked(polygon_reporter):
 
 @pytest.mark.asyncio
 async def test_check_reporter_lock(polygon_reporter):
-    """Test check_reporter_lock()"""
     status = await polygon_reporter.check_reporter_lock()
 
     assert isinstance(status, ResponseStatus)
@@ -89,7 +84,6 @@ async def test_check_reporter_lock(polygon_reporter):
 
 @pytest.mark.asyncio
 async def test_get_num_reports_by_id(polygon_reporter):
-    """Test get_num_reports_by_id()"""
     qid = eth_usd_median_feed.query.query_id
     count, status = await polygon_reporter.get_num_reports_by_id(qid)
 
@@ -102,7 +96,6 @@ async def test_get_num_reports_by_id(polygon_reporter):
 
 @pytest.mark.asyncio
 async def test_fetch_gas_price_error(polygon_reporter, caplog):
-    """Test fetch_gas_price() failures"""
     # Test invalid gas price speed
     r = polygon_reporter
     gp = await r.fetch_gas_price("blah")
