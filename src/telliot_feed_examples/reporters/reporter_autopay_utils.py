@@ -78,9 +78,9 @@ async def get_feed_tip(
         return None
 
     feed_query_dict = {}
-    for i in feed_ids:
+    for feed_id_bytes in feed_ids:
         # loop over the feed ids and get a tips sum for a query id
-        feed_id = f"0x{i.hex()}"
+        feed_id = f"0x{feed_id_bytes.hex()}"
         feed_details, status = await autopay.read("getDataFeed", _feedId=feed_id)
         if not status.ok:
             msg = "couldn't get feed details from contract"
@@ -94,28 +94,40 @@ async def get_feed_tip(
                 msg = "couldn't decode feed details from contract"
                 error_status(note=msg, log=logger.error)
                 continue
+            except Exception as e:
+                msg = f"unknown error decoding feed details from contract: {e}"
+                error_status(note=msg, log=logger.error)
+                continue
         else:
             msg = "No feed details returned from contract"
             error_status(note=msg, log=logger.warning)
             continue
 
         if feed_details.balance <= 0:
-            msg = f"{CATALOG_QUERY_IDS[query_id]}, feed has no remaining balance"
+            msg = (
+                f"{CATALOG_QUERY_IDS[query_id]}, autopay feed has no remaining balance"
+            )
             error_status(note=msg, log=logger.warning)
             continue
 
-        # next two variables are used to check if value to be submitted
-        # is first in interval window to be eligible for tip
-        # finds closest interval n to timestamp
-        n = math.floor((current_time - feed_details.startTime) / feed_details.interval)
-        # finds timestamp c of interval n
-        c = feed_details.startTime + (feed_details.interval * n)
-        response, status = await autopay.read("getCurrentValue", _queryId=query_id)
+        # Check if value to be submitted will be first in interval window to
+        # be eligible for tip
 
+        # Number of intervals since start time
+        num_intervals = math.floor(
+            (current_time - feed_details.startTime) / feed_details.interval
+        )
+        # Start time of latest submission window
+        current_window_start = feed_details.startTime + (
+            feed_details.interval * num_intervals
+        )
+
+        response, status = await autopay.read("getCurrentValue", _queryId=query_id)
         if not status.ok:
             msg = "couldn't get value before from getCurrentValue"
             error_status(note=msg, log=logger.warning)
             continue
+
         # if submission will be first set before values to zero
         if not response[0]:
             value_before_now = 0
@@ -125,8 +137,8 @@ async def get_feed_tip(
             timestamp_before_now = response[2]
 
         rules = [
-            (current_time - c) < feed_details.window,
-            timestamp_before_now < c,
+            (current_time - current_window_start) < feed_details.window,
+            timestamp_before_now < current_window_start,
         ]
 
         if not all(rules):
@@ -135,7 +147,7 @@ async def get_feed_tip(
             continue
 
         if feed_details.priceThreshold == 0:
-            feed_query_dict[i] = feed_details.reward
+            feed_query_dict[feed_id_bytes] = feed_details.reward
         else:
             datafeed = CATALOG_FEEDS[CATALOG_QUERY_IDS[query_id]]
             value_now = await datafeed.source.fetch_new_datapoint()
@@ -159,7 +171,7 @@ async def get_feed_tip(
                 ) / value_before_now
 
             if price_change > feed_details.priceThreshold:
-                feed_query_dict[i] = feed_details.reward
+                feed_query_dict[feed_id_bytes] = feed_details.reward
 
     tips_total = sum(feed_query_dict.values())
     if tips_total > 0:
