@@ -134,7 +134,7 @@ async def get_btc_hash(timestamp: int) -> Tuple[Optional[str], Optional[int]]:
                 continue
             block = b
             break
-        
+
         if block["time"] < timestamp:
             logger.warning("Blockchain.info API returned no blocks after timestamp")
             return None, None
