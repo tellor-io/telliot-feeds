@@ -81,7 +81,7 @@ async def get_eth_hash(timestamp: int) -> Optional[str]:
     if this_block["timestamp"] < timestamp:
         logger.error(
             f"Timestamp {timestamp} is older than current "
-            "block timestamp {this_block['timestamp']}"
+            f"block timestamp {this_block['timestamp']}"
         )
         return None
 
