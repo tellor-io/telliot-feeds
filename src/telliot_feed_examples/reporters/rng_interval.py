@@ -17,8 +17,8 @@ from telliot_core.contract.contract import Contract
 from telliot_core.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.queries.tellor_rng import TellorRNG
-from telliot_core.utils.log import get_logger
 from telliot_core.utils.key_helpers import lazy_unlock_account
+from telliot_core.utils.log import get_logger
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
@@ -348,7 +348,7 @@ class RNGReporter(IntervalReporter):
             return None
 
         return datafeed
-    
+
     async def report_once(
         self,
     ) -> Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]:
