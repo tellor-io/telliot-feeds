@@ -7,17 +7,18 @@ from chained_accounts import ChainedAccount
 from telliot_core.api import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.queries.diva_protocol import DIVAProtocolPolygon
-from telliot_core.sources.price.historical.cryptowatch import (
+from telliot_core.tellor.tellorflex.diva import DivaProtocolContract
+
+from telliot_feed_examples.sources.price.historical.cryptowatch import (
     CryptowatchHistoricalPriceSource,
 )
-from telliot_core.sources.price.historical.kraken import (
+from telliot_feed_examples.sources.price.historical.kraken import (
     KrakenHistoricalPriceSource,
 )
-from telliot_core.sources.price.historical.poloniex import (
+from telliot_feed_examples.sources.price.historical.poloniex import (
     PoloniexHistoricalPriceSource,
 )
-from telliot_core.sources.price_aggregator import PriceAggregator
-from telliot_core.tellor.tellorflex.diva import DivaProtocolContract
+from telliot_feed_examples.sources.price_aggregator import PriceAggregator
 
 
 logger = logging.getLogger(__name__)
