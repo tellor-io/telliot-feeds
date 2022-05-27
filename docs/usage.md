@@ -5,6 +5,7 @@
 Prerequisites: [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)
 
 To use any of the telliot datafeed and reporter examples, use the command line interface (CLI) tool. A basic example:
+
 ```
 $ telliot-examples --account fakename report
 ```
@@ -31,6 +32,7 @@ Press [ENTER] to confirm settings.
 ```
 
 # Table of Contents
+
 - [Reporting Basics](#reporting-basics)
 - [Reporting on Ethereum](#reporting-on-ethereum)
 - [Reporting on Polygon](#reporting-on-polygon)
@@ -40,6 +42,7 @@ Press [ENTER] to confirm settings.
 ## Help flag
 
 Use the help flag to view available commands and option flags:
+
 ```
 $ telliot-examples --help
 Usage: telliot-examples [OPTIONS] COMMAND [ARGS]...
@@ -60,6 +63,7 @@ Commands:
 ```
 
 The help flag shows subcommand options as well:
+
 ```
 $ telliot-examples report --help
 Usage: telliot-examples report [OPTIONS]
@@ -86,6 +90,7 @@ Options:
 ## Account Flag
 
 You must select an account to use for reporting. The account flag (`--account`/`-a`) is used to retrieve a [ChainedAccount](https://github.com/pydefi/chained-accounts) with a corresponding name. This `ChainedAccount` stores the account's checksum address, private key, and chain IDs. Example usage:
+
 ```
 telliot-examples -a fakeaccountname report
 ```
@@ -93,10 +98,13 @@ telliot-examples -a fakeaccountname report
 ## Report Command
 
 Use the `report` command to submit data to the TellorX or TellorFlex oracles. Example `report` command usage:
+
 ```
 telliot-examples -a bigdaddysatoshi report
 ```
+
 By default, the reporter will continue to attempt reporting whenever out of reporting lock. Use the `--submit-once` flag to only report once:
+
 ```
 telliot-examples -a staker1 report --submit-once
 ```
@@ -106,20 +114,25 @@ telliot-examples -a staker1 report --submit-once
 **Reporting for profit is extremely competitive and profit estimates aren't guarantees that you won't lose money!**
 
 Use the profit flag (`--profit/-p`) to.. specify an expected profit. The default is 100% profit, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use the `"YOLO"` string:
+
 ```
 telliot-examples -a staker1 report -p YOLO
 ```
+
 Normal profit flag usage:
+
 ```
 telliot-examples -a staker4000 report -p 2
 ```
 
 ## Gas, Fee, & Transaction Type Flags
+
 If gas fees and transaction types (`--tx-type/-tx`) aren't specified by the user, defaults and estimates will be used/retrieved.
 
 The `--gas-price/-gp` flag is for legacy transactions, while the `--max-fee/-mf` and `--priority-fee/-pf` flags are for type 2 transactions (EIP-1559). If sending legacy transactions, you can also override the gas price estimate speed using the `--gas-price-speed/-gps` flag. To set the gas limit used for the actual `submitValue()` transaction, use the `--gas-limit/-gl` flag.
 
 Example usage:
+
 ```
 telliot-examples -a kevin report -tx 0 -gl 310000 -gp 9001 -p 22
 ```
@@ -135,6 +148,7 @@ It's not advised to report without Flashbots, unless on a testnet like Rinkeby, 
 If you want to report without flashbots on Ethereum mainnet, use the `--no-flashbots/-nfb` flag.
 
 Example usage:
+
 ```
 telliot-examples -a mainnetstaker7 -nfb report
 ```
@@ -153,9 +167,10 @@ Reporting with Flashbots on testnet is not supported.
 
 In order to submit transactions through the [Flashbots](https://docs.flashbots.net/flashbots-auction/searchers/quick-start/) relay, you need an additional Ethereum acccount. The Flashbots organization uses this signatory account's address to identify you and build your historical reputation as a MEV ["searcher"](https://docs.flashbots.net/flashbots-auction/searchers/quick-start). This signatory account doesn't need any funds in it. Store it it as a `ChainedAccount` in the same way you would any other (see [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)).
 
-When reporting, select your signatory account by tag as well as your staked mainnet account. Use the `--account/-a` and `--signature-tag/-sgt` flags. 
+When reporting, select your signatory account by tag as well as your staked mainnet account. Use the `--account/-a` and `--signature-tag/-sgt` flags.
 
 Example usage:
+
 ```
 telliot-examples -a mainnetstaker1 -sgt sigacct -fb report
 ```
@@ -165,6 +180,7 @@ telliot-examples -a mainnetstaker1 -sgt sigacct -fb report
 Only legacy transaction types are supported. Also, TellorFlex on Polygon has no built-in rewards for reporting, so profitability checks are skipped. Read more about TellorFlex on Polygon [here](https://github.com/tellor-io/tellorFlex).
 
 Example usage:
+
 ```
 telliot-examples -a mumbaistaker report
 ```
@@ -174,12 +190,15 @@ telliot-examples -a mumbaistaker report
 With TellorFlex on Polygon, reporters can stake multiple times. Each stake is 10 TRB, so if you stake 140 TRB, you've staked 14 times.
 
 The `PolygonReporter` will prompt the user to enter a desired stake amount:
+
 ```
 Enter amount TRB to stake if unstaked: [10.0]:
 ```
+
 If the current account being used to report isn't staked, the reporter will use the CLI-entered stake amount to stake. Also, if the reporter account's actual stake is reduced after a dispute, the reporter will attempt to stake the difference in TRB to return to the original desired stake amount.
 
 Example:
+
 ```
 - user enters desired stake of 50
 - reporter identifies that current address has only 40 TRB staked
@@ -189,10 +208,16 @@ Example:
 ...
 ```
 
+### Withdraw Stake
+
+To withdraw your stake, there isn't a command available. Instead, you'll have to connect your wallet to the token address on your chain's explorer (e.g. [TRB on etherscan](https://etherscan.io/token/0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0#writeProxyContract)), run `requestStakingWithdraw`, wait seven days, then run `withdrawStake`.
+
 ## Reporter Lock
 
 TellorX reporters on Ethereum must wait 12 hours between each data sumbission. The reporter lock for TellorFlex on Polygon is variable. It depends on how many stakes an account has. Specifically:
+
 ```
 reporter_lock = 12 hours / number_of_stakes
 ```
+
 So if you have 120 TRB staked, you can report every hour.
