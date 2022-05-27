@@ -182,6 +182,11 @@ async def get_feed_tip(
     return tips_total
 
 
+def add_values(x: Optional[int], y: Optional[int]) -> Optional[int]:
+    """Helper function to add values when combining dicts with same key"""
+    return sum((num for num in (x, y) if num is not None))
+
+
 async def autopay_suggested_report(
     autopay: TellorFlexAutopayContract,
 ) -> Tuple[Optional[str], Any]:
@@ -189,15 +194,6 @@ async def autopay_suggested_report(
 
     if chain in (137, 80001):
         assert isinstance(autopay, TellorFlexAutopayContract)
-
-        # helper function to add values when combining dicts with same key
-        def add_values(val_1: Optional[int], val_2: Optional[int]) -> Optional[int]:
-            if not val_1:
-                return val_2
-            elif not val_2:
-                return val_1
-            else:
-                return val_1 + val_2
 
         query_id_lis, status = await autopay.read("getFundedQueryIds")
 
