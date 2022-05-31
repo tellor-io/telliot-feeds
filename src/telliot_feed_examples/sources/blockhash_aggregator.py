@@ -81,7 +81,7 @@ async def get_eth_hash(timestamp: int) -> Optional[str]:
     if this_block["timestamp"] < timestamp:
         logger.error(
             f"Timestamp {timestamp} is older than current "
-            "block timestamp {this_block['timestamp']}"
+            f"block timestamp {this_block['timestamp']}"
         )
         return None
 
@@ -96,6 +96,7 @@ async def get_eth_hash(timestamp: int) -> Optional[str]:
         logger.error(f"Unable to retrieve block {block_num}: {e}")
         return None
 
+    logger.info(f"Using ETH block number {block_num}")
     return str(block["hash"].hex())
 
 
@@ -103,7 +104,7 @@ async def get_btc_hash(timestamp: int) -> Tuple[Optional[str], Optional[int]]:
     """Fetches next Bitcoin blockhash after timestamp from API."""
     with requests.Session() as s:
         s.mount("https://", adapter)
-        ts = timestamp + 30 * 60
+        ts = timestamp + 480 * 60
 
         try:
             rsp = s.get(f" https://blockchain.info/blocks/{ts * 1000}?format=json")
@@ -135,6 +136,10 @@ async def get_btc_hash(timestamp: int) -> Tuple[Optional[str], Optional[int]]:
             block = b
             break
 
+        if block["time"] < timestamp:
+            logger.warning("Blockchain.info API returned no blocks after timestamp")
+            return None, None
+        logger.info(f"Using BTC block number {block['height']}")
         return str(block["hash"]), block["time"]
 
 
@@ -201,8 +206,7 @@ class TellorRNGManualSource(DataSource[Any]):
         datapoint = (data, dt)
 
         self.store_datapoint(datapoint)
-
-        logger.info(f"Stored random number for timestamp {timestamp}: {data}")
+        logger.info(f"Stored random number for timestamp {timestamp}: {data.hex()}")
         return datapoint
 
 
