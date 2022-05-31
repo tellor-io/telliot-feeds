@@ -66,6 +66,10 @@ class GasPriceOracleSource(DataSource[str]):
                 logger.error(f"GasPriceOracle API error: {e}")
                 return None
 
+            except requests.exceptions.Timeout as e:
+                logger.error(f"GasPriceOracle API timed out: {e}")
+                return None
+
     async def fetch_new_datapoint(
         self,
     ) -> Optional[DataPoint[list[str]]]:
