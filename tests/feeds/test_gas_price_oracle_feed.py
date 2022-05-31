@@ -6,11 +6,14 @@ from telliot_feed_examples.feeds.gas_price_oracle_feed import gas_price_oracle_f
 
 
 @pytest.mark.asyncio
-async def test_fetch_new_datapoint():
+async def test_fetch_new_datapoint(caplog):
     """Retrieve historical gas price data from source."""
 
     v, t = await gas_price_oracle_feed.source.fetch_new_datapoint()
 
-    assert v is not None and t is not None
-    assert isinstance(v, float)
-    assert isinstance(t, datetime)
+    if (v is None) and (t is None):
+        assert "Max retries exceeded with url" in caplog.text
+
+    else:
+        assert isinstance(v, float)
+        assert isinstance(t, datetime)
