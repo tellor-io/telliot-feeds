@@ -80,17 +80,20 @@ class DivaSource(DataSource[Any]):
         Returns:
             Current time-stamped value
         """
-        ref_asset_price, _ = self.reference_asset_source.fetch_new_datapoint()
-        collat_token_price, _ = self.collat_token_source.fetch_new_datapoint()
+        ref_asset_price, _ = await self.reference_asset_source.fetch_new_datapoint()
+        collat_token_price, _ = await self.collat_token_source.fetch_new_datapoint()
 
-        data = [int(v * 1e18) for v in [ref_asset_price, collat_token_price]]
+        ref_asset_price = 2000.0
+        collat_token_price = 0.996
+
+        data = (int(v * 1e18) for v in [ref_asset_price, collat_token_price])
 
         dt = datetime_now_utc()
         datapoint = (data, dt)
 
         self.store_datapoint(datapoint)
 
-        logger.info(f"Stored price of {self.reference_asset} at {dt}: {data}")
+        logger.info(f"Stored price of blank at {dt}: {data}")
 
         return datapoint
 
@@ -133,12 +136,15 @@ async def assemble_diva_datafeed(
     asset = params.reference_asset.split("/")[0].lower()
     ts = params.expiry_date
 
+    diva_source = DivaSource()
+    diva_source.reference_asset_source = get_source(asset, ts)
+    diva_source.collat_token_source = PoloniexHistoricalPriceSource(
+        asset=asset, currency="dai", ts=ts
+    )
+
     feed = DataFeed(
         query=DIVAProtocolPolygon(pool_id),
-        source=DivaSource(reference_asset_source=get_source(asset, ts)),
-        collat_token_source=PoloniexHistoricalPriceSource(
-            asset=asset, currency="dai", ts=ts
-        ),
+        source=diva_source,
     )
 
     return feed
