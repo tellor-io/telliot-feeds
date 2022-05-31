@@ -2,12 +2,16 @@
 import logging
 from dataclasses import dataclass
 from typing import Optional
+from typing import Any
 
 from chained_accounts import ChainedAccount
 from telliot_core.api import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.queries.diva_protocol import DIVAProtocolPolygon
 from telliot_core.tellor.tellorflex.diva import DivaProtocolContract
+from telliot_core.dtypes.datapoint import datetime_now_utc
+from telliot_core.datasource import DataSource
+from telliot_core.dtypes.datapoint import DataPoint
 
 from telliot_feed_examples.sources.price.historical.cryptowatch import (
     CryptowatchHistoricalPriceSource,
@@ -63,6 +67,34 @@ async def get_pool_params(
     return pool_params
 
 
+@dataclass
+class DivaSource(DataSource[Any]):
+    """DataSource for Diva Protocol manually-entered data."""
+
+    reference_asset_source: DataSource[float] = None
+    collat_token_source: DataSource[float] = None
+
+    async def fetch_new_datapoint(self) -> DataPoint[float]:
+        """Update current value with time-stamped value fetched from user input.
+
+        Returns:
+            Current time-stamped value
+        """
+        ref_asset_price, _ = self.reference_asset_source.fetch_new_datapoint()
+        collat_token_price, _ = self.collat_token_source.fetch_new_datapoint()
+
+        data = [int(v * 1e18) for v in [ref_asset_price, collat_token_price]]
+
+        dt = datetime_now_utc()
+        datapoint = (data, dt)
+
+        self.store_datapoint(datapoint)
+
+        logger.info(f"Stored price of {self.reference_asset} at {dt}: {data}")
+
+        return datapoint
+
+
 def get_source(asset: str, ts: int) -> PriceAggregator:
     """Returns PriceAggregator with sources adjusted based on given asset."""
     source = PriceAggregator(
@@ -103,7 +135,10 @@ async def assemble_diva_datafeed(
 
     feed = DataFeed(
         query=DIVAProtocolPolygon(pool_id),
-        source=get_source(asset, ts),
+        source=DivaSource(reference_asset_source=get_source(asset, ts)),
+        collat_token_source=PoloniexHistoricalPriceSource(
+            asset=asset, currency="dai", ts=ts
+        ),
     )
 
     return feed
