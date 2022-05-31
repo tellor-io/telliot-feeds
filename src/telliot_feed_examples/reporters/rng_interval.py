@@ -27,7 +27,8 @@ from web3.datastructures import AttributeDict
 from telliot_feed_examples.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
-from telliot_feed_examples.reporters.interval import IntervalReporter
+# from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.reporters.tellorflex import PolygonReporter
 from telliot_feed_examples.reporters.reporter_autopay_utils import get_feed_tip
 from telliot_feed_examples.reporters.reporter_autopay_utils import get_single_tip
 
@@ -45,7 +46,7 @@ def get_next_timestamp() -> int:
     return target_ts
 
 
-class RNGReporter(IntervalReporter):
+class RNGReporter(PolygonReporter):
     """Reports TellorRNG values at a fixed interval to TellorFlex
     on Polygon."""
 
