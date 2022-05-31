@@ -2,11 +2,11 @@
 
 This package contains reporting tools and datafeeds for the TellorX and TellorFlex oracles.
 
-## [Project documentation](https://tellor-io.github.io/telliot-feed-examples/)
+## [Project documentation](https://tellor-io.github.io/telliot-feeds/)
 
-## [Installation and Configuration](https://tellor-io.github.io/telliot-feed-examples/getting-started/)
+## [Installation and Configuration](https://tellor-io.github.io/telliot-feeds/getting-started/)
 
-## [Usage](https://tellor-io.github.io/telliot-feed-examples/usage/)
+## [Usage](https://tellor-io.github.io/telliot-feeds/usage/)
 
 ## Example
 
