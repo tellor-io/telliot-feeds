@@ -1,10 +1,10 @@
 import pytest
-from brownie import accounts
 import pytest_asyncio
+from brownie import accounts
 from telliot_core.apps.core import TelliotCore
+from web3.datastructures import AttributeDict
 
 from telliot_feed_examples.reporters.rng_interval import RNGReporter
-from web3.datastructures import AttributeDict
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -40,6 +40,7 @@ async def rng_reporter(
         accounts[1].transfer(account.address, "1 ether")
 
         return r
+
 
 @pytest.mark.asyncio
 async def test_rng_reporter_submit_once(rng_reporter):
