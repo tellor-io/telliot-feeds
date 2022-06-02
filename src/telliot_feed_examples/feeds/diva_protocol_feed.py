@@ -138,6 +138,7 @@ async def assemble_diva_datafeed(
 
     diva_source = DivaSource()
     diva_source.reference_asset_source = get_source(asset, ts)
+    # TODO: Remove hard coded currency. Fetch actual token address from pool params.
     diva_source.collat_token_source = PoloniexHistoricalPriceSource(
         asset=asset, currency="dai", ts=ts
     )
