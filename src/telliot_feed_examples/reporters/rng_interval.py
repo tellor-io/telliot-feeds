@@ -12,7 +12,7 @@ from eth_utils import to_checksum_address
 from telliot_core.datafeed import DataFeed
 from telliot_core.queries.tellor_rng import TellorRNG
 from telliot_core.utils.key_helpers import lazy_unlock_account
-from telliot_core.utils.log import get_logger
+from telliot_feed_examples.utils.log import get_logger
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
