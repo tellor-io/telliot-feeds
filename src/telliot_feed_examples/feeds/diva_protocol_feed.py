@@ -37,6 +37,7 @@ class DivaPoolParameters:
 
     reference_asset: str
     expiry_date: int
+    collateral_token: str
 
 
 async def get_pool_params(
@@ -58,7 +59,9 @@ async def get_pool_params(
         return None
 
     pool_params = DivaPoolParameters(
-        reference_asset=params.reference_asset, expiry_date=params.expiry_time
+        reference_asset=params.reference_asset,
+        expiry_date=params.expiry_time,
+        collateral_token=params.collateral_token,
     )
     if pool_params.reference_asset not in SUPPORTED_REFERENCE_ASSETS:
         logger.error(f"Reference asset not supported: {pool_params.reference_asset}")
@@ -98,7 +101,7 @@ class DivaSource(DataSource[Any]):
         return datapoint
 
 
-def get_source(asset: str, ts: int) -> PriceAggregator:
+def get_ref_asset_source(asset: str, ts: int) -> PriceAggregator:
     """Returns PriceAggregator with sources adjusted based on given asset."""
     source = PriceAggregator(
         asset=asset,
@@ -137,7 +140,7 @@ async def assemble_diva_datafeed(
     ts = params.expiry_date
 
     diva_source = DivaSource()
-    diva_source.reference_asset_source = get_source(asset, ts)
+    diva_source.reference_asset_source = get_ref_asset_source(asset, ts)
     # TODO: Remove hard coded currency. Fetch actual token address from pool params.
     diva_source.collat_token_source = PoloniexHistoricalPriceSource(
         asset=asset, currency="dai", ts=ts
