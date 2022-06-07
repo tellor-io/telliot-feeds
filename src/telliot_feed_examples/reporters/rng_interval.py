@@ -12,7 +12,6 @@ from eth_utils import to_checksum_address
 from telliot_core.datafeed import DataFeed
 from telliot_core.queries.tellor_rng import TellorRNG
 from telliot_core.utils.key_helpers import lazy_unlock_account
-from telliot_feed_examples.utils.log import get_logger
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
@@ -24,6 +23,7 @@ from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.reporters.reporter_autopay_utils import get_feed_tip
 from telliot_feed_examples.reporters.reporter_autopay_utils import get_single_tip
 from telliot_feed_examples.reporters.tellorflex import PolygonReporter
+from telliot_feed_examples.utils.log import get_logger
 
 
 logger = get_logger(__name__)
