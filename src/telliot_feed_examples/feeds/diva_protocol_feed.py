@@ -29,7 +29,15 @@ logger = logging.getLogger(__name__)
 
 
 SUPPORTED_REFERENCE_ASSETS = {"ETH/USD", "BTC/USD"}
-SUPPORTED_COLLATERAL_TOKENS = {"DAI"}
+# Maps token address to token name
+SUPPORTED_COLLATERAL_TOKENS = {"0xc778417E063141139Fce010982780140Aa0cD5Ab": "BTC"}
+
+# Ropsten whitelist
+# Source: https://github.com/divaprotocol/oracles#whitelist-subgraph
+# SUPPORTED_COLLATERAL_TOKENS = {
+#     "0xad6d458402f60fd3bd25163575031acdce07538d": "DAI",
+#     "0xc778417e063141139fce010982780140aa0cd5ab": "WETH",
+#     }
 
 
 @dataclass
@@ -88,6 +96,7 @@ class DivaSource(DataSource[Any]):
         Returns:
             Current time-stamped value
         """
+
         ref_asset_price, _ = await self.reference_asset_source.fetch_new_datapoint()
         collat_token_price, _ = await self.collat_token_source.fetch_new_datapoint()
         print("ref_asset_price:", ref_asset_price)
@@ -112,7 +121,7 @@ class DivaSource(DataSource[Any]):
         return datapoint
 
 
-def get_ref_asset_source(asset: str, ts: int) -> PriceAggregator:
+def get_variable_source(asset: str, ts: int) -> PriceAggregator:
     """Returns PriceAggregator with sources adjusted based on given asset."""
     source = PriceAggregator(
         asset=asset,
@@ -144,18 +153,16 @@ async def assemble_diva_datafeed(
 
     params = await get_pool_params(pool_id, node, account, diva_address)
     if params is None:
-        logger.error("Error getting pool parameters.")
+        logger.error("Unable to retrieve pool parameters")
         return None
 
-    asset = params.reference_asset.split("/")[0].lower()
     ts = params.expiry_date
+    ref_asset_token_name = params.reference_asset.split("/")[0].lower()
+    collat_token_name = SUPPORTED_COLLATERAL_TOKENS[params.collateral_token].lower()
 
     diva_source = DivaSource()
-    diva_source.reference_asset_source = get_ref_asset_source(asset, ts)
-    # TODO: Remove hard coded currency. Fetch actual token address from pool params.
-    diva_source.collat_token_source = PoloniexHistoricalPriceSource(
-        asset=asset, currency="dai", ts=ts
-    )
+    diva_source.reference_asset_source = get_variable_source(ref_asset_token_name, ts)
+    diva_source.collat_token_source = get_variable_source(collat_token_name, ts)
 
     feed = DataFeed(
         query=DIVAProtocolPolygon(pool_id),
