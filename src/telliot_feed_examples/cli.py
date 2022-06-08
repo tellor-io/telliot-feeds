@@ -360,11 +360,15 @@ async def report(
                 return
         elif diva_pool_id is not None:
             if not valid_diva_chain(chain_id=cid):
+                click.echo("Diva Protocol not supported for this chain")
                 return
             # Generate datafeed
             chosen_feed = await assemble_diva_datafeed(
                 pool_id=diva_pool_id, node=core.endpoint, account=account
             )
+            if chosen_feed is None:
+                click.echo("DIVA Protocol datafeed generation failed")
+                return
         elif rng_timestamp is not None:
             chosen_feed = await assemble_rng_datafeed(
                 timestamp=rng_timestamp, node=core.endpoint, account=account
