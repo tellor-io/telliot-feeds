@@ -68,12 +68,12 @@ contract DIVAProtocolMock {
         Pool memory fakePool2;
 
         fakePool2.referenceAsset = "BTC/USD";
-        fakePool2.expiryTime = 1657349074;
+        fakePool2.expiryTime = 1654700353;
         fakePool2.floor = 2000000000000000000000;
         fakePool2.inflection = 2000000000000000000000;
         fakePool2.cap = 4500000000000000000000;
         fakePool2.supplyInitial = 100000000000000000000;
-        fakePool2.collateralToken = 0x867e53feDe91d27101E062BF7002143EbaEA3e30;
+        fakePool2.collateralToken = 0xc778417E063141139Fce010982780140Aa0cD5Ab;
         fakePool2.collateralBalanceShortInitial = 50000000000000000000;
         fakePool2.collateralBalanceLongInitial = 50000000000000000000;
         fakePool2.collateralBalance = 214199598796389167516;
@@ -104,5 +104,13 @@ contract DIVAProtocolMock {
     {
         Pool storage _pool = pools[_poolId];
         return _pool;
+    }
+
+    function changePoolExpiry(uint256 _poolId, uint256 _timestamp)
+        external
+        returns (uint256)
+    {
+        pools[_poolId].expiryTime = _timestamp;
+        return pools[_poolId].expiryTime;
     }
 }
