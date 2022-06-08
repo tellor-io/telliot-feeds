@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 SUPPORTED_REFERENCE_ASSETS = {"ETH/USD", "BTC/USD"}
+SUPPORTED_COLLATERAL_TOKENS = {"DAI"}
 
 
 @dataclass
@@ -63,8 +64,12 @@ async def get_pool_params(
         expiry_date=params.expiry_time,
         collateral_token=params.collateral_token,
     )
+
     if pool_params.reference_asset not in SUPPORTED_REFERENCE_ASSETS:
         logger.error(f"Reference asset not supported: {pool_params.reference_asset}")
+        return None
+    if pool_params.collateral_token not in SUPPORTED_COLLATERAL_TOKENS:
+        logger.error(f"Collateral token not supported: {pool_params.collateral_token}")
         return None
 
     return pool_params
