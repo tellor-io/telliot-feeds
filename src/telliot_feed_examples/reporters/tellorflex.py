@@ -251,8 +251,8 @@ class TellorFlexReporter(IntervalReporter):
                 suggested_qtag = await tellor_suggested_report(self.oracle)
 
             if suggested_qtag is None:
-                msg = "Could not get suggested query."
-                error_status(msg, log=logger.warning)
+                msg = "Could not suggest query tag"
+                error_status(msg, log=logger.info)
                 return None
 
             if suggested_qtag not in CATALOG_FEEDS:
