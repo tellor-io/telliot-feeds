@@ -253,11 +253,11 @@ contract TellorFlex {
             "balance must be greater than stake amount"
         );
         // Require reporter to abide by given reporting lock
-        require(
-            (block.timestamp - _staker.reporterLastTimestamp) * 1000 >
-                (reportingLock * 1000) / (_staker.stakedBalance / stakeAmount),
-            "still in reporter time lock, please wait!"
-        );
+        // require(
+        //     (block.timestamp - _staker.reporterLastTimestamp) * 1000 >
+        //         (reportingLock * 1000) / (_staker.stakedBalance / stakeAmount),
+        //     "still in reporter time lock, please wait!"
+        // );
         require(
             _queryId == keccak256(_queryData) || uint256(_queryId) <= 100,
             "id must be hash of bytes data"

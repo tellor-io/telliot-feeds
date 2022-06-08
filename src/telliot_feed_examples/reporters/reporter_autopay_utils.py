@@ -67,7 +67,6 @@ async def get_feed_tip(
         msg = "can't suggest feed, autopay contract not connected"
         error_status(note=msg, log=logger.critical)
         return None
-    current_time = TimeStamp.now().ts
 
     # list of feed ids where a query id has tips
     feed_ids, status = await autopay.read("getCurrentFeeds", _queryId=query_id)
@@ -114,6 +113,7 @@ async def get_feed_tip(
         # be eligible for tip
 
         # Number of intervals since start time
+        current_time = TimeStamp.now().ts
         num_intervals = math.floor(
             (current_time - feed_details.startTime) / feed_details.interval
         )

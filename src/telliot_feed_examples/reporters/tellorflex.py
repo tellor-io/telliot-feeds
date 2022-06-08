@@ -32,9 +32,8 @@ from telliot_feed_examples.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-class PolygonReporter(IntervalReporter):
-    """Reports values from given datafeeds to a TellorFlex
-    on Polygon."""
+class TellorFlexReporter(IntervalReporter):
+    """Reports values from given datafeeds to a TellorFlex."""
 
     def __init__(
         self,
@@ -230,29 +229,37 @@ class PolygonReporter(IntervalReporter):
 
     async def fetch_datafeed(self) -> DataFeed[Any]:
         status = ResponseStatus()
+        tip = 0
 
         if self.datafeed is not None:
-            datafeed = self.datafeed
-            tip = 0
-            single_tip = await get_single_tip(datafeed.query.query_id, self.autopay)
+            # Skip fetching datafeed & checking profitability
+            if self.expected_profit == "YOLO":
+                return self.datafeed
+
+            single_tip = await get_single_tip(
+                self.datafeed.query.query_id, self.autopay
+            )
             if single_tip:
                 tip = single_tip
-            feed_tip = await get_feed_tip(datafeed.query.query_id, self.autopay)
+            feed_tip = await get_feed_tip(self.datafeed.query.query_id, self.autopay)
             if feed_tip:
                 tip += feed_tip
         else:
             suggested_qtag, tip = await autopay_suggested_report(self.autopay)
-            if not suggested_qtag and self.expected_profit == "YOLO":
-                suggested_qtag = await tellor_suggested_report(self.oracle)
-                datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
-                tip = 0
 
-            if not suggested_qtag:
-                msg = "Could not get suggested query."
+            if suggested_qtag is None:
+                suggested_qtag = await tellor_suggested_report(self.oracle)
+
+            if suggested_qtag is None:
+                msg = "Could not suggest query tag"
                 error_status(msg, log=logger.info)
                 return None
 
-            datafeed = CATALOG_FEEDS[suggested_qtag]
+            if suggested_qtag not in CATALOG_FEEDS:
+                logger.warning(f"Suggested query tag not in catalog: {suggested_qtag}")
+                return None
+
+            self.datafeed = CATALOG_FEEDS[suggested_qtag]
 
         # Fetch token prices in USD
         price_feeds = [matic_usd_median_feed, trb_usd_median_feed]
@@ -327,7 +334,7 @@ class PolygonReporter(IntervalReporter):
             logger.info(status.error)
             return None
 
-        return datafeed
+        return self.datafeed
 
     async def report(self) -> None:
         """Submit latest values to the TellorFlex oracle."""

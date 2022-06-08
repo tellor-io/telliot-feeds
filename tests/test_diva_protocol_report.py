@@ -1,46 +1,58 @@
+import time
+
 import pytest
 from brownie import accounts
+from brownie import DIVAProtocolMock
 from telliot_core.apps.core import TelliotCore
-from telliot_core.datafeed import DataFeed
-from telliot_core.queries.api_query import APIQuery
 from web3.datastructures import AttributeDict
 
+from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feed_examples.reporters.tellorflex import TellorFlexReporter
-from telliot_feed_examples.sources.api_source import APIQuerySource
-
-url_test = "https://taylorswiftapi.herokuapp.com/get"
-key_str_test = "quote"
-api_feed = DataFeed(
-    source=APIQuerySource(url=url_test, key_str=key_str_test),
-    query=APIQuery(url=url_test, key_str=key_str_test),
-)
 
 
-@pytest.mark.skip
+@pytest.fixture
+def mock_diva_contract():
+    return accounts[0].deploy(DIVAProtocolMock)
+
+
 @pytest.mark.asyncio
-async def test_api_reporter_submit_once(
-    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract
+async def test_diva_protocol_reporter_submit_once(
+    ropsten_test_cfg,
+    mock_flex_contract,
+    mock_autopay_contract,
+    mock_token_contract,
+    mock_diva_contract,
 ):
-    """Test reporting bct/usd on mumbai."""
-    async with TelliotCore(config=mumbai_test_cfg) as core:
-        # get PubKey and PrivKey from config files
+    """Test reporting DIVA Protocol pool response on mumbai."""
+    async with TelliotCore(config=ropsten_test_cfg) as core:
         account = core.get_account()
+
+        pool_id = 10
+
+        diva_feed = await assemble_diva_datafeed(
+            pool_id=pool_id,
+            node=core.endpoint,
+            account=account,
+            diva_address=mock_diva_contract.address,
+        )
+
+        # Use current timestamp for pool expiry time
+        new_expiry = mock_diva_contract.changePoolExpiry(
+            pool_id, int(time.time() - 1234)
+        )
+        print(f"new_expiry: {new_expiry}")
 
         flex = core.get_tellorflex_contracts()
         flex.oracle.address = mock_flex_contract.address
         flex.autopay.address = mock_autopay_contract.address
         flex.token.address = mock_token_contract.address
-
         flex.oracle.connect()
         flex.token.connect()
         flex.autopay.connect()
-
         # mint token and send to reporter address
         mock_token_contract.mint(account.address, 1000e18)
-
         # send eth from brownie address to reporter address for txn fees
-        accounts[1].transfer(account.address, "1 ether")
-
+        accounts[2].transfer(account.address, "1 ether")
         r = TellorFlexReporter(
             endpoint=core.endpoint,
             account=account,
@@ -49,14 +61,12 @@ async def test_api_reporter_submit_once(
             token=flex.token,
             autopay=flex.autopay,
             transaction_type=0,
-            datafeed=api_feed,
+            datafeed=diva_feed,
             max_fee=100,
+            expected_profit="YOLO",
         )
-
         ORACLE_ADDRESSES = {mock_flex_contract.address}
-
         tx_receipt, status = await r.report_once()
-
         # Reporter submitted
         if tx_receipt is not None and status.ok:
             assert isinstance(tx_receipt, AttributeDict)
@@ -67,6 +77,6 @@ async def test_api_reporter_submit_once(
             assert not status.ok
             assert (
                 ("Currently in reporter lock." in status.error)
-                or ("Current address disputed" in status.error)
+                or ("Current addess disputed" in status.error)
                 or ("Unable to retrieve updated datafeed" in status.error)
             )

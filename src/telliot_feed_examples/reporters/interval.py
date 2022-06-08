@@ -337,7 +337,7 @@ class IntervalReporter:
         # Get suggested datafeed if none provided
         datafeed = await self.fetch_datafeed()
         if not datafeed:
-            msg = "no datafeed suggestions available"
+            msg = "Unable to suggest datafeed"
             return None, error_status(note=msg, log=logger.info)
 
         logger.info(f"Current query: {datafeed.query.descriptor}")

@@ -1,10 +1,14 @@
 """Helper functions for reporting data for Diva Protocol."""
 import logging
 from dataclasses import dataclass
+from typing import Any
 from typing import Optional
 
 from chained_accounts import ChainedAccount
 from telliot_core.api import DataFeed
+from telliot_core.datasource import DataSource
+from telliot_core.dtypes.datapoint import DataPoint
+from telliot_core.dtypes.datapoint import datetime_now_utc
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.queries.diva_protocol import DIVAProtocolPolygon
 from telliot_core.tellor.tellorflex.diva import DivaProtocolContract
@@ -25,6 +29,15 @@ logger = logging.getLogger(__name__)
 
 
 SUPPORTED_REFERENCE_ASSETS = {"ETH/USD", "BTC/USD"}
+# Maps token address to token name
+SUPPORTED_COLLATERAL_TOKENS = {"0xc778417E063141139Fce010982780140Aa0cD5Ab": "BTC"}
+
+# Ropsten whitelist
+# Source: https://github.com/divaprotocol/oracles#whitelist-subgraph
+# SUPPORTED_COLLATERAL_TOKENS = {
+#     "0xad6d458402f60fd3bd25163575031acdce07538d": "DAI",
+#     "0xc778417e063141139fce010982780140aa0cd5ab": "WETH",
+#     }
 
 
 @dataclass
@@ -33,6 +46,7 @@ class DivaPoolParameters:
 
     reference_asset: str
     expiry_date: int
+    collateral_token: str
 
 
 async def get_pool_params(
@@ -54,16 +68,50 @@ async def get_pool_params(
         return None
 
     pool_params = DivaPoolParameters(
-        reference_asset=params.reference_asset, expiry_date=params.expiry_time
+        reference_asset=params.reference_asset,
+        expiry_date=params.expiry_time,
+        collateral_token=params.collateral_token,
     )
+
     if pool_params.reference_asset not in SUPPORTED_REFERENCE_ASSETS:
         logger.error(f"Reference asset not supported: {pool_params.reference_asset}")
+        return None
+    if pool_params.collateral_token not in SUPPORTED_COLLATERAL_TOKENS:
+        logger.error(f"Collateral token not supported: {pool_params.collateral_token}")
         return None
 
     return pool_params
 
 
-def get_source(asset: str, ts: int) -> PriceAggregator:
+@dataclass
+class DivaSource(DataSource[Any]):
+    """DataSource for Diva Protocol manually-entered data."""
+
+    reference_asset_source: DataSource[float] = None
+    collat_token_source: DataSource[float] = None
+
+    async def fetch_new_datapoint(self) -> Optional[DataPoint[float]]:
+        """Retrieve new datapoint from sources."""
+
+        ref_asset_price, _ = await self.reference_asset_source.fetch_new_datapoint()
+        collat_token_price, _ = await self.collat_token_source.fetch_new_datapoint()
+
+        if ref_asset_price is None or collat_token_price is None:
+            logger.warning("Missing reference asset or collateral token price.")
+            return None
+
+        data = [ref_asset_price, collat_token_price]
+        dt = datetime_now_utc()
+        datapoint = (data, dt)
+
+        self.store_datapoint(datapoint)
+
+        logger.info(f"Stored DIVAProtocolPolygon query response at {dt}: {data}")
+
+        return datapoint
+
+
+def get_variable_source(asset: str, ts: int) -> PriceAggregator:
     """Returns PriceAggregator with sources adjusted based on given asset."""
     source = PriceAggregator(
         asset=asset,
@@ -95,15 +143,20 @@ async def assemble_diva_datafeed(
 
     params = await get_pool_params(pool_id, node, account, diva_address)
     if params is None:
-        logger.error("Error getting pool parameters.")
+        logger.error("Unable to retrieve pool parameters")
         return None
 
-    asset = params.reference_asset.split("/")[0].lower()
     ts = params.expiry_date
+    ref_asset_token_name = params.reference_asset.split("/")[0].lower()
+    collat_token_name = SUPPORTED_COLLATERAL_TOKENS[params.collateral_token].lower()
+
+    diva_source = DivaSource()
+    diva_source.reference_asset_source = get_variable_source(ref_asset_token_name, ts)
+    diva_source.collat_token_source = get_variable_source(collat_token_name, ts)
 
     feed = DataFeed(
         query=DIVAProtocolPolygon(pool_id),
-        source=get_source(asset, ts),
+        source=diva_source,
     )
 
     return feed

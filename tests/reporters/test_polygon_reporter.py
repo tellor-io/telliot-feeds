@@ -6,7 +6,7 @@ from telliot_core.utils.response import ResponseStatus
 
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.feeds.matic_usd_feed import matic_usd_median_feed
-from telliot_feed_examples.reporters.tellorflex import PolygonReporter
+from telliot_feed_examples.reporters.tellorflex import TellorFlexReporter
 
 
 @pytest.fixture(scope="function")
@@ -27,7 +27,7 @@ async def polygon_reporter(
         flex.autopay.connect()
         flex = core.get_tellorflex_contracts()
 
-        r = PolygonReporter(
+        r = TellorFlexReporter(
             oracle=flex.oracle,
             token=flex.token,
             autopay=flex.autopay,
