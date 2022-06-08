@@ -77,7 +77,7 @@ class DivaSource(DataSource[Any]):
     reference_asset_source: DataSource[float] = None
     collat_token_source: DataSource[float] = None
 
-    async def fetch_new_datapoint(self) -> DataPoint[float]:
+    async def fetch_new_datapoint(self) -> Optional[DataPoint[float]]:
         """Update current value with time-stamped value fetched from user input.
 
         Returns:
@@ -85,18 +85,24 @@ class DivaSource(DataSource[Any]):
         """
         ref_asset_price, _ = await self.reference_asset_source.fetch_new_datapoint()
         collat_token_price, _ = await self.collat_token_source.fetch_new_datapoint()
+        print("ref_asset_price:", ref_asset_price)
+        print("collat_token_price:", collat_token_price)
 
-        ref_asset_price = 2000.0
-        collat_token_price = 0.996
+        if ref_asset_price is None or collat_token_price is None:
+            logger.warning("Missing reference asset or collateral token price.")
+            return None
 
-        data = (int(v * 1e18) for v in [ref_asset_price, collat_token_price])
+        # ref_asset_price = 2000.0
+        # collat_token_price = 0.996
+
+        data = [int(v * 1e18) for v in [ref_asset_price, collat_token_price]]
 
         dt = datetime_now_utc()
         datapoint = (data, dt)
 
         self.store_datapoint(datapoint)
 
-        logger.info(f"Stored price of blank at {dt}: {data}")
+        logger.info(f"Stored DIVAProtocolPolygon query response at {dt}: {data}")
 
         return datapoint
 
