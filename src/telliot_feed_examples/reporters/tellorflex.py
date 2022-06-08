@@ -32,9 +32,8 @@ from telliot_feed_examples.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-class PolygonReporter(IntervalReporter):
-    """Reports values from given datafeeds to a TellorFlex
-    on Polygon."""
+class TellorFlexReporter(IntervalReporter):
+    """Reports values from given datafeeds to a TellorFlex."""
 
     def __init__(
         self,
@@ -232,6 +231,10 @@ class PolygonReporter(IntervalReporter):
         status = ResponseStatus()
 
         if self.datafeed is not None:
+            # Skip fetching datafeed & checking profitability
+            if self.expected_profit == "YOLO":
+                return self.datafeed
+
             datafeed = self.datafeed
             tip = 0
             single_tip = await get_single_tip(datafeed.query.query_id, self.autopay)

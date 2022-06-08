@@ -189,7 +189,7 @@ telliot-examples -a mumbaistaker report
 
 With TellorFlex on Polygon, reporters can stake multiple times. Each stake is 10 TRB, so if you stake 140 TRB, you've staked 14 times.
 
-The `PolygonReporter` will prompt the user to enter a desired stake amount:
+The `TellorFlexReporter` will prompt the user to enter a desired stake amount:
 
 ```
 Enter amount TRB to stake if unstaked: [10.0]:

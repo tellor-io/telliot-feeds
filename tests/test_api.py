@@ -5,7 +5,7 @@ from telliot_core.datafeed import DataFeed
 from telliot_core.queries.api_query import APIQuery
 from web3.datastructures import AttributeDict
 
-from telliot_feed_examples.reporters.tellorflex import PolygonReporter
+from telliot_feed_examples.reporters.tellorflex import TellorFlexReporter
 from telliot_feed_examples.sources.api_source import APIQuerySource
 
 url_test = "https://taylorswiftapi.herokuapp.com/get"
@@ -41,7 +41,7 @@ async def test_api_reporter_submit_once(
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
 
-        r = PolygonReporter(
+        r = TellorFlexReporter(
             endpoint=core.endpoint,
             account=account,
             chain_id=80001,

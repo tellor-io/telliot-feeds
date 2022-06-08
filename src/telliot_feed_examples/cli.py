@@ -23,7 +23,7 @@ from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.rng_interval import RNGReporter
-from telliot_feed_examples.reporters.tellorflex import PolygonReporter
+from telliot_feed_examples.reporters.tellorflex import TellorFlexReporter
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.oracle_write import tip_query
 
@@ -37,7 +37,7 @@ def get_stake_amount() -> float:
     """Retrieve desired stake amount from user
 
     Each stake is 10 TRB on TellorFlex Polygon. If an address
-    is not staked for any reason, the PolygonReporter will attempt
+    is not staked for any reason, the TellorFlexReporter will attempt
     to stake. Number of stakes determines the reporter lock:
 
     reporter_lock = 12hrs / N * stakes
@@ -422,7 +422,7 @@ async def report(
                     **common_reporter_kwargs,
                 )
             else:
-                reporter = PolygonReporter(
+                reporter = TellorFlexReporter(
                     oracle=tellorflex.oracle,
                     token=tellorflex.token,
                     autopay=tellorflex.autopay,

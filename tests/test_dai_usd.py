@@ -4,7 +4,7 @@ from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
 from telliot_feed_examples.feeds.dai_usd_feed import dai_usd_median_feed
-from telliot_feed_examples.reporters.tellorflex import PolygonReporter
+from telliot_feed_examples.reporters.tellorflex import TellorFlexReporter
 
 
 @pytest.mark.asyncio
@@ -31,7 +31,7 @@ async def test_dai_usd_reporter_submit_once(
         # send eth from brownie address to reporter address for txn fees
         accounts[2].transfer(account.address, "1 ether")
 
-        r = PolygonReporter(
+        r = TellorFlexReporter(
             endpoint=core.endpoint,
             account=account,
             chain_id=80001,
