@@ -62,6 +62,7 @@ class KrakenSpotPriceService(WebPriceService):
             except KeyError as e:
                 msg = f"Error parsing Kraken API response: KeyError: {e}"
                 logger.critical(msg)
+                return None, None
 
         else:
             raise Exception("Invalid response from get_url")
