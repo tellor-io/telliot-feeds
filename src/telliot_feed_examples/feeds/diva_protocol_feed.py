@@ -1,5 +1,6 @@
 """Helper functions for reporting data for Diva Protocol."""
 import logging
+import random
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
@@ -30,7 +31,10 @@ logger = logging.getLogger(__name__)
 
 SUPPORTED_REFERENCE_ASSETS = {"ETH/USD", "BTC/USD"}
 # Maps token address to token name
-SUPPORTED_COLLATERAL_TOKENS = {"0xc778417E063141139Fce010982780140Aa0cD5Ab": "BTC"}
+SUPPORTED_COLLATERAL_TOKENS = {
+    "0xc778417E063141139Fce010982780140Aa0cD5Ab": "BTC",
+    "0x134e62bd2ee247d4186A1fdbaA9e076cb26c1355": "DIVA USD",
+}
 
 # Ropsten whitelist
 # Source: https://github.com/divaprotocol/oracles#whitelist-subgraph
@@ -111,8 +115,27 @@ class DivaSource(DataSource[Any]):
         return datapoint
 
 
+class DIVAUSDSource(DataSource[Any]):
+    """Fake source that returns dummy price data"""
+
+    async def fetch_new_datapoint(self) -> Optional[DataPoint[float]]:
+        """Fetch fake data"""
+        data = random.uniform(69, 420)
+        dt = datetime_now_utc()
+        datapoint = (data, dt)
+
+        self.store_datapoint(datapoint)
+
+        logger.info(f"Stored fake price for DIVA USD at {dt}: {data}")
+
+        return datapoint
+
+
 def get_variable_source(asset: str, ts: int) -> PriceAggregator:
     """Returns PriceAggregator with sources adjusted based on given asset."""
+    if asset == "diva usd":
+        return DIVAUSDSource()
+
     source = PriceAggregator(
         asset=asset,
         currency="usd",
