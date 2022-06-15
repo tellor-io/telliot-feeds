@@ -43,7 +43,7 @@ class RNGReporter(TellorFlexReporter):
     """Reports TellorRNG values at a fixed interval to TellorFlex
     on Polygon."""
 
-    async def fetch_datafeed(self) -> DataFeed[Any]:
+    async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         status = ResponseStatus()
 
         rng_timestamp = get_next_timestamp()
@@ -66,17 +66,29 @@ class RNGReporter(TellorFlexReporter):
             logger.info(status.error)
             return None
 
-        self.datafeed = await assemble_rng_datafeed(
+        datafeed = await assemble_rng_datafeed(
             timestamp=rng_timestamp, node=self.endpoint, account=self.account
         )
-        datafeed: DataFeed = self.datafeed
+        if datafeed is None:
+            msg = "Unable to assemble RNG datafeed"
+            error_status(note=msg, log=logger.warning)
+            return None
+        self.datafeed = datafeed
         tip = 0
+
         single_tip = await get_single_tip(datafeed.query.query_id, self.autopay)
-        if single_tip:
-            tip = single_tip
+        if single_tip is None:
+            msg = "Unable to fetch single tip"
+            error_status(msg, log=logger.warning)
+            return None
+        tip += single_tip
+
         feed_tip = await get_feed_tip(datafeed.query.query_id, self.autopay)
-        if feed_tip:
-            tip += feed_tip
+        if feed_tip is None:
+            msg = "Unable to fetch feed tip"
+            error_status(msg, log=logger.warning)
+            return None
+        tip += feed_tip
 
         # Fetch token prices in USD
         price_feeds = [matic_usd_median_feed, trb_usd_median_feed]

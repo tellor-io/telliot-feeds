@@ -239,21 +239,33 @@ class TellorFlexReporter(IntervalReporter):
             single_tip = await get_single_tip(
                 self.datafeed.query.query_id, self.autopay
             )
-            if single_tip:
-                tip = single_tip
+            if single_tip is None:
+                msg = "Unable to fetch single tip"
+                error_status(msg, log=logger.warning)
+                return None
+
+            tip += single_tip
+
             feed_tip = await get_feed_tip(self.datafeed.query.query_id, self.autopay)
-            if feed_tip:
-                tip += feed_tip
+            if feed_tip is None:
+                msg = "Unable to fetch feed tip"
+                error_status(msg, log=logger.warning)
+                return None
+
+            tip += feed_tip
         else:
-            suggested_qtag, tip = await autopay_suggested_report(self.autopay)
+            suggested_qtag, autopay_tip = await autopay_suggested_report(self.autopay)
 
             if suggested_qtag is None:
                 suggested_qtag = await tellor_suggested_report(self.oracle)
 
             if suggested_qtag is None:
                 msg = "Could not suggest query tag"
-                error_status(msg, log=logger.info)
+                error_status(msg, log=logger.warning)
                 return None
+
+            if autopay_tip is not None:
+                tip += autopay_tip
 
             if suggested_qtag not in CATALOG_FEEDS:
                 logger.warning(f"Suggested query tag not in catalog: {suggested_qtag}")
