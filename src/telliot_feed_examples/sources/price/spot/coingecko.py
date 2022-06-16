@@ -3,10 +3,10 @@ from dataclasses import field
 from typing import Any
 from urllib.parse import urlencode
 
-from telliot_core.dtypes.datapoint import datetime_now_utc
-from telliot_core.dtypes.datapoint import OptionalDataPoint
-from telliot_core.pricing.price_service import WebPriceService
-from telliot_core.pricing.price_source import PriceSource
+from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
+from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
+from telliot_feed_examples.pricing.price_service import WebPriceService
+from telliot_feed_examples.pricing.price_source import PriceSource
 
 from telliot_feed_examples.utils.log import get_logger
 
@@ -62,7 +62,9 @@ class CoinGeckoSpotPriceService(WebPriceService):
         d = self.get_url(request_url)
 
         if "error" in d:
-            if "api.coingecko.com used Cloudflare to restrict access" in str(d["exception"]):
+            if "api.coingecko.com used Cloudflare to restrict access" in str(
+                d["exception"]
+            ):
                 logger.warning("CoinGecko API rate limit exceeded")
             else:
                 logger.error(d)
@@ -87,4 +89,6 @@ class CoinGeckoSpotPriceService(WebPriceService):
 class CoinGeckoSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: CoinGeckoSpotPriceService = field(default_factory=CoinGeckoSpotPriceService, init=False)
+    service: CoinGeckoSpotPriceService = field(
+        default_factory=CoinGeckoSpotPriceService, init=False
+    )

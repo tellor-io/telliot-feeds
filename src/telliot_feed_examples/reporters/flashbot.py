@@ -12,7 +12,7 @@ from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
 from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
-from telliot_core.datafeed import DataFeed
+from telliot_feed_examples.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
@@ -121,9 +121,13 @@ class FlashbotsReporter(IntervalReporter):
             return None, error_status(msg, e=e, log=logger.error)
 
         # Get nonce
-        timestamp_count, read_status = await self.oracle.read(func_name="getTimestampCountById", _queryId=query_id)
+        timestamp_count, read_status = await self.oracle.read(
+            func_name="getTimestampCountById", _queryId=query_id
+        )
         if not read_status.ok:
-            status.error = "Unable to retrieve timestampCount: " + read_status.error  # error won't be none # noqa: E501
+            status.error = (
+                "Unable to retrieve timestampCount: " + read_status.error
+            )  # error won't be none # noqa: E501
             logger.error(status.error)
             status.e = read_status.e
             return None, status
@@ -151,7 +155,9 @@ class FlashbotsReporter(IntervalReporter):
                     # TODO: Investigate more why etherscan txs using Flashbots have
                     # the same maxFeePerGas and maxPriorityFeePerGas. Example:
                     # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288 # noqa: E501
-                    "maxPriorityFeePerGas": Web3.toWei(self.priority_fee, "gwei"),  # noqa: E501
+                    "maxPriorityFeePerGas": Web3.toWei(
+                        self.priority_fee, "gwei"
+                    ),  # noqa: E501
                     "chainId": self.chain_id,
                 }
             )
@@ -183,7 +189,9 @@ class FlashbotsReporter(IntervalReporter):
         #         )
         #     )
         # result = results[-1]
-        result = self.endpoint._web3.flashbots.send_bundle(bundle, target_block_number=block + 1)
+        result = self.endpoint._web3.flashbots.send_bundle(
+            bundle, target_block_number=block + 1
+        )
         logger.info(f"Bundle sent to miners in block {block}")
 
         # Wait for transaction confirmation

@@ -1,32 +1,32 @@
 # Spot Price Query Example
 
-This example demonstrates how to use the 
-[`SpotPrice`][telliot_core.queries.price.spot_price.SpotPrice] Oracle query.
+This example demonstrates how to use the
+[`SpotPrice`][telliot_feed_examples.queries.price.spot_price.spotprice] Oracle query.
 
 ## Create the query
 
-Create a [`SpotPrice`][telliot_core.queries.price.spot_price.SpotPrice] query for the price of Bitcoin in US dollars,
+Create a [`SpotPrice`][telliot_feed_examples.queries.price.spot_price.spotprice] query for the price of Bitcoin in US dollars,
 and view the corresponding descriptor::
 
 ```python
-from telliot_core.api import SpotPrice
+from telliot_feed_examples.queries.price.spot_price import SpotPrice
 q = SpotPrice(asset='btc', currency='usd')
 print(q.descriptor)
 ```
 
-The query `.descriptor` attribute returns a unique string that identifies this query to the 
+The query `.descriptor` attribute returns a unique string that identifies this query to the
 TellorX Oracle network:
 
 ```json
-{"type":"SpotPrice","asset":"btc","currency":"usd"}
+{ "type": "SpotPrice", "asset": "btc", "currency": "usd" }
 ```
 
 ## On-chain representation
 
-To make the corresponding on-chain Query request, 
+To make the corresponding on-chain Query request,
 the `TellorX.Oracle.tipQuery()` contract call
-requires two arguments: `queryData` and `queryId`.  These arguments are computed solely from the
-query `descriptor`, and are provided by 
+requires two arguments: `queryData` and `queryId`. These arguments are computed solely from the
+query `descriptor`, and are provided by
 the `query_data` and `query_id` attributes as a convenience.
 
 ```python
@@ -44,8 +44,8 @@ which, for this example, are:
 The `SpotPrice` query can also be used to encode a response
 to submit on-chain using the `TellorX.Oracle.submitValue()` contract call.
 
-For example, to submit the real world value `99.9` use the 
-[`ValueType`][telliot_core.dtypes.value_type.ValueType].[`encode`][telliot_core.dtypes.value_type.ValueType.encode] 
+For example, to submit the real world value `99.9` use the
+[`ValueType`][telliot_feed_examples.dtypes.value_type.valuetype].[`encode`][telliot_feed_examples.dtypes.value_type.valuetype.encode]
 method.
 
 ```python
@@ -58,8 +58,8 @@ print(f"submitValue (bytes): 0x{encoded_bytes.hex()}")
     submitValue (float): 99.99
     submitValue (bytes): 0x0000000000000000000000000000000000000000000000056ba3d73af34eec04
 
-Similarly, the 
-[`decode`][telliot_core.dtypes.value_type.ValueType.decode] method can be used to convert
+Similarly, the
+[`decode`][telliot_feed_examples.dtypes.value_type.valuetype.decode] method can be used to convert
 the on-chain bytes value to a real-world value:
 
 ```python
@@ -68,7 +68,6 @@ print(f"Decoded value (float): {decoded_value}")
 ```
 
     Decoded value (float): 99.99
-
 
 ## Full Example
 

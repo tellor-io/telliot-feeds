@@ -1,5 +1,5 @@
-from telliot_core.queries.query import OracleQuery
-from telliot_core.queries.query import query_from_descriptor
+from telliot_feed_examples.queries.query import OracleQuery
+from telliot_feed_examples.queries.query import query_from_descriptor
 
 
 class JsonQuery(OracleQuery):

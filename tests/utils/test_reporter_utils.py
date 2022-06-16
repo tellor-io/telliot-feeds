@@ -4,10 +4,10 @@ from brownie import accounts
 from brownie import TellorXOracleMock
 from click.testing import CliRunner
 from telliot_core.apps.core import TelliotCore
-from telliot_core.data.query_catalog import query_catalog
-from telliot_core.queries.query import OracleQuery
-from telliot_core.reporters.reporter_utils import reporter_sync_schedule
-from telliot_core.reporters.reporter_utils import tellor_suggested_report
+from telliot_feed_examples.queries.query_catalog import query_catalog
+from telliot_feed_examples.queries.query import OracleQuery
+from telliot_feed_examples.utils.reporter_utils import reporter_sync_schedule
+from telliot_feed_examples.utils.reporter_utils import tellor_suggested_report
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
 
 
@@ -31,7 +31,9 @@ async def test_suggested_report(rinkeby_test_cfg):
 def test_suggested_report_cli():
     """Test suggested report CLI"""
     runner = CliRunner()
-    result = runner.invoke(telliot_core.cli.main.main, ["--test_config", "query", "suggest"])
+    result = runner.invoke(
+        telliot_core.cli.main.main, ["--test_config", "query", "suggest"]
+    )
     assert "Suggested query" in result.output
 
 

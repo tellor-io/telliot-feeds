@@ -7,8 +7,8 @@ More info:
 https://github.com/tellor-io/dataSpecs/blob/main/types/GasPriceOracle.md
 
  """
-from telliot_core.datafeed import DataFeed
-from telliot_core.queries.gas_price_oracle import GasPriceOracle
+from telliot_feed_examples.datafeed import DataFeed
+from telliot_feed_examples.queries.gas_price_oracle import GasPriceOracle
 
 from telliot_feed_examples.sources.gas_price_oracle import GasPriceOracleSource
 

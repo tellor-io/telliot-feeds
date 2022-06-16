@@ -1,4 +1,4 @@
-""" :mod:`telliot_core.dtypes`
+""" :mod:`telliot_feed_examples.dtypes`
 
 The Types package provides mechanisms to specify response dtypes
 for Oracle Queries.

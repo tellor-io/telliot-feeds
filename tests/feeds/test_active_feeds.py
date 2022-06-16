@@ -1,4 +1,4 @@
-from telliot_core.data.query_catalog import query_catalog
+from telliot_feed_examples.queries.query_catalog import query_catalog
 
 from telliot_feed_examples.feeds import CATALOG_FEEDS
 

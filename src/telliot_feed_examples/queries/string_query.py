@@ -1,12 +1,12 @@
-""" :mod:`telliot_core.queries.string_query`
+""" :mod:`telliot_feed_examples.queries.string_query`
 
 """
 # Copyright (c) 2021-, Tellor Development Community
 # Distributed under the terms of the MIT License.
 from dataclasses import dataclass
 
-from telliot_core.dtypes.value_type import ValueType
-from telliot_core.queries.json_query import JsonQuery
+from telliot_feed_examples.dtypes.value_type import ValueType
+from telliot_feed_examples.queries.json_query import JsonQuery
 
 
 @dataclass

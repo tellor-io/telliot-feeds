@@ -6,8 +6,8 @@ from typing import List
 import requests
 from requests import JSONDecodeError
 from requests.adapters import HTTPAdapter
-from telliot_core.datasource import DataSource
-from telliot_core.datasource import OptionalDataPoint
+from telliot_feed_examples.datasource import DataSource
+from telliot_feed_examples.datasource import OptionalDataPoint
 from telliot_core.utils.timestamp import now
 from urllib3.util import Retry
 
@@ -41,7 +41,9 @@ class EtherscanGasPriceSource(DataSource[EtherscanGasPrice]):
     async def fetch_new_datapoint(self) -> OptionalDataPoint[EtherscanGasPrice]:
         """Fetch new value and store it for later retrieval"""
 
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:77.0) Gecko/20190101 Firefox/77.0"}
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:77.0) Gecko/20190101 Firefox/77.0"
+        }
         msg = "https://api.etherscan.io/api?module=gastracker&action=gasoracle"
 
         if self.api_key:

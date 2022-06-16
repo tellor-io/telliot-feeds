@@ -1,7 +1,7 @@
 # Text Query Example
 
-The following example demonstrates how to create a 
-[`StringQuery`][telliot_core.api.StringQuery] request.
+The following example demonstrates how to create a
+[`StringQuery`][telliot_feed_examples.queries.stringquery] request.
 
 Create a `StringQuery` and view the corresponding query descriptor::
 
@@ -9,16 +9,16 @@ Create a `StringQuery` and view the corresponding query descriptor::
 --8<-- "examples/text_query_example.py"
 ```
 
-The query descriptor string uniquely identifies this query to the 
+The query descriptor string uniquely identifies this query to the
 TellorX Oracle network.
 
 ```json
-{"type":"StringQuery","text":"What is the meaning of life?"}
+{ "type": "StringQuery", "text": "What is the meaning of life?" }
 ```
 
-To make the corresponding on-chain Query request, 
+To make the corresponding on-chain Query request,
 the `TellorX.Oracle.tipQuery()` contract call
-requires two arguments: `queryData` and `queryId`.  These arguments are provided by 
+requires two arguments: `queryData` and `queryId`. These arguments are provided by
 the `query_data` and `query_id` attributes of the `StringQuery` object:
 
 ```python hl_lines="6 7"
@@ -36,17 +36,17 @@ to submit on-chain using the `TellorX.Oracle.submitValue()` contract call.
 For example, to submit following the answer
 
     Please refer to: https://en.wikipedia.org/wiki/Meaning_of_life
- 
-use the 
-[`encode`][telliot_core.dtypes.value_type.ValueType.encode] and 
-[`decode`][telliot_core.dtypes.value_type.ValueType.decode] methods of the response
-[`ValueType`][telliot_core.dtypes.value_type.ValueType].
+
+use the
+[`encode`][telliot_feed_examples.dtypes.value_type.valuetype.encode] and
+[`decode`][telliot_feed_examples.dtypes.value_type.valuetype.decode] methods of the response
+[`ValueType`][telliot_feed_examples.dtypes.value_type.valuetype].
 
 ```python hl_lines="9-16"
 --8<-- "examples/text_query_example.py"
 ```
 
-Note that the on-chain and decoded values are limited to 
+Note that the on-chain and decoded values are limited to
 6 decimals of precision in accordance with the on-chain data type:
 
     submitValue (str): Please refer to: https://en.wikipedia.org/wiki/Meaning_of_life

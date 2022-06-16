@@ -1,13 +1,13 @@
-""" telliot_core.datafeed.data_feed
+""" telliot_feed_examples.datafeed.data_feed
 
 """
 from dataclasses import dataclass
 from typing import Generic
 from typing import TypeVar
 
-from telliot_core.datasource import DataSource
+from telliot_feed_examples.datasource import DataSource
 from telliot_core.model.base import Base
-from telliot_core.queries.query import OracleQuery
+from telliot_feed_examples.queries.query import OracleQuery
 
 T = TypeVar("T")
 
@@ -30,8 +30,8 @@ class DataFeed(Generic[T], Base):
 
 if __name__ == "__main__":
     # Example:
-    from telliot_core.datasource import RandomSource
-    from telliot_core.queries.legacy_query import LegacyRequest
+    from telliot_feed_examples.datasource import RandomSource
+    from telliot_feed_examples.queries.legacy_query import LegacyRequest
 
     feed = DataFeed(source=RandomSource(), query=LegacyRequest(legacy_id=99))
 

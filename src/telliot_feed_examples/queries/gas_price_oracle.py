@@ -1,8 +1,8 @@
 import logging
 from dataclasses import dataclass
 
-from telliot_core.dtypes.float_type import UnsignedFloatType
-from telliot_core.queries.abi_query import AbiQuery
+from telliot_feed_examples.dtypes.float_type import UnsignedFloatType
+from telliot_feed_examples.queries.abi_query import AbiQuery
 
 logger = logging.getLogger(__name__)
 

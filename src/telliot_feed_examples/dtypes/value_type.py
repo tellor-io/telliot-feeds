@@ -1,4 +1,4 @@
-""" :mod:`telliot_core.queries.value_type`
+""" :mod:`telliot_feed_examples.queries.value_type`
 
 """
 from dataclasses import dataclass

@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from telliot_core.queries import LegacyRequest
-from telliot_core.queries import SpotPrice
-from telliot_core.queries.query import OracleQuery
-from telliot_core.queries.query import query_from_descriptor
-from telliot_core.queries.query import query_from_state
+from telliot_feed_examples.queries import LegacyRequest
+from telliot_feed_examples.queries import SpotPrice
+from telliot_feed_examples.queries.query import OracleQuery
+from telliot_feed_examples.queries.query import query_from_descriptor
+from telliot_feed_examples.queries.query import query_from_state
 
 
 def test_main():

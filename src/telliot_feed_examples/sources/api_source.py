@@ -5,9 +5,9 @@ from typing import Optional
 from typing import Union
 
 import requests
-from telliot_core.datasource import DataSource
-from telliot_core.dtypes.datapoint import DataPoint
-from telliot_core.dtypes.datapoint import datetime_now_utc
+from telliot_feed_examples.datasource import DataSource
+from telliot_feed_examples.dtypes.datapoint import DataPoint
+from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
 
 from telliot_feed_examples.utils.log import get_logger
 
@@ -51,7 +51,9 @@ def find_values(key: str, json_dict: Optional[dict[Any, Any]]) -> list[Any]:
             pass
         return ex_dict
 
-    json.loads(json.dumps(json_dict, indent=1), object_hook=decode_dict)  # Return value ignored.
+    json.loads(
+        json.dumps(json_dict, indent=1), object_hook=decode_dict
+    )  # Return value ignored.
     return vals
 
 

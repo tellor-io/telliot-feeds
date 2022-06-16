@@ -1,8 +1,8 @@
-from telliot_core.queries.catalog import Catalog
-from telliot_core.queries.gas_price_oracle import GasPriceOracle
-from telliot_core.queries.legacy_query import LegacyRequest
-from telliot_core.queries.morphware import Morphware
-from telliot_core.queries.price.spot_price import SpotPrice
+from telliot_feed_examples.queries.catalog import Catalog
+from telliot_feed_examples.queries.gas_price_oracle import GasPriceOracle
+from telliot_feed_examples.queries.legacy_query import LegacyRequest
+from telliot_feed_examples.queries.morphware import Morphware
+from telliot_feed_examples.queries.price.spot_price import SpotPrice
 
 """Main instance of the Query Catalog."""
 query_catalog = Catalog()
@@ -29,7 +29,9 @@ query_catalog.add_entry(
     q=LegacyRequest(legacy_id=10),
 )
 
-query_catalog.add_entry(tag="uspce-legacy", title="Legacy USPCE value", q=LegacyRequest(legacy_id=41))
+query_catalog.add_entry(
+    tag="uspce-legacy", title="Legacy USPCE value", q=LegacyRequest(legacy_id=41)
+)
 
 query_catalog.add_entry(
     tag="trb-usd-legacy",

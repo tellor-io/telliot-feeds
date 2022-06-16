@@ -1,5 +1,3 @@
+::: telliot_feed_examples.queries.catalog.Catalog
 
-::: telliot_core.queries.catalog.Catalog
-
-::: telliot_core.queries.catalog.CatalogEntry
-
+::: telliot_feed_examples.queries.catalog.CatalogEntry

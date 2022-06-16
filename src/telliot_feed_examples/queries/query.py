@@ -9,7 +9,7 @@ from typing import Dict
 
 from clamfig import deserialize
 from clamfig import Serializable
-from telliot_core.dtypes.value_type import ValueType
+from telliot_feed_examples.dtypes.value_type import ValueType
 from web3 import Web3
 
 

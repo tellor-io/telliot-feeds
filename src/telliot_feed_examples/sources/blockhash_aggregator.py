@@ -9,8 +9,8 @@ from typing import Tuple
 import requests
 from requests import JSONDecodeError
 from requests.adapters import HTTPAdapter
-from telliot_core.datasource import DataSource
-from telliot_core.dtypes.datapoint import DataPoint
+from telliot_feed_examples.datasource import DataSource
+from telliot_feed_examples.dtypes.datapoint import DataPoint
 from urllib3.util import Retry
 from web3 import Web3
 
@@ -79,7 +79,10 @@ async def get_eth_hash(timestamp: int) -> Optional[str]:
         return None
 
     if this_block["timestamp"] < timestamp:
-        logger.error(f"Timestamp {timestamp} is older than current " f"block timestamp {this_block['timestamp']}")
+        logger.error(
+            f"Timestamp {timestamp} is older than current "
+            f"block timestamp {this_block['timestamp']}"
+        )
         return None
 
     block_num = block_num_from_timestamp(timestamp)
@@ -163,7 +166,10 @@ class TellorRNGManualSource(DataSource[Any]):
                 print("Invalid input. Enter decimal value (int).")
                 continue
 
-            print("Generating random number from timestamp: " f"{inpt}\nPress [ENTER] to confirm.")
+            print(
+                "Generating random number from timestamp: "
+                f"{inpt}\nPress [ENTER] to confirm."
+            )
             _ = input()
             data = inpt
 

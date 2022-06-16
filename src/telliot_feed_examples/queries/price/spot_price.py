@@ -1,4 +1,4 @@
-""" :mod:`telliot_core.queries.price_query`
+""" :mod:`telliot_feed_examples.queries.price_query`
 
 """
 import json
@@ -7,9 +7,9 @@ from dataclasses import dataclass
 from typing import List
 from typing import Tuple
 
-from telliot_core.dtypes.float_type import UnsignedFloatType
-from telliot_core.dtypes.value_type import ValueType
-from telliot_core.queries.abi_query import AbiQuery
+from telliot_feed_examples.dtypes.float_type import UnsignedFloatType
+from telliot_feed_examples.dtypes.value_type import ValueType
+from telliot_feed_examples.queries.abi_query import AbiQuery
 
 from telliot_feed_examples.utils.home import TELLIOT_FEEDS_ROOT
 

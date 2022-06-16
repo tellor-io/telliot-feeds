@@ -4,9 +4,9 @@ from typing import Any
 from typing import List
 from typing import Type
 
-from telliot_core.datafeed import DataFeed
-from telliot_core.datasource import DataSource
-from telliot_core.queries.query import OracleQuery
+from telliot_feed_examples.datafeed import DataFeed
+from telliot_feed_examples.datasource import DataSource
+from telliot_feed_examples.queries.query import OracleQuery
 
 
 @dataclass

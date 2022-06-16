@@ -3,7 +3,7 @@
 Copyright (c) 2021-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
-from telliot_core.queries.legacy_query import LegacyRequest
+from telliot_feed_examples.queries.legacy_query import LegacyRequest
 
 
 def test_legacy_query():
@@ -32,4 +32,7 @@ def test_legacy_query():
     # print(q.query_data)
     assert q.query_data == exp_abi
 
-    assert q.query_id.hex() == "0000000000000000000000000000000000000000000000000000000000000064"
+    assert (
+        q.query_id.hex()
+        == "0000000000000000000000000000000000000000000000000000000000000064"
+    )

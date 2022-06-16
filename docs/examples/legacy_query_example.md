@@ -1,9 +1,9 @@
 # Legacy Query Example
 
-This example demonstrates how to create a 
-[`LegacyRequest`][telliot_core.queries.legacy_query.LegacyRequest]
-requesting the ETH/USD price.  The legacy request ID for ETH/USD is `1`, 
-in accordance with the 
+This example demonstrates how to create a
+[`LegacyRequest`][telliot_feed_examples.queries.legacy_query.legacyrequest]
+requesting the ETH/USD price. The legacy request ID for ETH/USD is `1`,
+in accordance with the
 [Legacy Data Feed ID Specifications](https://docs.tellor.io/tellor/integration/data-ids/current-data-feeds).
 
 ## Create the query
@@ -11,23 +11,23 @@ in accordance with the
 Create a LegacyQuery and view the corresponding query descriptor:
 
 ```python
-from telliot_core.api import LegacyRequest
+from telliot_feed_examples.queries import LegacyRequest
 q = LegacyRequest(legacy_id=1)
 print(q.descriptor)
 ```
 
-The query descriptor string uniquely identifies this query to the 
+The query descriptor string uniquely identifies this query to the
 TellorX Oracle network.
 
 ```json
-{"type":"LegacyRequest","legacy_id":1}
+{ "type": "LegacyRequest", "legacy_id": 1 }
 ```
 
 ## On-chain representation
 
-To make the corresponding on-chain Query request, 
+To make the corresponding on-chain Query request,
 the `TellorX.Oracle.tipQuery()` contract call
-requires two arguments: `queryData` and `queryId`.  These arguments are provided by 
+requires two arguments: `queryData` and `queryId`. These arguments are provided by
 the `query_data` and `query_id` attributes of the `LegacyQuery` object:
 
 ```python
@@ -45,10 +45,10 @@ which, for this example, are:
 The `LegacyQuery` object also demonstrates how to encode a response
 to submit on-chain using the `TellorX.Oracle.submitValue()` contract call.
 
-For example, to submit the value `10000.1234567`, use the 
-[`encode`][telliot_core.dtypes.value_type.ValueType.encode] and 
-[`decode`][telliot_core.dtypes.value_type.ValueType.decode] methods of the response
-[`ValueType`][telliot_core.dtypes.value_type.ValueType].
+For example, to submit the value `10000.1234567`, use the
+[`encode`][telliot_feed_examples.dtypes.value_type.valuetype.encode] and
+[`decode`][telliot_feed_examples.dtypes.value_type.valuetype.decode] methods of the response
+[`ValueType`][telliot_feed_examples.dtypes.value_type.valuetype].
 
 ```python
 value = 10000.1234567
@@ -57,14 +57,14 @@ encoded_bytes = q.value_type.encode(value)
 print(f"submitValue (bytes): 0x{encoded_bytes.hex()}")
 ```
 
-Note that the on-chain and decoded values are limited to 
+Note that the on-chain and decoded values are limited to
 6 decimals of precision in accordance with the on-chain data type:
 
     submitValue (float): 10000.1234567
     submitValue (bytes): 0x00000000000000000000000000000000000000000000000000000002540dc641
 
-Similarly, the 
-[`decode`][telliot_core.dtypes.value_type.ValueType.decode] method can be used to convert
+Similarly, the
+[`decode`][telliot_feed_examples.dtypes.value_type.valuetype.decode] method can be used to convert
 the on-chain bytes value to a real-world value:
 
 ```python

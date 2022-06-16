@@ -1,5 +1,5 @@
 """SpotPrice Query Example """
-from telliot_core.api import SpotPrice
+from telliot_feed_examples.queries.price.spot_price import SpotPrice
 
 q = SpotPrice(asset="btc", currency="usd")
 print(q.descriptor)

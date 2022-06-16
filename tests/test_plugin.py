@@ -1,6 +1,6 @@
 """Test plugin module"""
 import pytest
-from telliot_core.plugin.discover import telliot_plugins
+from telliot_feed_examples.plugin.discover import telliot_plugins
 
 
 @pytest.mark.skip("Fix test after plugin move complete")

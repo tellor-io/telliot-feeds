@@ -5,7 +5,7 @@ Distributed under the terms of the MIT License.
 """
 import decimal
 
-from telliot_core.queries.legacy_query import LegacyRequest
+from telliot_feed_examples.queries.legacy_query import LegacyRequest
 
 
 def test_legacy_ample_query():
@@ -34,9 +34,15 @@ def test_legacy_ample_query():
     # print(q.query_data)
     assert q.query_data == exp_data
 
-    assert q.query_id.hex() == "000000000000000000000000000000000000000000000000000000000000000a"
+    assert (
+        q.query_id.hex()
+        == "000000000000000000000000000000000000000000000000000000000000000a"
+    )
 
-    assert q.value_type.encode(116.788).hex() == "00000000000000000000000000000000000000000000000654c2533b0c51f31f"
+    assert (
+        q.value_type.encode(116.788).hex()
+        == "00000000000000000000000000000000000000000000000654c2533b0c51f31f"
+    )
 
     assert (
         q.value_type.encode(decimal.Decimal("116.788")).hex()

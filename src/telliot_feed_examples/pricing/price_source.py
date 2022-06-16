@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from dataclasses import field
 
-from telliot_core.datasource import DataSource
-from telliot_core.dtypes.datapoint import OptionalDataPoint
-from telliot_core.pricing.price_service import WebPriceService
+from telliot_feed_examples.datasource import DataSource
+from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
+from telliot_feed_examples.pricing.price_service import WebPriceService
 
 
 @dataclass

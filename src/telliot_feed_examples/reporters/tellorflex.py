@@ -11,9 +11,9 @@ import requests
 from chained_accounts import ChainedAccount
 from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
-from telliot_core.datafeed import DataFeed
+from telliot_feed_examples.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
-from telliot_core.reporters.reporter_utils import tellor_suggested_report
+from telliot_feed_examples.utils.reporter_utils import tellor_suggested_report
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
@@ -109,7 +109,9 @@ class TellorFlexReporter(IntervalReporter):
         Returns a bool signifying whether the current address is
         staked. If the address is not initially, it attempts to deposit
         the given stake amount."""
-        staker_info, read_status = await self.oracle.read(func_name="getStakerInfo", _staker=self.acct_addr)
+        staker_info, read_status = await self.oracle.read(
+            func_name="getStakerInfo", _staker=self.acct_addr
+        )
 
         if (not read_status.ok) or (staker_info is None):
             msg = "Unable to read reporters staker info"
@@ -143,7 +145,9 @@ class TellorFlexReporter(IntervalReporter):
 
             gas_price_gwei = await self.fetch_gas_price()
             if gas_price_gwei is None:
-                return False, error_status("Unable to fetch matic gas price for staking", log=logger.info)
+                return False, error_status(
+                    "Unable to fetch matic gas price for staking", log=logger.info
+                )
             amount = int(self.stake * 1e18) - staker_balance
 
             _, write_status = await self.token.write(
@@ -185,7 +189,9 @@ class TellorFlexReporter(IntervalReporter):
 
         Returns bool signifying whether a given address is in a
         reporter lock or not."""
-        staker_info, read_status = await self.oracle.read(func_name="getStakerInfo", _staker=self.acct_addr)
+        staker_info, read_status = await self.oracle.read(
+            func_name="getStakerInfo", _staker=self.acct_addr
+        )
 
         if (not read_status.ok) or (staker_info is None):
             msg = "Unable to read reporters staker info"
@@ -203,7 +209,9 @@ class TellorFlexReporter(IntervalReporter):
         num_stakes = (trb - (trb % 10)) / 10
         reporter_lock = (12 / num_stakes) * 3600
 
-        time_remaining = round(self.last_submission_timestamp + reporter_lock - time.time())
+        time_remaining = round(
+            self.last_submission_timestamp + reporter_lock - time.time()
+        )
         if time_remaining > 0:
             hr_min_sec = str(timedelta(seconds=time_remaining))
             msg = "Currently in reporter lock. Time left: " + hr_min_sec
@@ -211,8 +219,12 @@ class TellorFlexReporter(IntervalReporter):
 
         return ResponseStatus()
 
-    async def get_num_reports_by_id(self, query_id: bytes) -> Tuple[int, ResponseStatus]:
-        count, read_status = await self.oracle.read(func_name="getNewValueCountbyQueryId", _queryId=query_id)
+    async def get_num_reports_by_id(
+        self, query_id: bytes
+    ) -> Tuple[int, ResponseStatus]:
+        count, read_status = await self.oracle.read(
+            func_name="getNewValueCountbyQueryId", _queryId=query_id
+        )
         return count, read_status
 
     async def fetch_datafeed(self) -> DataFeed[Any]:
@@ -224,7 +236,9 @@ class TellorFlexReporter(IntervalReporter):
             if self.expected_profit == "YOLO":
                 return self.datafeed
 
-            single_tip = await get_single_tip(self.datafeed.query.query_id, self.autopay)
+            single_tip = await get_single_tip(
+                self.datafeed.query.query_id, self.autopay
+            )
             if single_tip is None:
                 msg = "Unable to fetch single tip"
                 error_status(msg, log=logger.warning)
@@ -261,7 +275,9 @@ class TellorFlexReporter(IntervalReporter):
 
         # Fetch token prices in USD
         price_feeds = [matic_usd_median_feed, trb_usd_median_feed]
-        _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
+        _ = await asyncio.gather(
+            *[feed.source.fetch_new_datapoint() for feed in price_feeds]
+        )
         price_matic_usd = matic_usd_median_feed.source.latest[0]
         price_trb_usd = trb_usd_median_feed.source.latest[0]
 

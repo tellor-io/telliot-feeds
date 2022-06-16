@@ -5,7 +5,7 @@ Distributed under the terms of the MIT License.
 """
 from eth_abi import decode_abi
 from eth_abi import decode_single
-from telliot_core.queries.tellor_rng import TellorRNG
+from telliot_feed_examples.queries.tellor_rng import TellorRNG
 
 
 def test_tellor_rng_query():
@@ -41,4 +41,7 @@ def test_tellor_rng_query():
 
     assert timestamp == 1000000
     assert isinstance(timestamp, int)
-    assert q.query_id.hex() == "3f43c74ef29e7115b1788f887bcd92a88a242fbab13e1721339adf7b238a473b"
+    assert (
+        q.query_id.hex()
+        == "3f43c74ef29e7115b1788f887bcd92a88a242fbab13e1721339adf7b238a473b"
+    )
