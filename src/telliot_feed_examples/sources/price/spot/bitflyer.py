@@ -70,6 +70,4 @@ class BitflyerSpotPriceService(WebPriceService):
 class BitflyerSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: BitflyerSpotPriceService = field(
-        default_factory=BitflyerSpotPriceService, init=False
-    )
+    service: BitflyerSpotPriceService = field(default_factory=BitflyerSpotPriceService, init=False)

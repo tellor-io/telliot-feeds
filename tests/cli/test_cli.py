@@ -68,9 +68,7 @@ def test_custom_gas_flag():
 
     assert result.exit_code == 2
 
-    expected = (
-        "Error: Invalid value for '--gas-limit' / '-gl': 'blah' is not a valid integer."
-    )
+    expected = "Error: Invalid value for '--gas-limit' / '-gl': 'blah' is not a valid integer."
     assert expected in result.output
 
 

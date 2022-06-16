@@ -7,7 +7,6 @@ from typing import Optional
 
 import clamfig
 import yaml
-
 from telliot_core.model.base import Base
 from telliot_core.queries.abi_query import AbiQuery
 from telliot_core.queries.query import OracleQuery

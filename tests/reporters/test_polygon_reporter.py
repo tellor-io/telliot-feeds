@@ -10,9 +10,7 @@ from telliot_feed_examples.reporters.tellorflex import TellorFlexReporter
 
 
 @pytest.fixture(scope="function")
-async def polygon_reporter(
-    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract
-):
+async def polygon_reporter(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
     async with TelliotCore(config=mumbai_test_cfg) as core:
 
         account = core.get_account()
@@ -87,9 +85,7 @@ async def test_check_reporter_lock(polygon_reporter):
 
     assert isinstance(status, ResponseStatus)
     if not status.ok:
-        assert ("reporter lock" in status.error) or (
-            "Staker balance too low" in status.error
-        )
+        assert ("reporter lock" in status.error) or ("Staker balance too low" in status.error)
 
 
 @pytest.mark.asyncio

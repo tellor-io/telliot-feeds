@@ -7,7 +7,6 @@ import json
 
 from eth_abi import decode_abi
 from eth_abi import decode_single
-
 from telliot_core.queries.morphware import Morphware
 
 

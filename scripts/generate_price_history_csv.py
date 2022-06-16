@@ -13,9 +13,7 @@ from telliot_feed_examples.sources.price.historical.poloniex import (
 )
 
 
-def print_num_trades(
-    service_name: str, asset: str, currency: str, data: list[Any]
-) -> None:
+def print_num_trades(service_name: str, asset: str, currency: str, data: list[Any]) -> None:
     print(
         f"{service_name}: # trades in six hour window for {asset}/{currency}:",
         len(data),
@@ -36,9 +34,7 @@ def get_kraken_data(period: int, ts: int, asset: str, currency: str) -> list:
 
 
 def get_poloniex_data(period: int, ts: int, asset: str, currency: str) -> list:
-    trades, _ = asyncio.run(
-        PoloniexHistoricalPriceService().get_trades(asset, currency, period, ts)
-    )
+    trades, _ = asyncio.run(PoloniexHistoricalPriceService().get_trades(asset, currency, period, ts))
     print_num_trades("Poloniex", asset, currency, trades)
     field_idx_lookup = {
         "globalTradeID": 0,
@@ -87,14 +83,10 @@ def main():
     # source: https://docs.kraken.com/rest/#operation/getRecentTrades
     cols = ["price", "volume", "time", "buy/sell", "market/limit", "miscellaneous"]
 
-    data = get_kraken_data(
-        ts=timestamp, period=time_period, asset="eth", currency="usd"
-    )
+    data = get_kraken_data(ts=timestamp, period=time_period, asset="eth", currency="usd")
     generate_csv("kraken_eth_usd_historical_price_source.csv", data, cols)
 
-    data = get_kraken_data(
-        ts=timestamp, period=time_period, asset="xbt", currency="usd"
-    )
+    data = get_kraken_data(ts=timestamp, period=time_period, asset="xbt", currency="usd")
     generate_csv("kraken_xbt_usd_historical_price_source.csv", data, cols)
 
     # Poloniex historical price data
@@ -110,14 +102,10 @@ def main():
         "orderNumber",
     ]
 
-    data = get_poloniex_data(
-        ts=timestamp, period=time_period, asset="eth", currency="tusd"
-    )
+    data = get_poloniex_data(ts=timestamp, period=time_period, asset="eth", currency="tusd")
     generate_csv("poloniex_eth_tusd_historical_price_source.csv", data, cols)
 
-    data = get_poloniex_data(
-        ts=timestamp, period=time_period, asset="btc", currency="tusd"
-    )
+    data = get_poloniex_data(ts=timestamp, period=time_period, asset="btc", currency="tusd")
     generate_csv("poloniex_btc_tusd_historical_price_source.csv", data, cols)
 
     # Cryptowatch historical price data
@@ -132,13 +120,9 @@ def main():
         "Volume",
         "QuoteVolume",
     ]
-    data = get_cryptowatch_data(
-        ts=timestamp, period=time_period, asset="eth", currency="usd"
-    )
+    data = get_cryptowatch_data(ts=timestamp, period=time_period, asset="eth", currency="usd")
     generate_csv("cryptowatch_eth_usd_historical_price_source.csv", data, cols)
-    data = get_cryptowatch_data(
-        ts=timestamp, period=time_period, asset="btc", currency="usd"
-    )
+    data = get_cryptowatch_data(ts=timestamp, period=time_period, asset="btc", currency="usd")
     generate_csv("cryptowatch_btc_usd_historical_price_source.csv", data, cols)
 
 

@@ -10,9 +10,7 @@ from telliot_feed_examples.sources.blockhash_aggregator import TellorRNGManualSo
 
 local_source = TellorRNGManualSource()
 
-tellor_rng_feed = DataFeed(
-    source=local_source, query=TellorRNG(timestamp=local_source.timestamp)
-)
+tellor_rng_feed = DataFeed(source=local_source, query=TellorRNG(timestamp=local_source.timestamp))
 
 
 async def assemble_rng_datafeed(

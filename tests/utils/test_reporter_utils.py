@@ -1,9 +1,8 @@
 import pytest
+import telliot_core.cli.main
 from brownie import accounts
 from brownie import TellorXOracleMock
 from click.testing import CliRunner
-
-import telliot_core.cli.main
 from telliot_core.apps.core import TelliotCore
 from telliot_core.data.query_catalog import query_catalog
 from telliot_core.queries.query import OracleQuery

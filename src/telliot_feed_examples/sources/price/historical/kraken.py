@@ -76,16 +76,12 @@ class KrakenHistoricalPriceService(WebPriceService):
         if currency not in kraken_currencies:
             raise Exception(f"Currency not supported: {currency}")
 
-        url_params = urlencode(
-            {"pair": f"{asset}{currency}", "since": period_start}  # Unix timestamp
-        )
+        url_params = urlencode({"pair": f"{asset}{currency}", "since": period_start})  # Unix timestamp
 
         # Source: https://docs.kraken.com/rest/#operation/getRecentTrades
         return f"/0/public/Trades?{url_params}"
 
-    def resp_price_parse(
-        self, asset: str, currency: str, resp: dict[Any, Any]
-    ) -> Optional[float]:
+    def resp_price_parse(self, asset: str, currency: str, resp: dict[Any, Any]) -> Optional[float]:
         """Gets first price from trades data."""
         try:
             # Price of last trade in trades list retrieved from API
@@ -102,9 +98,7 @@ class KrakenHistoricalPriceService(WebPriceService):
 
         return float(trades[-1][0])
 
-    def resp_all_trades_parse(
-        self, asset: str, currency: str, resp: dict[Any, Any]
-    ) -> Optional[list[str]]:
+    def resp_all_trades_parse(self, asset: str, currency: str, resp: dict[Any, Any]) -> Optional[list[str]]:
         """Gets all trades."""
         trades = None
         try:
@@ -116,9 +110,7 @@ class KrakenHistoricalPriceService(WebPriceService):
 
         return trades
 
-    async def get_price(
-        self, asset: str, currency: str, ts: Optional[int] = None
-    ) -> OptionalDataPoint[float]:
+    async def get_price(self, asset: str, currency: str, ts: Optional[int] = None) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
         This implementation gets the historical price from
@@ -181,9 +173,7 @@ class KrakenHistoricalPriceService(WebPriceService):
 
         elif "response" in d:
             response = d["response"]
-            trades = self.resp_all_trades_parse(
-                resp=response, asset=asset, currency=currency
-            )
+            trades = self.resp_all_trades_parse(resp=response, asset=asset, currency=currency)
 
         else:
             raise Exception("Invalid response from get_url")

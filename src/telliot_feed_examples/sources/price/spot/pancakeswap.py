@@ -54,11 +54,7 @@ class PancakeswapPriceService(WebPriceService):
             print(response)
 
             try:
-                price = (
-                    response["data"]["price"]
-                    if currency.lower() == "usd"
-                    else response["data"]["price_BNB"]
-                )
+                price = response["data"]["price"] if currency.lower() == "usd" else response["data"]["price_BNB"]
             except KeyError as e:
                 msg = "Error parsing Pancakeswap API response: KeyError: {}".format(e)
                 logger.critical(msg)
@@ -73,6 +69,4 @@ class PancakeswapPriceService(WebPriceService):
 class PancakeswapPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: PancakeswapPriceService = field(
-        default_factory=PancakeswapPriceService, init=False
-    )
+    service: PancakeswapPriceService = field(default_factory=PancakeswapPriceService, init=False)

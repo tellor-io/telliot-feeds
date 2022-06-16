@@ -77,9 +77,7 @@ class PoloniexHistoricalPriceService:
 
         asset = asset.upper()
         currency = currency.upper()
-        pair = (
-            currency + "_" + asset
-        )  # Poloniex wants the reverse of standard order: asset/currency
+        pair = currency + "_" + asset  # Poloniex wants the reverse of standard order: asset/currency
 
         if pair not in poloniex_pairs:
             raise Exception(f"Currency pair not supported: {pair}")
@@ -125,17 +123,12 @@ class PoloniexHistoricalPriceService:
 
         This implementation gets the historical price from
         the Poloniex API using a timestamp."""
-        trades, dt = await self.get_trades(
-            asset=asset, currency=currency, ts=ts, period=period
-        )
+        trades, dt = await self.get_trades(asset=asset, currency=currency, ts=ts, period=period)
 
         if trades is not None:
             try:
                 if len(trades) == 0:
-                    logger.warning(
-                        "No data from Poloniex historical price source for"
-                        f" given timestamp: {ts}."
-                    )
+                    logger.warning("No data from Poloniex historical price source for" f" given timestamp: {ts}.")
                     return None, None
 
                 # Price from last trade in period

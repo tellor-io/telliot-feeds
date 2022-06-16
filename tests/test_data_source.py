@@ -4,7 +4,6 @@
 from datetime import datetime
 
 import pytest
-
 from telliot_core.datasource import RandomSource
 
 

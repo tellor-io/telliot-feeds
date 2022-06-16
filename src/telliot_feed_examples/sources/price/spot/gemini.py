@@ -37,9 +37,7 @@ class GeminiSpotPriceService(WebPriceService):
     """Gemini Price Service"""
 
     def __init__(self, **kwargs: Any):
-        super().__init__(
-            name="Gemini Price Service", url="https://api.gemini.com", **kwargs
-        )
+        super().__init__(name="Gemini Price Service", url="https://api.gemini.com", **kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
@@ -75,6 +73,4 @@ class GeminiSpotPriceService(WebPriceService):
 class GeminiSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: GeminiSpotPriceService = field(
-        default_factory=GeminiSpotPriceService, init=False
-    )
+    service: GeminiSpotPriceService = field(default_factory=GeminiSpotPriceService, init=False)

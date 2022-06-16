@@ -66,6 +66,4 @@ class BitfinexSpotPriceService(WebPriceService):
 class BitfinexSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: BitfinexSpotPriceService = field(
-        default_factory=BitfinexSpotPriceService, init=False
-    )
+    service: BitfinexSpotPriceService = field(default_factory=BitfinexSpotPriceService, init=False)

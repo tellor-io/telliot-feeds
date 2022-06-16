@@ -37,9 +37,7 @@ class NomicsSpotPriceService(WebPriceService):
         """
 
         if API_KEY == "":
-            logger.warning(
-                "To use the nomics source, add nomics api key to api_keys.yaml"
-            )
+            logger.warning("To use the nomics source, add nomics api key to api_keys.yaml")
             return None, None
 
         asset = asset.lower()
@@ -84,6 +82,4 @@ class NomicsSpotPriceService(WebPriceService):
 class NomicsSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: NomicsSpotPriceService = field(
-        default_factory=NomicsSpotPriceService, init=False
-    )
+    service: NomicsSpotPriceService = field(default_factory=NomicsSpotPriceService, init=False)

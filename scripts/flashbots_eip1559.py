@@ -96,9 +96,7 @@ async def main() -> None:
     block = w3.eth.block_number
     results = []
     for target_block in [block + k for k in [1, 2, 3, 4, 5]]:
-        results.append(
-            w3.flashbots.send_bundle(bundle, target_block_number=target_block)
-        )
+        results.append(w3.flashbots.send_bundle(bundle, target_block_number=target_block))
     print(f"Bundle sent to miners in block {block}")
 
     # wait for the results

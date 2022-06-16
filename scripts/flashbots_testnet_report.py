@@ -41,9 +41,7 @@ async def main() -> None:
     if chain_id == 5:
         w3.middleware_onion.inject(geth_poa_middleware, layer=0)
     # Goerli endpoint: https://relay-goerli.flashbots.net
-    endpoint = (
-        env("FLASHBOTS_HTTP_PROVIDER_URI") if chain_id == 5 else get_default_endpoint()
-    )
+    endpoint = env("FLASHBOTS_HTTP_PROVIDER_URI") if chain_id == 5 else get_default_endpoint()
     flashbot(w3, signature, endpoint)
 
     print(
@@ -112,9 +110,7 @@ async def main() -> None:
     block = w3.eth.block_number
     results = []
     for target_block in [block + k for k in [1, 2, 3, 4, 5]]:
-        results.append(
-            w3.flashbots.send_bundle(bundle, target_block_number=target_block)
-        )
+        results.append(w3.flashbots.send_bundle(bundle, target_block_number=target_block))
     print(f"Bundle sent to miners in block {block}")
 
     # wait for the results

@@ -31,9 +31,7 @@ class PriceAggregator(DataSource[float], ABC):
     algorithm: Literal["median", "mean"] = "median"
 
     #: Private storage for actual algorithm function
-    _algorithm: Callable[..., float] = field(
-        default=statistics.median, init=False, repr=False
-    )
+    _algorithm: Callable[..., float] = field(default=statistics.median, init=False, repr=False)
 
     #: Data feed sources
     sources: List[PriceSource] = field(default_factory=list)
@@ -61,9 +59,7 @@ class PriceAggregator(DataSource[float], ABC):
 
         async def gather_inputs() -> List[OptionalDataPoint[float]]:
             sources = self.sources
-            datapoints = await asyncio.gather(
-                *[source.fetch_new_datapoint() for source in sources]
-            )
+            datapoints = await asyncio.gather(*[source.fetch_new_datapoint() for source in sources])
             return datapoints  # type: ignore # TODO: haven't investigated this type error
 
         inputs = await gather_inputs()
@@ -99,11 +95,7 @@ class PriceAggregator(DataSource[float], ABC):
         datapoint = (result, datetime_now_utc())
         self.store_datapoint(datapoint)
 
-        logger.info(
-            "Feed Price: {} reported at time {}".format(datapoint[0], datapoint[1])
-        )
-        logger.info(
-            "Number of Sources used for this report are: {}".format(len(prices))
-        )
+        logger.info("Feed Price: {} reported at time {}".format(datapoint[0], datapoint[1]))
+        logger.info("Number of Sources used for this report are: {}".format(len(prices)))
 
         return datapoint

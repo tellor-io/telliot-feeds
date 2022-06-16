@@ -32,9 +32,7 @@ def test_get_source() -> None:
 async def test_get_pool_parameters(ropsten_test_cfg, diva_mock_contract) -> None:
     async with TelliotCore(config=ropsten_test_cfg) as core:
         account = core.get_account()
-        params = await get_pool_params(
-            3, core.endpoint, account, diva_mock_contract.address
-        )
+        params = await get_pool_params(3, core.endpoint, account, diva_mock_contract.address)
 
         assert isinstance(params, DivaPoolParameters)
         assert params.reference_asset == "ETH/USD"

@@ -28,18 +28,14 @@ class CoinMarketCapSpotPriceService(WebPriceService):
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "CoinMarketCap Price Service"
-        kwargs[
-            "url"
-        ] = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+        kwargs["url"] = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
         super().__init__(**kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
 
         # check for api key in config
         if API_KEY == "":
-            logger.warn(
-                "To use the CoinMarketCap source, add CoinMarketCap api key to ampl.yaml"
-            )
+            logger.warn("To use the CoinMarketCap source, add CoinMarketCap api key to ampl.yaml")
             return None, None
 
         asset = asset.upper()
@@ -50,9 +46,7 @@ class CoinMarketCapSpotPriceService(WebPriceService):
         if currency not in coinmarketcap_currencies:
             raise Exception(f"Currency not supported: {currency}")
 
-        request_url = (
-            "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
-        )
+        request_url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
 
         parameters = {"symbol": asset}
         headers = {
@@ -79,6 +73,4 @@ class CoinMarketCapSpotPriceService(WebPriceService):
 class CoinMarketCapSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: CoinMarketCapSpotPriceService = field(
-        default_factory=CoinMarketCapSpotPriceService, init=False
-    )
+    service: CoinMarketCapSpotPriceService = field(default_factory=CoinMarketCapSpotPriceService, init=False)

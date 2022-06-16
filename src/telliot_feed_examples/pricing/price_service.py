@@ -4,7 +4,6 @@ from typing import Any
 from typing import Dict
 
 import requests
-
 from telliot_core.dtypes.datapoint import OptionalDataPoint
 
 

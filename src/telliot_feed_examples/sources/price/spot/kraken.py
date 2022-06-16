@@ -74,6 +74,4 @@ class KrakenSpotPriceService(WebPriceService):
 class KrakenSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: KrakenSpotPriceService = field(
-        default_factory=KrakenSpotPriceService, init=False
-    )
+    service: KrakenSpotPriceService = field(default_factory=KrakenSpotPriceService, init=False)

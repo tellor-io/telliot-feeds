@@ -5,7 +5,6 @@ Distributed under the terms of the MIT License.
 """
 from eth_abi import decode_abi
 from eth_abi import decode_single
-
 from telliot_core.queries.tellor_rng import TellorRNG
 
 

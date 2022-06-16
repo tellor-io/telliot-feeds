@@ -60,6 +60,4 @@ class CoinbaseSpotPriceService(WebPriceService):
 class CoinbaseSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: CoinbaseSpotPriceService = field(
-        default_factory=CoinbaseSpotPriceService, init=False
-    )
+    service: CoinbaseSpotPriceService = field(default_factory=CoinbaseSpotPriceService, init=False)

@@ -243,9 +243,7 @@ async def test_no_updated_value(eth_usd_reporter, bad_datasource):
 
 
 @pytest.mark.asyncio
-async def test_no_token_prices_for_profit_calc(
-    eth_usd_reporter, bad_datasource, guaranteed_price_source
-):
+async def test_no_token_prices_for_profit_calc(eth_usd_reporter, bad_datasource, guaranteed_price_source):
     """Test handling for no token prices for profit calculation."""
     r = eth_usd_reporter
 

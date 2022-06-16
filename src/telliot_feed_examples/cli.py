@@ -68,10 +68,7 @@ def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
 def valid_diva_chain(chain_id: int) -> bool:
     """Ensure given chain ID supports reporting Diva Protocol data."""
     if chain_id not in DIVA_PROTOCOL_CHAINS:
-        print(
-            f"Current chain id ({chain_id}) not supported for"
-            " reporting Diva Protocol data."
-        )
+        print(f"Current chain id ({chain_id}) not supported for" " reporting Diva Protocol data.")
         return False
     return True
 
@@ -325,9 +322,7 @@ async def report(
     if sig_acct_name is not None:
         try:
             if not signature_password:
-                signature_password = getpass.getpass(
-                    f"Enter password for {sig_acct_name} keyfile: "
-                )
+                signature_password = getpass.getpass(f"Enter password for {sig_acct_name} keyfile: ")
         except ValueError:
             click.echo("Invalid Password")
 
@@ -354,25 +349,19 @@ async def report(
             try:
                 chosen_feed = CATALOG_FEEDS[query_tag]
             except KeyError:
-                click.echo(
-                    f"No corresponding datafeed found for given query tag: {query_tag}\n"
-                )
+                click.echo(f"No corresponding datafeed found for given query tag: {query_tag}\n")
                 return
         elif diva_pool_id is not None:
             if not valid_diva_chain(chain_id=cid):
                 click.echo("Diva Protocol not supported for this chain")
                 return
             # Generate datafeed
-            chosen_feed = await assemble_diva_datafeed(
-                pool_id=diva_pool_id, node=core.endpoint, account=account
-            )
+            chosen_feed = await assemble_diva_datafeed(pool_id=diva_pool_id, node=core.endpoint, account=account)
             if chosen_feed is None:
                 click.echo("DIVA Protocol datafeed generation failed")
                 return
         elif rng_timestamp is not None:
-            chosen_feed = await assemble_rng_datafeed(
-                timestamp=rng_timestamp, node=core.endpoint, account=account
-            )
+            chosen_feed = await assemble_rng_datafeed(timestamp=rng_timestamp, node=core.endpoint, account=account)
         else:
             chosen_feed = None
 
@@ -566,9 +555,7 @@ async def settle(
         oracle = DivaOracleTellorContract(core.endpoint, account)
         oracle.connect()
 
-        status = await oracle.set_final_reference_value(
-            pool_id=pool_id, legacy_gas_price=legacy_gas_price
-        )
+        status = await oracle.set_final_reference_value(pool_id=pool_id, legacy_gas_price=legacy_gas_price)
         if status is not None and status.ok:
             click.echo(f"Pool {pool_id} settled.")
         else:

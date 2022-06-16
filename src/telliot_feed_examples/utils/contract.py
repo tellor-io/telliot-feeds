@@ -106,7 +106,9 @@ async def write_with_retry(
                         return tx_receipt, error_status(msg, log=logger.info)
 
                     else:
-                        msg = f"Write attempt {attempt}: Invalid TX Receipt status: {tx_receipt['status']}"  # noqa: E501
+                        msg = (
+                            f"Write attempt {attempt}: Invalid TX Receipt status: {tx_receipt['status']}"  # noqa: E501
+                        )
                         return tx_receipt, error_status(msg, log=logger.info)
 
                 if status.error:
@@ -119,9 +121,7 @@ async def write_with_retry(
                             logger.info(f"Next max fee: {max_fee_per_gas}")
                         elif max_priority_fee_per_gas is not None:
                             max_priority_fee_per_gas += extra_gas_price
-                            logger.info(
-                                f"Next priority fee: {max_priority_fee_per_gas}"
-                            )
+                            logger.info(f"Next priority fee: {max_priority_fee_per_gas}")
                     elif "already known" in status.error:
                         acc_nonce += 1
                         logger.info(f"Incrementing nonce: {acc_nonce}")
@@ -141,9 +141,7 @@ async def write_with_retry(
                             logger.info(f"Next max fee: {max_fee_per_gas}")
                         elif max_priority_fee_per_gas is not None:
                             max_priority_fee_per_gas += extra_gas_price
-                            logger.info(
-                                f"Next priority fee: {max_priority_fee_per_gas}"
-                            )
+                            logger.info(f"Next priority fee: {max_priority_fee_per_gas}")
                     else:
                         extra_gas_price = 0
 

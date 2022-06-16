@@ -62,9 +62,7 @@ class CoinGeckoSpotPriceService(WebPriceService):
         d = self.get_url(request_url)
 
         if "error" in d:
-            if "api.coingecko.com used Cloudflare to restrict access" in str(
-                d["exception"]
-            ):
+            if "api.coingecko.com used Cloudflare to restrict access" in str(d["exception"]):
                 logger.warning("CoinGecko API rate limit exceeded")
             else:
                 logger.error(d)
@@ -89,6 +87,4 @@ class CoinGeckoSpotPriceService(WebPriceService):
 class CoinGeckoSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: CoinGeckoSpotPriceService = field(
-        default_factory=CoinGeckoSpotPriceService, init=False
-    )
+    service: CoinGeckoSpotPriceService = field(default_factory=CoinGeckoSpotPriceService, init=False)

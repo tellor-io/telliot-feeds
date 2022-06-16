@@ -87,16 +87,12 @@ async def test_poloniex_get_price():
     v, t = await PoloniexHistoricalPriceService().get_price("eth", "dai", ts=1645813159)
     validate_price(v, t)
 
-    v, t = await PoloniexHistoricalPriceService().get_price(
-        "eth", "tusd", ts=1645822159
-    )
+    v, t = await PoloniexHistoricalPriceService().get_price("eth", "tusd", ts=1645822159)
 
     v, t = await PoloniexHistoricalPriceService().get_price("btc", "dai", ts=1645813159)
     validate_price(v, t)
 
-    v, t = await PoloniexHistoricalPriceService().get_price(
-        "btc", "tusd", ts=1645822159
-    )
+    v, t = await PoloniexHistoricalPriceService().get_price("btc", "tusd", ts=1645822159)
 
 
 @pytest.mark.asyncio
@@ -134,14 +130,10 @@ async def test_poloniex_get_trades():
 @pytest.mark.asyncio
 async def test_cryptowatch_get_price():
     """Retrieve single historical price close to given timestamp."""
-    v, t = await CryptowatchHistoricalPriceService().get_price(
-        "eth", "usd", ts=1648567107
-    )
+    v, t = await CryptowatchHistoricalPriceService().get_price("eth", "usd", ts=1648567107)
     validate_price(v, t)
 
-    v, t = await CryptowatchHistoricalPriceService().get_price(
-        "btc", "usd", ts=1648567107
-    )
+    v, t = await CryptowatchHistoricalPriceService().get_price("btc", "usd", ts=1648567107)
     validate_price(v, t)
 
 

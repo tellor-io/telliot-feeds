@@ -48,9 +48,7 @@ class UniswapV3PriceService(WebPriceService):
             "Content-Type": "application/json",
         }
 
-        query = (
-            "{bundles{id ethPriceUSD}token" + f'(id: "{token}")' + "{ derivedETH } }"
-        )
+        query = "{bundles{id ethPriceUSD}token" + f'(id: "{token}")' + "{ derivedETH } }"
 
         json_data = {"query": query}
 
@@ -58,9 +56,7 @@ class UniswapV3PriceService(WebPriceService):
 
         with requests.Session() as s:
             try:
-                r = s.post(
-                    request_url, headers=headers, json=json_data, timeout=self.timeout
-                )
+                r = s.post(request_url, headers=headers, json=json_data, timeout=self.timeout)
                 res = r.json()
                 data = {"response": res}
 
@@ -103,6 +99,4 @@ class UniswapV3PriceService(WebPriceService):
 class UniswapV3PriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: UniswapV3PriceService = field(
-        default_factory=UniswapV3PriceService, init=False
-    )
+    service: UniswapV3PriceService = field(default_factory=UniswapV3PriceService, init=False)

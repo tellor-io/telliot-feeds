@@ -81,17 +81,12 @@ class IntervalReporter:
 
         # Save last submission timestamp to reduce web3 calls
         if self.last_submission_timestamp == 0:
-            last_timestamp, read_status = await self.oracle.read(
-                "getReporterLastTimestamp", _reporter=self.acct_addr
-            )
+            last_timestamp, read_status = await self.oracle.read("getReporterLastTimestamp", _reporter=self.acct_addr)
 
             # Log web3 errors
             if (not read_status.ok) or (last_timestamp is None):
                 status.ok = False
-                status.error = (
-                    "Unable to retrieve reporter's last report timestamp:"
-                    + read_status.error
-                )
+                status.error = "Unable to retrieve reporter's last report timestamp:" + read_status.error
                 logger.error(status.error)
                 status.e = read_status.e
                 return status
@@ -123,14 +118,10 @@ class IntervalReporter:
             note = "Unable to fetch gas price during during ensure_staked()"
             return False, error_status(note=note, log=logger.warning)
 
-        staker_info, read_status = await self.master.read(
-            func_name="getStakerInfo", _staker=self.acct_addr
-        )
+        staker_info, read_status = await self.master.read(func_name="getStakerInfo", _staker=self.acct_addr)
 
         if (not read_status.ok) or (staker_info is None):
-            msg = (
-                "Unable to read reporters staker status: " + read_status.error
-            )  # error won't be none # noqa: E501
+            msg = "Unable to read reporters staker status: " + read_status.error  # error won't be none # noqa: E501
             status = error_status(msg, log=logger.info)
             status.e = read_status.e
             return False, status
@@ -168,9 +159,7 @@ class IntervalReporter:
 
         # Statuses 2, 4, and 5: stake transition
         else:
-            msg = (
-                "Current address is locked in dispute or for withdrawal."  # noqa: E501
-            )
+            msg = "Current address is locked in dispute or for withdrawal."  # noqa: E501
             return False, error_status(msg, log=logger.info)
 
     async def ensure_profitable(
@@ -184,25 +173,19 @@ class IntervalReporter:
         status = ResponseStatus()
 
         # Get current tips and time-based reward for given queryID
-        rewards, read_status = await self.oracle.read(
-            "getCurrentReward", _queryId=datafeed.query.query_id
-        )
+        rewards, read_status = await self.oracle.read("getCurrentReward", _queryId=datafeed.query.query_id)
 
         # Log web3 errors
         if (not read_status.ok) or (rewards is None):
             status.ok = False
-            status.error = (
-                "Unable to retrieve queryID's current rewards:" + read_status.error
-            )
+            status.error = "Unable to retrieve queryID's current rewards:" + read_status.error
             logger.error(status.error)
             status.e = read_status.e
             return status
 
         # Fetch token prices
         price_feeds = [self.eth_usd_median_feed, self.trb_usd_median_feed]
-        _ = await asyncio.gather(
-            *[feed.source.fetch_new_datapoint() for feed in price_feeds]
-        )
+        _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
 
         price_eth_usd = self.eth_usd_median_feed.source.latest[0]
         price_trb_usd = self.trb_usd_median_feed.source.latest[0]
@@ -306,12 +289,8 @@ class IntervalReporter:
 
         return datafeed
 
-    async def get_num_reports_by_id(
-        self, query_id: bytes
-    ) -> Tuple[int, ResponseStatus]:
-        count, read_status = await self.oracle.read(
-            func_name="getTimestampCountById", _queryId=query_id
-        )
+    async def get_num_reports_by_id(self, query_id: bytes) -> Tuple[int, ResponseStatus]:
+        count, read_status = await self.oracle.read(func_name="getTimestampCountById", _queryId=query_id)
         return count, read_status
 
     async def report_once(
@@ -371,9 +350,7 @@ class IntervalReporter:
         report_count, read_status = await self.get_num_reports_by_id(query_id)
 
         if not read_status.ok:
-            status.error = (
-                "Unable to retrieve report count: " + read_status.error
-            )  # error won't be none # noqa: E501
+            status.error = "Unable to retrieve report count: " + read_status.error  # error won't be none # noqa: E501
             logger.error(status.error)
             status.e = read_status.e
             return None, status
@@ -401,9 +378,7 @@ class IntervalReporter:
                     # TODO: Investigate more why etherscan txs using Flashbots have
                     # the same maxFeePerGas and maxPriorityFeePerGas. Example:
                     # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288 # noqa: E501
-                    "maxPriorityFeePerGas": Web3.toWei(
-                        self.priority_fee, "gwei"
-                    ),  # noqa: E501
+                    "maxPriorityFeePerGas": Web3.toWei(self.priority_fee, "gwei"),  # noqa: E501
                     "chainId": self.chain_id,
                 }
             )
@@ -433,18 +408,14 @@ class IntervalReporter:
 
         try:
             logger.debug("Sending submitValue transaction")
-            tx_hash = self.endpoint._web3.eth.send_raw_transaction(
-                tx_signed.rawTransaction
-            )
+            tx_hash = self.endpoint._web3.eth.send_raw_transaction(tx_signed.rawTransaction)
         except Exception as e:
             note = "Send transaction failed"
             return None, error_status(note, log=logger.error, e=e)
 
         try:
             # Confirm transaction
-            tx_receipt = self.endpoint._web3.eth.wait_for_transaction_receipt(
-                tx_hash, timeout=360
-            )
+            tx_receipt = self.endpoint._web3.eth.wait_for_transaction_receipt(tx_hash, timeout=360)
 
             tx_url = f"{self.endpoint.explorer}/tx/{tx_hash.hex()}"
 

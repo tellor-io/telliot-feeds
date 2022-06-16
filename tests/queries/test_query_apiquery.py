@@ -1,5 +1,4 @@
 from eth_abi import decode_abi
-
 from telliot_core.queries.api_query import APIQuery
 
 

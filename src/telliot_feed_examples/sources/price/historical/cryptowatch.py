@@ -133,16 +133,13 @@ class CryptowatchHistoricalPriceService(WebPriceService):
         Documentation for Cryptowatch API:
         https://docs.cryptowat.ch/rest-api/markets/ohlc
         """
-        candles, dt = await self.get_candles(
-            asset=asset, currency=currency, ts=ts, period=period
-        )
+        candles, dt = await self.get_candles(asset=asset, currency=currency, ts=ts, period=period)
 
         if candles is not None:
             try:
                 if len(candles) == 0:
                     logger.warning(
-                        "No candle data from Cryptowatch historical price source"
-                        f" for given timestamp: {ts}."
+                        "No candle data from Cryptowatch historical price source" f" for given timestamp: {ts}."
                     )
                     return None, None
 
@@ -161,9 +158,7 @@ class CryptowatchHistoricalPriceSource(PriceSource):
     ts: int = 0
     asset: str = ""
     currency: str = ""
-    service: CryptowatchHistoricalPriceService = CryptowatchHistoricalPriceService(
-        ts=ts
-    )
+    service: CryptowatchHistoricalPriceService = CryptowatchHistoricalPriceService(ts=ts)
 
     def __post_init__(self) -> None:
         self.service.ts = self.ts
