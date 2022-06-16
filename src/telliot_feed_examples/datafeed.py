@@ -5,8 +5,9 @@ from dataclasses import dataclass
 from typing import Generic
 from typing import TypeVar
 
-from telliot_feed_examples.datasource import DataSource
 from telliot_core.model.base import Base
+
+from telliot_feed_examples.datasource import DataSource
 from telliot_feed_examples.queries.query import OracleQuery
 
 T = TypeVar("T")

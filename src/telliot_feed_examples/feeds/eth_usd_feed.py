@@ -1,7 +1,6 @@
 """Datafeed for current price of ETH in USD used by LegacyQueryReporter."""
 from telliot_feed_examples.datafeed import DataFeed
 from telliot_feed_examples.queries import LegacyRequest
-
 from telliot_feed_examples.sources.price.spot.binance import BinanceSpotPriceSource
 from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceSource
 from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceSource

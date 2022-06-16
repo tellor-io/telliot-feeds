@@ -1,4 +1,5 @@
 from eth_abi import decode_abi
+
 from telliot_feed_examples.queries.api_query import APIQuery
 
 
@@ -43,8 +44,7 @@ def test_constructor():
 
     url = decode_abi([q.abi[0]["type"]], encoded_param_vals)[0]
     assert (
-        url
-        == "https://samples.openweathermap.org/data/2.5/weather?q=Lond`on,uk&appid=b6907d289e10d714a6e88b30761fae22"
+        url == "https://samples.openweathermap.org/data/2.5/weather?q=Lond`on,uk&appid=b6907d289e10d714a6e88b30761fae22"
     )
 
     q = APIQuery.get_query_from_data(exp_query_data)

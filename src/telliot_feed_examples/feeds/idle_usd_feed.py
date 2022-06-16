@@ -1,6 +1,5 @@
 from telliot_feed_examples.datafeed import DataFeed
 from telliot_feed_examples.queries import SpotPrice
-
 from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feed_examples.sources.price.spot.nomics import NomicsSpotPriceSource
 from telliot_feed_examples.sources.price_aggregator import PriceAggregator

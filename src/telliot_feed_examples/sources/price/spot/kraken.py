@@ -7,7 +7,6 @@ from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
 from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
 from telliot_feed_examples.pricing.price_service import WebPriceService
 from telliot_feed_examples.pricing.price_source import PriceSource
-
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -74,6 +73,4 @@ class KrakenSpotPriceService(WebPriceService):
 class KrakenSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: KrakenSpotPriceService = field(
-        default_factory=KrakenSpotPriceService, init=False
-    )
+    service: KrakenSpotPriceService = field(default_factory=KrakenSpotPriceService, init=False)

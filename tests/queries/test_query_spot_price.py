@@ -4,6 +4,7 @@ Copyright (c) 2021-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
 import pytest
+
 from telliot_feed_examples.queries.price.spot_price import SpotPrice
 
 
@@ -56,15 +57,9 @@ def test_invalid_pair():
 
 def test_vsq_usd_spot_price():
     q = SpotPrice(asset="vsq", currency="usd")
-    assert (
-        q.query_id.hex()
-        == "a9b17c33422e2e576fb664d1d11d38c377b614d62f92653d006eca7bb2af1656"
-    )
+    assert q.query_id.hex() == "a9b17c33422e2e576fb664d1d11d38c377b614d62f92653d006eca7bb2af1656"
 
 
 def test_bct_usd_spot_price():
     q = SpotPrice(asset="bct", currency="usd")
-    assert (
-        q.query_id.hex()
-        == "35e083af947a4cf3bc053440c3b4f753433c76acab6c8b1911ee808104b72e85"
-    )
+    assert q.query_id.hex() == "35e083af947a4cf3bc053440c3b4f753433c76acab6c8b1911ee808104b72e85"

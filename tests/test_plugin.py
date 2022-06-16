@@ -1,5 +1,6 @@
 """Test plugin module"""
 import pytest
+
 from telliot_feed_examples.plugin.discover import telliot_plugins
 
 

@@ -2,6 +2,7 @@ from unittest import mock
 
 import pytest
 import requests
+
 from telliot_feed_examples.pricing.price_service import WebPriceService
 
 

@@ -6,11 +6,11 @@ import requests
 from requests import JSONDecodeError
 from requests import Response
 from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
+
 from telliot_feed_examples.datasource import DataSource
 from telliot_feed_examples.dtypes.datapoint import DataPoint
 from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
-from urllib3.util import Retry
-
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -84,9 +84,7 @@ class GasPriceOracleSource(DataSource[str]):
             return None, None
 
         if rsp.status_code // 100 != 2:
-            logger.warning(
-                "Invalid response from GasPriceOracle API: " + str(rsp.status_code)
-            )
+            logger.warning("Invalid response from GasPriceOracle API: " + str(rsp.status_code))
             return None, None
 
         try:
@@ -111,9 +109,7 @@ class GasPriceOracleSource(DataSource[str]):
             logger.error("Unable to parse GasPriceOracle source JSON")
             return None, None
         except ValueError:
-            logger.error(
-                "Unable to calculate median gas price from GasPriceOracle source JSON"
-            )
+            logger.error("Unable to calculate median gas price from GasPriceOracle source JSON")
             return None, None
         gas_prices.sort()
 

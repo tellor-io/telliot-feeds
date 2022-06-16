@@ -3,14 +3,14 @@ from datetime import datetime
 import pytest
 from brownie import accounts
 from brownie import DIVAProtocolMock
-from telliot_feed_examples.datafeed import DataFeed
 from telliot_core.apps.core import TelliotCore
-from telliot_feed_examples.queries.diva_protocol import DIVAProtocolPolygon
 
+from telliot_feed_examples.datafeed import DataFeed
 from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feed_examples.feeds.diva_protocol_feed import DivaPoolParameters
 from telliot_feed_examples.feeds.diva_protocol_feed import get_pool_params
 from telliot_feed_examples.feeds.diva_protocol_feed import get_variable_source
+from telliot_feed_examples.queries.diva_protocol import DIVAProtocolPolygon
 from telliot_feed_examples.sources.price.historical.poloniex import (
     PoloniexHistoricalPriceSource,
 )
@@ -32,9 +32,7 @@ def test_get_variable_source() -> None:
 async def test_get_pool_parameters(ropsten_test_cfg, diva_mock_contract) -> None:
     async with TelliotCore(config=ropsten_test_cfg) as core:
         account = core.get_account()
-        params = await get_pool_params(
-            3, core.endpoint, account, diva_mock_contract.address
-        )
+        params = await get_pool_params(3, core.endpoint, account, diva_mock_contract.address)
 
         assert isinstance(params, DivaPoolParameters)
         assert params.reference_asset == "ETH/USD"

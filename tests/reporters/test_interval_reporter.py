@@ -11,15 +11,15 @@ import pytest
 import pytest_asyncio
 from brownie import accounts
 from telliot_core.apps.core import TelliotCore
-from telliot_feed_examples.datafeed import DataFeed
-from telliot_feed_examples.sources.etherscan_gas import EtherscanGasPrice
 from telliot_core.gas.legacy_gas import ethgasstation
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
+from telliot_feed_examples.datafeed import DataFeed
 from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feed_examples.reporters import interval
 from telliot_feed_examples.reporters.interval import IntervalReporter
+from telliot_feed_examples.sources.etherscan_gas import EtherscanGasPrice
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -243,9 +243,7 @@ async def test_no_updated_value(eth_usd_reporter, bad_datasource):
 
 
 @pytest.mark.asyncio
-async def test_no_token_prices_for_profit_calc(
-    eth_usd_reporter, bad_datasource, guaranteed_price_source
-):
+async def test_no_token_prices_for_profit_calc(eth_usd_reporter, bad_datasource, guaranteed_price_source):
     """Test handling for no token prices for profit calculation."""
     r = eth_usd_reporter
 

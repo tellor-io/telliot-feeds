@@ -8,6 +8,7 @@ from typing import Optional
 import clamfig
 import yaml
 from telliot_core.model.base import Base
+
 from telliot_feed_examples.queries.abi_query import AbiQuery
 from telliot_feed_examples.queries.query import OracleQuery
 
@@ -45,9 +46,7 @@ class Catalog(Base):
 
     _entries: Dict[str, CatalogEntry] = field(default_factory=dict)
 
-    def add_entry(
-        self, tag: str, title: str, q: OracleQuery, active: bool = True
-    ) -> None:
+    def add_entry(self, tag: str, title: str, q: OracleQuery, active: bool = True) -> None:
         """Add a new entry to the catalog."""
 
         if tag in self._entries:

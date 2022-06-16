@@ -7,7 +7,6 @@ from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
 from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
 from telliot_feed_examples.pricing.price_service import WebPriceService
 from telliot_feed_examples.pricing.price_source import PriceSource
-
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -30,9 +29,7 @@ class BinanceSpotPriceService(WebPriceService):
         asset = asset.upper()
         currency = currency.upper()
 
-        url_params = urlencode(
-            {"symbol": f"{asset}{currency}", "interval": "1d", "limit": 1}
-        )
+        url_params = urlencode({"symbol": f"{asset}{currency}", "interval": "1d", "limit": 1})
 
         request_url = f"/api/v1/klines?{url_params}"
 
@@ -61,6 +58,4 @@ class BinanceSpotPriceService(WebPriceService):
 class BinanceSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: BinanceSpotPriceService = field(
-        default_factory=BinanceSpotPriceService, init=False
-    )
+    service: BinanceSpotPriceService = field(default_factory=BinanceSpotPriceService, init=False)

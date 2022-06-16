@@ -5,11 +5,11 @@ from typing import Dict
 
 from pydantic import BaseModel
 from pydantic import ValidationError
+
 from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
 from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
 from telliot_feed_examples.pricing.price_service import WebPriceService
 from telliot_feed_examples.pricing.price_source import PriceSource
-
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -37,9 +37,7 @@ class GeminiSpotPriceService(WebPriceService):
     """Gemini Price Service"""
 
     def __init__(self, **kwargs: Any):
-        super().__init__(
-            name="Gemini Price Service", url="https://api.gemini.com", **kwargs
-        )
+        super().__init__(name="Gemini Price Service", url="https://api.gemini.com", **kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
@@ -75,6 +73,4 @@ class GeminiSpotPriceService(WebPriceService):
 class GeminiSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: GeminiSpotPriceService = field(
-        default_factory=GeminiSpotPriceService, init=False
-    )
+    service: GeminiSpotPriceService = field(default_factory=GeminiSpotPriceService, init=False)

@@ -10,13 +10,13 @@ from dotenv import find_dotenv
 from dotenv import load_dotenv
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
-from telliot_feed_examples.sources.etherscan_gas import EtherscanGasPriceSource
 from web3 import HTTPProvider
 from web3 import Web3
 from web3.exceptions import TransactionNotFound
 from web3.types import TxParams
 
 from telliot_feed_examples.flashbots import flashbot
+from telliot_feed_examples.sources.etherscan_gas import EtherscanGasPriceSource
 
 
 load_dotenv(find_dotenv())
@@ -96,9 +96,7 @@ async def main() -> None:
     block = w3.eth.block_number
     results = []
     for target_block in [block + k for k in [1, 2, 3, 4, 5]]:
-        results.append(
-            w3.flashbots.send_bundle(bundle, target_block_number=target_block)
-        )
+        results.append(w3.flashbots.send_bundle(bundle, target_block_number=target_block))
     print(f"Bundle sent to miners in block {block}")
 
     # wait for the results

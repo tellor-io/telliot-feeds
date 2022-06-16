@@ -2,17 +2,15 @@
 from typing import Optional
 
 import chained_accounts
-from telliot_feed_examples.datafeed import DataFeed
 from telliot_core.model.endpoints import RPCEndpoint
-from telliot_feed_examples.queries.tellor_rng import TellorRNG
 
+from telliot_feed_examples.datafeed import DataFeed
+from telliot_feed_examples.queries.tellor_rng import TellorRNG
 from telliot_feed_examples.sources.blockhash_aggregator import TellorRNGManualSource
 
 local_source = TellorRNGManualSource()
 
-tellor_rng_feed = DataFeed(
-    source=local_source, query=TellorRNG(timestamp=local_source.timestamp)
-)
+tellor_rng_feed = DataFeed(source=local_source, query=TellorRNG(timestamp=local_source.timestamp))
 
 
 async def assemble_rng_datafeed(

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from eth_abi import decode_abi
 from eth_abi import encode_abi
+
 from telliot_feed_examples.dtypes.value_type import ValueType
 from telliot_feed_examples.queries.abi_query import AbiQuery
 
@@ -20,11 +21,7 @@ class DIVAReturnType(ValueType):
 
         Encodes a tuple of float values.
         """
-        if (
-            len(value) != 2
-            or not isinstance(value[0], float)
-            or not isinstance(value[1], float)
-        ):
+        if len(value) != 2 or not isinstance(value[0], float) or not isinstance(value[1], float):
             raise ValueError("Invalid response type")
 
         return encode_abi(["uint256", "uint256"], [int(v * 1e18) for v in value])
@@ -34,10 +31,7 @@ class DIVAReturnType(ValueType):
 
         Decodes a tuple of float values.
         """
-        return [
-            float(float(v) / 1e18)
-            for v in decode_abi(["uint256", "uint256"], bytes_val)
-        ]
+        return [float(float(v) / 1e18) for v in decode_abi(["uint256", "uint256"], bytes_val)]
 
 
 @dataclass

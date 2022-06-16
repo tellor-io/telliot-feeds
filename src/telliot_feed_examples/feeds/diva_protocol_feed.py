@@ -6,14 +6,14 @@ from typing import Any
 from typing import Optional
 
 from chained_accounts import ChainedAccount
+from telliot_core.model.endpoints import RPCEndpoint
+from telliot_core.tellor.tellorflex.diva import DivaProtocolContract
+
 from telliot_feed_examples.datafeed import DataFeed
 from telliot_feed_examples.datasource import DataSource
 from telliot_feed_examples.dtypes.datapoint import DataPoint
 from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
-from telliot_core.model.endpoints import RPCEndpoint
 from telliot_feed_examples.queries.diva_protocol import DIVAProtocolPolygon
-from telliot_core.tellor.tellorflex.diva import DivaProtocolContract
-
 from telliot_feed_examples.sources.price.historical.cryptowatch import (
     CryptowatchHistoricalPriceSource,
 )
