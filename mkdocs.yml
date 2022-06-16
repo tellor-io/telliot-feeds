@@ -79,6 +79,7 @@ nav:
           - Query Base Classes: code/query-base-classes.md
           - Query Catalog: code/query-catalog.md
       - Data Feed Module: code/datafeed.md
+      - Types Module: code/dtypes.md
   - Contributing:
       - Developer's Guide: contributing.md
       - Documentation: documentation.md
