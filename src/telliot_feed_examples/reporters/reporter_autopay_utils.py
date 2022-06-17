@@ -192,7 +192,7 @@ async def autopay_suggested_report(
 ) -> Tuple[Optional[str], Any]:
     chain = autopay.node.chain_id
 
-    if chain in (137, 80001, 69, 1666600000, 1666700000):
+    if chain in (137, 80001, 69, 1666600000, 1666700000, 421611):
         assert isinstance(autopay, TellorFlexAutopayContract)
 
         query_id_lis, status = await autopay.read("getFundedQueryIds")
