@@ -56,7 +56,7 @@ def find_values(key: str, json_dict: Optional[dict[Any, Any]]) -> list[Any]:
 
 
 @dataclass
-class APIQuerySource(DataSource):
+class APIQuerySource(DataSource[Any]):
     """data source for retrieving data from api calls"""
 
     #: URL to call and receive JSON dict to be parsed
@@ -83,7 +83,7 @@ class APIQuerySource(DataSource):
 
         return results_fin
 
-    async def fetch_new_datapoint(self) -> DataPoint:
+    async def fetch_new_datapoint(self) -> DataPoint[Any]:
         """fetch new datapoint method, may need to overwrite return type"""
         val = self.main_parser()
 

@@ -215,8 +215,7 @@ class TellorFlexReporter(IntervalReporter):
         count, read_status = await self.oracle.read(func_name="getNewValueCountbyQueryId", _queryId=query_id)
         return count, read_status
 
-    async def fetch_datafeed(self) -> DataFeed[Any]:
-        status = ResponseStatus()
+    async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         tip = 0
 
         if self.datafeed is not None:
@@ -226,16 +225,14 @@ class TellorFlexReporter(IntervalReporter):
 
             single_tip = await get_single_tip(self.datafeed.query.query_id, self.autopay)
             if single_tip is None:
-                msg = "Unable to fetch single tip"
-                error_status(msg, log=logger.warning)
+                logger.warning("Unable to fetch single tip")
                 return None
 
             tip += single_tip
 
             feed_tip = await get_feed_tip(self.datafeed.query.query_id, self.autopay)
             if feed_tip is None:
-                msg = "Unable to fetch feed tip"
-                error_status(msg, log=logger.warning)
+                logger.warning("Unable to fetch feed tip")
                 return None
 
             tip += feed_tip
@@ -246,8 +243,7 @@ class TellorFlexReporter(IntervalReporter):
                 suggested_qtag = await tellor_suggested_report(self.oracle)
 
             if suggested_qtag is None:
-                msg = "Could not suggest query tag"
-                error_status(msg, log=logger.warning)
+                logger.warning("Could not suggest query tag")
                 return None
 
             if autopay_tip is not None:
@@ -264,6 +260,9 @@ class TellorFlexReporter(IntervalReporter):
         _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
         price_matic_usd = matic_usd_median_feed.source.latest[0]
         price_trb_usd = trb_usd_median_feed.source.latest[0]
+        if price_matic_usd is None or price_trb_usd is None:
+            logger.warning("Unable to fetch token price")
+            return None
 
         # Using transaction type 2 (EIP-1559)
         if self.transaction_type == 2:
@@ -304,8 +303,9 @@ class TellorFlexReporter(IntervalReporter):
                 self.legacy_gas_price = gas_price
 
             if not self.legacy_gas_price:
-                note = "unable to fetch gas price from api"
-                return error_status(note, log=logger.info)
+                msg = "unable to fetch gas price from api"
+                logger.warning(msg)
+                return None
             logger.info(
                 f"""
                 tips: {tip/1e18} TRB
@@ -325,9 +325,8 @@ class TellorFlexReporter(IntervalReporter):
         percent_profit = ((profit_usd) / costs_usd) * 100
         logger.info(f"Estimated percent profit: {round(percent_profit, 2)}%")
         if (self.expected_profit != "YOLO") and (percent_profit < self.expected_profit):
-            status.ok = False
-            status.error = "Estimated profitability below threshold."
-            logger.info(status.error)
+            msg = "Estimated profitability below threshold."
+            logger.info(msg)
             return None
 
         return self.datafeed

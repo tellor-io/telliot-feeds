@@ -13,7 +13,7 @@ from urllib3.util import Retry
 from web3 import Web3
 
 from telliot_feed_examples.datasource import DataSource
-from telliot_feed_examples.dtypes.datapoint import DataPoint
+from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
 from telliot_feed_examples.utils.cfg import mainnet_config
 from telliot_feed_examples.utils.log import get_logger
 
@@ -170,7 +170,7 @@ class TellorRNGManualSource(DataSource[Any]):
         self.timestamp = data
         return data
 
-    async def fetch_new_datapoint(self) -> DataPoint[bytes]:
+    async def fetch_new_datapoint(self) -> OptionalDataPoint[bytes]:
         """Update current value with time-stamped value fetched from user input.
 
         Returns:

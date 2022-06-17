@@ -201,7 +201,7 @@ class AMPLUSDVWAPSource(DataSource[float]):
 
         sources = self.sources
         datapoints = await asyncio.gather(*[source.fetch_new_datapoint() for source in sources])
-        return datapoints  # type: ignore # TODO: haven't investigated this type error
+        return datapoints
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
         """Update current value with time-stamped value fetched from source

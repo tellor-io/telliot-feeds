@@ -16,6 +16,7 @@ from telliot_core.cli.utils import async_run
 from telliot_core.cli.utils import cli_core
 from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 
+from telliot_feed_examples.datafeed import DataFeed
 from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
@@ -482,6 +483,9 @@ async def tip(
         click.echo(f"Tipping {amount_trb} TRB for query tag: {query_tag}.")
 
         chosen_feed = CATALOG_FEEDS[query_tag]
+        if not isinstance(chosen_feed, DataFeed):
+            click.echo(f"No corresponding datafeed found for given query tag: {query_tag}\n")
+            return
         tip = int(amount_trb * 1e18)
 
         tellorx = core.get_tellorx_contracts()

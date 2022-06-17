@@ -57,7 +57,7 @@ async def get_single_tip(
     return tips
 
 
-async def get_feed_tip(query_id: str, autopay: TellorFlexAutopayContract) -> Optional[int]:
+async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> Optional[int]:
 
     if not autopay.connect().ok:
         msg = "can't suggest feed, autopay contract not connected"
