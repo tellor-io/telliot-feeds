@@ -139,7 +139,7 @@ class CryptowatchHistoricalPriceService(WebPriceService):
             try:
                 if len(candles) == 0:
                     logger.warning(
-                        "No candle data from Cryptowatch historical price source" f" for given timestamp: {ts}."
+                        f"No candle data from Cryptowatch historical price source for given timestamp: {ts}."
                     )
                     return None, None
 

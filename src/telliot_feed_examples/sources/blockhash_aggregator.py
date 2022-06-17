@@ -79,7 +79,7 @@ async def get_eth_hash(timestamp: int) -> Optional[str]:
         return None
 
     if this_block["timestamp"] < timestamp:
-        logger.error(f"Timestamp {timestamp} is older than current " f"block timestamp {this_block['timestamp']}")
+        logger.error(f"Timestamp {timestamp} is older than current block timestamp {this_block['timestamp']}")
         return None
 
     block_num = block_num_from_timestamp(timestamp)
@@ -163,7 +163,7 @@ class TellorRNGManualSource(DataSource[Any]):
                 print("Invalid input. Enter decimal value (int).")
                 continue
 
-            print("Generating random number from timestamp: " f"{inpt}\nPress [ENTER] to confirm.")
+            print(f"Generating random number from timestamp: {inpt}\nPress [ENTER] to confirm.")
             _ = input()
             data = inpt
 

@@ -128,7 +128,7 @@ class PoloniexHistoricalPriceService:
         if trades is not None:
             try:
                 if len(trades) == 0:
-                    logger.warning("No data from Poloniex historical price source for" f" given timestamp: {ts}.")
+                    logger.warning(f"No data from Poloniex historical price source for given timestamp: {ts}.")
                     return None, None
 
                 # Price from last trade in period

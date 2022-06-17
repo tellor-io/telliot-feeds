@@ -11,7 +11,6 @@ from telliot_core.tellor.tellorflex.diva import DivaProtocolContract
 
 from telliot_feed_examples.datafeed import DataFeed
 from telliot_feed_examples.datasource import DataSource
-from telliot_feed_examples.dtypes.datapoint import DataPoint
 from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
 from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
 from telliot_feed_examples.queries.diva_protocol import DIVAProtocolPolygon
