@@ -253,7 +253,7 @@ class TellorFlexReporter(IntervalReporter):
                 logger.warning(f"Suggested query tag not in catalog: {suggested_qtag}")
                 return None
 
-            self.datafeed = CATALOG_FEEDS[suggested_qtag]
+            self.datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
 
         # Fetch token prices in USD
         price_feeds = [matic_usd_median_feed, trb_usd_median_feed]
@@ -324,7 +324,9 @@ class TellorFlexReporter(IntervalReporter):
 
         percent_profit = ((profit_usd) / costs_usd) * 100
         logger.info(f"Estimated percent profit: {round(percent_profit, 2)}%")
-        if (self.expected_profit != "YOLO") and (percent_profit < self.expected_profit):
+        if (self.expected_profit != "YOLO") and (
+            isinstance(self.expected_profit, float) and percent_profit < self.expected_profit
+        ):
             msg = "Estimated profitability below threshold."
             logger.info(msg)
             return None

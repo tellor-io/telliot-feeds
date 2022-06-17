@@ -94,6 +94,8 @@ class FlashbotsReporter(IntervalReporter):
             return None, status
 
         datafeed = await self.fetch_datafeed()
+        if datafeed is None:
+            return None, error_status(note="Unable to fetch datafeed", log=logger.warning)
 
         logger.info(f"Current query: {datafeed.query.descriptor}")
 

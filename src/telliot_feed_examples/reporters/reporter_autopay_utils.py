@@ -17,7 +17,7 @@ from telliot_feed_examples.utils.log import get_logger
 logger = get_logger(__name__)
 
 # Mapping of queryId to query tag for supported queries
-CATALOG_QUERY_IDS = {query_catalog._entries[tag].query_id: tag for tag in query_catalog._entries}
+CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
 
 
 @dataclass
@@ -183,13 +183,15 @@ async def autopay_suggested_report(
 
         # get query_ids with one time tips
         singletip_dict = {
-            j: await get_single_tip(bytes.fromhex(i[2:]), autopay)
-            for i, j in CATALOG_QUERY_IDS.items()
-            if bytes.fromhex(i[2:]) in query_id_lis
+            q_tag: await get_single_tip(q_id, autopay)
+            for q_id, q_tag in CATALOG_QUERY_IDS.items()
+            if q_id in query_id_lis
         }
         # get query_ids with active feeds
         datafeed_dict = {
-            j: await get_feed_tip(i, autopay) for i, j in CATALOG_QUERY_IDS.items() if "legacy" in j or "spot" in j
+            q_tag: await get_feed_tip(q_id, autopay)
+            for q_id, q_tag in CATALOG_QUERY_IDS.items()
+            if "legacy" in q_tag or "spot" in q_tag
         }
 
         # remove none type

@@ -277,17 +277,15 @@ class IntervalReporter:
         result = await c.fetch_new_datapoint()
         return result
 
-    async def fetch_datafeed(self) -> DataFeed[Any]:
-        if self.datafeed is not None:
-            datafeed = self.datafeed
-        else:
+    async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
+        if self.datafeed is None:
             suggested_qtag = await tellor_suggested_report(self.oracle)
-            if not suggested_qtag:
-                msg = "Could not get suggested query."
-                return None, error_status(msg, log=logger.info)
-            datafeed = CATALOG_FEEDS[suggested_qtag]
+            if suggested_qtag is None:
+                logger.warning("Could not get suggested query")
+                return None
+            self.datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
 
-        return datafeed
+        return self.datafeed
 
     async def get_num_reports_by_id(self, query_id: bytes) -> Tuple[int, ResponseStatus]:
         count, read_status = await self.oracle.read(func_name="getTimestampCountById", _queryId=query_id)
