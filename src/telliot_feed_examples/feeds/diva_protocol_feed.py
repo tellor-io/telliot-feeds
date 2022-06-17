@@ -13,6 +13,7 @@ from telliot_feed_examples.datafeed import DataFeed
 from telliot_feed_examples.datasource import DataSource
 from telliot_feed_examples.dtypes.datapoint import DataPoint
 from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
+from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
 from telliot_feed_examples.queries.diva_protocol import DIVAProtocolPolygon
 from telliot_feed_examples.sources.price.historical.cryptowatch import (
     CryptowatchHistoricalPriceSource,
@@ -91,18 +92,21 @@ async def get_pool_params(
 class DivaSource(DataSource[Any]):
     """DataSource for Diva Protocol manually-entered data."""
 
-    reference_asset_source: DataSource[float] = None
-    collat_token_source: DataSource[float] = None
+    reference_asset_source: Optional[DataSource[float]] = None
+    collat_token_source: Optional[DataSource[float]] = None
 
-    async def fetch_new_datapoint(self) -> Optional[DataPoint[float]]:
+    async def fetch_new_datapoint(self) -> OptionalDataPoint[Any]:
         """Retrieve new datapoint from sources."""
 
+        if self.reference_asset_source is None or self.collat_token_source is None:
+            logger.warning("Diva source not configured.")
+            return None, None
         ref_asset_price, _ = await self.reference_asset_source.fetch_new_datapoint()
         collat_token_price, _ = await self.collat_token_source.fetch_new_datapoint()
 
         if ref_asset_price is None or collat_token_price is None:
             logger.warning("Missing reference asset or collateral token price.")
-            return None
+            return None, None
 
         data = [ref_asset_price, collat_token_price]
         dt = datetime_now_utc()
@@ -118,7 +122,7 @@ class DivaSource(DataSource[Any]):
 class DIVAUSDSource(DataSource[Any]):
     """Fake source that returns dummy price data"""
 
-    async def fetch_new_datapoint(self) -> Optional[DataPoint[float]]:
+    async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
         """Fetch fake data"""
         data = random.uniform(69, 420)
         dt = datetime_now_utc()

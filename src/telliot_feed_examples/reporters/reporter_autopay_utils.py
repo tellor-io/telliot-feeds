@@ -140,7 +140,7 @@ async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> O
             feed_query_dict[feed_id_bytes] = feed_details.reward
         else:
             datafeed = CATALOG_FEEDS[CATALOG_QUERY_IDS[query_id]]
-            value_now = await datafeed.source.fetch_new_datapoint()
+            value_now = await datafeed.source.fetch_new_datapoint()  # type: ignore
             if not value_now:
                 note = f"Unable to fetch {datafeed} price for tip calculation"
                 error_status(note=note, log=logger.warning)

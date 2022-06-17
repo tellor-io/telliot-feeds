@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 
 async def tip_query(
     oracle: Contract,
-    datafeed: DataFeed,
+    datafeed: DataFeed[Any],
     tip: int,
     gas_price: str = "3",
     retries: int = 2,

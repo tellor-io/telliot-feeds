@@ -146,7 +146,7 @@ class PoloniexHistoricalPriceSource(PriceSource):
     ts: int = 0
     asset: str = ""
     currency: str = ""
-    service: PoloniexHistoricalPriceService = PoloniexHistoricalPriceService(ts=ts)
+    service: PoloniexHistoricalPriceService = PoloniexHistoricalPriceService(ts=ts)  # type: ignore
 
     def __post_init__(self) -> None:
         self.service.ts = self.ts
