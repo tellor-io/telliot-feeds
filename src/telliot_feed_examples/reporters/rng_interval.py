@@ -9,17 +9,17 @@ from typing import Optional
 from typing import Tuple
 
 from eth_utils import to_checksum_address
-from telliot_core.datafeed import DataFeed
-from telliot_core.queries.tellor_rng import TellorRNG
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
+from telliot_feed_examples.datafeed import DataFeed
 from telliot_feed_examples.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
+from telliot_feed_examples.queries.tellor_rng import TellorRNG
 from telliot_feed_examples.reporters.reporter_autopay_utils import get_feed_tip
 from telliot_feed_examples.reporters.reporter_autopay_utils import get_single_tip
 from telliot_feed_examples.reporters.tellorflex import TellorFlexReporter
@@ -51,24 +51,18 @@ class RNGReporter(TellorFlexReporter):
         report_count, read_status = await self.get_num_reports_by_id(query.query_id)
 
         if not read_status.ok:
-            status.error = (
-                "Unable to retrieve report count: " + read_status.error
-            )  # error won't be none # noqa: E501
+            status.error = "Unable to retrieve report count: " + read_status.error  # error won't be none # noqa: E501
             logger.error(status.error)
             status.e = read_status.e
             return None
 
         if report_count > 0:
             status.ok = False
-            status.error = (
-                f"Latest timestamp in interval {rng_timestamp} already reported"
-            )
+            status.error = f"Latest timestamp in interval {rng_timestamp} already reported"
             logger.info(status.error)
             return None
 
-        datafeed = await assemble_rng_datafeed(
-            timestamp=rng_timestamp, node=self.endpoint, account=self.account
-        )
+        datafeed = await assemble_rng_datafeed(timestamp=rng_timestamp, node=self.endpoint, account=self.account)
         if datafeed is None:
             msg = "Unable to assemble RNG datafeed"
             error_status(note=msg, log=logger.warning)
@@ -92,11 +86,13 @@ class RNGReporter(TellorFlexReporter):
 
         # Fetch token prices in USD
         price_feeds = [matic_usd_median_feed, trb_usd_median_feed]
-        _ = await asyncio.gather(
-            *[feed.source.fetch_new_datapoint() for feed in price_feeds]
-        )
+        _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
         price_matic_usd = matic_usd_median_feed.source.latest[0]
         price_trb_usd = trb_usd_median_feed.source.latest[0]
+        if price_matic_usd is None or price_trb_usd is None:
+            msg = "Unable to fetch token prices"
+            error_status(msg, log=logger.warning)
+            return None
 
         # Using transaction type 2 (EIP-1559)
         if self.transaction_type == 2:
@@ -138,7 +134,8 @@ class RNGReporter(TellorFlexReporter):
 
             if not self.legacy_gas_price:
                 note = "unable to fetch gas price from api"
-                return error_status(note, log=logger.info)
+                error_status(note, log=logger.info)
+                return None
             logger.info(
                 f"""
                 tips: {tip/1e18} TRB
@@ -157,7 +154,9 @@ class RNGReporter(TellorFlexReporter):
 
         percent_profit = ((profit_usd) / costs_usd) * 100
         logger.info(f"Estimated percent profit: {round(percent_profit, 2)}%")
-        if (self.expected_profit != "YOLO") and (percent_profit < self.expected_profit):
+        if (self.expected_profit != "YOLO") and (
+            isinstance(self.expected_profit, float) and percent_profit < self.expected_profit
+        ):
             status.ok = False
             status.error = "Estimated profitability below threshold."
             logger.info(status.error)
@@ -222,9 +221,7 @@ class RNGReporter(TellorFlexReporter):
         report_count, read_status = await self.get_num_reports_by_id(query_id)
 
         if not read_status.ok:
-            status.error = (
-                "Unable to retrieve report count: " + read_status.error
-            )  # error won't be none # noqa: E501
+            status.error = "Unable to retrieve report count: " + read_status.error  # error won't be none # noqa: E501
             logger.error(status.error)
             status.e = read_status.e
             return None, status
@@ -252,9 +249,7 @@ class RNGReporter(TellorFlexReporter):
                     # TODO: Investigate more why etherscan txs using Flashbots have
                     # the same maxFeePerGas and maxPriorityFeePerGas. Example:
                     # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288 # noqa: E501
-                    "maxPriorityFeePerGas": Web3.toWei(
-                        self.priority_fee, "gwei"
-                    ),  # noqa: E501
+                    "maxPriorityFeePerGas": Web3.toWei(self.priority_fee, "gwei"),  # noqa: E501
                     "chainId": self.chain_id,
                 }
             )
@@ -284,18 +279,14 @@ class RNGReporter(TellorFlexReporter):
 
         try:
             logger.debug("Sending submitValue transaction")
-            tx_hash = self.endpoint._web3.eth.send_raw_transaction(
-                tx_signed.rawTransaction
-            )
+            tx_hash = self.endpoint._web3.eth.send_raw_transaction(tx_signed.rawTransaction)
         except Exception as e:
             note = "Send transaction failed"
             return None, error_status(note, log=logger.error, e=e)
 
         try:
             # Confirm transaction
-            tx_receipt = self.endpoint._web3.eth.wait_for_transaction_receipt(
-                tx_hash, timeout=360
-            )
+            tx_receipt = self.endpoint._web3.eth.wait_for_transaction_receipt(tx_hash, timeout=360)
 
             tx_url = f"{self.endpoint.explorer}/tx/{tx_hash.hex()}"
 

@@ -10,10 +10,7 @@ from telliot_feed_examples.sources.api_source import APIQuerySource
 
 @pytest.mark.asyncio
 async def test_weather():
-    ex_url_1 = (
-        "https://samples.openweathermap.org/data/2.5/weather?q=Lond`on,"
-        "uk&appid=b6907d289e10d714a6e88b30761fae22"
-    )
+    ex_url_1 = "https://samples.openweathermap.org/data/2.5/weather?q=Lond`on,uk&appid=b6907d289e10d714a6e88b30761fae22"
     ex_key_1 = "id, temp_min, clouds"
     weather_query = APIQuerySource(url=ex_url_1, key_str=ex_key_1)
     resp = weather_query.main_parser()
@@ -70,10 +67,7 @@ async def test_cat():
 
 @pytest.mark.asyncio
 async def test_gas():
-    ex_url_6 = (
-        "https://api.collectapi.com/gasPrice/turkeyGasoline?"
-        "district=kadikoy&city=istanbul"
-    )
+    ex_url_6 = "https://api.collectapi.com/gasPrice/turkeyGasoline?district=kadikoy&city=istanbul"
     ex_key_6 = ""
     gas_query = APIQuerySource(url=ex_url_6, key_str=ex_key_6)
     resp = gas_query.main_parser()
@@ -82,10 +76,7 @@ async def test_gas():
 
 @pytest.mark.asyncio
 async def test_full():
-    ex_url_1 = (
-        "https://samples.openweathermap.org/data/2.5/weather?q=Lond`on,"
-        "uk&appid=b6907d289e10d714a6e88b30761fae22"
-    )
+    ex_url_1 = "https://samples.openweathermap.org/data/2.5/weather?q=Lond`on,uk&appid=b6907d289e10d714a6e88b30761fae22"
     ex_key_1 = "id, temp_min, clouds"
     weather_query = APIQuerySource(url=ex_url_1, key_str=ex_key_1)
     val, dt = await weather_query.fetch_new_datapoint()

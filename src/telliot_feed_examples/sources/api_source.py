@@ -5,10 +5,10 @@ from typing import Optional
 from typing import Union
 
 import requests
-from telliot_core.datasource import DataSource
-from telliot_core.dtypes.datapoint import DataPoint
-from telliot_core.dtypes.datapoint import datetime_now_utc
 
+from telliot_feed_examples.datasource import DataSource
+from telliot_feed_examples.dtypes.datapoint import DataPoint
+from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
 from telliot_feed_examples.utils.log import get_logger
 
 logger = get_logger(__name__)
@@ -51,14 +51,12 @@ def find_values(key: str, json_dict: Optional[dict[Any, Any]]) -> list[Any]:
             pass
         return ex_dict
 
-    json.loads(
-        json.dumps(json_dict, indent=1), object_hook=decode_dict
-    )  # Return value ignored.
+    json.loads(json.dumps(json_dict, indent=1), object_hook=decode_dict)  # Return value ignored.
     return vals
 
 
 @dataclass
-class APIQuerySource(DataSource):
+class APIQuerySource(DataSource[Any]):
     """data source for retrieving data from api calls"""
 
     #: URL to call and receive JSON dict to be parsed
@@ -85,7 +83,7 @@ class APIQuerySource(DataSource):
 
         return results_fin
 
-    async def fetch_new_datapoint(self) -> DataPoint:
+    async def fetch_new_datapoint(self) -> DataPoint[Any]:
         """fetch new datapoint method, may need to overwrite return type"""
         val = self.main_parser()
 

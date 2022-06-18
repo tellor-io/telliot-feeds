@@ -2,11 +2,10 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 
-from telliot_core.dtypes.datapoint import datetime_now_utc
-from telliot_core.dtypes.datapoint import OptionalDataPoint
-from telliot_core.pricing.price_service import WebPriceService
-from telliot_core.pricing.price_source import PriceSource
-
+from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
+from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
+from telliot_feed_examples.pricing.price_service import WebPriceService
+from telliot_feed_examples.pricing.price_source import PriceSource
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -54,11 +53,7 @@ class PancakeswapPriceService(WebPriceService):
             print(response)
 
             try:
-                price = (
-                    response["data"]["price"]
-                    if currency.lower() == "usd"
-                    else response["data"]["price_BNB"]
-                )
+                price = response["data"]["price"] if currency.lower() == "usd" else response["data"]["price_BNB"]
             except KeyError as e:
                 msg = "Error parsing Pancakeswap API response: KeyError: {}".format(e)
                 logger.critical(msg)
@@ -73,6 +68,4 @@ class PancakeswapPriceService(WebPriceService):
 class PancakeswapPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: PancakeswapPriceService = field(
-        default_factory=PancakeswapPriceService, init=False
-    )
+    service: PancakeswapPriceService = field(default_factory=PancakeswapPriceService, init=False)

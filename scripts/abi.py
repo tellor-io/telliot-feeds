@@ -200,18 +200,14 @@ tellor_flex_abi = [
         "type": "function",
     },
     {
-        "inputs": [
-            {"internalType": "uint256", "name": "_newReportingLock", "type": "uint256"}
-        ],
+        "inputs": [{"internalType": "uint256", "name": "_newReportingLock", "type": "uint256"}],
         "name": "changeReportingLock",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function",
     },
     {
-        "inputs": [
-            {"internalType": "uint256", "name": "_newStakeAmount", "type": "uint256"}
-        ],
+        "inputs": [{"internalType": "uint256", "name": "_newStakeAmount", "type": "uint256"}],
         "name": "changeStakeAmount",
         "outputs": [],
         "stateMutability": "nonpayable",

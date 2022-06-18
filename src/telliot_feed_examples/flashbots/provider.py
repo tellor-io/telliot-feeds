@@ -43,27 +43,17 @@ class FlashbotProvider(HTTPProvider):
         self.signature_account = signature_account
 
     def make_request(self, method: RPCEndpoint, params: Any) -> RPCResponse:
-        self.logger.debug(
-            f"Making request HTTP. URI: {self.endpoint_uri}, Method: {method}"
-        )
+        self.logger.debug(f"Making request HTTP. URI: {self.endpoint_uri}, Method: {method}")
         request_data = self.encode_rpc_request(method, params)
 
-        message = messages.encode_defunct(
-            text=Web3.keccak(text=request_data.decode("utf-8")).hex()
-        )
-        signed_message = Account.sign_message(
-            message, private_key=self.signature_account.privateKey.hex()
-        )
+        message = messages.encode_defunct(text=Web3.keccak(text=request_data.decode("utf-8")).hex())
+        signed_message = Account.sign_message(message, private_key=self.signature_account.privateKey.hex())
 
         headers = self.get_request_headers() | {
             "X-Flashbots-Signature": f"{self.signature_account.address}:{signed_message.signature.hex()}"
         }
 
-        raw_response = make_post_request(
-            self.endpoint_uri, request_data, headers=headers
-        )
+        raw_response = make_post_request(self.endpoint_uri, request_data, headers=headers)
         response = self.decode_rpc_response(raw_response)
-        self.logger.debug(
-            f"Getting response HTTP. URI: {self.endpoint_uri}, Method: {method}, Response: {response}"
-        )
+        self.logger.debug(f"Getting response HTTP. URI: {self.endpoint_uri}, Method: {method}, Response: {response}")
         return response

@@ -5,21 +5,19 @@ from typing import Optional
 from typing import Tuple
 
 from eth_abi import decode_single
-from telliot_core.data.query_catalog import query_catalog
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.utils.response import error_status
 from telliot_core.utils.timestamp import TimeStamp
 
 from telliot_feed_examples.feeds import CATALOG_FEEDS
+from telliot_feed_examples.queries.query_catalog import query_catalog
 from telliot_feed_examples.utils.log import get_logger
 
 
 logger = get_logger(__name__)
 
 # Mapping of queryId to query tag for supported queries
-CATALOG_QUERY_IDS = {
-    query_catalog._entries[tag].query_id: tag for tag in query_catalog._entries
-}
+CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
 
 
 @dataclass
@@ -59,9 +57,7 @@ async def get_single_tip(
     return tips
 
 
-async def get_feed_tip(
-    query_id: str, autopay: TellorFlexAutopayContract
-) -> Optional[int]:
+async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> Optional[int]:
 
     if not autopay.connect().ok:
         msg = "can't suggest feed, autopay contract not connected"
@@ -103,9 +99,7 @@ async def get_feed_tip(
             continue
 
         if feed_details.balance <= 0:
-            msg = (
-                f"{CATALOG_QUERY_IDS[query_id]}, autopay feed has no remaining balance"
-            )
+            msg = f"{CATALOG_QUERY_IDS[query_id]}, autopay feed has no remaining balance"
             error_status(note=msg, log=logger.warning)
             continue
 
@@ -114,13 +108,9 @@ async def get_feed_tip(
 
         # Number of intervals since start time
         current_time = TimeStamp.now().ts
-        num_intervals = math.floor(
-            (current_time - feed_details.startTime) / feed_details.interval
-        )
+        num_intervals = math.floor((current_time - feed_details.startTime) / feed_details.interval)
         # Start time of latest submission window
-        current_window_start = feed_details.startTime + (
-            feed_details.interval * num_intervals
-        )
+        current_window_start = feed_details.startTime + (feed_details.interval * num_intervals)
 
         response, status = await autopay.read("getCurrentValue", _queryId=query_id)
         if not status.ok:
@@ -150,7 +140,7 @@ async def get_feed_tip(
             feed_query_dict[feed_id_bytes] = feed_details.reward
         else:
             datafeed = CATALOG_FEEDS[CATALOG_QUERY_IDS[query_id]]
-            value_now = await datafeed.source.fetch_new_datapoint()
+            value_now = await datafeed.source.fetch_new_datapoint()  # type: ignore
             if not value_now:
                 note = f"Unable to fetch {datafeed} price for tip calculation"
                 error_status(note=note, log=logger.warning)
@@ -161,23 +151,17 @@ async def get_feed_tip(
                 price_change = 10000
 
             elif value_now >= value_before_now:
-                price_change = (
-                    10000 * (value_now - value_before_now)
-                ) / value_before_now
+                price_change = (10000 * (value_now - value_before_now)) / value_before_now
 
             else:
-                price_change = (
-                    10000 * (value_before_now - value_now)
-                ) / value_before_now
+                price_change = (10000 * (value_before_now - value_now)) / value_before_now
 
             if price_change > feed_details.priceThreshold:
                 feed_query_dict[feed_id_bytes] = feed_details.reward
 
     tips_total = sum(feed_query_dict.values())
     if tips_total > 0:
-        logger.info(
-            f"{CATALOG_QUERY_IDS[query_id]} has potentially {tips_total/1e18} in tips"
-        )
+        logger.info(f"{CATALOG_QUERY_IDS[query_id]} has potentially {tips_total/1e18} in tips")
 
     return tips_total
 
@@ -199,15 +183,15 @@ async def autopay_suggested_report(
 
         # get query_ids with one time tips
         singletip_dict = {
-            j: await get_single_tip(bytes.fromhex(i[2:]), autopay)
-            for i, j in CATALOG_QUERY_IDS.items()
-            if bytes.fromhex(i[2:]) in query_id_lis
+            q_tag: await get_single_tip(q_id, autopay)
+            for q_id, q_tag in CATALOG_QUERY_IDS.items()
+            if q_id in query_id_lis
         }
         # get query_ids with active feeds
         datafeed_dict = {
-            j: await get_feed_tip(i, autopay)
-            for i, j in CATALOG_QUERY_IDS.items()
-            if "legacy" in j or "spot" in j
+            q_tag: await get_feed_tip(q_id, autopay)
+            for q_id, q_tag in CATALOG_QUERY_IDS.items()
+            if "legacy" in q_tag or "spot" in q_tag
         }
 
         # remove none type
@@ -216,15 +200,11 @@ async def autopay_suggested_report(
 
         # combine feed dicts and add tips for duplicate query ids
         combined_dict = {
-            key: add_values(
-                single_tip_suggestion.get(key), datafeed_suggestion.get(key)
-            )
+            key: add_values(single_tip_suggestion.get(key), datafeed_suggestion.get(key))
             for key in single_tip_suggestion | datafeed_suggestion
         }
         # get feed with most tips
-        tips_sorted = sorted(
-            combined_dict.items(), key=lambda item: item[1], reverse=True  # type: ignore
-        )
+        tips_sorted = sorted(combined_dict.items(), key=lambda item: item[1], reverse=True)  # type: ignore
         if tips_sorted:
             suggested_feed = tips_sorted[0]
             return suggested_feed[0], suggested_feed[1]

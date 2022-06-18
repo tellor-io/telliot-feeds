@@ -4,20 +4,18 @@ from brownie import chain
 from brownie.network.account import Account
 from eth_abi import encode_single
 from telliot_core.apps.core import TelliotCore
-from telliot_core.data.query_catalog import query_catalog
 from telliot_core.utils.response import ResponseStatus
 from telliot_core.utils.timestamp import TimeStamp
 from web3 import Web3
 
+from telliot_feed_examples.queries.query_catalog import query_catalog
 from telliot_feed_examples.reporters.reporter_autopay_utils import (
     autopay_suggested_report,
 )
 
 
 @pytest.mark.asyncio
-async def test_main(
-    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract
-):
+async def test_main(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
     async with TelliotCore(config=mumbai_test_cfg) as core:
         # get PubKey and PrivKey from config files
         account = core.get_account()
@@ -48,22 +46,16 @@ async def test_main(
         assert stake_amount == 10
 
         # approve token to be spent by oracle
-        mock_token_contract.approve(
-            mock_flex_contract.address, 50e18, {"from": account.address}
-        )
+        mock_token_contract.approve(mock_flex_contract.address, 50e18, {"from": account.address})
 
         # staking to oracle transaction
         timestamp = TimeStamp.now().ts
-        _, status = await flex.oracle.write(
-            "depositStake", gas_limit=350000, legacy_gas_price=1, _amount=10 * 10**18
-        )
+        _, status = await flex.oracle.write("depositStake", gas_limit=350000, legacy_gas_price=1, _amount=10 * 10**18)
         # check txn is successful
         assert status.ok
 
         # check staker information
-        staker_info, status = await flex.oracle.get_staker_info(
-            Web3.toChecksumAddress(account.address)
-        )
+        staker_info, status = await flex.oracle.get_staker_info(Web3.toChecksumAddress(account.address))
         assert isinstance(status, ResponseStatus)
         assert status.ok
         assert staker_info == [pytest.approx(timestamp, 200), 10e18, 0, 0, 0]
@@ -75,13 +67,9 @@ async def test_main(
 
         # mkr query id and query data
         mkr_query_id = query_catalog._entries["mkr-usd-spot"].query_id
-        mkr_query_data = (
-            "0x" + query_catalog._entries["mkr-usd-spot"].query.query_data.hex()
-        )
+        mkr_query_data = "0x" + query_catalog._entries["mkr-usd-spot"].query.query_data.hex()
         # approve token to be spent by autopay contract
-        mock_token_contract.approve(
-            mock_autopay_contract.address, 500e18, {"from": account.address}
-        )
+        mock_token_contract.approve(mock_autopay_contract.address, 500e18, {"from": account.address})
         _, status = await flex.autopay.write(
             "tip",
             gas_limit=350000,
@@ -107,9 +95,7 @@ async def test_main(
 
         # query id and query data for ric
         ric_query_id = query_catalog._entries["ric-usd-spot"].query_id
-        ric_query_data = (
-            "0x" + query_catalog._entries["ric-usd-spot"].query.query_data.hex()
-        )
+        ric_query_data = "0x" + query_catalog._entries["ric-usd-spot"].query.query_data.hex()
 
         _, status = await flex.autopay.write(
             "tip",
@@ -138,9 +124,7 @@ async def test_main(
         interval = 10
         window = 9
         price_threshold = 0
-        trb_query_data = (
-            "0x" + query_catalog._entries["trb-usd-legacy"].query.query_data.hex()
-        )
+        trb_query_data = "0x" + query_catalog._entries["trb-usd-legacy"].query.query_data.hex()
 
         # setup a feed on autopay
         _, status = await flex.autopay.write(
@@ -208,9 +192,7 @@ async def test_main(
         chain.sleep(43201)
 
         # get timestamp trb's reported value
-        read_timestamp, status = await flex.autopay.read(
-            "getCurrentValue", _queryId=trb_query_id
-        )
+        read_timestamp, status = await flex.autopay.read("getCurrentValue", _queryId=trb_query_id)
         assert status.ok
 
         _, status = await flex.autopay.write(

@@ -10,7 +10,6 @@ from dotenv import find_dotenv
 from dotenv import load_dotenv
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
-from telliot_core.gas.etherscan_gas import EtherscanGasPriceSource
 from web3 import HTTPProvider
 from web3 import Web3
 from web3.exceptions import TransactionNotFound
@@ -19,6 +18,7 @@ from web3.middleware import geth_poa_middleware
 from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feed_examples.flashbots import flashbot
 from telliot_feed_examples.flashbots.provider import get_default_endpoint
+from telliot_feed_examples.sources.etherscan_gas import EtherscanGasPriceSource
 from telliot_feed_examples.utils.abi import gorli_playground_abi
 
 
@@ -41,9 +41,7 @@ async def main() -> None:
     if chain_id == 5:
         w3.middleware_onion.inject(geth_poa_middleware, layer=0)
     # Goerli endpoint: https://relay-goerli.flashbots.net
-    endpoint = (
-        env("FLASHBOTS_HTTP_PROVIDER_URI") if chain_id == 5 else get_default_endpoint()
-    )
+    endpoint = env("FLASHBOTS_HTTP_PROVIDER_URI") if chain_id == 5 else get_default_endpoint()
     flashbot(w3, signature, endpoint)
 
     print(
@@ -112,9 +110,7 @@ async def main() -> None:
     block = w3.eth.block_number
     results = []
     for target_block in [block + k for k in [1, 2, 3, 4, 5]]:
-        results.append(
-            w3.flashbots.send_bundle(bundle, target_block_number=target_block)
-        )
+        results.append(w3.flashbots.send_bundle(bundle, target_block_number=target_block))
     print(f"Bundle sent to miners in block {block}")
 
     # wait for the results

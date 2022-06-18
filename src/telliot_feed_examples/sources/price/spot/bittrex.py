@@ -4,11 +4,11 @@ from typing import Any
 from typing import Optional
 
 from pydantic import BaseModel
-from telliot_core.dtypes.datapoint import datetime_now_utc
-from telliot_core.dtypes.datapoint import OptionalDataPoint
-from telliot_core.pricing.price_service import WebPriceService
-from telliot_core.pricing.price_source import PriceSource
 
+from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
+from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
+from telliot_feed_examples.pricing.price_service import WebPriceService
+from telliot_feed_examples.pricing.price_source import PriceSource
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -31,9 +31,7 @@ class BittrexSpotPriceService(WebPriceService):
     """Bittrex Price Service"""
 
     def __init__(self, **kwargs: Any):
-        super().__init__(
-            name="Bittrex Price Service", url="https://api.bittrex.com", **kwargs
-        )
+        super().__init__(name="Bittrex Price Service", url="https://api.bittrex.com", **kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
@@ -44,9 +42,7 @@ class BittrexSpotPriceService(WebPriceService):
         instead of the locally generated timestamp.
         """
 
-        request_url = "/api/v1.1/public/getticker?market={}-{}".format(
-            currency.lower(), asset.lower()
-        )
+        request_url = "/api/v1.1/public/getticker?market={}-{}".format(currency.lower(), asset.lower())
 
         d = self.get_url(request_url)
 
@@ -70,6 +66,4 @@ class BittrexSpotPriceService(WebPriceService):
 class BittrexSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: BittrexSpotPriceService = field(
-        default_factory=BittrexSpotPriceService, init=False
-    )
+    service: BittrexSpotPriceService = field(default_factory=BittrexSpotPriceService, init=False)

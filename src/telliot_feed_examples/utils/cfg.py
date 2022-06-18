@@ -18,9 +18,7 @@ def mainnet_config() -> TelliotConfig:
         # Create a test account using PRIVATE_KEY defined on github.
         key = os.getenv("PRIVATE_KEY", None)
         if key:
-            ChainedAccount.add(
-                "git-mainnet-key", chains=1, key=os.environ["PRIVATE_KEY"], password=""
-            )
+            ChainedAccount.add("git-mainnet-key", chains=1, key=os.environ["PRIVATE_KEY"], password="")
         else:
             raise Exception("Need a mainnet account")
 

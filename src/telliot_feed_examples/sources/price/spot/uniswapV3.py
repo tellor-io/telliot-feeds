@@ -3,11 +3,11 @@ from dataclasses import field
 from typing import Any
 
 import requests
-from telliot_core.dtypes.datapoint import datetime_now_utc
-from telliot_core.dtypes.datapoint import OptionalDataPoint
-from telliot_core.pricing.price_service import WebPriceService
-from telliot_core.pricing.price_source import PriceSource
 
+from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
+from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
+from telliot_feed_examples.pricing.price_service import WebPriceService
+from telliot_feed_examples.pricing.price_source import PriceSource
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -48,9 +48,7 @@ class UniswapV3PriceService(WebPriceService):
             "Content-Type": "application/json",
         }
 
-        query = (
-            "{bundles{id ethPriceUSD}token" + f'(id: "{token}")' + "{ derivedETH } }"
-        )
+        query = "{bundles{id ethPriceUSD}token" + f'(id: "{token}")' + "{ derivedETH } }"
 
         json_data = {"query": query}
 
@@ -58,9 +56,7 @@ class UniswapV3PriceService(WebPriceService):
 
         with requests.Session() as s:
             try:
-                r = s.post(
-                    request_url, headers=headers, json=json_data, timeout=self.timeout
-                )
+                r = s.post(request_url, headers=headers, json=json_data, timeout=self.timeout)
                 res = r.json()
                 data = {"response": res}
 
@@ -103,6 +99,4 @@ class UniswapV3PriceService(WebPriceService):
 class UniswapV3PriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: UniswapV3PriceService = field(
-        default_factory=UniswapV3PriceService, init=False
-    )
+    service: UniswapV3PriceService = field(default_factory=UniswapV3PriceService, init=False)

@@ -6,10 +6,10 @@ from typing import Tuple
 from urllib.parse import urlencode
 
 import requests
-from telliot_core.dtypes.datapoint import datetime_now_utc
-from telliot_core.dtypes.datapoint import OptionalDataPoint
-from telliot_core.pricing.price_source import PriceSource
 
+from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
+from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
+from telliot_feed_examples.pricing.price_source import PriceSource
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -77,9 +77,7 @@ class PoloniexHistoricalPriceService:
 
         asset = asset.upper()
         currency = currency.upper()
-        pair = (
-            currency + "_" + asset
-        )  # Poloniex wants the reverse of standard order: asset/currency
+        pair = currency + "_" + asset  # Poloniex wants the reverse of standard order: asset/currency
 
         if pair not in poloniex_pairs:
             raise Exception(f"Currency pair not supported: {pair}")
@@ -125,17 +123,12 @@ class PoloniexHistoricalPriceService:
 
         This implementation gets the historical price from
         the Poloniex API using a timestamp."""
-        trades, dt = await self.get_trades(
-            asset=asset, currency=currency, ts=ts, period=period
-        )
+        trades, dt = await self.get_trades(asset=asset, currency=currency, ts=ts, period=period)
 
         if trades is not None:
             try:
                 if len(trades) == 0:
-                    logger.warning(
-                        "No data from Poloniex historical price source for"
-                        f" given timestamp: {ts}."
-                    )
+                    logger.warning(f"No data from Poloniex historical price source for given timestamp: {ts}.")
                     return None, None
 
                 # Price from last trade in period
@@ -153,7 +146,7 @@ class PoloniexHistoricalPriceSource(PriceSource):
     ts: int = 0
     asset: str = ""
     currency: str = ""
-    service: PoloniexHistoricalPriceService = PoloniexHistoricalPriceService(ts=ts)
+    service: PoloniexHistoricalPriceService = PoloniexHistoricalPriceService(ts=ts)  # type: ignore
 
     def __post_init__(self) -> None:
         self.service.ts = self.ts

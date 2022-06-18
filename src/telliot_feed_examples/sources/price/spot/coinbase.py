@@ -2,11 +2,10 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 
-from telliot_core.dtypes.datapoint import datetime_now_utc
-from telliot_core.dtypes.datapoint import OptionalDataPoint
-from telliot_core.pricing.price_service import WebPriceService
-from telliot_core.pricing.price_source import PriceSource
-
+from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
+from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
+from telliot_feed_examples.pricing.price_service import WebPriceService
+from telliot_feed_examples.pricing.price_source import PriceSource
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -60,6 +59,4 @@ class CoinbaseSpotPriceService(WebPriceService):
 class CoinbaseSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: CoinbaseSpotPriceService = field(
-        default_factory=CoinbaseSpotPriceService, init=False
-    )
+    service: CoinbaseSpotPriceService = field(default_factory=CoinbaseSpotPriceService, init=False)

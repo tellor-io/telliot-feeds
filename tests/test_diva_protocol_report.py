@@ -37,9 +37,7 @@ async def test_diva_protocol_reporter_submit_once(
         )
 
         # Use current timestamp for pool expiry time
-        new_expiry = mock_diva_contract.changePoolExpiry(
-            pool_id, int(time.time() - 1234)
-        )
+        new_expiry = mock_diva_contract.changePoolExpiry(pool_id, int(time.time() - 1234))
         print(f"new_expiry: {new_expiry}")
 
         flex = core.get_tellorflex_contracts()

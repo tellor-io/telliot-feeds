@@ -71,9 +71,7 @@ class FlashbotsTransactionResponse:
     def receipts(self) -> List[Union[_Hash32, HexBytes, HexStr]]:
         """Returns all the transaction receipts from the submitted bundle"""
         self.wait()
-        return list(
-            map(lambda tx: self.w3.eth.getTransactionReceipt(tx["hash"]), self.bundle)
-        )
+        return list(map(lambda tx: self.w3.eth.getTransactionReceipt(tx["hash"]), self.bundle))
 
 
 class Flashbots(Module):
@@ -82,9 +80,7 @@ class Flashbots(Module):
 
     def sign_bundle(
         self,
-        bundled_transactions: List[
-            Union[FlashbotsBundleTx, FlashbotsBundleRawTx, FlashbotsBundleDictTx]
-        ],
+        bundled_transactions: List[Union[FlashbotsBundleTx, FlashbotsBundleRawTx, FlashbotsBundleDictTx]],
     ) -> List[HexBytes]:
         """Given a bundle of signed and unsigned transactions, it signs them all"""
         nonces: Dict[HexStr, Nonce] = {}
@@ -171,9 +167,7 @@ class Flashbots(Module):
             }
         ]
 
-    sendRawBundle: Method[Callable[[Any], Any]] = Method(
-        FlashbotsRPC.eth_sendBundle, mungers=[send_raw_bundle_munger]
-    )
+    sendRawBundle: Method[Callable[[Any], Any]] = Method(FlashbotsRPC.eth_sendBundle, mungers=[send_raw_bundle_munger])
     send_raw_bundle = sendRawBundle
 
     def send_bundle_munger(
@@ -183,9 +177,7 @@ class Flashbots(Module):
         opts: Optional[FlashbotsOpts] = None,
     ) -> List[Any]:
         signed_txs = self.sign_bundle(bundled_transactions)
-        self.response = FlashbotsTransactionResponse(
-            self.web3, signed_txs, target_block_number
-        )
+        self.response = FlashbotsTransactionResponse(self.web3, signed_txs, target_block_number)
         return self.send_raw_bundle_munger(signed_txs, target_block_number, opts)
 
     def raw_bundle_formatter(self, resp) -> Any:
@@ -207,17 +199,13 @@ class Flashbots(Module):
     ):
         # get block details
         block_details = (
-            self.web3.eth.get_block(block_tag)
-            if block_tag is not None
-            else self.web3.eth.get_block("latest")
+            self.web3.eth.get_block(block_tag) if block_tag is not None else self.web3.eth.get_block("latest")
         )
 
         # sets evm params
         evm_block_number = self.web3.toHex(block_details.number)
         evm_block_state_number = (
-            state_block_tag
-            if state_block_tag is not None
-            else self.web3.toHex(block_details.number - 1)
+            state_block_tag if state_block_tag is not None else self.web3.toHex(block_details.number - 1)
         )
         evm_timestamp = (
             block_timestamp
@@ -239,24 +227,18 @@ class Flashbots(Module):
             "coinbaseDiff": call_result["coinbaseDiff"],
             "results": call_result["results"],
             "signedBundledTransactions": signed_bundled_transactions,
-            "totalGasUsed": reduce(
-                lambda a, b: a + b["gasUsed"], call_result["results"], 0
-            ),
+            "totalGasUsed": reduce(lambda a, b: a + b["gasUsed"], call_result["results"], 0),
         }
 
     def extrapolate_timestamp(self, block_tag: int, latest_block_number: int):
         block_delta = block_tag - latest_block_number
         if block_delta < 0:
             raise Exception("block extrapolation negative")
-        return self.web3.eth.get_block(latest_block_number)["timestamp"] + (
-            block_delta * SECONDS_PER_BLOCK
-        )
+        return self.web3.eth.get_block(latest_block_number)["timestamp"] + (block_delta * SECONDS_PER_BLOCK)
 
     def call_bundle_munger(
         self,
-        signed_bundled_transactions: List[
-            Union[FlashbotsBundleTx, FlashbotsBundleRawTx]
-        ],
+        signed_bundled_transactions: List[Union[FlashbotsBundleTx, FlashbotsBundleRawTx]],
         evm_block_number,
         evm_block_state_number,
         evm_timestamp,

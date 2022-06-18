@@ -7,11 +7,11 @@ import requests
 from requests import JSONDecodeError
 from requests import Response
 from requests.adapters import HTTPAdapter
-from telliot_core.datasource import DataSource
-from telliot_core.dtypes.datapoint import DataPoint
-from telliot_core.dtypes.datapoint import datetime_now_utc
 from urllib3.util import Retry
 
+from telliot_feed_examples.datasource import DataSource
+from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
+from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -55,7 +55,7 @@ class MorphwareV1Source(DataSource[str]):
     def adjust_data_types(self, data: list[dict[str, Any]]) -> list[str]:
         return [json.dumps(d) for d in data]
 
-    async def fetch_new_datapoint(self) -> Optional[DataPoint[list[str]]]:
+    async def fetch_new_datapoint(self) -> OptionalDataPoint[Any]:
         """Retrieves Amazon EC2 instance pricing metadata from API
         hosted by Morphware.
 

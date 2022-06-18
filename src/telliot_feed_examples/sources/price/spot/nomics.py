@@ -4,11 +4,11 @@ from typing import Any
 from urllib.parse import urlencode
 
 from telliot_core.apps.telliot_config import TelliotConfig
-from telliot_core.dtypes.datapoint import datetime_now_utc
-from telliot_core.dtypes.datapoint import OptionalDataPoint
-from telliot_core.pricing.price_service import WebPriceService
-from telliot_core.pricing.price_source import PriceSource
 
+from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
+from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
+from telliot_feed_examples.pricing.price_service import WebPriceService
+from telliot_feed_examples.pricing.price_source import PriceSource
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -37,9 +37,7 @@ class NomicsSpotPriceService(WebPriceService):
         """
 
         if API_KEY == "":
-            logger.warning(
-                "To use the nomics source, add nomics api key to api_keys.yaml"
-            )
+            logger.warning("To use the nomics source, add nomics api key to api_keys.yaml")
             return None, None
 
         asset = asset.lower()
@@ -84,6 +82,4 @@ class NomicsSpotPriceService(WebPriceService):
 class NomicsSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: NomicsSpotPriceService = field(
-        default_factory=NomicsSpotPriceService, init=False
-    )
+    service: NomicsSpotPriceService = field(default_factory=NomicsSpotPriceService, init=False)

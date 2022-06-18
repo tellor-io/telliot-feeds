@@ -13,11 +13,11 @@ from typing import TypeVar
 
 import requests
 from telliot_core.apps.telliot_config import TelliotConfig
-from telliot_core.datasource import DataSource
-from telliot_core.dtypes.datapoint import datetime_now_utc
-from telliot_core.dtypes.datapoint import OptionalDataPoint
 from telliot_core.utils.response import ResponseStatus
 
+from telliot_feed_examples.datasource import DataSource
+from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
+from telliot_feed_examples.dtypes.datapoint import OptionalDataPoint
 from telliot_feed_examples.utils.log import get_logger
 
 
@@ -29,9 +29,7 @@ def get_yesterday_start_end() -> Tuple[datetime.datetime, datetime.datetime]:
     """Get start and end times of yesterday in UTC."""
     today = datetime.datetime.utcnow().date()
     yesterday_date = today - datetime.timedelta(days=1)
-    yesterday_start = datetime.datetime(
-        year=yesterday_date.year, month=yesterday_date.month, day=yesterday_date.day
-    )
+    yesterday_start = datetime.datetime(year=yesterday_date.year, month=yesterday_date.month, day=yesterday_date.day)
     yesterday_end = datetime.datetime.combine(yesterday_start, datetime.time.max)
     return yesterday_start, yesterday_end
 
@@ -202,10 +200,8 @@ class AMPLUSDVWAPSource(DataSource[float]):
         """
 
         sources = self.sources
-        datapoints = await asyncio.gather(
-            *[source.fetch_new_datapoint() for source in sources]
-        )
-        return datapoints  # type: ignore # TODO: haven't investigated this type error
+        datapoints = await asyncio.gather(*[source.fetch_new_datapoint() for source in sources])
+        return datapoints
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
         """Update current value with time-stamped value fetched from source
@@ -230,8 +226,6 @@ class AMPLUSDVWAPSource(DataSource[float]):
         datapoint = (result, datetime_now_utc())
         self.store_datapoint(datapoint)
 
-        logger.info(
-            "AMPL/USD/VWAP {} retrieved at time {}".format(datapoint[0], datapoint[1])
-        )
+        logger.info("AMPL/USD/VWAP {} retrieved at time {}".format(datapoint[0], datapoint[1]))
 
         return datapoint

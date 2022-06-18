@@ -1,9 +1,9 @@
 import statistics
 
 import pytest
-from telliot_core.queries.query import OracleQuery
 
 from telliot_feed_examples.feeds.btc_usd_feed import btc_usd_median_feed
+from telliot_feed_examples.queries.query import OracleQuery
 
 
 @pytest.mark.skip("Skip while gemini rate limiting")

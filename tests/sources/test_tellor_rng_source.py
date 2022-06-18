@@ -17,10 +17,7 @@ async def test_rng():
     rng_source = TellorRNGManualSource()
     v, t = await rng_source.fetch_new_datapoint()
 
-    assert v == (
-        b"\x9diF\xd9R\xf1>q%\x13F\x11\xad\x9f]\xccA\x08"
-        b"\xd9\x03Y\xb0#\x94\xd8\xefgi\xcc\x85t\xb3"
-    )
+    assert v == b"\x9diF\xd9R\xf1>q%\x13F\x11\xad\x9f]\xccA\x08\xd9\x03Y\xb0#\x94\xd8\xefgi\xcc\x85t\xb3"
 
     assert isinstance(v, bytes)
     assert isinstance(t, datetime)
