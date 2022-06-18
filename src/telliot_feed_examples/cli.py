@@ -30,7 +30,7 @@ from telliot_feed_examples.utils.oracle_write import tip_query
 
 logger = get_logger(__name__)
 
-TELLOR_FLEX_CHAINS = (137, 80001, 3, 122, 69, 1666600000, 1666700000)
+TELLOR_FLEX_CHAINS = (137, 122, 80001, 3, 69, 1666600000, 1666700000, 421611)
 DIVA_PROTOCOL_CHAINS = (137, 80001, 3)
 
 
