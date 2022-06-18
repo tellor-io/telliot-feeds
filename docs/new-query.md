@@ -87,7 +87,7 @@ will be required to stand-up their own reporter network.
 
 To define a new query, the first step is to specify its _Query Type_. If possible, it's easiest to
 use one of the Query Types already defined for the Tellor network (
-e.g. [`SpotPrice`][telliot_feed_examples.queries.price.spot_price.spotprice]). If none of the existing query
+e.g. [`SpotPrice`][telliot_feed_examples.queries.price.spot_price.SpotPrice]). If none of the existing query
 types work, you will need to [define a new query type][defining-new-query-types].
 
 When using an existing Query Type, you'll need to specify the parameter values that correspond to
@@ -113,21 +113,21 @@ First, it must include a unit test for the new query. Using the pytest framework
 that creates an instance of the query and verify that the values query descriptor, query data, and
 query ID are sensible.
 
-Second, it must be registered with the Query [`Catalog`][telliot_feed_examples.queries.catalog.catalog].
+Second, it must be registered with the Query [`Catalog`][telliot_feed_examples.queries.catalog.Catalog].
 
 The [example below][example-adding-a-new-spotprice] demonstrates how to test a new query and
 register it in the catalog.
 
 ## Step 3: Query Data Sources
 
-A query [`DataSource`][telliot_feed_examples.datasource.datasource] provides a method to fetch new data
+A query [`DataSource`][telliot_feed_examples.datasource.DataSource] provides a method to fetch new data
 points in response to a query. It provides an API that enables Tellor's existing decentralized
 reporter network to automatically respond to the query.
 
-Ideally, a [`DataSource`][telliot_feed_examples.datasource.datasource] should provide additional
+Ideally, a [`DataSource`][telliot_feed_examples.datasource.DataSource] should provide additional
 decentralization and robustness by fetching data from multiple sources and aggregating the result.
 
-A new [`DataSource`][telliot_feed_examples.datasource.datasource] is created
+A new [`DataSource`][telliot_feed_examples.datasource.DataSource] is created
 by [proposing changes][propose-changes] to
 the [`telliot-feed-examples` repository](https://github.com/tellor-io/telliot-feed-examples).
 
@@ -140,10 +140,10 @@ A new _Query Type_ definition specifies:
 
 - The _name_ of the query type
 - The data type or structure of the value expected query response (i.e.
-  its [`ValueType`][telliot_feed_examples.dtypes.value_type.valuetype])
+  its [`ValueType`][telliot_feed_examples.dtypes.value_type.ValueType])
 - Optionally, the name and data type of each query _parameter_
 - Encoding method - the method used to encode the Query Type and parameter values into
-  the [`query_data`][telliot_feed_examples.queries.query.oraclequery.query_data] field used for Tellor
+  the [`query_data`][telliot_feed_examples.queries.query.OracleQuery.query_data] field used for Tellor
   contract interactions.
 
 It is important to note the difference between defining a _Query Type_ and a defining a _query_.
@@ -152,19 +152,19 @@ refers to an instance of a QueryType with the value of each parameter specified.
 
 To define a new Query Type, [propose changes][propose-changes] to
 the [`telliot-core` repository](https://github.com/tellor-io/telliot-core) defining a new subclass
-of [`OracleQuery`][telliot_feed_examples.queries.query.oraclequery] that implements all required methods and
+of [`OracleQuery`][telliot_feed_examples.queries.query.OracleQuery] that implements all required methods and
 properties.
 
-New users may choose between subclassing [`JsonQuery`][telliot_feed_examples.queries.json_query.jsonquery]
+New users may choose between subclassing [`JsonQuery`][telliot_feed_examples.queries.json_query.JsonQuery]
 and the  
-[`AbiQuery`][telliot_feed_examples.queries.abi_query.abiquery]. These queries are identical in every way
+[`AbiQuery`][telliot_feed_examples.queries.abi_query.AbiQuery]. These queries are identical in every way
 except for the coder/decoder that converts between the query name/parameters and the query data
 field used in contract interfaces. The latter format is recommended if on-chain read/write access to
 parameter values is required.
 
 You'll also need to create a [test file](https://github.com/tellor-io/telliot-core/blob/main/tests/test_query_snapshot.py) for your new _Query Type_.
 
-To get the [`query_data`][telliot_feed_examples.queries.query.oraclequery.query_data] and [`query_id`][telliot_feed_examples.queries.query.oraclequery.query_id] in hex format, open up a Python shell and enter the following. We'll be using the [`Snapshot`] query as an example.
+To get the [`query_data`][telliot_feed_examples.queries.query.OracleQuery.query_data] and [`query_id`][telliot_feed_examples.queries.query.OracleQuery.query_id] in hex format, open up a Python shell and enter the following. We'll be using the [`Snapshot`] query as an example.
 
 ```python
 from telliot_feed_examples.queries.snapshot import Snapshot
@@ -188,11 +188,11 @@ the [`telliot-core`](https://github.com/tellor-io/telliot-core) framework.
 
 ## Example: Adding a new `SpotPrice`
 
-In this example, a new [`SpotPrice`][telliot_feed_examples.queries.price.spot_price.spotprice] query is
+In this example, a new [`SpotPrice`][telliot_feed_examples.queries.price.spot_price.SpotPrice] query is
 defined for the price of BTC in USD.
 
 To add a new spot price, use the
-existing [`SpotPrice`][telliot_feed_examples.queries.price.spot_price.spotprice]
+existing [`SpotPrice`][telliot_feed_examples.queries.price.spot_price.SpotPrice]
 Query Type and simply define a new `asset`/`currency` pair.
 
 _Example: Create and test the SpotPrice query for BTC/USD._
@@ -208,7 +208,7 @@ def test_new_query():
     assert q.query_id.hex() == "d66b36afdec822c56014e56f468dee7c7b082ed873aba0f7663ec7c6f25d2c0a"
 ```
 
-_Example: Add the query to the Query [`Catalog`][telliot_feed_examples.queries.catalog.catalog]_
+_Example: Add the query to the Query [`Catalog`][telliot_feed_examples.queries.catalog.Catalog]_
 
 Add the following statements to `telliot_feed_examples.queries.query_catalog.py`.
 

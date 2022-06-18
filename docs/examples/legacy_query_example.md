@@ -1,7 +1,7 @@
 # Legacy Query Example
 
 This example demonstrates how to create a
-[`LegacyRequest`][telliot_feed_examples.queries.legacy_query.legacyrequest]
+[`LegacyRequest`][telliot_feed_examples.queries.legacy_query.LegacyRequest]
 requesting the ETH/USD price. The legacy request ID for ETH/USD is `1`,
 in accordance with the
 [Legacy Data Feed ID Specifications](https://docs.tellor.io/tellor/integration/data-ids/current-data-feeds).
@@ -46,9 +46,9 @@ The `LegacyQuery` object also demonstrates how to encode a response
 to submit on-chain using the `TellorX.Oracle.submitValue()` contract call.
 
 For example, to submit the value `10000.1234567`, use the
-[`encode`][telliot_feed_examples.dtypes.value_type.valuetype.encode] and
-[`decode`][telliot_feed_examples.dtypes.value_type.valuetype.decode] methods of the response
-[`ValueType`][telliot_feed_examples.dtypes.value_type.valuetype].
+[`encode`][telliot_feed_examples.dtypes.value_type.ValueType.encode] and
+[`decode`][telliot_feed_examples.dtypes.value_type.ValueType.decode] methods of the response
+[`ValueType`][telliot_feed_examples.dtypes.value_type.ValueType].
 
 ```python
 value = 10000.1234567
@@ -64,7 +64,7 @@ Note that the on-chain and decoded values are limited to
     submitValue (bytes): 0x00000000000000000000000000000000000000000000000000000002540dc641
 
 Similarly, the
-[`decode`][telliot_feed_examples.dtypes.value_type.valuetype.decode] method can be used to convert
+[`decode`][telliot_feed_examples.dtypes.value_type.ValueType.decode] method can be used to convert
 the on-chain bytes value to a real-world value:
 
 ```python

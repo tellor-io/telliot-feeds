@@ -1,7 +1,7 @@
 # Text Query Example
 
 The following example demonstrates how to create a
-[`StringQuery`][telliot_feed_examples.queries.stringquery] request.
+[`StringQuery`][telliot_feed_examples.queries.string_query.StringQuery] request.
 
 Create a `StringQuery` and view the corresponding query descriptor::
 
@@ -38,9 +38,9 @@ For example, to submit following the answer
     Please refer to: https://en.wikipedia.org/wiki/Meaning_of_life
 
 use the
-[`encode`][telliot_feed_examples.dtypes.value_type.valuetype.encode] and
-[`decode`][telliot_feed_examples.dtypes.value_type.valuetype.decode] methods of the response
-[`ValueType`][telliot_feed_examples.dtypes.value_type.valuetype].
+[`encode`][telliot_feed_examples.dtypes.value_type.ValueType.encode] and
+[`decode`][telliot_feed_examples.dtypes.value_type.ValueType.decode] methods of the response
+[`ValueType`][telliot_feed_examples.dtypes.value_type.ValueType].
 
 ```python hl_lines="9-16"
 --8<-- "examples/text_query_example.py"
