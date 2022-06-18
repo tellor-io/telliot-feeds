@@ -1,18 +1,15 @@
 """ :mod:`telliot_feed_examples.queries.price_query`
 
 """
-# import json
 import logging
 from dataclasses import dataclass
+from typing import List
+from typing import Tuple
 
 from telliot_feed_examples.dtypes.float_type import UnsignedFloatType
 from telliot_feed_examples.dtypes.value_type import ValueType
 from telliot_feed_examples.queries.abi_query import AbiQuery
 
-# from typing import List
-# from typing import Tuple
-
-# from telliot_feed_examples.utils.home import TELLIOT_FEEDS_ROOT
 
 logger = logging.getLogger(__name__)
 
@@ -33,22 +30,16 @@ SPOT_PRICE_PAIRS = [
     "USDC/USD",
 ]
 
-# def get_spot_price_pairs() -> List[Tuple[str, str]]:
-#     """Read the list of valid spot price pairs"""
-#     data = TELLIOT_FEEDS_ROOT / "data" / "spot_price_pairs.json"
 
-#     with open(data) as f:
-#         state = json.load(f)
+def format_spot_price_pairs() -> List[Tuple[str, str]]:
+    """Read the list of valid spot price pairs"""
 
-#     pairs = []
-#     for s in state:
-#         asset_id, currency = s.split("/")
-#         pairs.append((asset_id.lower(), currency.lower()))
+    pairs = []
+    for s in SPOT_PRICE_PAIRS:
+        asset_id, currency = s.split("/")
+        pairs.append((asset_id.lower(), currency.lower()))
 
-#     return pairs
-
-
-# spot_price_pairs = get_spot_price_pairs()
+    return pairs
 
 
 @dataclass
@@ -86,5 +77,5 @@ class SpotPrice(AbiQuery):
         if self.currency not in CURRENCIES:
             raise ValueError(f"currency {self.currency} not supported")
 
-        if (self.asset, self.currency) not in SPOT_PRICE_PAIRS:
+        if (self.asset, self.currency) not in format_spot_price_pairs():
             raise ValueError(f"{self.asset}/{self.currency} is not a supported pair")
