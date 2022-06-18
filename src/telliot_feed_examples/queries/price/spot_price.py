@@ -1,38 +1,54 @@
 """ :mod:`telliot_feed_examples.queries.price_query`
 
 """
-import json
+# import json
 import logging
 from dataclasses import dataclass
-from typing import List
-from typing import Tuple
 
 from telliot_feed_examples.dtypes.float_type import UnsignedFloatType
 from telliot_feed_examples.dtypes.value_type import ValueType
 from telliot_feed_examples.queries.abi_query import AbiQuery
-from telliot_feed_examples.utils.home import TELLIOT_FEEDS_ROOT
+
+# from typing import List
+# from typing import Tuple
+
+# from telliot_feed_examples.utils.home import TELLIOT_FEEDS_ROOT
 
 logger = logging.getLogger(__name__)
 
-currencies = ["usd", "jpy", "eth"]
+CURRENCIES = ["usd", "jpy", "eth"]
+SPOT_PRICE_PAIRS = [
+    "ETH/USD",
+    "BTC/USD",
+    "TRB/USD",
+    "OHM/ETH",
+    "VSQ/USD",
+    "BCT/USD",
+    "DAI/USD",
+    "RIC/USD",
+    "MKR/USD",
+    "IDLE/USD",
+    "SUSHI/USD",
+    "MATIC/USD",
+    "USDC/USD",
+]
+
+# def get_spot_price_pairs() -> List[Tuple[str, str]]:
+#     """Read the list of valid spot price pairs"""
+#     data = TELLIOT_FEEDS_ROOT / "data" / "spot_price_pairs.json"
+
+#     with open(data) as f:
+#         state = json.load(f)
+
+#     pairs = []
+#     for s in state:
+#         asset_id, currency = s.split("/")
+#         pairs.append((asset_id.lower(), currency.lower()))
+
+#     return pairs
 
 
-def get_spot_price_pairs() -> List[Tuple[str, str]]:
-    """Read the list of valid spot price pairs"""
-    data = TELLIOT_FEEDS_ROOT / "data" / "spot_price_pairs.json"
-
-    with open(data) as f:
-        state = json.load(f)
-
-    pairs = []
-    for s in state:
-        asset_id, currency = s.split("/")
-        pairs.append((asset_id.lower(), currency.lower()))
-
-    return pairs
-
-
-spot_price_pairs = get_spot_price_pairs()
+# spot_price_pairs = get_spot_price_pairs()
 
 
 @dataclass
@@ -67,8 +83,8 @@ class SpotPrice(AbiQuery):
         self.asset = self.asset.lower()
         self.currency = self.currency.lower()
 
-        if self.currency not in currencies:
+        if self.currency not in CURRENCIES:
             raise ValueError(f"currency {self.currency} not supported")
 
-        if (self.asset, self.currency) not in spot_price_pairs:
+        if (self.asset, self.currency) not in SPOT_PRICE_PAIRS:
             raise ValueError(f"{self.asset}/{self.currency} is not a supported pair")
