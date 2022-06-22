@@ -1,8 +1,13 @@
+import brownie
 import pytest
 from brownie import accounts
 from brownie import chain
 from brownie.network.account import Account
 from eth_abi import encode_single
+from multicall import multicall
+from multicall.constants import MULTICALL2_ADDRESSES
+from multicall.constants import MULTICALL_ADDRESSES
+from multicall.constants import Network
 from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 from telliot_core.utils.timestamp import TimeStamp
@@ -17,6 +22,10 @@ from telliot_feed_examples.reporters.reporter_autopay_utils import (
 @pytest.mark.asyncio
 async def test_main(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
     async with TelliotCore(config=mumbai_test_cfg) as core:
+        addy = brownie.multicall.deploy({"from": accounts[0]})
+        Network.Brownie = 1337
+        MULTICALL_ADDRESSES[Network.Brownie] = MULTICALL2_ADDRESSES[Network.Brownie] = addy.address
+        multicall.state_override_supported = lambda _: False
         # get PubKey and PrivKey from config files
         account = core.get_account()
 

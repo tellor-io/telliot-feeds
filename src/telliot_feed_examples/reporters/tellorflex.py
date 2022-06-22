@@ -24,7 +24,6 @@ from telliot_feed_examples.reporters.reporter_autopay_utils import (
     autopay_suggested_report,
 )
 from telliot_feed_examples.reporters.reporter_autopay_utils import get_feed_tip
-from telliot_feed_examples.reporters.reporter_autopay_utils import get_single_tip
 from telliot_feed_examples.utils.log import get_logger
 from telliot_feed_examples.utils.reporter_utils import tellor_suggested_report
 
@@ -223,8 +222,8 @@ class TellorFlexReporter(IntervalReporter):
             if self.expected_profit == "YOLO":
                 return self.datafeed
 
-            single_tip = await get_single_tip(self.datafeed.query.query_id, self.autopay)
-            if single_tip is None:
+            single_tip, status = await self.autopay.get_current_tip(self.datafeed.query.query_id)
+            if not status.ok:
                 logger.warning("Unable to fetch single tip")
                 return None
 
