@@ -71,7 +71,7 @@ class AutopayCalls:
         self.w3: Web3 = autopay.node._web3
         self.catalog = catalog
 
-    async def get_current_feeds(self) -> Any:
+    async def get_current_feeds(self, require_success: bool = True) -> Any:
         calls = [
             Call(
                 self.autopay.address,
@@ -81,49 +81,51 @@ class AutopayCalls:
             for query_id, tag in self.catalog.items()
             if "legacy" in tag or "spot" in tag
         ]
-        multi_call = Multicall(_w3=self.w3, calls=calls)
+        multi_call = Multicall(calls=calls, _w3=self.w3, require_success=require_success)
         data = await multi_call.coroutine()
         return data
 
-    async def get_feed_details(self, require_success: bool = False) -> Any:
+    async def get_feed_details(self, require_success: bool = True) -> Any:
+        """Returns dictionary of autopay response from getCurrentValues and getDataFeed function call at once"""
         current_feeds = await self.get_current_feeds()
-        calls = [
+        get_data_feed_call = [
             Call(
                 self.autopay.address,
                 ["getDataFeed(bytes32)((uint256,uint256,uint256,uint256,uint256,uint256,uint256))", query_id],
-                [[(tag, query_id.hex()), None]],
+                [[("current_feeds", tag, query_id.hex()), None]],
             )
             for tag, ids in current_feeds.items()
             for query_id in ids
         ]
-        multi_call = Multicall(calls=calls, _w3=self.w3, require_success=require_success)
-        feed_details = await multi_call.coroutine()
-        return feed_details
-
-    async def get_current_tip(self, require_success: bool = False) -> Any:
-        calls = [
-            Call(self.autopay.address, ["getCurrentTip(bytes32)(uint256)", query_id], [[self.catalog[query_id], None]])
-            for query_id in self.catalog
-        ]
-        multi_call = Multicall(_w3=self.w3, require_success=require_success, calls=calls)
-        data = await multi_call.coroutine()
-        return data
-
-    async def get_current_values(self, require_success: bool = False) -> Any:
-        calls = [
+        get_current_values_call = [
             Call(
                 self.autopay.address,
                 ["getCurrentValue(bytes32)(bool,bytes,uint256)", query_id],
                 [
-                    [self.catalog[query_id], None],
-                    [(self.catalog[query_id], "current_price"), self._current_price],
-                    [(self.catalog[query_id], "timestamp"), None],
+                    [("current_values", self.catalog[query_id]), None],
+                    [("current_values", self.catalog[query_id], "current_price"), self._current_price],
+                    [("current_values", self.catalog[query_id], "timestamp"), None],
                 ],
             )
             for query_id, tag in self.catalog.items()
             if "legacy" in tag or "spot" in tag
         ]
-        multi_call = Multicall(_w3=self.w3, require_success=require_success, calls=calls)
+        calls = get_data_feed_call + get_current_values_call
+        multi_call = Multicall(calls=calls, _w3=self.w3, require_success=require_success)
+        feed_details = await multi_call.coroutine()
+        return feed_details
+
+    async def get_current_tip(self, require_success: bool = False) -> Any:
+        """
+        Returns response from autopay getCurrenTip call
+        require_success is False because autopay returns an
+        error if tip amount is zero
+        """
+        calls = [
+            Call(self.autopay.address, ["getCurrentTip(bytes32)(uint256)", query_id], [[self.catalog[query_id], None]])
+            for query_id in self.catalog
+        ]
+        multi_call = Multicall(calls=calls, _w3=self.w3, require_success=require_success)
         data = await multi_call.coroutine()
         return data
 
@@ -257,8 +259,14 @@ async def get_continuous_tips(
 ) -> Any:
     tipping_feeds = AutopayCalls(autopay=autopay, catalog=CATALOG_QUERY_IDS)
     feed_details = await tipping_feeds.get_feed_details()
-    current_values = await tipping_feeds.get_current_values()
-    return await _get_feed_suggestion(feed_details, current_values)
+    current_feeds = {(key[1], key[2]): value for key, value in feed_details.items() if key[0] == "current_feeds"}
+    current_values = {}
+    for key, value in feed_details.items():
+        if key[0] == "current_values" and len(key) > 2:
+            current_values[(key[1], key[2])] = value
+        else:
+            current_values[key[1]] = value
+    return await _get_feed_suggestion(current_feeds, current_values)
 
 
 async def autopay_suggested_report(
