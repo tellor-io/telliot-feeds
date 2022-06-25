@@ -14,9 +14,8 @@ from telliot_core.utils.timestamp import TimeStamp
 from web3 import Web3
 
 from telliot_feed_examples.queries.query_catalog import query_catalog
-from telliot_feed_examples.reporters.reporter_autopay_utils import (
-    autopay_suggested_report,
-)
+from telliot_feed_examples.reporters.reporter_autopay_utils import autopay_suggested_report
+from telliot_feed_examples.reporters.reporter_autopay_utils import get_feed_tip
 
 
 @pytest.mark.asyncio
@@ -130,8 +129,8 @@ async def test_main(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, 
         trb_query_id = query_catalog._entries["trb-usd-legacy"].query_id
         reward = 30 * 10**18
         start_time = timestamp
-        interval = 10
-        window = 9
+        interval = 100
+        window = 99
         price_threshold = 0
         trb_query_data = "0x" + query_catalog._entries["trb-usd-legacy"].query.query_data.hex()
 
@@ -179,6 +178,9 @@ async def test_main(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, 
         suggested_qtag, tip = await autopay_suggested_report(flex.autopay)
         assert suggested_qtag == "trb-usd-legacy"
         assert tip == 30e18
+
+        tips = await get_feed_tip(query_catalog._entries["trb-usd-legacy"].query.query_id, flex.autopay)
+        assert tips == 30e18
 
         # submit report to oracle to get tip
         _, status = await flex.oracle.write(
