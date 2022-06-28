@@ -34,6 +34,10 @@ Network.ArbitrumRinkeby = 421611
 MULTICALL_ADDRESSES[Network.ArbitrumRinkeby] = MULTICALL2_ADDRESSES[
     Network.ArbitrumRinkeby
 ] = "0xf609687230a65E8bd14caceDEfCF2dea9c15b242"
+Network.OptimismKovan = 69
+MULTICALL_ADDRESSES[Network.OptimismKovan] = MULTICALL2_ADDRESSES[
+    Network.OptimismKovan
+] = "0xf609687230a65E8bd14caceDEfCF2dea9c15b242"
 
 
 async def run_in_subprocess(coro: Any, *args: Any, **kwargs: Any) -> Any:
