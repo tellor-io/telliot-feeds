@@ -29,6 +29,7 @@ async def test_suggested_report(rinkeby_test_cfg):
         assert isinstance(q, OracleQuery)
 
 
+@pytest.mark.skip("need to move query cmd from core to this repo")
 def test_suggested_report_cli():
     """Test suggested report CLI"""
     runner = CliRunner()
