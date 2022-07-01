@@ -1,9 +1,9 @@
+import click
 from telliot_core.cli.utils import async_run
 from telliot_core.cli.utils import cli_core
+
 from telliot_feed_examples.queries.query_catalog import query_catalog
 from telliot_feed_examples.utils.reporter_utils import tellor_suggested_report
-
-import click
 
 
 @click.group()
@@ -60,19 +60,11 @@ async def status(ctx: click.Context, query_tag: str, npoints: int) -> None:
             print(f"{npoints} most recent on-chain datapoints:")
             for k in range(count - npoints, count):
                 ts, status = await tellorx.oracle.getReportTimestampByIndex(queryId, k)
-                blocknum, status = await tellorx.oracle.getBlockNumberByTimestamp(
-                    queryId, ts
-                )
-                bytes_value, status = await tellorx.oracle.getValueByTimestamp(
-                    queryId, ts
-                )
+                blocknum, status = await tellorx.oracle.getBlockNumberByTimestamp(queryId, ts)
+                bytes_value, status = await tellorx.oracle.getValueByTimestamp(queryId, ts)
                 value = q.value_type.decode(bytes_value)
-                reporter, status = await tellorx.oracle.getReporterByTimestamp(
-                    queryId, ts
-                )
-                print(
-                    f" index: {k}, timestamp: {ts}, block: {blocknum}, value:{value}, reporter: {reporter} "
-                )
+                reporter, status = await tellorx.oracle.getReporterByTimestamp(queryId, ts)
+                print(f" index: {k}, timestamp: {ts}, block: {blocknum}, value:{value}, reporter: {reporter} ")
         else:
             print("No on-chain datapoints found.")
 

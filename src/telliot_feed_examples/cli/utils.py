@@ -25,8 +25,6 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
 def valid_diva_chain(chain_id: int) -> bool:
     """Ensure given chain ID supports reporting Diva Protocol data."""
     if chain_id not in DIVA_PROTOCOL_CHAINS:
-        print(
-            f"Current chain id ({chain_id}) not supported for reporting Diva Protocol data."
-        )
+        print(f"Current chain id ({chain_id}) not supported for reporting Diva Protocol data.")
         return False
     return True

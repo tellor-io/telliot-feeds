@@ -1,15 +1,15 @@
 import asyncio
 
-from telliot_core.cli.utils import async_run
-from telliot_feed_examples.queries.query_catalog import query_catalog
-from telliot_feed_examples.datafeed import DataFeed
-from telliot_feed_examples.feeds import CATALOG_FEEDS
-from telliot_feed_examples.utils.oracle_write import tip_query
-from telliot_feed_examples.cli.utils import reporter_cli_core
-from telliot_feed_examples.utils.log import get_logger
-
 import click
 from click.core import Context
+from telliot_core.cli.utils import async_run
+
+from telliot_feed_examples.cli.utils import reporter_cli_core
+from telliot_feed_examples.datafeed import DataFeed
+from telliot_feed_examples.feeds import CATALOG_FEEDS
+from telliot_feed_examples.queries.query_catalog import query_catalog
+from telliot_feed_examples.utils.log import get_logger
+from telliot_feed_examples.utils.oracle_write import tip_query
 
 
 logger = get_logger(__name__)
@@ -56,9 +56,7 @@ async def tip(
 
         chosen_feed = CATALOG_FEEDS[query_tag]
         if not isinstance(chosen_feed, DataFeed):
-            click.echo(
-                f"No corresponding datafeed found for given query tag: {query_tag}\n"
-            )
+            click.echo(f"No corresponding datafeed found for given query tag: {query_tag}\n")
             return
         tip = int(amount_trb * 1e18)
 

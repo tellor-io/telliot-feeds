@@ -5,15 +5,14 @@ Configure telliot_feeds's settings via this interface's command line flags
 or in the configuration file.
 """
 import click
+from chained_accounts import find_accounts
 from click.core import Context
 
-from chained_accounts import find_accounts
-
-from telliot_feed_examples.cli.commands.report import report
-from telliot_feed_examples.cli.commands.tip import tip
-from telliot_feed_examples.cli.commands.settle import settle
 from telliot_feed_examples.cli.commands.catalog import catalog
 from telliot_feed_examples.cli.commands.query import query
+from telliot_feed_examples.cli.commands.report import report
+from telliot_feed_examples.cli.commands.settle import settle
+from telliot_feed_examples.cli.commands.tip import tip
 
 
 @click.group()

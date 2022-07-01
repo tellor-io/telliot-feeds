@@ -1,13 +1,13 @@
 import getpass
 
+import click
+from click.core import Context
 from telliot_core.cli.utils import async_run
 from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
+
 from telliot_feed_examples.cli.utils import reporter_cli_core
 from telliot_feed_examples.cli.utils import valid_diva_chain
 from telliot_feed_examples.utils.log import get_logger
-
-from click.core import Context
-import click
 
 logger = get_logger(__name__)
 
@@ -71,9 +71,7 @@ async def settle(
         oracle = DivaOracleTellorContract(core.endpoint, account)
         oracle.connect()
 
-        status = await oracle.set_final_reference_value(
-            pool_id=pool_id, legacy_gas_price=legacy_gas_price
-        )
+        status = await oracle.set_final_reference_value(pool_id=pool_id, legacy_gas_price=legacy_gas_price)
         if status is not None and status.ok:
             click.echo(f"Pool {pool_id} settled.")
         else:

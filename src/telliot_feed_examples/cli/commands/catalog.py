@@ -1,9 +1,9 @@
 from typing import Optional
 
-from telliot_feed_examples.queries.query_catalog import query_catalog
-from telliot_feed_examples.queries.catalog import CatalogEntry
-
 import click
+
+from telliot_feed_examples.queries.catalog import CatalogEntry
+from telliot_feed_examples.queries.query_catalog import query_catalog
 
 
 def dump_catalog_entry(entry: CatalogEntry, detail: bool = False) -> None:
@@ -46,14 +46,10 @@ def search(
 
 
 @catalog.command()
-@click.option(
-    "-d", "--detail", is_flag=True, help="Print detailed information for each query"
-)
+@click.option("-d", "--detail", is_flag=True, help="Print detailed information for each query")
 def list(detail: bool) -> None:
     """List all queries in the catalog (use --detail for verbose output)."""
     entries = query_catalog.find()
-    print(
-        "Query Tag       Query ID                                                           Query Descriptor"
-    )
+    print("Query Tag       Query ID                                                           Query Descriptor")
     for entry in entries:
         dump_catalog_entry(entry, detail)

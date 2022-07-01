@@ -1,24 +1,24 @@
 import getpass
+from typing import Optional
+from typing import Union
 
-from telliot_feed_examples.queries.query_catalog import query_catalog
+import click
+from chained_accounts import find_accounts
+from click.core import Context
+from eth_utils import to_checksum_address
+from telliot_core.cli.utils import async_run
+
 from telliot_feed_examples.cli.utils import reporter_cli_core
 from telliot_feed_examples.cli.utils import valid_diva_chain
 from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
+from telliot_feed_examples.queries.query_catalog import query_catalog
 from telliot_feed_examples.reporters.flashbot import FlashbotsReporter
 from telliot_feed_examples.reporters.interval import IntervalReporter
 from telliot_feed_examples.reporters.rng_interval import RNGReporter
 from telliot_feed_examples.reporters.tellorflex import TellorFlexReporter
 from telliot_feed_examples.utils.log import get_logger
-
-from chained_accounts import find_accounts
-import click
-from click.core import Context
-from typing import Optional
-from typing import Union
-from eth_utils import to_checksum_address
-from telliot_core.cli.utils import async_run
 
 
 logger = get_logger(__name__)
@@ -252,9 +252,7 @@ async def report(
     if sig_acct_name is not None:
         try:
             if not signature_password:
-                signature_password = getpass.getpass(
-                    f"Enter password for {sig_acct_name} keyfile: "
-                )
+                signature_password = getpass.getpass(f"Enter password for {sig_acct_name} keyfile: ")
         except ValueError:
             click.echo("Invalid Password")
 
@@ -281,25 +279,19 @@ async def report(
             try:
                 chosen_feed = CATALOG_FEEDS[query_tag]
             except KeyError:
-                click.echo(
-                    f"No corresponding datafeed found for given query tag: {query_tag}\n"
-                )
+                click.echo(f"No corresponding datafeed found for given query tag: {query_tag}\n")
                 return
         elif diva_pool_id is not None:
             if not valid_diva_chain(chain_id=cid):
                 click.echo("Diva Protocol not supported for this chain")
                 return
             # Generate datafeed
-            chosen_feed = await assemble_diva_datafeed(
-                pool_id=diva_pool_id, node=core.endpoint, account=account
-            )
+            chosen_feed = await assemble_diva_datafeed(pool_id=diva_pool_id, node=core.endpoint, account=account)
             if chosen_feed is None:
                 click.echo("DIVA Protocol datafeed generation failed")
                 return
         elif rng_timestamp is not None:
-            chosen_feed = await assemble_rng_datafeed(
-                timestamp=rng_timestamp, node=core.endpoint, account=account
-            )
+            chosen_feed = await assemble_rng_datafeed(timestamp=rng_timestamp, node=core.endpoint, account=account)
         else:
             chosen_feed = None
 
