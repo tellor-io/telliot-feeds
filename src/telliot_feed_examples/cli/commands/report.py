@@ -281,6 +281,35 @@ async def report(
             except KeyError:
                 click.echo(f"No corresponding datafeed found for given query tag: {query_tag}\n")
                 return
+            # Set query parameters in DataFeed
+            try:
+                # Isolate query parameters from other CLI options
+                # function_args:List[str] = inspect.getargspec(report).args
+                # query_parameters = list(set(function_args)^set(ctx.params.keys()))
+                # for param in query_parameters:
+                #     setattr(chosen_feed, param, ctx.params[param])
+
+                # Iterate through class attributes,
+                # asking for user input to set each Query Parameter
+                for query_param in chosen_feed.__dict__.keys():
+                    # the datatype of the query parameter
+                    param_dtype = chosen_feed.__annotations__[query_param]
+                    # get input from user
+                    val = input(f"Enter value for Query Parameter{query_param}: ")
+
+                    if val is not None:
+                        # cast input from string to datatype of query parameter
+                        val = param_dtype(val)
+                        # set the query parameter in the feed class
+                        setattr(chosen_feed, query_param, val)
+
+                    else:
+                        click.echo(f"Must set QueryParameter {query_param} of QueryTag {query_tag}")
+                        return
+
+            except ValueError:
+                click.echo(f"QueryParameter {query_param} of QueryTag {query_tag} does not match type {param_dtype}")
+                return
         elif diva_pool_id is not None:
             if not valid_diva_chain(chain_id=cid):
                 click.echo("Diva Protocol not supported for this chain")

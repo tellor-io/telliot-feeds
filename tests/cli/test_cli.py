@@ -117,3 +117,31 @@ def test_query_info():
     result = runner.invoke(cli, ["--test_config", "query", "status", "uspce-legacy"])
     assert not result.exception
     assert "Current value" in result.stdout
+
+
+def test_query_parameters():
+    """Test passing query parameters through user input"""
+
+    gas_price_oracle_chain_id = 1
+    gas_price_oracle_timestamp = 1657732678  # july 13, 2022
+
+    input_ = str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp)
+
+    runner = CliRunner()
+    result = runner.invoke(cli, ["report", "-qt", "gas-price-oracle"], input=input_)
+
+    assert not result.exception
+
+
+def test_invalid_query_parameters():
+    """Test passing invalid query parameters as user input"""
+
+    gas_price_oracle_chain_id = "this should be an integer"
+    gas_price_oracle_timestamp = "this should be an integer too"
+
+    input_ = str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp)
+
+    runner = CliRunner()
+    result = runner.invoke(cli, ["report", "-qt", "gas-price-oracle"], input=input_)
+
+    assert not result.exception
