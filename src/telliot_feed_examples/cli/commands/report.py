@@ -291,7 +291,7 @@ async def report(
 
                 # Iterate through class attributes,
                 # asking for user input to set each Query Parameter
-                for query_param in chosen_feed.__dict__.keys():
+                for query_param in chosen_feed.query.__dict__.keys():
                     # the datatype of the query parameter
                     param_dtype = chosen_feed.__annotations__[query_param]
                     # get input from user
@@ -300,8 +300,10 @@ async def report(
                     if val is not None:
                         # cast input from string to datatype of query parameter
                         val = param_dtype(val)
-                        # set the query parameter in the feed class
-                        setattr(chosen_feed, query_param, val)
+                        # set the query parameter in the Query class
+                        setattr(chosen_feed.query, query_param, val)
+                        # set the query parameter in the Source class
+                        setattr(chosen_feed.source, query_param, val)
 
                     else:
                         click.echo(f"Must set QueryParameter {query_param} of QueryTag {query_tag}")
