@@ -128,7 +128,7 @@ def test_query_parameters():
     input_ = str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp)
 
     runner = CliRunner()
-    result = runner.invoke(cli, ["report", "-qt", "gas-price-oracle"], input=input_)
+    result = runner.invoke(cli, ["report", "-qt", "gas-price-oracle", "--submit-once"], input=input_)
 
     assert not result.exception
 
@@ -142,6 +142,6 @@ def test_invalid_query_parameters():
     input_ = str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp)
 
     runner = CliRunner()
-    result = runner.invoke(cli, ["report", "-qt", "gas-price-oracle"], input=input_)
+    result = runner.invoke(cli, ["report", "-qt", "gas-price-oracle", "--submit-once"], input=input_)
 
     assert result.exception

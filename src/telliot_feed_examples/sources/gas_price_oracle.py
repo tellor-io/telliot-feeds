@@ -29,7 +29,7 @@ adapter = HTTPAdapter(max_retries=retry_strategy)
 class GasPriceOracleSource(DataSource[str]):
     """DataSource for GasPriceOracle expected response data."""
 
-    chain_id: int = 1
+    chainId: int = 1
     timestamp: int = int(time())
 
     async def fetch_historical_gas_price(
@@ -52,7 +52,7 @@ class GasPriceOracleSource(DataSource[str]):
 
         url = (
             f"https://owlracle.info/"
-            f"{networks[self.chain_id]}"
+            f"{networks[self.chainId]}"
             "/history?"
             f"from={int(self.timestamp)}"
             f"&to={int(self.timestamp) + 100}"

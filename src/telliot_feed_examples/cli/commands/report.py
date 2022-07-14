@@ -1,4 +1,5 @@
 import getpass
+from typing import Any
 from typing import Optional
 from typing import Union
 
@@ -10,6 +11,7 @@ from telliot_core.cli.utils import async_run
 
 from telliot_feed_examples.cli.utils import reporter_cli_core
 from telliot_feed_examples.cli.utils import valid_diva_chain
+from telliot_feed_examples.datafeed import DataFeed
 from telliot_feed_examples.feeds import CATALOG_FEEDS
 from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
@@ -100,6 +102,36 @@ def print_reporter_settings(
     click.echo(f"Max fee (gwei): {max_fee}")
     click.echo(f"Priority fee (gwei): {priority_fee}")
     click.echo(f"Gas price speed: {gas_price_speed}\n")
+
+
+def request_query_parameters(feed: DataFeed[Any], tag: str) -> Optional[DataFeed[Any]]:
+    # Set query parameters in DataFeed
+    try:
+        # Iterate through class attributes,
+        # asking for user input to set each Query Parameter
+        for query_param in feed.query.__dict__.keys():
+            # the datatype of the query parameter
+            param_dtype = feed.__annotations__[query_param]
+            # get input from user
+            val = input(f"Enter value for Query Parameter {query_param}: ")
+
+            if val is not None:
+                # cast input from string to datatype of query parameter
+                val = param_dtype(val)
+                # set the query parameter in the Query class
+                setattr(feed.query, query_param, val)
+                # set the query parameter in the Source class
+                setattr(feed.source, query_param, val)
+
+            else:
+                click.echo(f"Must set QueryParameter {query_param} of QueryTag {tag}")
+                return None
+
+        return feed
+
+    except ValueError:
+        click.echo(f"QueryParameter {query_param} of QueryTag {tag} does not match type {param_dtype}")
+        return None
 
 
 @click.group()
@@ -277,41 +309,17 @@ async def report(
         # Use selected feed, or choose automatically
         if query_tag is not None:
             try:
-                chosen_feed = CATALOG_FEEDS[query_tag]
+                chosen_feed: DataFeed[Any] = CATALOG_FEEDS[query_tag]  # type: ignore
             except KeyError:
                 click.echo(f"No corresponding datafeed found for given query tag: {query_tag}\n")
                 return
-            # Set query parameters in DataFeed
-            try:
-                # Isolate query parameters from other CLI options
-                # function_args:List[str] = inspect.getargspec(report).args
-                # query_parameters = list(set(function_args)^set(ctx.params.keys()))
-                # for param in query_parameters:
-                #     setattr(chosen_feed, param, ctx.params[param])
+            # If query parameters need to be set
+            if set(chosen_feed.query.__dict__.values()) == (None):
+                chosen_feed = request_query_parameters(chosen_feed, query_tag)  # type: ignore
 
-                # Iterate through class attributes,
-                # asking for user input to set each Query Parameter
-                for query_param in chosen_feed.query.__dict__.keys():
-                    # the datatype of the query parameter
-                    param_dtype = chosen_feed.__annotations__[query_param]
-                    # get input from user
-                    val = input(f"Enter value for Query Parameter{query_param}: ")
+                if chosen_feed is None:
+                    return
 
-                    if val is not None:
-                        # cast input from string to datatype of query parameter
-                        val = param_dtype(val)
-                        # set the query parameter in the Query class
-                        setattr(chosen_feed.query, query_param, val)
-                        # set the query parameter in the Source class
-                        setattr(chosen_feed.source, query_param, val)
-
-                    else:
-                        click.echo(f"Must set QueryParameter {query_param} of QueryTag {query_tag}")
-                        return
-
-            except ValueError:
-                click.echo(f"QueryParameter {query_param} of QueryTag {query_tag} does not match type {param_dtype}")
-                return
         elif diva_pool_id is not None:
             if not valid_diva_chain(chain_id=cid):
                 click.echo("Diva Protocol not supported for this chain")

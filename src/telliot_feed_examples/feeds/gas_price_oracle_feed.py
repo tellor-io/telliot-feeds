@@ -7,15 +7,14 @@ More info:
 https://github.com/tellor-io/dataSpecs/blob/main/types/GasPriceOracle.md
 
  """
-import time
 from telliot_feed_examples.datafeed import DataFeed
 from telliot_feed_examples.queries.gas_price_oracle import GasPriceOracle
 from telliot_feed_examples.sources.gas_price_oracle import GasPriceOracleSource
 
-chain_id = 1
-timestamp = int(time.time())  # april 1, 2022 unix time
+chainId = 0
+timestamp = 0  # april 1, 2022 unix time
 
 gas_price_oracle_feed = DataFeed(
-    query=GasPriceOracle(chain_id, timestamp),
-    source=GasPriceOracleSource(chain_id=chain_id, timestamp=timestamp),
+    query=GasPriceOracle(chainId, timestamp),
+    source=GasPriceOracleSource(chainId=chainId, timestamp=timestamp),
 )
