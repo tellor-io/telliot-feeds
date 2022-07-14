@@ -113,5 +113,5 @@ query_catalog.add_entry(
 query_catalog.add_entry(
     tag="gas-price-oracle",
     title="Gas Price Oracle",
-    q=GasPriceOracle(0, 0),
+    q=GasPriceOracle(None, None),
 )

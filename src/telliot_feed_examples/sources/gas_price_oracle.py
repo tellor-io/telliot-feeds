@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from time import time
 from typing import Any
 from typing import Optional
 
@@ -72,7 +71,7 @@ class GasPriceOracleSource(DataSource[str]):
                     logger.error(f"GasPriceOracle API timed out: {e}")
                     return None
 
-        else: 
+        else:
             return None
 
     async def fetch_new_datapoint(

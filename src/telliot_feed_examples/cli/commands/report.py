@@ -105,22 +105,19 @@ def print_reporter_settings(
 
 
 def request_query_parameters(feed: DataFeed[Any], tag: str) -> Optional[DataFeed[Any]]:
-    # Set query parameters in DataFeed
+    """
+    Access Query Parameters for a complex DataFeed from CLI input
+    """
     try:
-        # Iterate through class attributes,
-        # asking for user input to set each Query Parameter
         for query_param in feed.query.__dict__.keys():
-            # the datatype of the query parameter
+            # accessing the datatype
             param_dtype = feed.query.__annotations__[query_param]
-            # get input from user
             val = input(f"Enter value for Query Parameter {query_param}: ")
 
             if val is not None:
                 # cast input from string to datatype of query parameter
                 val = param_dtype(val)
-                # set the query parameter in the Query class
                 setattr(feed.query, query_param, val)
-                # set the query parameter in the Source class
                 setattr(feed.source, query_param, val)
 
             else:
@@ -318,6 +315,7 @@ async def report(
                 chosen_feed = request_query_parameters(chosen_feed, query_tag)  # type: ignore
 
                 if chosen_feed is None:
+                    click.echo("")
                     return
 
         elif diva_pool_id is not None:
