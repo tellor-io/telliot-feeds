@@ -44,9 +44,7 @@ def test_encode_decode_reported_val():
 
     # assert decoded_result is True
     assert True
-    q = Snapshot(
-        proposalId="0xcce9760adea906176940ae5fd05bc007cc9252b524832065800635484cb5cb57"
-    )
+    q = Snapshot(proposalId="0xcce9760adea906176940ae5fd05bc007cc9252b524832065800635484cb5cb57")
     print("q data", q.query_data.hex())
     print("q id", q.query_id.hex())
     rsp = q.value_type.encode(True)
