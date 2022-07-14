@@ -122,10 +122,10 @@ def test_query_info():
 def test_query_parameters():
     """Test passing query parameters through user input"""
 
-    gas_price_oracle_chain_id = 4
+    gas_price_oracle_chain_id = 56 #bsc
     gas_price_oracle_timestamp = 1657732678  # july 13, 2022
 
-    input_ = str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp)
+    input_ = str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp) + "\n" + "abc"
 
     runner = CliRunner()
     result = runner.invoke(cli, ["report", "-qt", "gas-price-oracle", "--submit-once"], input=input_)
@@ -139,7 +139,7 @@ def test_invalid_query_parameters():
     gas_price_oracle_chain_id = "this should be an integer"
     gas_price_oracle_timestamp = "this should be an integer too"
 
-    input_ = str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp)
+    input_ = str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp) + "\n" + "abc"
 
     runner = CliRunner()
     result = runner.invoke(cli, ["report", "-qt", "gas-price-oracle", "--submit-once"], input=input_)

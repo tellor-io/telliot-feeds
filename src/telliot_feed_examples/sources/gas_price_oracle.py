@@ -29,47 +29,51 @@ adapter = HTTPAdapter(max_retries=retry_strategy)
 class GasPriceOracleSource(DataSource[str]):
     """DataSource for GasPriceOracle expected response data."""
 
-    chainId: int = 1
-    timestamp: int = int(time())
+    chainId: Optional[int] = None
+    timestamp: Optional[int] = None
 
     async def fetch_historical_gas_price(
         self,
     ) -> Optional[Response]:
         """Fetches historical gas price data from Owlracle API."""
 
-        networks = {
-            1: "eth",
-            56: "bsc",
-            43114: "avax",
-            250: "ftm",
-            137: "poly",
-            25: "cro",
-            42220: "one",
-            128: "ht",
-            1285: "movr",
-            122: "fuse",
-        }
+        if self.chainId is not None and self.timestamp is not None:
+            networks = {
+                1: "eth",
+                56: "bsc",
+                43114: "avax",
+                250: "ftm",
+                137: "poly",
+                25: "cro",
+                42220: "one",
+                128: "ht",
+                1285: "movr",
+                122: "fuse",
+            }
 
-        url = (
-            f"https://owlracle.info/"
-            f"{networks[self.chainId]}"
-            "/history?"
-            f"from={int(self.timestamp)}"
-            f"&to={int(self.timestamp) + 100}"
-        )
+            url = (
+                f"https://owlracle.info/"
+                f"{networks[self.chainId]}"
+                "/history?"
+                f"from={int(self.timestamp)}"
+                f"&to={int(self.timestamp) + 100}"
+            )
 
-        with requests.Session() as s:
-            s.mount("https://", adapter)
-            try:
-                return s.get(url=url, timeout=0.5, headers={"User-Agent": "Custom"})
+            with requests.Session() as s:
+                s.mount("https://", adapter)
+                try:
+                    return s.get(url=url, timeout=0.5, headers={"User-Agent": "Custom"})
 
-            except requests.exceptions.RequestException as e:
-                logger.error(f"GasPriceOracle API error: {e}")
-                return None
+                except requests.exceptions.RequestException as e:
+                    logger.error(f"GasPriceOracle API error: {e}")
+                    return None
 
-            except requests.exceptions.Timeout as e:
-                logger.error(f"GasPriceOracle API timed out: {e}")
-                return None
+                except requests.exceptions.Timeout as e:
+                    logger.error(f"GasPriceOracle API timed out: {e}")
+                    return None
+
+        else: 
+            return None
 
     async def fetch_new_datapoint(
         self,

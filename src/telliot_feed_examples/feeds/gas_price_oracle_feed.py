@@ -11,8 +11,8 @@ from telliot_feed_examples.datafeed import DataFeed
 from telliot_feed_examples.queries.gas_price_oracle import GasPriceOracle
 from telliot_feed_examples.sources.gas_price_oracle import GasPriceOracleSource
 
-chainId = 0
-timestamp = 0  # april 1, 2022 unix time
+chainId = None
+timestamp = None
 
 gas_price_oracle_feed = DataFeed(
     query=GasPriceOracle(chainId, timestamp),

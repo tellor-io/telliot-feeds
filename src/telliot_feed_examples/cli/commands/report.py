@@ -111,7 +111,7 @@ def request_query_parameters(feed: DataFeed[Any], tag: str) -> Optional[DataFeed
         # asking for user input to set each Query Parameter
         for query_param in feed.query.__dict__.keys():
             # the datatype of the query parameter
-            param_dtype = feed.__annotations__[query_param]
+            param_dtype = feed.query.__annotations__[query_param]
             # get input from user
             val = input(f"Enter value for Query Parameter {query_param}: ")
 
@@ -314,7 +314,7 @@ async def report(
                 click.echo(f"No corresponding datafeed found for given query tag: {query_tag}\n")
                 return
             # If query parameters need to be set
-            if set(chosen_feed.query.__dict__.values()) == (None):
+            if set(chosen_feed.query.__dict__.values()) == {None}:
                 chosen_feed = request_query_parameters(chosen_feed, query_tag)  # type: ignore
 
                 if chosen_feed is None:
