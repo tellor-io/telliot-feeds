@@ -13,7 +13,8 @@ from telliot_core.cli.utils import async_run
 from telliot_feed_examples.cli.utils import reporter_cli_core
 from telliot_feed_examples.cli.utils import valid_diva_chain
 from telliot_feed_examples.datafeed import DataFeed
-from telliot_feed_examples.feeds import CATALOG_FEEDS, UNSET_FEEDS
+from telliot_feed_examples.feeds import CATALOG_FEEDS
+from telliot_feed_examples.feeds import UNSET_FEEDS
 from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feed_examples.queries.query_catalog import query_catalog
@@ -111,7 +112,7 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
     """
     try:
         query_type = input("Enter a valid Query Type: ").lower()
-        query_type = re.sub('[^A-Za-z0-9]+', '', query_type)
+        query_type = re.sub("[^A-Za-z0-9]+", "", query_type)
         feed = UNSET_FEEDS[query_type]
     except KeyError:
         click.echo(f"No corresponding datafeed found for Query Type: {query_type}\n")
@@ -144,13 +145,10 @@ def reporter() -> None:
     """Report data on-chain."""
     pass
 
+
 @reporter.command()
 @click.option(
-    "--build-feed",
-    "-b",
-    "build_feed",
-    help="build a datafeed from a query type and query parameters",
-    is_flag=True
+    "--build-feed", "-b", "build_feed", help="build a datafeed from a query type and query parameters", is_flag=True
 )
 @click.option(
     "--query-tag",
@@ -320,7 +318,7 @@ async def report(
 
         # If we need to build a datafeed
         if build_feed:
-            chosen_feed = build_feed_from_input()  # type: ignore
+            chosen_feed = build_feed_from_input()
 
             if chosen_feed is None:
                 click.echo("")
