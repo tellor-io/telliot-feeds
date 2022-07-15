@@ -11,6 +11,7 @@ from typing import List
 from typing import TypeVar
 
 from telliot_core.model.base import Base
+
 from telliot_feeds.dtypes.datapoint import DataPoint
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint

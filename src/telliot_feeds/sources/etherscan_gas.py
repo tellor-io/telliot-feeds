@@ -7,9 +7,10 @@ import requests
 from requests import JSONDecodeError
 from requests.adapters import HTTPAdapter
 from telliot_core.utils.timestamp import now
+from urllib3.util import Retry
+
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.datasource import OptionalDataPoint
-from urllib3.util import Retry
 
 
 logger = logging.getLogger(__name__)

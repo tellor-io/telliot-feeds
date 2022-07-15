@@ -1,4 +1,5 @@
 import pytest
+
 from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
 
 

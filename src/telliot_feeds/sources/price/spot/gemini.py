@@ -5,6 +5,7 @@ from typing import Dict
 
 from pydantic import BaseModel
 from pydantic import ValidationError
+
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService

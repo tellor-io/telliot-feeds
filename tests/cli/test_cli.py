@@ -6,6 +6,7 @@ from io import StringIO
 import pytest
 from click.exceptions import Abort
 from click.testing import CliRunner
+
 from telliot_feeds.cli.commands.report import get_stake_amount
 from telliot_feeds.cli.commands.report import parse_profit_input
 from telliot_feeds.cli.commands.report import valid_diva_chain

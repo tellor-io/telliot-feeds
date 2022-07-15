@@ -1,6 +1,7 @@
 import click
 from telliot_core.cli.utils import async_run
 from telliot_core.cli.utils import cli_core
+
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
 

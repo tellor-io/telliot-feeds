@@ -4,6 +4,7 @@ from typing import Any
 from urllib.parse import urlencode
 
 from telliot_core.apps.telliot_config import TelliotConfig
+
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService

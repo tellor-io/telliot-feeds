@@ -7,10 +7,11 @@ from dotenv import find_dotenv
 from dotenv import load_dotenv
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
-from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from web3 import HTTPProvider
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
+
+from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 
 
 load_dotenv(find_dotenv())

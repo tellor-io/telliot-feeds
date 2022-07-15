@@ -1,4 +1,5 @@
 import pytest
+
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
 
 

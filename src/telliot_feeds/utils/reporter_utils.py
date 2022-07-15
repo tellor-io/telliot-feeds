@@ -4,6 +4,7 @@ from typing import Union
 
 from telliot_core.tellor.tellorflex.oracle import TellorFlexOracleContract
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
+
 from telliot_feeds.queries.query_catalog import query_catalog
 
 # List of currently active reporters

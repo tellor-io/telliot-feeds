@@ -7,6 +7,7 @@ from decimal import Decimal
 
 import pytest
 from eth_abi.exceptions import InsufficientDataBytes
+
 from telliot_feeds.dtypes.float_type import UnsignedFloatType
 from telliot_feeds.dtypes.value_type import ValueType
 

@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pytest
+
 from telliot_feeds.sources import uspce
 from telliot_feeds.sources.uspce import USPCESource
 

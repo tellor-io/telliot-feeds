@@ -5,6 +5,7 @@ from typing import Optional
 from typing import Union
 
 import requests
+
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint

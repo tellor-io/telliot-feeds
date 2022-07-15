@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pytest
+
 from telliot_feeds.sources.price.historical.cryptowatch import (
     CryptowatchHistoricalPriceService,
 )

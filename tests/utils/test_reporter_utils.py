@@ -4,6 +4,7 @@ from brownie import TellorXOracleMock
 from click.testing import CliRunner
 from telliot_core.apps.core import TelliotCore
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
+
 from telliot_feeds.cli.main import cli
 from telliot_feeds.queries.query import OracleQuery
 from telliot_feeds.queries.query_catalog import query_catalog

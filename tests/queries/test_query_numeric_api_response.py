@@ -1,4 +1,5 @@
 from eth_abi import decode_abi
+
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 
 

@@ -2,6 +2,7 @@ from unittest import mock
 
 import pytest
 import requests
+
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPrice
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPriceSource
 

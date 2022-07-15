@@ -6,6 +6,7 @@ from typing import Tuple
 from urllib.parse import urlencode
 
 import requests
+
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService

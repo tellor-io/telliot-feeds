@@ -4,10 +4,11 @@ from typing import Tuple
 
 from telliot_core.contract.contract import Contract
 from telliot_core.utils.response import ResponseStatus
+from web3.datastructures import AttributeDict
+
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.utils.contract import write_with_retry
 from telliot_feeds.utils.log import get_logger
-from web3.datastructures import AttributeDict
 
 logger = get_logger(__name__)
 

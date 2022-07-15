@@ -14,6 +14,7 @@ from telliot_core.contract.contract import Contract
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
+
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed

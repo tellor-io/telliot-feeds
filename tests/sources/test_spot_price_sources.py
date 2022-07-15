@@ -7,6 +7,7 @@ from datetime import datetime
 import pytest
 from requests import JSONDecodeError
 from telliot_core.apps.telliot_config import TelliotConfig
+
 from telliot_feeds.sources.price.spot import coingecko
 from telliot_feeds.sources.price.spot.bittrex import BittrexSpotPriceService
 from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceService

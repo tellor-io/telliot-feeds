@@ -6,6 +6,7 @@ from typing import Generic
 from typing import TypeVar
 
 from telliot_core.model.base import Base
+
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.queries.query import OracleQuery
 

@@ -8,6 +8,7 @@ from typing import Optional
 import clamfig
 import yaml
 from telliot_core.model.base import Base
+
 from telliot_feeds.queries.abi_query import AbiQuery
 from telliot_feeds.queries.query import OracleQuery
 

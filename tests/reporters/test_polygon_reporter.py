@@ -2,6 +2,7 @@ import pytest
 from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
+
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed

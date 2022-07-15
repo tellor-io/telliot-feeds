@@ -9,12 +9,13 @@ from typing import Tuple
 import requests
 from requests import JSONDecodeError
 from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
+from web3 import Web3
+
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.utils.cfg import mainnet_config
 from telliot_feeds.utils.log import get_logger
-from urllib3.util import Retry
-from web3 import Web3
 
 logger = get_logger(__name__)
 

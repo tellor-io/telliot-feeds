@@ -1,4 +1,5 @@
 import pytest
+
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 
 

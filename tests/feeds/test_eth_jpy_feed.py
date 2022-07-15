@@ -1,6 +1,7 @@
 import statistics
 
 import pytest
+
 from telliot_feeds.feeds.eth_jpy_feed import eth_jpy_median_feed
 
 

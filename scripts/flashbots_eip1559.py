@@ -10,12 +10,13 @@ from dotenv import find_dotenv
 from dotenv import load_dotenv
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
-from telliot_feeds.flashbots import flashbot
-from telliot_feeds.sources.etherscan_gas import EtherscanGasPriceSource
 from web3 import HTTPProvider
 from web3 import Web3
 from web3.exceptions import TransactionNotFound
 from web3.types import TxParams
+
+from telliot_feeds.flashbots import flashbot
+from telliot_feeds.sources.etherscan_gas import EtherscanGasPriceSource
 
 
 load_dotenv(find_dotenv())

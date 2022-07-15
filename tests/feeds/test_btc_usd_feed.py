@@ -1,6 +1,7 @@
 import statistics
 
 import pytest
+
 from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feeds.queries.query import OracleQuery
 

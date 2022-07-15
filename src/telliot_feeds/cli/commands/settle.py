@@ -4,6 +4,7 @@ import click
 from click.core import Context
 from telliot_core.cli.utils import async_run
 from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
+
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.cli.utils import valid_diva_chain
 from telliot_feeds.utils.log import get_logger

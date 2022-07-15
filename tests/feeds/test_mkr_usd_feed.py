@@ -1,4 +1,5 @@
 import pytest
+
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 
 

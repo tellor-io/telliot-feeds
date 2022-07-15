@@ -1,9 +1,10 @@
 import pytest
 from brownie import accounts
 from telliot_core.apps.core import TelliotCore
+from web3.datastructures import AttributeDict
+
 from telliot_feeds.feeds.bct_usd_feed import bct_usd_median_feed
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
-from web3.datastructures import AttributeDict
 
 
 @pytest.mark.asyncio

@@ -1,4 +1,5 @@
 import yaml
+
 from telliot_feeds.feeds.ampl_usd_vwap_feed import ampl_usd_vwap_feed
 
 

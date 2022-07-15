@@ -8,6 +8,7 @@ from eth_abi import decode_single
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.utils.response import error_status
 from telliot_core.utils.timestamp import TimeStamp
+
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.utils.log import get_logger

@@ -14,6 +14,7 @@ from typing import TypeVar
 import requests
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.utils.response import ResponseStatus
+
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint

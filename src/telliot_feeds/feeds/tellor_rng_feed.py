@@ -3,6 +3,7 @@ from typing import Optional
 
 import chained_accounts
 from telliot_core.model.endpoints import RPCEndpoint
+
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.tellor_rng import TellorRNG
 from telliot_feeds.sources.blockhash_aggregator import TellorRNGManualSource

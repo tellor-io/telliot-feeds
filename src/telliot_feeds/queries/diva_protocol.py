@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from eth_abi import decode_abi
 from eth_abi import encode_abi
+
 from telliot_feeds.dtypes.value_type import ValueType
 from telliot_feeds.queries.abi_query import AbiQuery
 

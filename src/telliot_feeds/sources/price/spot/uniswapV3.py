@@ -3,6 +3,7 @@ from dataclasses import field
 from typing import Any
 
 import requests
+
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService

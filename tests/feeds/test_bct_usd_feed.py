@@ -1,4 +1,5 @@
 import pytest
+
 from telliot_feeds.feeds.bct_usd_feed import bct_usd_median_feed
 
 

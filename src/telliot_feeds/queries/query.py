@@ -9,8 +9,9 @@ from typing import Dict
 
 from clamfig import deserialize
 from clamfig import Serializable
-from telliot_feeds.dtypes.value_type import ValueType
 from web3 import Web3
+
+from telliot_feeds.dtypes.value_type import ValueType
 
 
 class OracleQuery(Serializable):

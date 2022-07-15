@@ -4,6 +4,7 @@ from typing import Any
 from typing import Dict
 
 import requests
+
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 
 

@@ -4,6 +4,7 @@ Copyright (c) 2021-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
 import pytest
+
 from telliot_feeds.queries.price.spot_price import SpotPrice
 
 

@@ -15,14 +15,15 @@ from telliot_core.contract.contract import Contract
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
+from web3 import Web3
+from web3.datastructures import AttributeDict
+from web3.exceptions import TransactionNotFound
+
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.flashbots import flashbot  # type: ignore
 from telliot_feeds.flashbots.provider import get_default_endpoint  # type: ignore
 from telliot_feeds.reporters.interval import IntervalReporter
 from telliot_feeds.utils.log import get_logger
-from web3 import Web3
-from web3.datastructures import AttributeDict
-from web3.exceptions import TransactionNotFound
 
 
 logger = get_logger(__name__)

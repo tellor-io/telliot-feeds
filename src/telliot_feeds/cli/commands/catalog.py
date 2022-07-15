@@ -1,6 +1,7 @@
 from typing import Optional
 
 import click
+
 from telliot_feeds.queries.catalog import CatalogEntry
 from telliot_feeds.queries.query_catalog import query_catalog
 

@@ -6,11 +6,12 @@ from eth_abi import encode_single
 from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 from telliot_core.utils.timestamp import TimeStamp
+from web3 import Web3
+
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.reporters.reporter_autopay_utils import (
     autopay_suggested_report,
 )
-from web3 import Web3
 
 
 @pytest.mark.asyncio

@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pytest
+
 from telliot_feeds.sources import diva_protocol
 from telliot_feeds.sources.diva_protocol import DivaManualSource
 

@@ -1,4 +1,5 @@
 import pytest
+
 from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
 
 

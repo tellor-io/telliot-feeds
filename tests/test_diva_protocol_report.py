@@ -4,9 +4,10 @@ import pytest
 from brownie import accounts
 from brownie import DIVAProtocolMock
 from telliot_core.apps.core import TelliotCore
+from web3.datastructures import AttributeDict
+
 from telliot_feeds.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
-from web3.datastructures import AttributeDict
 
 
 @pytest.fixture

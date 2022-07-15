@@ -4,6 +4,7 @@ from clamfig import deserialize
 from clamfig.base import Registry
 from eth_abi import decode_abi
 from eth_abi import encode_abi
+
 from telliot_feeds.queries.query import OracleQuery
 
 

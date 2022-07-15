@@ -7,6 +7,7 @@ or in the configuration file.
 import click
 from chained_accounts import find_accounts
 from click.core import Context
+
 from telliot_feeds.cli.commands.catalog import catalog
 from telliot_feeds.cli.commands.query import query
 from telliot_feeds.cli.commands.report import report
