@@ -111,7 +111,7 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
-    tag="gas-price-oracle",
-    title="Gas Price Oracle",
-    q=GasPriceOracle(None, None),
+    tag="gas-price-oracle-example",
+    title="Gas Price Oracle Mainnet 7/1/2022",
+    q=GasPriceOracle(1, 1656633600),
 )
