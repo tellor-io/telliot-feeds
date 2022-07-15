@@ -1,4 +1,5 @@
 import getpass
+import re
 from typing import Any
 from typing import Optional
 from typing import Union
@@ -12,7 +13,7 @@ from telliot_core.cli.utils import async_run
 from telliot_feed_examples.cli.utils import reporter_cli_core
 from telliot_feed_examples.cli.utils import valid_diva_chain
 from telliot_feed_examples.datafeed import DataFeed
-from telliot_feed_examples.feeds import CATALOG_FEEDS
+from telliot_feed_examples.feeds import CATALOG_FEEDS, UNSET_FEEDS
 from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feed_examples.queries.query_catalog import query_catalog
@@ -104,10 +105,17 @@ def print_reporter_settings(
     click.echo(f"Gas price speed: {gas_price_speed}\n")
 
 
-def request_query_parameters(feed: DataFeed[Any], tag: str) -> Optional[DataFeed[Any]]:
+def build_feed() -> Optional[DataFeed[Any]]:
     """
-    Access Query Parameters for a complex DataFeed from CLI input
+    Build a DataFeed from CLI input
     """
+    try:
+        query_type = input("Enter a valid Query Type: ").lower()
+        query_type = re.sub('[^A-Za-z0-9]+', '', query_type)
+        feed = UNSET_FEEDS[query_type]
+    except KeyError:
+        click.echo(f"No corresponding datafeed found for Query Type: {query_type}\n")
+        return
     try:
         for query_param in feed.query.__dict__.keys():
             # accessing the datatype
@@ -121,13 +129,13 @@ def request_query_parameters(feed: DataFeed[Any], tag: str) -> Optional[DataFeed
                 setattr(feed.source, query_param, val)
 
             else:
-                click.echo(f"Must set QueryParameter {query_param} of QueryTag {tag}")
+                click.echo(f"Must set QueryParameter {query_param} of QueryType {query_type}")
                 return None
 
         return feed
 
     except ValueError:
-        click.echo(f"QueryParameter {query_param} of QueryTag {tag} does not match type {param_dtype}")
+        click.echo(f"QueryParameter {query_param} of QueryType {query_type} does not match type {param_dtype}")
         return None
 
 
@@ -136,8 +144,14 @@ def reporter() -> None:
     """Report data on-chain."""
     pass
 
-
 @reporter.command()
+@click.option(
+    "--build-feed",
+    "-b",
+    "build_feed",
+    help="build a datafeed from a query type and query parameters",
+    default=False
+)
 @click.option(
     "--query-tag",
     "-qt",
@@ -246,6 +260,7 @@ def reporter() -> None:
 async def report(
     ctx: Context,
     query_tag: str,
+    build_feed: bool,
     tx_type: int,
     gas_limit: int,
     max_fee: Optional[int],
@@ -303,21 +318,21 @@ async def report(
 
         cid = core.config.main.chain_id
 
+        # If we need to build a datafeed
+        if build_feed:
+            chosen_feed = request_query_parameters()  # type: ignore
+
+            if chosen_feed is None:
+                click.echo("")
+                return
+
         # Use selected feed, or choose automatically
         if query_tag is not None:
             try:
                 chosen_feed: DataFeed[Any] = CATALOG_FEEDS[query_tag]  # type: ignore
             except KeyError:
-                click.echo(f"No corresponding datafeed found for given query tag: {query_tag}\n")
+                click.echo(f"No corresponding datafeed found for Query Type: {query_tag}\n")
                 return
-            # If query parameters need to be set
-            if set(chosen_feed.query.__dict__.values()) == {None}:
-                chosen_feed = request_query_parameters(chosen_feed, query_tag)  # type: ignore
-
-                if chosen_feed is None:
-                    click.echo("")
-                    return
-
         elif diva_pool_id is not None:
             if not valid_diva_chain(chain_id=cid):
                 click.echo("Diva Protocol not supported for this chain")

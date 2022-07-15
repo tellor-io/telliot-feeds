@@ -48,3 +48,14 @@ CATALOG_FEEDS = {
     "morphware-v1": morphware_v1_feed,
     "gas-price-oracle": gas_price_oracle_feed,
 }
+
+UNSET_FEEDS = {
+    # "spotprice",
+    # "apiquery",
+    # "divaprotocolpolygon",
+    "gaspriceoracle": gas_price_oracle_feed,
+    # "legacyrequest",
+    # "morphware",
+    # "snapshot",
+    # "tellorrng"
+}

@@ -136,12 +136,13 @@ def test_query_parameters():
 def test_invalid_query_parameters():
     """Test passing invalid query parameters as user input"""
 
+    query_type = "GasPriceOracle!!!"  # should strip special characters
     gas_price_oracle_chain_id = "this should be an integer"
     gas_price_oracle_timestamp = "this should be an integer too"
 
     input_ = str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp) + "\n" + "abc"
 
     runner = CliRunner()
-    result = runner.invoke(cli, ["report", "-qt", "gas-price-oracle", "--submit-once"], input=input_)
+    result = runner.invoke(cli, ["report", "--build-feed", "gas-price-oracle", "--submit-once"], input=input_)
 
     assert result.exception
