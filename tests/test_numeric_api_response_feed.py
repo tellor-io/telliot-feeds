@@ -4,9 +4,9 @@ from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
 from telliot_feed_examples.datafeed import DataFeed
+from telliot_feed_examples.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feed_examples.reporters.tellorflex import TellorFlexReporter
 from telliot_feed_examples.sources.numeric_api_response import NumericApiResponseSource
-from telliot_feed_examples.queries.numeric_api_response_query import NumericApiResponse
 
 url = "https://taylorswiftapi.herokuapp.com/get"
 parseStr = "quote"
