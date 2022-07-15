@@ -40,7 +40,7 @@ from telliot_feeds.cli.commands.tip import tip
     help="Runs command with test configuration (developer use only)",
 )
 @click.pass_context
-def cli(
+def main(
     ctx: Context,
     account: str,
     signature_account: str,
@@ -59,11 +59,11 @@ def cli(
     ctx.obj["CHAIN_ID"] = accounts[0].chains[0]
 
 
-cli.add_command(report)
-cli.add_command(tip)
-cli.add_command(query)
-cli.add_command(catalog)
-cli.add_command(settle)
+main.add_command(report)
+main.add_command(tip)
+main.add_command(query)
+main.add_command(catalog)
+main.add_command(settle)
 
 if __name__ == "__main__":
-    cli()
+    main()
