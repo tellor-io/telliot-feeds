@@ -105,7 +105,7 @@ def print_reporter_settings(
     click.echo(f"Gas price speed: {gas_price_speed}\n")
 
 
-def build_feed() -> Optional[DataFeed[Any]]:
+def build_feed_from_input() -> Optional[DataFeed[Any]]:
     """
     Build a DataFeed from CLI input
     """
@@ -115,7 +115,7 @@ def build_feed() -> Optional[DataFeed[Any]]:
         feed = UNSET_FEEDS[query_type]
     except KeyError:
         click.echo(f"No corresponding datafeed found for Query Type: {query_type}\n")
-        return
+        return None
     try:
         for query_param in feed.query.__dict__.keys():
             # accessing the datatype
@@ -135,7 +135,7 @@ def build_feed() -> Optional[DataFeed[Any]]:
         return feed
 
     except ValueError:
-        click.echo(f"QueryParameter {query_param} of QueryType {query_type} does not match type {param_dtype}")
+        click.echo(f"Value {val} for Query Parameter {query_param} does not match type {param_dtype}")
         return None
 
 
@@ -150,7 +150,7 @@ def reporter() -> None:
     "-b",
     "build_feed",
     help="build a datafeed from a query type and query parameters",
-    default=False
+    is_flag=True
 )
 @click.option(
     "--query-tag",
@@ -320,7 +320,7 @@ async def report(
 
         # If we need to build a datafeed
         if build_feed:
-            chosen_feed = request_query_parameters()  # type: ignore
+            chosen_feed = build_feed_from_input()  # type: ignore
 
             if chosen_feed is None:
                 click.echo("")
