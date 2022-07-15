@@ -2,11 +2,10 @@ import pytest
 from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
-
-from telliot_feed_examples.datafeed import DataFeed
-from telliot_feed_examples.feeds.eth_usd_feed import eth_usd_median_feed
-from telliot_feed_examples.feeds.matic_usd_feed import matic_usd_median_feed
-from telliot_feed_examples.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
+from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 
 
 @pytest.fixture(scope="function")

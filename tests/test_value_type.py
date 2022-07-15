@@ -7,9 +7,8 @@ from decimal import Decimal
 
 import pytest
 from eth_abi.exceptions import InsufficientDataBytes
-
-from telliot_feed_examples.dtypes.float_type import UnsignedFloatType
-from telliot_feed_examples.dtypes.value_type import ValueType
+from telliot_feeds.dtypes.float_type import UnsignedFloatType
+from telliot_feeds.dtypes.value_type import ValueType
 
 
 def test_fixed_response_type():

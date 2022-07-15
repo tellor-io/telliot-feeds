@@ -4,14 +4,13 @@ import pytest
 from brownie import accounts
 from brownie import DIVAProtocolMock
 from telliot_core.apps.core import TelliotCore
-
-from telliot_feed_examples.datafeed import DataFeed
-from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
-from telliot_feed_examples.feeds.diva_protocol_feed import DivaPoolParameters
-from telliot_feed_examples.feeds.diva_protocol_feed import get_pool_params
-from telliot_feed_examples.feeds.diva_protocol_feed import get_variable_source
-from telliot_feed_examples.queries.diva_protocol import DIVAProtocolPolygon
-from telliot_feed_examples.sources.price.historical.poloniex import (
+from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.feeds.diva_protocol_feed import assemble_diva_datafeed
+from telliot_feeds.feeds.diva_protocol_feed import DivaPoolParameters
+from telliot_feeds.feeds.diva_protocol_feed import get_pool_params
+from telliot_feeds.feeds.diva_protocol_feed import get_variable_source
+from telliot_feeds.queries.diva_protocol import DIVAProtocolPolygon
+from telliot_feeds.sources.price.historical.poloniex import (
     PoloniexHistoricalPriceSource,
 )
 

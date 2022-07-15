@@ -2,7 +2,7 @@
 
 **This is experimental software! You might lose money!**
 
-Prerequisites: [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)
+Prerequisites: [Getting Started](https://tellor-io.github.io/telliot-feeds/getting-started/)
 
 To use any of the telliot datafeed and reporter examples, use the command line interface (CLI) tool. A basic example:
 
@@ -15,7 +15,7 @@ $ telliot-feeds --account fakename report
 ```
 $ telliot-feeds -a fakename report
 telliot-core 0.0.10.dev1
-telliot_feed_examples (plugin): Version 0.0.12dev0
+telliot_feeds (plugin): Version 0.0.12dev0
 Using: eth-rinkeby [staker: dev-acct-4]
 
 Reporting with synchronized queries
@@ -165,7 +165,7 @@ Reporting with Flashbots on testnet is not supported.
 
 ### Create Signatory Account
 
-In order to submit transactions through the [Flashbots](https://docs.flashbots.net/flashbots-auction/searchers/quick-start/) relay, you need an additional Ethereum acccount. The Flashbots organization uses this signatory account's address to identify you and build your historical reputation as a MEV ["searcher"](https://docs.flashbots.net/flashbots-auction/searchers/quick-start). This signatory account doesn't need any funds in it. Store it it as a `ChainedAccount` in the same way you would any other (see [Getting Started](https://tellor-io.github.io/telliot-feed-examples/getting-started/)).
+In order to submit transactions through the [Flashbots](https://docs.flashbots.net/flashbots-auction/searchers/quick-start/) relay, you need an additional Ethereum acccount. The Flashbots organization uses this signatory account's address to identify you and build your historical reputation as a MEV ["searcher"](https://docs.flashbots.net/flashbots-auction/searchers/quick-start). This signatory account doesn't need any funds in it. Store it it as a `ChainedAccount` in the same way you would any other (see [Getting Started](https://tellor-io.github.io/telliot-feeds/getting-started/)).
 
 When reporting, select your signatory account by tag as well as your staked mainnet account. Use the `--account/-a` and `--signature-tag/-sgt` flags.
 

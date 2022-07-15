@@ -1,6 +1,5 @@
 from eth_abi import decode_abi
-
-from telliot_feed_examples.queries.numeric_api_response_query import NumericApiResponse
+from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 
 
 def test_constructor():

@@ -1,8 +1,7 @@
 import statistics
 
 import pytest
-
-from telliot_feed_examples.feeds.eth_jpy_feed import eth_jpy_median_feed
+from telliot_feeds.feeds.eth_jpy_feed import eth_jpy_median_feed
 
 
 @pytest.mark.asyncio

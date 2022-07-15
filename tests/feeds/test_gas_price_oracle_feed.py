@@ -1,8 +1,7 @@
 from datetime import datetime
 
 import pytest
-
-from telliot_feed_examples.feeds.gas_price_oracle_feed import gas_price_oracle_feed
+from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed
 
 
 @pytest.mark.asyncio

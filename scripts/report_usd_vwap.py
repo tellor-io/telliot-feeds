@@ -8,10 +8,9 @@ from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.contract.contract import Contract
 from telliot_core.utils.abi import rinkeby_tellor_master
 from telliot_core.utils.abi import rinkeby_tellor_oracle
-
-from telliot_feed_examples.feeds.usd_vwap import ampl_usd_vwap_feed
-from telliot_feed_examples.reporters.interval import IntervalReporter
-from telliot_feed_examples.utils.log import get_logger
+from telliot_feeds.feeds.usd_vwap import ampl_usd_vwap_feed
+from telliot_feeds.reporters.interval import IntervalReporter
+from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)

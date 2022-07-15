@@ -1,9 +1,8 @@
 from datetime import datetime
 
 import pytest
-
-from telliot_feed_examples.sources import uspce
-from telliot_feed_examples.sources.uspce import USPCESource
+from telliot_feeds.sources import uspce
+from telliot_feeds.sources.uspce import USPCESource
 
 
 @pytest.mark.asyncio

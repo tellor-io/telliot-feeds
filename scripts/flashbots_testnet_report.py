@@ -10,16 +10,15 @@ from dotenv import find_dotenv
 from dotenv import load_dotenv
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
+from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
+from telliot_feeds.flashbots import flashbot
+from telliot_feeds.flashbots.provider import get_default_endpoint
+from telliot_feeds.sources.etherscan_gas import EtherscanGasPriceSource
+from telliot_feeds.utils.abi import gorli_playground_abi
 from web3 import HTTPProvider
 from web3 import Web3
 from web3.exceptions import TransactionNotFound
 from web3.middleware import geth_poa_middleware
-
-from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
-from telliot_feed_examples.flashbots import flashbot
-from telliot_feed_examples.flashbots.provider import get_default_endpoint
-from telliot_feed_examples.sources.etherscan_gas import EtherscanGasPriceSource
-from telliot_feed_examples.utils.abi import gorli_playground_abi
 
 
 load_dotenv(find_dotenv())

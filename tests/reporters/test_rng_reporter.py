@@ -2,9 +2,8 @@ import pytest
 import pytest_asyncio
 from brownie import accounts
 from telliot_core.apps.core import TelliotCore
+from telliot_feeds.reporters.rng_interval import RNGReporter
 from web3.datastructures import AttributeDict
-
-from telliot_feed_examples.reporters.rng_interval import RNGReporter
 
 
 @pytest_asyncio.fixture(scope="function")

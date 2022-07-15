@@ -1,7 +1,6 @@
 # from datetime import datetime
 import pytest
-
-from telliot_feed_examples.sources.numeric_api_response import NumericApiResponseSource
+from telliot_feeds.sources.numeric_api_response import NumericApiResponseSource
 
 
 # test different apis with different outputs to test parser capabilities

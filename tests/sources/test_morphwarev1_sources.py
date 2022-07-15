@@ -2,8 +2,7 @@ import json
 from datetime import datetime
 
 import pytest
-
-from telliot_feed_examples.sources.morphware import MorphwareV1Source
+from telliot_feeds.sources.morphware import MorphwareV1Source
 
 
 @pytest.mark.asyncio

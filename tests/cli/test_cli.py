@@ -6,11 +6,10 @@ from io import StringIO
 import pytest
 from click.exceptions import Abort
 from click.testing import CliRunner
-
-from telliot_feed_examples.cli.commands.report import get_stake_amount
-from telliot_feed_examples.cli.commands.report import parse_profit_input
-from telliot_feed_examples.cli.commands.report import valid_diva_chain
-from telliot_feed_examples.cli.main import cli
+from telliot_feeds.cli.commands.report import get_stake_amount
+from telliot_feeds.cli.commands.report import parse_profit_input
+from telliot_feeds.cli.commands.report import valid_diva_chain
+from telliot_feeds.cli.main import cli
 
 
 def test_parse_profit_input():

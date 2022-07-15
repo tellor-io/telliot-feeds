@@ -33,7 +33,7 @@ In this example, the virtual environment is located in a subfolder called `tenv`
 You can install Telliot Feed Examples and all of it's dependencies
 (including [telliot-core](https://github.com/tellor-io/telliot-core) and [chained-accounts](https://github.com/pydefi/chained-accounts)) through the command line:
 
-    pip install telliot-feed-examples
+    pip install telliot-feeds
 
 ## Telliot Configuration
 
@@ -116,7 +116,7 @@ Note that reporting accounts can be used for ETH mainnet (chain_id=1), Rinkeby t
 Detailed instructions for managing EVM accounts can be found in the
 [`chained_accounts` package documentation](https://github.com/pydefi/chained-accounts). 
 
-After configuring accounts, read the [Usage](https://tellor-io.github.io/telliot-feed-examples/usage/) section,
+After configuring accounts, read the [Usage](https://tellor-io.github.io/telliot-feeds/usage/) section,
 then you'll be set to report.
 
 ## Other possible configs
@@ -124,7 +124,7 @@ then you'll be set to report.
 
 If you'd like to report legacy AMPL values, generate default AMPL configs from the repository's home directory:
 ```
-python3 src/telliot_feed_examples/config.py
+python3 src/telliot_feeds/config.py
 ```
 
 After, add AMPL api keys (BraveNewCoin/Rapid & AnyBlock) to `~/telliot/ampl.yaml`

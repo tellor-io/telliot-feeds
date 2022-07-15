@@ -1,6 +1,5 @@
 import pytest
-
-from telliot_feed_examples.feeds.sushi_usd_feed import sushi_usd_median_feed
+from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
 
 
 @pytest.mark.asyncio

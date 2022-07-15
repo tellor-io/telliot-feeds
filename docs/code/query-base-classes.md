@@ -1,5 +1,5 @@
-::: telliot_feed_examples.queries.query.OracleQuery
+::: telliot_feeds.queries.query.OracleQuery
 
-::: telliot_feed_examples.queries.json_query.JsonQuery
+::: telliot_feeds.queries.json_query.JsonQuery
 
-::: telliot_feed_examples.queries.abi_query.AbiQuery
+::: telliot_feeds.queries.abi_query.AbiQuery
