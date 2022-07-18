@@ -1,3 +1,8 @@
+"""
+Uses python's interface from https://github.com/banteg/multicall.py.git for makerdao's multicall contract.
+Multicall contract helps reduce node calls by combining contract function calls
+and returning the values all together. This is helpful especially if api nodes like infura are being used.
+"""
 import asyncio
 import math
 from concurrent.futures import ThreadPoolExecutor
