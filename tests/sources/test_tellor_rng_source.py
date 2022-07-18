@@ -4,10 +4,10 @@ from unittest import mock
 import pytest
 import requests
 
-from telliot_feed_examples.sources import blockhash_aggregator
-from telliot_feed_examples.sources.blockhash_aggregator import get_btc_hash
-from telliot_feed_examples.sources.blockhash_aggregator import get_eth_hash
-from telliot_feed_examples.sources.blockhash_aggregator import TellorRNGManualSource
+from telliot_feeds.sources import blockhash_aggregator
+from telliot_feeds.sources.blockhash_aggregator import get_btc_hash
+from telliot_feeds.sources.blockhash_aggregator import get_eth_hash
+from telliot_feeds.sources.blockhash_aggregator import TellorRNGManualSource
 
 
 @pytest.mark.asyncio

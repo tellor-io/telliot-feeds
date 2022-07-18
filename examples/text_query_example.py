@@ -1,5 +1,5 @@
 """Text Query Example """
-from telliot_feed_examples.queries.string_query import StringQuery
+from telliot_feeds.queries.string_query import StringQuery
 
 q = StringQuery(text="What is the meaning of life?")
 print(q.descriptor)

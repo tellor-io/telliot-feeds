@@ -8,16 +8,16 @@ import pytest
 from requests import JSONDecodeError
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feed_examples.sources.price.spot import coingecko
-from telliot_feed_examples.sources.price.spot.bittrex import BittrexSpotPriceService
-from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceService
-from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceService
-from telliot_feed_examples.sources.price.spot.gemini import GeminiSpotPriceService
-from telliot_feed_examples.sources.price.spot.nomics import NomicsSpotPriceService
-from telliot_feed_examples.sources.price.spot.pancakeswap import (
+from telliot_feeds.sources.price.spot import coingecko
+from telliot_feeds.sources.price.spot.bittrex import BittrexSpotPriceService
+from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceService
+from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceService
+from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceService
+from telliot_feeds.sources.price.spot.nomics import NomicsSpotPriceService
+from telliot_feeds.sources.price.spot.pancakeswap import (
     PancakeswapPriceService,
 )
-from telliot_feed_examples.sources.price.spot.uniswapV3 import UniswapV3PriceService
+from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceService
 
 
 service = {

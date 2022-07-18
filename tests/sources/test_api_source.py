@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from telliot_feed_examples.sources.api_source import APIQuerySource
+from telliot_feeds.sources.api_source import APIQuerySource
 
 
 # test different apis with different outputs to test parser capabilities

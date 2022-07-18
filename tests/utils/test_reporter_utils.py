@@ -6,10 +6,10 @@ from click.testing import CliRunner
 from telliot_core.apps.core import TelliotCore
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
 
-from telliot_feed_examples.queries.query import OracleQuery
-from telliot_feed_examples.queries.query_catalog import query_catalog
-from telliot_feed_examples.utils.reporter_utils import reporter_sync_schedule
-from telliot_feed_examples.utils.reporter_utils import tellor_suggested_report
+from telliot_feeds.queries.query import OracleQuery
+from telliot_feeds.queries.query_catalog import query_catalog
+from telliot_feeds.utils.reporter_utils import reporter_sync_schedule
+from telliot_feeds.utils.reporter_utils import tellor_suggested_report
 
 
 @pytest.mark.asyncio

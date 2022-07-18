@@ -1,6 +1,6 @@
 import pytest
 
-from telliot_feed_examples.feeds.ric_usd_feed import ric_usd_median_feed
+from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
 
 
 @pytest.mark.asyncio

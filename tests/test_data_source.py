@@ -5,7 +5,7 @@ from datetime import datetime
 
 import pytest
 
-from telliot_feed_examples.datasource import RandomSource
+from telliot_feeds.datasource import RandomSource
 
 
 @pytest.mark.asyncio

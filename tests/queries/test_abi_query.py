@@ -1,5 +1,5 @@
-from telliot_feed_examples.queries.abi_query import AbiQuery
-from telliot_feed_examples.queries.morphware import Morphware
+from telliot_feeds.queries.abi_query import AbiQuery
+from telliot_feeds.queries.morphware import Morphware
 
 
 def test_query_data():

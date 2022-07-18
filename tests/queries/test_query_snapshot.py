@@ -5,7 +5,7 @@ Distributed under the terms of the MIT License.
 """
 from eth_abi import decode_abi
 
-from telliot_feed_examples.queries.snapshot import Snapshot
+from telliot_feeds.queries.snapshot import Snapshot
 
 
 def test_constructor():

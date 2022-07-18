@@ -5,7 +5,7 @@ Distributed under the terms of the MIT License.
 """
 from eth_abi import decode_abi
 
-from telliot_feed_examples.queries.gas_price_oracle import GasPriceOracle
+from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
 
 
 def test_query_constructor():

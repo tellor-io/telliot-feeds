@@ -4,9 +4,9 @@ from datetime import datetime
 import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feed_examples.sources.ampl_usd_vwap import AMPLUSDVWAPSource
-from telliot_feed_examples.sources.ampl_usd_vwap import AnyBlockSource
-from telliot_feed_examples.sources.ampl_usd_vwap import BraveNewCoinSource
+from telliot_feeds.sources.ampl_usd_vwap import AMPLUSDVWAPSource
+from telliot_feeds.sources.ampl_usd_vwap import AnyBlockSource
+from telliot_feeds.sources.ampl_usd_vwap import BraveNewCoinSource
 
 
 @pytest.fixture(scope="module")

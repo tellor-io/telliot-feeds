@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-n-publish:
-    name: Publish telliot-feed-examples
+    name: Publish telliot-feeds
     runs-on: ubuntu-18.04
 
     steps:
@@ -34,14 +34,14 @@ jobs:
         --wheel
         --outdir dist/
         .
-    - name: Publish telliot-feed-examples to Test PyPI
+    - name: Publish telliot-feeds to Test PyPI
       if: "github.event.release.prerelease"
       uses: pypa/gh-action-pypi-publish@master
       with:
         password: ${{ secrets.TELLIOT_FEED_EXAMPLES_TEST_PYPI_API_TOKEN }}
         repository_url: https://test.pypi.org/legacy/
 
-    - name: Publish telliot-feed-examples to PyPI
+    - name: Publish telliot-feeds to PyPI
       if: "!github.event.release.prerelease"
       uses: pypa/gh-action-pypi-publish@master
       with:

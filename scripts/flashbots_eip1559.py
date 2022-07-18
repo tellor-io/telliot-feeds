@@ -15,8 +15,8 @@ from web3 import Web3
 from web3.exceptions import TransactionNotFound
 from web3.types import TxParams
 
-from telliot_feed_examples.flashbots import flashbot
-from telliot_feed_examples.sources.etherscan_gas import EtherscanGasPriceSource
+from telliot_feeds.flashbots import flashbot
+from telliot_feeds.sources.etherscan_gas import EtherscanGasPriceSource
 
 
 load_dotenv(find_dotenv())

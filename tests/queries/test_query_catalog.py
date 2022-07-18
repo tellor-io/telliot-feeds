@@ -1,5 +1,5 @@
-from telliot_feed_examples.queries.query import OracleQuery
-from telliot_feed_examples.queries.query_catalog import query_catalog
+from telliot_feeds.queries.query import OracleQuery
+from telliot_feeds.queries.query_catalog import query_catalog
 
 
 def test_query_catalog():

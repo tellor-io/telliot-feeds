@@ -6,8 +6,8 @@ from brownie import DIVAProtocolMock
 from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
-from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
-from telliot_feed_examples.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.feeds.diva_protocol_feed import assemble_diva_datafeed
+from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 
 
 @pytest.fixture

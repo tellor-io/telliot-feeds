@@ -3,8 +3,8 @@ from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
-from telliot_feed_examples.feeds.vesq import vsq_usd_median_feed
-from telliot_feed_examples.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.feeds.vesq import vsq_usd_median_feed
+from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 
 
 @pytest.mark.asyncio

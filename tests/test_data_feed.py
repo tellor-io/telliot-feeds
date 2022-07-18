@@ -1,9 +1,9 @@
 """ Simple example of creating a "plug-in" data feed
 
 """
-from telliot_feed_examples.datafeed import DataFeed
-from telliot_feed_examples.datasource import RandomSource
-from telliot_feed_examples.queries.legacy_query import LegacyRequest
+from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.datasource import RandomSource
+from telliot_feeds.queries.legacy_query import LegacyRequest
 
 
 def test_data_feed():

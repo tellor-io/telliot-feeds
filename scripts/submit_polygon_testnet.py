@@ -11,7 +11,7 @@ from web3 import HTTPProvider
 from web3 import Web3
 from web3.middleware import geth_poa_middleware
 
-from telliot_feed_examples.feeds.trb_usd_feed import trb_usd_median_feed
+from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 
 
 load_dotenv(find_dotenv())
