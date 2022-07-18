@@ -4,24 +4,23 @@ from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
 from telliot_feed_examples.datafeed import DataFeed
-from telliot_feed_examples.queries.api_query import APIQuery
+from telliot_feed_examples.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feed_examples.reporters.tellorflex import TellorFlexReporter
-from telliot_feed_examples.sources.api_source import APIQuerySource
+from telliot_feed_examples.sources.numeric_api_response import NumericApiResponseSource
 
-url_test = "https://taylorswiftapi.herokuapp.com/get"
-key_str_test = "quote"
-api_feed = DataFeed(
-    source=APIQuerySource(url=url_test, key_str=key_str_test),
-    query=APIQuery(url=url_test, key_str=key_str_test),
+url = "https://taylorswiftapi.herokuapp.com/get"
+parseStr = "quote"
+numeric_api_rsp_feed = DataFeed(
+    source=NumericApiResponseSource(url=url, parseStr=parseStr),
+    query=NumericApiResponse(url=url, parseStr=parseStr),
 )
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_api_reporter_submit_once(
     mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract
 ):
-    """Test reporting bct/usd on mumbai."""
+    """Test reporting a quote from T-Swizzle on Polygon Mumbai testnet."""
     async with TelliotCore(config=mumbai_test_cfg) as core:
         # get PubKey and PrivKey from config files
         account = core.get_account()
@@ -49,7 +48,7 @@ async def test_api_reporter_submit_once(
             token=flex.token,
             autopay=flex.autopay,
             transaction_type=0,
-            datafeed=api_feed,
+            datafeed=numeric_api_rsp_feed,
             max_fee=100,
         )
 

@@ -11,40 +11,29 @@ from telliot_feed_examples.dtypes.datapoint import DataPoint
 from telliot_feed_examples.dtypes.datapoint import datetime_now_utc
 from telliot_feed_examples.utils.log import get_logger
 
-logger = get_logger(__name__)
 
-"""
-url : str = api url to request.
-returns none and displays error code if exception thrown
-"""
+logger = get_logger(__name__)
 
 
 def api_call(url: str) -> Union[dict[Any, Any], Any]:
-    """call any api and handle exceptions, return json dict to be parsed"""
+    """Call any API and handle exceptions, return json dict to be parsed"""
     try:
         r = requests.get(url)
         r.raise_for_status()
     except requests.exceptions.HTTPError as e:
         logger.error(e)
         return None
-    # can make exceptions more specific if needed
 
     files = r.json()
     return files
 
 
-"""
-key: str = key whose corresponding value we are searching for
-json_dict: dict = api response dict we will be searching through for value of said key
-"""
-
-
-def find_values(key: str, json_dict: Optional[dict[Any, Any]]) -> list[Any]:
-    """search json dict w/ object_hook method for value corresponding w/ given key"""
+def find_value(key: str, json_dict: Optional[dict[Any, Any]]) -> list[Any]:
+    """Parse target numeric value from JSON blob."""
     vals = []
 
     def decode_dict(ex_dict: dict[Any, Any]) -> dict[Any, Any]:
-        """nested search function"""
+        """Nested search function"""
         try:
             vals.append(ex_dict[key])
         except KeyError:
@@ -56,14 +45,14 @@ def find_values(key: str, json_dict: Optional[dict[Any, Any]]) -> list[Any]:
 
 
 @dataclass
-class APIQuerySource(DataSource[Any]):
+class NumericApiResponseSource(DataSource[Any]):
     """data source for retrieving data from api calls"""
 
     #: URL to call and receive JSON dict to be parsed
     url: str = ""
 
-    #: string of comma separated keys looking to find corresponding vals in API return
-    key_str: str = ""
+    #: string of comma separated keys/list indices to parse value from JSON blob
+    parseStr: str = ""
 
     def main_parser(self) -> Union[list[Any], str]:
         """main method, parses key string and calls url to search returned json dict"""
@@ -71,14 +60,14 @@ class APIQuerySource(DataSource[Any]):
         files = api_call(self.url)
         json_obj = json.dumps(files, indent=1)
 
-        if self.key_str == "":
+        if self.parseStr == "":
             return json_obj
 
-        # create iterative list from key_str
-        key_list = [key.strip() for key in self.key_str.split(",")]
+        # create iterative list from parseStr
+        key_list = [key.strip() for key in self.parseStr.split(",")]
 
         # find all vals that correspond with given keys, return them all as nested list
-        results = [find_values(key, files) for key in key_list]
+        results = [find_value(key, files) for key in key_list]
         results_fin = [val[0] if len(val) == 1 else val for val in results]
 
         return results_fin
