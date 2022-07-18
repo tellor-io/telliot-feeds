@@ -46,7 +46,7 @@ CATALOG_FEEDS = {
     "matic-usd-spot": matic_usd_median_feed,
     "usdc-usd-spot": usdc_usd_median_feed,
     "morphware-v1": morphware_v1_feed,
-    "gas-price-oracle": gas_price_oracle_feed,
+    "gas-price-oracle-example": gas_price_oracle_feed,
 }
 
 DATAFEED_BUILDER_MAPPING = {
