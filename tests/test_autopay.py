@@ -21,8 +21,10 @@ from telliot_feeds.reporters.reporter_autopay_utils import get_feed_tip
 @pytest.mark.asyncio
 async def test_main(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
     async with TelliotCore(config=mumbai_test_cfg) as core:
+        #  deploy multicall contract to brownie chain and add chain id to multicall module
         addy = brownie.multicall.deploy({"from": accounts[0]})
         Network.Brownie = 1337
+        # add multicall contract address to multicall module
         MULTICALL_ADDRESSES[Network.Brownie] = MULTICALL2_ADDRESSES[Network.Brownie] = addy.address
         multicall.state_override_supported = lambda _: False
         # get PubKey and PrivKey from config files
