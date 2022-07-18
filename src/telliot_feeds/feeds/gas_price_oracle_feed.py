@@ -11,10 +11,10 @@ from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
 from telliot_feeds.sources.gas_price_oracle import GasPriceOracleSource
 
-chain_id = 1
-timestamp = 1648771200  # april 1, 2022 unix time
+chainId = None
+timestamp = None
 
 gas_price_oracle_feed = DataFeed(
-    query=GasPriceOracle(chain_id, timestamp),
-    source=GasPriceOracleSource(chain_id=chain_id, timestamp=timestamp),
+    query=GasPriceOracle(chainId, timestamp),
+    source=GasPriceOracleSource(chainId=chainId, timestamp=timestamp),
 )
