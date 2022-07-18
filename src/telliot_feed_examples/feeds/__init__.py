@@ -49,11 +49,11 @@ CATALOG_FEEDS = {
     "gas-price-oracle": gas_price_oracle_feed,
 }
 
-UNSET_FEEDS = {
+DATAFEED_BUILDER_MAPPING = {
     # "spotprice",
     # "apiquery",
     # "divaprotocolpolygon",
-    "gaspriceoracle": gas_price_oracle_feed,
+    "GasPriceOracle": gas_price_oracle_feed,
     # "legacyrequest",
     # "morphware",
     # "snapshot",

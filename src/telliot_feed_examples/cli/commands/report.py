@@ -1,5 +1,4 @@
 import getpass
-import re
 from typing import Any
 from typing import Optional
 from typing import Union
@@ -10,11 +9,11 @@ from click.core import Context
 from eth_utils import to_checksum_address
 from telliot_core.cli.utils import async_run
 
+from telliot_feed_examples.cli.utils import build_feed_from_input
 from telliot_feed_examples.cli.utils import reporter_cli_core
 from telliot_feed_examples.cli.utils import valid_diva_chain
 from telliot_feed_examples.datafeed import DataFeed
 from telliot_feed_examples.feeds import CATALOG_FEEDS
-from telliot_feed_examples.feeds import UNSET_FEEDS
 from telliot_feed_examples.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feed_examples.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feed_examples.queries.query_catalog import query_catalog
@@ -104,40 +103,6 @@ def print_reporter_settings(
     click.echo(f"Max fee (gwei): {max_fee}")
     click.echo(f"Priority fee (gwei): {priority_fee}")
     click.echo(f"Gas price speed: {gas_price_speed}\n")
-
-
-def build_feed_from_input() -> Optional[DataFeed[Any]]:
-    """
-    Build a DataFeed from CLI input
-    """
-    try:
-        query_type = input("Enter a valid Query Type: ").lower()
-        query_type = re.sub("[^A-Za-z0-9]+", "", query_type)
-        feed = UNSET_FEEDS[query_type]
-    except KeyError:
-        click.echo(f"No corresponding datafeed found for Query Type: {query_type}\n")
-        return None
-    try:
-        for query_param in feed.query.__dict__.keys():
-            # accessing the datatype
-            param_dtype = feed.query.__annotations__[query_param]
-            val = input(f"Enter value for Query Parameter {query_param}: ")
-
-            if val is not None:
-                # cast input from string to datatype of query parameter
-                val = param_dtype(val)
-                setattr(feed.query, query_param, val)
-                setattr(feed.source, query_param, val)
-
-            else:
-                click.echo(f"Must set QueryParameter {query_param} of QueryType {query_type}")
-                return None
-
-        return feed
-
-    except ValueError:
-        click.echo(f"Value {val} for Query Parameter {query_param} does not match type {param_dtype}")
-        return None
 
 
 @click.group()
@@ -321,7 +286,7 @@ async def report(
             chosen_feed = build_feed_from_input()
 
             if chosen_feed is None:
-                click.echo("")
+                click.echo("Unable to build Datafeed from provided input")
                 return
 
         # Use selected feed, or choose automatically

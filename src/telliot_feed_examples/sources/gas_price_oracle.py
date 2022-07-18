@@ -72,6 +72,7 @@ class GasPriceOracleSource(DataSource[str]):
                     return None
 
         else:
+            logger.warning("Can't fetch data: GasPriceOracle DataSource QueryParameters unset")
             return None
 
     async def fetch_new_datapoint(

@@ -122,7 +122,7 @@ def test_query_info():
 def test_query_parameters():
     """Test passing query parameters through user input"""
 
-    query_type = "GasPriceOracle!!!"  # should strip special characters
+    query_type = "GasPriceOracle"
     gas_price_oracle_chain_id = 56  # bsc
     gas_price_oracle_timestamp = 1657732678  # july 13, 2022
 
@@ -137,7 +137,7 @@ def test_query_parameters():
 def test_invalid_query_parameters():
     """Test passing invalid query parameters as user input"""
 
-    query_type = "GasPriceOracle!!!"  # should strip special characters
+    query_type = "gasPriceOracle!!!"  # wrong casing w/ special characters
     gas_price_oracle_chain_id = "this should be an integer"
     gas_price_oracle_timestamp = "this should be an integer too"
 
@@ -146,4 +146,4 @@ def test_invalid_query_parameters():
     runner = CliRunner()
     result = runner.invoke(cli, ["report", "--build-feed", "--submit-once"], input=input_)
 
-    assert result.exception
+    assert "No corresponding datafeed" in result.stdout
