@@ -31,9 +31,7 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
 def valid_diva_chain(chain_id: int) -> bool:
     """Ensure given chain ID supports reporting Diva Protocol data."""
     if chain_id not in DIVA_PROTOCOL_CHAINS:
-        print(
-            f"Current chain id ({chain_id}) not supported for reporting Diva Protocol data."
-        )
+        print(f"Current chain id ({chain_id}) not supported for reporting Diva Protocol data.")
         return False
     return True
 
@@ -61,15 +59,11 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
                 setattr(feed.source, query_param, val)
 
             else:
-                click.echo(
-                    f"Must set QueryParameter {query_param} of QueryType {query_type}"
-                )
+                click.echo(f"Must set QueryParameter {query_param} of QueryType {query_type}")
                 return None
 
         return feed
 
     except ValueError:
-        click.echo(
-            f"Value {val} for Query Parameter {query_param} does not match type {param_dtype}"
-        )
+        click.echo(f"Value {val} for Query Parameter {query_param} does not match type {param_dtype}")
         return None

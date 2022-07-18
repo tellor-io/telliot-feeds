@@ -263,9 +263,7 @@ async def report(
     if sig_acct_name is not None:
         try:
             if not signature_password:
-                signature_password = getpass.getpass(
-                    f"Enter password for {sig_acct_name} keyfile: "
-                )
+                signature_password = getpass.getpass(f"Enter password for {sig_acct_name} keyfile: ")
         except ValueError:
             click.echo("Invalid Password")
 
@@ -300,25 +298,19 @@ async def report(
             try:
                 chosen_feed: DataFeed[Any] = CATALOG_FEEDS[query_tag]  # type: ignore
             except KeyError:
-                click.echo(
-                    f"No corresponding datafeed found for Query Type: {query_tag}\n"
-                )
+                click.echo(f"No corresponding datafeed found for Query Type: {query_tag}\n")
                 return
         elif diva_pool_id is not None:
             if not valid_diva_chain(chain_id=cid):
                 click.echo("Diva Protocol not supported for this chain")
                 return
             # Generate datafeed
-            chosen_feed = await assemble_diva_datafeed(
-                pool_id=diva_pool_id, node=core.endpoint, account=account
-            )
+            chosen_feed = await assemble_diva_datafeed(pool_id=diva_pool_id, node=core.endpoint, account=account)
             if chosen_feed is None:
                 click.echo("DIVA Protocol datafeed generation failed")
                 return
         elif rng_timestamp is not None:
-            chosen_feed = await assemble_rng_datafeed(
-                timestamp=rng_timestamp, node=core.endpoint, account=account
-            )
+            chosen_feed = await assemble_rng_datafeed(timestamp=rng_timestamp, node=core.endpoint, account=account)
         else:
             chosen_feed = None
 
