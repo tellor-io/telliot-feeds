@@ -47,10 +47,10 @@ class BittrexSpotPriceService(WebPriceService):
         d = self.get_url(request_url)
 
         if "error" in d:
-            if "JSON Decode Error" in d["error"]:
-                error_msg = d["error"] + " response from bittrex api"
+            if "JSON Decode Error" in d["error"] and "Access denied" in str(d.values()):
+                error_msg = "Bittrex api response error: You do not have access to api.bittrex.com."
             else:
-                error_msg = d
+                error_msg = d  # type: ignore
             logger.error(error_msg)
             return None, None
 
