@@ -12,5 +12,5 @@ This package contains reporting tools and datafeeds for the TellorX and TellorFl
 
 Report using the CLI:
 ```
-telliot-examples -a fakeaccountname report
+telliot-feeds -a fakeaccountname report
 ```

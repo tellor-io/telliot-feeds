@@ -19,10 +19,10 @@ class Snapshot(AbiQuery):
     see https://snapshot.org/ for proposal results.
     """
 
-    proposal_id: str
+    proposalId: str
 
     #: ABI used for encoding/decoding parameters
-    abi = [{"name": "proposal_id", "type": "string"}]
+    abi = [{"name": "proposalId", "type": "string"}]
 
     @property
     def value_type(self) -> ValueType:

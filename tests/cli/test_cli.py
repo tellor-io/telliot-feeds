@@ -7,10 +7,10 @@ import pytest
 from click.exceptions import Abort
 from click.testing import CliRunner
 
-from telliot_feed_examples.cli import cli
-from telliot_feed_examples.cli import get_stake_amount
-from telliot_feed_examples.cli import parse_profit_input
-from telliot_feed_examples.cli import valid_diva_chain
+from telliot_feed_examples.cli.commands.report import get_stake_amount
+from telliot_feed_examples.cli.commands.report import parse_profit_input
+from telliot_feed_examples.cli.commands.report import valid_diva_chain
+from telliot_feed_examples.cli.main import cli
 
 
 def test_parse_profit_input():
@@ -109,3 +109,11 @@ def test_cmd_settle():
     expected = "Invalid value"
 
     assert expected in result.output
+
+
+def test_query_info():
+    """Test getting query info"""
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--test_config", "query", "status", "uspce-legacy"])
+    assert not result.exception
+    assert "Current value" in result.stdout
