@@ -60,6 +60,5 @@ class OpenExchangeRateCurrencyPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
     service: OpenExchangeRateCurrencyPriceService = field(
-        default_factory=OpenExchangeRateCurrencyPriceService,
-        init=False
+        default_factory=OpenExchangeRateCurrencyPriceService, init=False
     )

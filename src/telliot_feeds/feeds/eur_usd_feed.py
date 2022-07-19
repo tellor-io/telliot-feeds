@@ -1,7 +1,6 @@
 """
 EUR/USD SpotPrice DataFeed
 """
-
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries import SpotPrice
 from telliot_feeds.sources.price.currency.coinbase import CoinbaseCurrencyPriceSource
@@ -16,7 +15,7 @@ eur_usd_median_feed = DataFeed(
         algorithm="median",
         sources=[
             CoinbaseCurrencyPriceSource(asset="eur", currency="usd"),
-            OpenExchangeRateCurrencyPriceSource(asset="eur", currency="usd")
+            OpenExchangeRateCurrencyPriceSource(asset="eur", currency="usd"),
         ],
     ),
 )
