@@ -78,6 +78,7 @@ def test_diva_protocol_invalid_chain():
     assert not valid
 
 
+@pytest.mark.skip("Disabled until we need this functionality")
 def test_cmd_tip():
     """Test CLI tip command"""
     runner = CliRunner()
