@@ -85,7 +85,12 @@ class UniswapV3PriceService(WebPriceService):
                 else:
                     token_data = response["data"]["token"]["derivedETH"]
                 price = ethprice * float(token_data)
-                return price, datetime_now_utc()
+                if price == 0.0:
+                    msg = "Uniswap API not included, because price response is 0"
+                    logger.warning(msg)
+                    return None, None
+                else:
+                    return price, datetime_now_utc()
             except KeyError as e:
                 msg = "Error parsing UniswapV3 response: KeyError: {}".format(e)
                 logger.critical(msg)
