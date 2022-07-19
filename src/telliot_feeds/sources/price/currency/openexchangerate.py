@@ -34,25 +34,31 @@ class OpenExchangeRateCurrencyPriceService(WebPriceService):
         instead of the locally generated timestamp.
         """
 
-        request_url = "/v6/latest/{}".format(asset.upper())
+        try:
+            request_url = f"/v6/latest/{asset.upper()}"
 
-        d = self.get_url(request_url)
-        if "error" in d:
-            logger.error(d)
-            return None, None
-
-        elif "response" in d:
-            response = d["response"]
-
-            if "message" in response:
-                logger.error(f"API ERROR ({self.name}): {response['message']}")
+            d = self.get_url(request_url)
+            if "error" in d:
+                logger.error(d)
                 return None, None
 
-        else:
-            raise Exception("Invalid response from get_url")
+            elif "response" in d:
+                response = d["response"]
 
-        price = float(response["rates"][currency.upper()])
-        return price, datetime_now_utc()
+                if "message" in response:
+                    logger.error(f"API ERROR ({self.name}): {response['message']}")
+                    return None, None
+
+            else:
+                logger.error("Invalid response from get_url")
+
+            price = float(response["rates"][currency.upper()])
+            return price, datetime_now_utc()
+
+        except KeyError as e:
+            msg = f"Error parsing Coinbase Currency API response: KeyError: {e}"
+            logger.critical(msg)
+            return None, None
 
 
 @dataclass
