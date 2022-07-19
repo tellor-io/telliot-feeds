@@ -29,6 +29,7 @@ async def test_suggested_report(rinkeby_test_cfg):
         assert isinstance(q, OracleQuery)
 
 
+@pytest.mark.skip("Disabled until we need this functionality")
 def test_suggested_report_cli():
     """Test suggested report CLI"""
     runner = CliRunner()
