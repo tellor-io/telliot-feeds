@@ -127,7 +127,7 @@ async def test_uniswap_usd(caplog):
     if type(v) == float:
         validate_price(v, t)
     else:
-        assert "Uniswap api not included, because price response is 0" in caplog.records[0].msg
+        assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
 
 
 @pytest.mark.asyncio
@@ -145,7 +145,7 @@ async def test_uniswap_eth(caplog):
     if type(v) == float:
         validate_price(v, t)
     else:
-        assert "Uniswap api not included, because price response is 0" in caplog.records[0].msg
+        assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
 
 
 @pytest.mark.asyncio
@@ -155,7 +155,7 @@ async def test_uniswap_eth_usd(caplog):
     if type(v) == float:
         validate_price(v, t)
     else:
-        assert "Uniswap api not included, because price response is 0" in caplog.records[0].msg
+        assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
 
 
 @pytest.mark.asyncio

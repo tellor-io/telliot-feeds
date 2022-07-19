@@ -86,7 +86,7 @@ class UniswapV3PriceService(WebPriceService):
                     token_data = response["data"]["token"]["derivedETH"]
                 price = ethprice * float(token_data)
                 if price == 0.0:
-                    msg = "Uniswap api not included, because price response is 0"
+                    msg = "Uniswap API not included, because price response is 0"
                     logger.warning(msg)
                     return None, None
                 else:
