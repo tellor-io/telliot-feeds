@@ -52,6 +52,10 @@ class GeminiSpotPriceService(WebPriceService):
 
         d = self.get_url(request_url)
         if "error" in d:
+            if "used Cloudflare to restrict access" in d["exception"].strerror:
+                logger.warning("Gemini API rate limit exceeded")
+                return None, None
+
             logger.error(d)
             return None, None
 
