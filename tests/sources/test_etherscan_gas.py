@@ -3,8 +3,8 @@ from unittest import mock
 import pytest
 import requests
 
-from telliot_feed_examples.sources.etherscan_gas import EtherscanGasPrice
-from telliot_feed_examples.sources.etherscan_gas import EtherscanGasPriceSource
+from telliot_feeds.sources.etherscan_gas import EtherscanGasPrice
+from telliot_feeds.sources.etherscan_gas import EtherscanGasPriceSource
 
 
 @pytest.mark.asyncio

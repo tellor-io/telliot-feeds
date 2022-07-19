@@ -8,8 +8,8 @@ from telliot_core.utils.response import ResponseStatus
 from telliot_core.utils.timestamp import TimeStamp
 from web3 import Web3
 
-from telliot_feed_examples.queries.query_catalog import query_catalog
-from telliot_feed_examples.reporters.reporter_autopay_utils import (
+from telliot_feeds.queries.query_catalog import query_catalog
+from telliot_feeds.reporters.reporter_autopay_utils import (
     autopay_suggested_report,
 )
 

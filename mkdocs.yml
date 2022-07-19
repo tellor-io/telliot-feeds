@@ -2,14 +2,14 @@ site_name: Telliot Feed Examples Documentation
 
 # Project information
 site_name: Telliot Feed Examples Documentation
-site_url: https://tellor-io.github.io/telliot-feed-examples/
+site_url: https://tellor-io.github.io/telliot-feeds/
 site_author: Tellor Development Community
 site_description: >-
   Contains examples and plugins for reporting to the TellorX Oracle.
 
 # Repository
-repo_name: tellor-io/telliot-feed-examples
-repo_url: https://github.com/tellor-io/telliot-feed-examples
+repo_name: tellor-io/telliot-feeds
+repo_url: https://github.com/tellor-io/telliot-feeds
 edit_uri: ""
 
 # Copyright

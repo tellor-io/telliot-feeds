@@ -6,7 +6,7 @@ Distributed under the terms of the MIT License.
 from eth_abi import decode_abi
 from eth_abi import decode_single
 
-from telliot_feed_examples.queries.tellor_rng import TellorRNG
+from telliot_feeds.queries.tellor_rng import TellorRNG
 
 
 def test_tellor_rng_query():

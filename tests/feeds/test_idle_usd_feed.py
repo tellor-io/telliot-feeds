@@ -1,6 +1,6 @@
 import pytest
 
-from telliot_feed_examples.feeds.idle_usd_feed import idle_usd_median_feed
+from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
 
 
 @pytest.mark.asyncio

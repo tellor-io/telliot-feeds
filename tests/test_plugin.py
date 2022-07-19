@@ -1,15 +1,15 @@
 """Test plugin module"""
 import pytest
 
-from telliot_feed_examples.plugin.discover import telliot_plugins
+from telliot_feeds.plugin.discover import telliot_plugins
 
 
 @pytest.mark.skip("Fix test after plugin move complete")
 def test_discovered_plugins():
     # Make sure that default telliot_examples plugin package is registered
-    assert "telliot_feed_examples" in telliot_plugins
+    assert "telliot_feeds" in telliot_plugins
 
-    example_plugin = telliot_plugins["telliot_feed_examples"]
+    example_plugin = telliot_plugins["telliot_feeds"]
 
     _ = example_plugin.registry
 

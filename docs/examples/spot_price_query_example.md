@@ -1,15 +1,15 @@
 # Spot Price Query Example
 
 This example demonstrates how to use the
-[`SpotPrice`][telliot_feed_examples.queries.price.spot_price.SpotPrice] Oracle query.
+[`SpotPrice`][telliot_feeds.queries.price.spot_price.SpotPrice] Oracle query.
 
 ## Create the query
 
-Create a [`SpotPrice`][telliot_feed_examples.queries.price.spot_price.SpotPrice] query for the price of Bitcoin in US dollars,
+Create a [`SpotPrice`][telliot_feeds.queries.price.spot_price.SpotPrice] query for the price of Bitcoin in US dollars,
 and view the corresponding descriptor::
 
 ```python
-from telliot_feed_examples.queries.price.spot_price import SpotPrice
+from telliot_feeds.queries.price.spot_price import SpotPrice
 q = SpotPrice(asset='btc', currency='usd')
 print(q.descriptor)
 ```
@@ -45,7 +45,7 @@ The `SpotPrice` query can also be used to encode a response
 to submit on-chain using the `TellorX.Oracle.submitValue()` contract call.
 
 For example, to submit the real world value `99.9` use the
-[`ValueType`][telliot_feed_examples.dtypes.value_type.ValueType].[`encode`][telliot_feed_examples.dtypes.value_type.ValueType.encode]
+[`ValueType`][telliot_feeds.dtypes.value_type.ValueType].[`encode`][telliot_feeds.dtypes.value_type.ValueType.encode]
 method.
 
 ```python
@@ -59,7 +59,7 @@ print(f"submitValue (bytes): 0x{encoded_bytes.hex()}")
     submitValue (bytes): 0x0000000000000000000000000000000000000000000000056ba3d73af34eec04
 
 Similarly, the
-[`decode`][telliot_feed_examples.dtypes.value_type.ValueType.decode] method can be used to convert
+[`decode`][telliot_feeds.dtypes.value_type.ValueType.decode] method can be used to convert
 the on-chain bytes value to a real-world value:
 
 ```python

@@ -3,7 +3,7 @@
 Copyright (c) 2021-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
-from telliot_feed_examples.queries.string_query import StringQuery
+from telliot_feeds.queries.string_query import StringQuery
 
 
 def test_static_query():

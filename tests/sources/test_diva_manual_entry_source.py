@@ -2,8 +2,8 @@ from datetime import datetime
 
 import pytest
 
-from telliot_feed_examples.sources import diva_protocol
-from telliot_feed_examples.sources.diva_protocol import DivaManualSource
+from telliot_feeds.sources import diva_protocol
+from telliot_feeds.sources.diva_protocol import DivaManualSource
 
 
 @pytest.mark.asyncio

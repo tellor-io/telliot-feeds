@@ -8,7 +8,7 @@ import json
 from eth_abi import decode_abi
 from eth_abi import decode_single
 
-from telliot_feed_examples.queries.morphware import Morphware
+from telliot_feeds.queries.morphware import Morphware
 
 
 def test_query_constructor():

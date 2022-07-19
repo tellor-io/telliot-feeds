@@ -3,7 +3,7 @@ from time import time
 
 import pytest
 
-from telliot_feed_examples.sources.gas_price_oracle import GasPriceOracleSource
+from telliot_feeds.sources.gas_price_oracle import GasPriceOracleSource
 
 
 @pytest.mark.skip("TODO: Fix")

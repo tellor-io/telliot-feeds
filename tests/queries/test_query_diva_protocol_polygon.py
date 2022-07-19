@@ -6,7 +6,7 @@ Distributed under the terms of the MIT License.
 from eth_abi import decode_abi
 from eth_abi import encode_abi
 
-from telliot_feed_examples.queries.diva_protocol import DIVAProtocolPolygon
+from telliot_feeds.queries.diva_protocol import DIVAProtocolPolygon
 
 
 def test_constructor():

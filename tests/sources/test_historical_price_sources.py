@@ -2,13 +2,13 @@ from datetime import datetime
 
 import pytest
 
-from telliot_feed_examples.sources.price.historical.cryptowatch import (
+from telliot_feeds.sources.price.historical.cryptowatch import (
     CryptowatchHistoricalPriceService,
 )
-from telliot_feed_examples.sources.price.historical.kraken import (
+from telliot_feeds.sources.price.historical.kraken import (
     KrakenHistoricalPriceService,
 )
-from telliot_feed_examples.sources.price.historical.poloniex import (
+from telliot_feeds.sources.price.historical.poloniex import (
     PoloniexHistoricalPriceService,
 )
 

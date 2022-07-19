@@ -1,3 +1,3 @@
-::: telliot_feed_examples.datasource.DataSource
+::: telliot_feeds.datasource.DataSource
 
-::: telliot_feed_examples.datafeed.DataFeed
+::: telliot_feeds.datafeed.DataFeed

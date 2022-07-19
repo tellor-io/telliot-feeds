@@ -1,3 +1,3 @@
-::: telliot_feed_examples.queries.catalog.Catalog
+::: telliot_feeds.queries.catalog.Catalog
 
-::: telliot_feed_examples.queries.catalog.CatalogEntry
+::: telliot_feeds.queries.catalog.CatalogEntry

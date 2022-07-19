@@ -5,7 +5,7 @@ Distributed under the terms of the MIT License.
 """
 import pytest
 
-from telliot_feed_examples.queries.price.spot_price import SpotPrice
+from telliot_feeds.queries.price.spot_price import SpotPrice
 
 
 def test_constructor():

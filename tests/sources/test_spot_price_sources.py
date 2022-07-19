@@ -8,16 +8,16 @@ import pytest
 from requests import JSONDecodeError
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feed_examples.sources.price.spot import coingecko
-from telliot_feed_examples.sources.price.spot.bittrex import BittrexSpotPriceService
-from telliot_feed_examples.sources.price.spot.coinbase import CoinbaseSpotPriceService
-from telliot_feed_examples.sources.price.spot.coingecko import CoinGeckoSpotPriceService
-from telliot_feed_examples.sources.price.spot.gemini import GeminiSpotPriceService
-from telliot_feed_examples.sources.price.spot.nomics import NomicsSpotPriceService
-from telliot_feed_examples.sources.price.spot.pancakeswap import (
+from telliot_feeds.sources.price.spot import coingecko
+from telliot_feeds.sources.price.spot.bittrex import BittrexSpotPriceService
+from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceService
+from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceService
+from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceService
+from telliot_feeds.sources.price.spot.nomics import NomicsSpotPriceService
+from telliot_feeds.sources.price.spot.pancakeswap import (
     PancakeswapPriceService,
 )
-from telliot_feed_examples.sources.price.spot.uniswapV3 import UniswapV3PriceService
+from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceService
 
 
 service = {
@@ -106,18 +106,27 @@ async def test_coinmarketcap(coinmarketcap_key):
 
 
 @pytest.mark.asyncio
-async def test_bittrex():
+async def test_bittrex(caplog):
     """Test retrieving from Bittrex price source."""
     v, t = await get_price("btc", "usd", service["bittrex"])
-    validate_price(v, t)
+
+    if "Bittrex API rate limit exceeded" in caplog.text:
+        assert v is None
+        assert t is None
+    else:
+        validate_price(v, t)
 
 
-@pytest.mark.skip("Getting rate limited from Gemini")
 @pytest.mark.asyncio
-async def test_gemini():
+async def test_gemini(caplog):
     """Test retrieving from Gemini price source."""
     v, t = await get_price("btc", "usd", service["gemini"])
-    validate_price(v, t)
+
+    if "Gemini API rate limit exceeded" in caplog.text:
+        assert v is None
+        assert t is None
+    else:
+        validate_price(v, t)
 
 
 @pytest.mark.asyncio
