@@ -115,3 +115,5 @@ query_catalog.add_entry(
     title="Gas Price Oracle Mainnet 7/1/2022",
     q=GasPriceOracle(1, 1656633600),
 )
+
+query_catalog.add_entry(tag="eur-usd-spot", title="EUR/USD spot price", q=SpotPrice(asset="eur", currency="usd"))
