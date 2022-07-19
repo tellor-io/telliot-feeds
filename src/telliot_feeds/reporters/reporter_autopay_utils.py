@@ -159,7 +159,7 @@ async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> O
             if price_change > feed_details.priceThreshold:
                 feed_query_dict[feed_id_bytes] = feed_details.reward
 
-    tips_total = sum(feed_query_dict.values())
+    tips_total:int = sum(feed_query_dict.values())
     if tips_total > 0:
         logger.info(f"{CATALOG_QUERY_IDS[query_id]} has potentially {tips_total/1e18} in tips")
 
