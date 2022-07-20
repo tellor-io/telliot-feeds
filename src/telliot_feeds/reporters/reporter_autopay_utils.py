@@ -1,7 +1,7 @@
 """
-Uses python's interface from https://github.com/banteg/multicall.py.git for makerdao's multicall contract.
+Uses Python's interface from https://github.com/banteg/multicall.py.git for MakerDAO's multicall contract.
 Multicall contract helps reduce node calls by combining contract function calls
-and returning the values all together. This is helpful especially if api nodes like infura are being used.
+and returning the values all together. This is helpful especially if API nodes like Infura are being used.
 """
 import asyncio
 import math
@@ -46,9 +46,11 @@ MULTICALL_ADDRESSES[Network.OptimismKovan] = MULTICALL2_ADDRESSES[
 
 
 async def run_in_subprocess(coro: Any, *args: Any, **kwargs: Any) -> Any:
+    """Use ThreadPoolExecutor to execute tasks"""
     return await asyncio.get_event_loop().run_in_executor(ThreadPoolExecutor(16), coro, *args, **kwargs)
 
-
+# Multicall interface uses a ProcessPoolExecutor which leaks memory and breaks when used here
+# switching to use ThreadPoolExecutor instead seems to fix that
 multicall.run_in_subprocess = run_in_subprocess
 
 # Mapping of queryId to query tag for supported queries
@@ -82,14 +84,17 @@ class AutopayCalls:
 
     async def get_current_feeds(self, require_success: bool = True) -> Any:
         """
-        Getter of feed ids list for each query id in catalog from autopay, plus
-        Getter of a query id report's timestamp index from oracle for a current timestamp
-        and a timestamp from three months ago,
-        used for getting all timestamps for the past three months.
+        Getter for:
+        - feed ids list for each query id in catalog
+        - a report's timestamp index from oracle for current timestamp and three months ago (used for getting all timestamps for the past three months)
 
         Reason of why three months: reporters can't claim tips from funded feeds past three months
-        getting three months of timestamp is useful to determine if there will be balance if every eligible
-        timestamp claims and draining the balance as a result
+        getting three months of timestamp is useful to determine if there will be a balance after every eligible
+        timestamp claims a tip thus draining the feeds balance as a result
+
+        Return:
+        - {'tag': (feed_id_bytes,), ('tag', 'current_time'): index_at_timestamp,
+        ('tag', 'three_mos_ago'): index_at_timestamp}
         """
         calls = []
         current_time = TimeStamp.now().ts
@@ -121,24 +126,30 @@ class AutopayCalls:
         data = await multi_call.coroutine()
         # remove status boolean thats useless here
         data.pop("disregard_boolean")
-        # {'ric-usd-spot': (b'c#\x81q\xbf\xcf\x91H?s\xbfx\xfe\x7fu!\x03w\xf5\x1dH\xda\x064\xa6\xd7*\xbfrU\x87*',),
-        # ('ric-usd-spot', 'current_time'): 85, ('ric-usd-spot', 'three_mos_ago'): 1}
+       
         return data
 
     async def get_feed_details(self, require_success: bool = True) -> Any:
         """
-        Getter of timestamps for three months of reports from oracle using query id and index; also,
-        Getter of feed details of all the feed ids for every query id, plus
-        Getter of current values from oracle for every query id in catalog, used to measure determine
-        if submitting a value now will be first in eligible window
+        Getter for:
+        - timestamps for three months of reports to oracle using queryId and index
+        - feed details of all feedIds for every queryId
+        - current values from oracle for every queryId in catalog (used to determine
+        can submit now in eligible window)
+
+        Return:
+        - {('current_feeds', 'tag', 'feed_id'): [feed_details], ('current_values', 'tag'): True,
+        ('current_values', 'tag', 'current_price'): float(price),
+        ('current_values', 'tag', 'timestamp'): 1655137179}
         """
+        
         current_feeds = await self.get_current_feeds()
+
+        # separate items from current feeds
+        # create dict of tag and feed_id in current_feeds
         tags_with_feed_ids = {
             tag: feed_id for tag, feed_id in current_feeds.items() if type(tag) != tuple if len(current_feeds[tag]) > 0
         }
-        # example: {'ric-usd-spot':
-        # (b'c#\x81q\xbf\xcf\x91H?s\xbfx\xfe\x7fu!\x03w\xf5\x1dH\xda\x064\xa6\xd7*\xbfrU\x87*',)}
-        # separate items from get_current_feeds() response
         idx_current = []  # indices for every query id reports' current timestamps
         idx_three_mos_ago = []  # indices for every query id reports' three months ago timestamps
         tags = []  # query tags from catalog
@@ -196,20 +207,26 @@ class AutopayCalls:
         calls = get_data_feed_call + get_current_values_call + get_timestampby_query_id_n_idx_call
         multi_call = Multicall(calls=calls, _w3=self.w3, require_success=require_success)
         feed_details = await multi_call.coroutine()
-        # {('current_feeds', 'ric-usd-spot', '63238171bfcf91483f73bf78fe7f75210377f51d48da0634a6d72abf7255872a'):
-        # [50000000000000000000, 50000000000000000000, 1650644349, 86400, 3600, 0, 2]
-        # ('current_values', 'ric-usd-spot'): True, ('current_values', 'ric-usd-spot', 'current_price'): 0.036731286,
-        # ('current_values', 'ric-usd-spot', 'timestamp'): 1655137179
+
         return feed_details
 
     async def reward_claim_status(self, require_success: bool = True) -> Any:
+        """
+        Getter that checks if a timestamp claimed a tip from a funded feed
+        """
         feed_details_before_check = await self.get_feed_details()
         # create a key to use for the first timestamp since it doesn't have a before value that needs to be checked
         feed_details_before_check[(0, 0)] = 0
         timestamp_before_key = (0, 0)
 
-        feeds = {feed: details for feed, details in feed_details_before_check.items() if "current_feeds" in feed}
-        current_values = {tag: price for tag, price in feed_details_before_check.items() if "current_values" in tag}
+        feeds={}
+        current_values={}
+        for i, j in feed_details_before_check.items():
+            if "current_feeds" in i:
+                feeds[i] = j
+            elif "current_values" in i:
+                current_values[i] = j
+    
         reward_claimed_status_call = []
         for _, tag, feed_id in feeds:
             details = FeedDetails(*feeds[(_, tag, feed_id)])
@@ -243,12 +260,12 @@ class AutopayCalls:
 
         return feeds, current_values, data
 
-    # do i just the count of unclaimed timestamps
+
     async def get_current_tip(self, require_success: bool = False) -> Any:
         """
-        Returns response from autopay getCurrenTip call
-        require_success is False because autopay returns an
-        error if tip amount is zero
+        Return response from autopay getCurrenTip call.
+        Default value for require_success is False because AutoPay returns an
+        error if tip amount is zero.
         """
         calls = [
             Call(self.autopay.address, ["getCurrentTip(bytes32)(uint256)", query_id], [[self.catalog[query_id], None]])
@@ -259,8 +276,11 @@ class AutopayCalls:
 
         return data
 
-    # Helper to decode price value from oracle
+
     def _current_price(self, *val: Any) -> Any:
+        """
+        Helper function to decode price value from oracle
+        """
         if len(val) > 1:
             if val[1] == b"":
                 return val[1]
@@ -307,6 +327,11 @@ async def get_continuous_tips(autopay: TellorFlexAutopayContract, tipping_feeds:
 async def autopay_suggested_report(
     autopay: TellorFlexAutopayContract,
 ) -> Tuple[Optional[str], Any]:
+    """
+    Gets one-time tips and continuous tips then extracts query id with the most tips for and suggests a query id to report
+    
+    Return: query id, tip amount
+    """
     chain = autopay.node.chain_id
     if chain in (137, 80001, 69, 1666600000, 1666700000, 421611):
         assert isinstance(autopay, TellorFlexAutopayContract)
@@ -336,7 +361,11 @@ async def autopay_suggested_report(
 
 
 async def _get_feed_suggestion(feeds: Any, current_values: Any) -> Any:
+    """
+    Calculates tips and checks if a submission is in an eligible window for a feed submission for a given query_id and feed_ids
 
+    Return: a dict tag:tip amount
+    """
     current_time = TimeStamp.now().ts
     query_id_with_tips = {}
 
@@ -401,7 +430,7 @@ async def _get_feed_suggestion(feeds: Any, current_values: Any) -> Any:
                     query_id_with_tips[query_tag] = feed_details.reward
                 else:
                     query_id_with_tips[query_tag] += feed_details.reward
-    # {'trb-usd-legacy': 30000000000000000000}
+
     return query_id_with_tips
 
 
@@ -413,6 +442,11 @@ def _add_values(x: Optional[int], y: Optional[int]) -> Optional[int]:
 def _is_timestamp_first_in_window(
     timestamp_before: int, timestamp_to_check: int, feed_start_timestamp: int, feed_window: int, feed_interval: int
 ) -> bool:
+    """
+    Calculates to check if timestamp(timestamp_to_check) is first in window
+    
+    Return: bool
+    """
     # Number of intervals since start time
     num_intervals = math.floor((timestamp_to_check - feed_start_timestamp) / feed_interval)
     # Start time of latest submission window
@@ -422,6 +456,10 @@ def _is_timestamp_first_in_window(
 
 
 def _remaining_feed_balance(current_feeds: Any, reward_claimed_status: Any) -> Any:
+    """
+    Checks if a feed has a remaining balance
+    
+    """
     for _, tag, feed_id in current_feeds:
         details = FeedDetails(*current_feeds[_, tag, feed_id])
         balance = details.balance
