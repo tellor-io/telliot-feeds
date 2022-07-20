@@ -51,6 +51,7 @@ class OpenExchangeRateCurrencyPriceService(WebPriceService):
 
             else:
                 logger.error("Invalid response from get_url")
+                return None, None
 
             price = float(response["rates"][currency.upper()])
             return price, datetime_now_utc()
