@@ -1,11 +1,11 @@
 import pytest
-import telliot_core.cli.main
 from brownie import accounts
 from brownie import TellorXOracleMock
 from click.testing import CliRunner
 from telliot_core.apps.core import TelliotCore
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
 
+from telliot_feeds.cli.main import main as cli_main
 from telliot_feeds.queries.query import OracleQuery
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.utils.reporter_utils import reporter_sync_schedule
@@ -29,10 +29,11 @@ async def test_suggested_report(rinkeby_test_cfg):
         assert isinstance(q, OracleQuery)
 
 
+@pytest.mark.skip("Disabled until we need this functionality")
 def test_suggested_report_cli():
     """Test suggested report CLI"""
     runner = CliRunner()
-    result = runner.invoke(telliot_core.cli.main.main, ["--test_config", "query", "suggest"])
+    result = runner.invoke(cli_main, ["--test_config", "query", "suggest"])
     assert "Suggested query" in result.output
 
 

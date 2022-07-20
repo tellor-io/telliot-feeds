@@ -9,10 +9,12 @@ from chained_accounts import find_accounts
 from click.core import Context
 
 from telliot_feeds.cli.commands.catalog import catalog
-from telliot_feeds.cli.commands.query import query
 from telliot_feeds.cli.commands.report import report
 from telliot_feeds.cli.commands.settle import settle
-from telliot_feeds.cli.commands.tip import tip
+
+# from telliot_feeds.cli.commands.tip import tip
+
+# from telliot_feeds.cli.commands.query import query
 
 
 @click.group()
@@ -60,8 +62,8 @@ def main(
 
 
 main.add_command(report)
-main.add_command(tip)
-main.add_command(query)
+# main.add_command(tip)
+# main.add_command(query)
 main.add_command(catalog)
 main.add_command(settle)
 

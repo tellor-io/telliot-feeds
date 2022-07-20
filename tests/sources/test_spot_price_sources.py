@@ -106,26 +106,37 @@ async def test_coinmarketcap(coinmarketcap_key):
 
 
 @pytest.mark.asyncio
-async def test_bittrex():
+async def test_bittrex(caplog):
     """Test retrieving from Bittrex price source."""
     v, t = await get_price("btc", "usd", service["bittrex"])
-    validate_price(v, t)
+
+    if "Bittrex API rate limit exceeded" in caplog.text:
+        assert v is None
+        assert t is None
+    else:
+        validate_price(v, t)
 
 
-@pytest.mark.skip("Getting rate limited from Gemini")
 @pytest.mark.asyncio
-async def test_gemini():
+async def test_gemini(caplog):
     """Test retrieving from Gemini price source."""
     v, t = await get_price("btc", "usd", service["gemini"])
-    validate_price(v, t)
+
+    if "Gemini API rate limit exceeded" in caplog.text:
+        assert v is None
+        assert t is None
+    else:
+        validate_price(v, t)
 
 
-@pytest.mark.skip("TODO: fix this test")
 @pytest.mark.asyncio
-async def test_uniswap_usd():
+async def test_uniswap_usd(caplog):
     """Test retrieving from UniswapV3 price source in USD."""
     v, t = await get_price("fuse", "usd", service["uniswapV3"])
-    validate_price(v, t)
+    if type(v) == float:
+        validate_price(v, t)
+    else:
+        assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
 
 
 @pytest.mark.asyncio
@@ -136,19 +147,24 @@ async def test_uniswap_timeout():
     assert t is None
 
 
-@pytest.mark.skip("TODO: fix this test")
 @pytest.mark.asyncio
-async def test_uniswap_eth():
+async def test_uniswap_eth(caplog):
     """Test retrieving from UniswapV3 price source in ETH."""
     v, t = await get_price("fuse", "eth", service["uniswapV3"])
-    validate_price(v, t)
+    if type(v) == float:
+        validate_price(v, t)
+    else:
+        assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
 
 
 @pytest.mark.asyncio
-async def test_uniswap_eth_usd():
+async def test_uniswap_eth_usd(caplog):
     """Test retrieving from UniswapV3 price source for Eth in USD."""
     v, t = await get_price("eth", "usd", service["uniswapV3"])
-    validate_price(v, t)
+    if type(v) == float:
+        validate_price(v, t)
+    else:
+        assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
 
 
 @pytest.mark.asyncio

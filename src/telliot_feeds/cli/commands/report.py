@@ -1,4 +1,5 @@
 import getpass
+from typing import Any
 from typing import Optional
 from typing import Union
 
@@ -8,8 +9,10 @@ from click.core import Context
 from eth_utils import to_checksum_address
 from telliot_core.cli.utils import async_run
 
+from telliot_feeds.cli.utils import build_feed_from_input
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.cli.utils import valid_diva_chain
+from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feeds.feeds.tellor_rng_feed import assemble_rng_datafeed
@@ -109,6 +112,13 @@ def reporter() -> None:
 
 
 @reporter.command()
+@click.option(
+    "--build-feed",
+    "-b",
+    "build_feed",
+    help="build a datafeed from a query type and query parameters",
+    is_flag=True,
+)
 @click.option(
     "--query-tag",
     "-qt",
@@ -217,6 +227,7 @@ def reporter() -> None:
 async def report(
     ctx: Context,
     query_tag: str,
+    build_feed: bool,
     tx_type: int,
     gas_limit: int,
     max_fee: Optional[int],
@@ -274,12 +285,20 @@ async def report(
 
         cid = core.config.main.chain_id
 
+        # If we need to build a datafeed
+        if build_feed:
+            chosen_feed = build_feed_from_input()
+
+            if chosen_feed is None:
+                click.echo("Unable to build Datafeed from provided input")
+                return
+
         # Use selected feed, or choose automatically
         if query_tag is not None:
             try:
-                chosen_feed = CATALOG_FEEDS[query_tag]
+                chosen_feed: DataFeed[Any] = CATALOG_FEEDS[query_tag]  # type: ignore
             except KeyError:
-                click.echo(f"No corresponding datafeed found for given query tag: {query_tag}\n")
+                click.echo(f"No corresponding datafeed found for Query Type: {query_tag}\n")
                 return
         elif diva_pool_id is not None:
             if not valid_diva_chain(chain_id=cid):

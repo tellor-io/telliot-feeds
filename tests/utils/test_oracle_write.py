@@ -8,6 +8,7 @@ from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.utils.oracle_write import tip_query
 
 
+@pytest.mark.skip("Disabled until we need this functionality")
 @pytest.mark.asyncio
 async def test_tip_query(rinkeby_test_cfg):
     """Test tipping ETH/USD price."""
