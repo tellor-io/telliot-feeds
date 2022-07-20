@@ -360,7 +360,7 @@ async def report(
                     autopay=tellorflex.autopay,
                     stake=stake,
                     expected_profit=expected_profit,
-                    wait_period=120,
+                    wait_period=120 if wait_period < 120 else wait_period,
                     **common_reporter_kwargs,
                 )
             else:
