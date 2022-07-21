@@ -394,4 +394,4 @@ async def report(
         if submit_once:
             _, _ = await reporter.report_once()
         else:
-            _, _ = await reporter.report()
+            await reporter.report()
