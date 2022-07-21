@@ -1,22 +1,32 @@
+import brownie
 import pytest
 from brownie import accounts
 from brownie import chain
 from brownie.network.account import Account
 from eth_abi import encode_single
+from multicall import multicall
+from multicall.constants import MULTICALL2_ADDRESSES
+from multicall.constants import MULTICALL_ADDRESSES
+from multicall.constants import Network
 from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 from telliot_core.utils.timestamp import TimeStamp
 from web3 import Web3
 
 from telliot_feeds.queries.query_catalog import query_catalog
-from telliot_feeds.reporters.reporter_autopay_utils import (
-    autopay_suggested_report,
-)
+from telliot_feeds.reporters.reporter_autopay_utils import autopay_suggested_report
+from telliot_feeds.reporters.reporter_autopay_utils import get_feed_tip
 
 
 @pytest.mark.asyncio
 async def test_main(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
     async with TelliotCore(config=mumbai_test_cfg) as core:
+        #  deploy multicall contract to brownie chain and add chain id to multicall module
+        addy = brownie.multicall.deploy({"from": accounts[0]})
+        Network.Brownie = 1337
+        # add multicall contract address to multicall module
+        MULTICALL_ADDRESSES[Network.Brownie] = MULTICALL2_ADDRESSES[Network.Brownie] = addy.address
+        multicall.state_override_supported = lambda _: False
         # get PubKey and PrivKey from config files
         account = core.get_account()
 
@@ -121,8 +131,8 @@ async def test_main(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, 
         trb_query_id = query_catalog._entries["trb-usd-legacy"].query_id
         reward = 30 * 10**18
         start_time = timestamp
-        interval = 10
-        window = 9
+        interval = 100
+        window = 99
         price_threshold = 0
         trb_query_data = "0x" + query_catalog._entries["trb-usd-legacy"].query.query_data.hex()
 
@@ -170,6 +180,9 @@ async def test_main(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, 
         suggested_qtag, tip = await autopay_suggested_report(flex.autopay)
         assert suggested_qtag == "trb-usd-legacy"
         assert tip == 30e18
+
+        tips = await get_feed_tip(query_catalog._entries["trb-usd-legacy"].query.query_id, flex.autopay)
+        assert tips == 30e18
 
         # submit report to oracle to get tip
         _, status = await flex.oracle.write(

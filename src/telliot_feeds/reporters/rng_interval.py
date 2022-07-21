@@ -21,7 +21,6 @@ from telliot_feeds.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.queries.tellor_rng import TellorRNG
 from telliot_feeds.reporters.reporter_autopay_utils import get_feed_tip
-from telliot_feeds.reporters.reporter_autopay_utils import get_single_tip
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 from telliot_feeds.utils.log import get_logger
 
@@ -70,8 +69,8 @@ class RNGReporter(TellorFlexReporter):
         self.datafeed = datafeed
         tip = 0
 
-        single_tip = await get_single_tip(datafeed.query.query_id, self.autopay)
-        if single_tip is None:
+        single_tip, status = await self.autopay.get_current_tip(datafeed.query.query_id)
+        if not status.ok:
             msg = "Unable to fetch single tip"
             error_status(msg, log=logger.warning)
             return None

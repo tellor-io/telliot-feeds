@@ -1,10 +1,10 @@
 # Getting Started
 
-Installation of Telliot Feed Examples requires that Python 3.9 or greater is already
+Installation of Telliot Feeds requires that Python 3.9 or greater is already
 installed on your system.
 
 
-## Install Telliot Feed Examples
+## Install Telliot Feeds
 
 *Optional*: Create and activate a [virtual environment](https://docs.python.org/3/library/venv.html).  
 In this example, the virtual environment is located in a subfolder called `tenv`:
@@ -30,7 +30,7 @@ In this example, the virtual environment is located in a subfolder called `tenv`
     source tenv/bin/activate
     ```
 
-You can install Telliot Feed Examples and all of it's dependencies
+You can install Telliot Feeds and all of it's dependencies
 (including [telliot-core](https://github.com/tellor-io/telliot-core) and [chained-accounts](https://github.com/pydefi/chained-accounts)) through the command line:
 
     pip install telliot-feeds
@@ -60,9 +60,9 @@ Edit `~/telliot/endpoints.yaml` to configure Telliot to use your own endpoints.
 
 If you don't have an endpoint, a free one is available at [Infura.io](http://www.infura.io).  Simply replace `INFURA_API_KEY` with the one provided by Infura.
 
-Endpoints should be configured for both Etherium mainnet and Rinkeby testnet.
+Endpoints should be configured for both Ethereum mainnet and Rinkeby testnet.
 
-**Warning! All telliot software and reporter feeds should be validated on Rinkeby prior to deploying on mainnet.**
+**Warning! All telliot software and reporter feeds should be validated on testnets prior to deploying on mainnet.**
 
 Note that endpoints must use the websocket protocol because HTTPS endpoints do not support event listeners. If reporting on Polygon, websockets are not supported, so use an HTTPS endpoint
 
@@ -127,12 +127,14 @@ If you'd like to report legacy AMPL values, generate default AMPL configs from t
 python3 src/telliot_feeds/config.py
 ```
 
-After, add AMPL api keys (BraveNewCoin/Rapid & AnyBlock) to `~/telliot/ampl.yaml`
+After, add AMPL api keys (BraveNewCoin/Rapid & AnyBlock) to `~/telliot/api_keys.yaml`
+In addition, to use sources that require an API key, add them using the following example.
 
-*Example `ampl.yaml` file:*
+*Example `api_keys.yaml` file:*
 ```yaml
-type: AMPLConfigOptions
-anyblock_api_key: 'abc123fakeapikey'
-rapid_api_key: 'abc123fakeapikey'
+type: ApiKey
+name: 'anyblock'
+key: 'abc123fakeapikey'
+url: 'https://123www.api.com/
 
 ```
