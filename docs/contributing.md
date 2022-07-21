@@ -5,9 +5,14 @@
 *These instructions assume that a working Python interpreter (version >=3.8)
 is already installed on the system.*
 
-Clone the repository to a local working directory:
+Clone telliot repositories to a local working directory:
 
+    git clone https://github.com/tellor-io/telliot-core.git
     git clone https://github.com/tellor-io/telliot-feeds.git
+
+Change directories:
+
+    cd telliot-feeds
 
 Create and activate a [virtual environment](https://docs.python.org/3/library/venv.html).  In this example, the virtual environment is 
 located in a subfolder called `tenv`:
@@ -30,6 +35,7 @@ Install the project using using an [editable installation](https://pip.pypa.io/e
 
     pip install -e .
     pip install -r requirements-dev.txt
+    pip install -e ../telliot-core 
 
 
 ## Test Environment
