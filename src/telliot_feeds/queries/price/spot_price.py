@@ -28,6 +28,7 @@ SPOT_PRICE_PAIRS = [
     "SUSHI/USD",
     "MATIC/USD",
     "USDC/USD",
+    "EUR/USD",
 ]
 
 
