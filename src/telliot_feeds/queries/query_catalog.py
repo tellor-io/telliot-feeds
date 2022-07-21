@@ -117,6 +117,7 @@ query_catalog.add_entry(
     q=GasPriceOracle(1, 1656633600),
 )
 
+query_catalog.add_entry(tag="eur-usd-spot", title="EUR/USD spot price", q=SpotPrice(asset="eur", currency="usd"))
 # Source:
 # https://snapshot.org/#/aave.eth/proposal/0xcce9760adea906176940ae5fd05bc007cc9252b524832065800635484cb5cb57
 query_catalog.add_entry(

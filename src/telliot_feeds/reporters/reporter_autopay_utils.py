@@ -457,7 +457,13 @@ async def _get_feed_suggestion(feeds: Any, current_values: Any) -> Any:
                 else:
                     query_id_with_tips[query_tag] += feed_details.reward
 
+<<<<<<< HEAD
     return query_id_with_tips
+=======
+    tips_total: int = sum(feed_query_dict.values())
+    if tips_total > 0:
+        logger.info(f"{CATALOG_QUERY_IDS[query_id]} has potentially {tips_total/1e18} in tips")
+>>>>>>> a1c1bcabb1cd01eada195143ece34ccaa7fc85f0
 
 
 def _add_values(x: Optional[int], y: Optional[int]) -> Optional[int]:
