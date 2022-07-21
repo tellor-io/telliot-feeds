@@ -7,6 +7,7 @@ assignees: ''
 
 ---
 
+- [ ] Links to [dataSpecs](https://github.com/tellor-io/dataSpecs) issue & new query type file
 - [ ] Add sources (subclass `DataSource`)
 - [ ] Add feed (instance of `DataFeed`)
 - [ ] Add example instance of the query type to catalog
