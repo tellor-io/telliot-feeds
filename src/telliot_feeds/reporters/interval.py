@@ -301,9 +301,7 @@ class IntervalReporter:
         submit values if doing so won't make a profit."""
         # Check staker status
         staked, status = await self.ensure_staked()
-        if not staked and status.ok:
-            return None, status
-        elif not staked or not status.ok:
+        if not staked or not status.ok:
             logger.warning(status.error)
             return None, status
 

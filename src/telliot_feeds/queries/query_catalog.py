@@ -3,6 +3,7 @@ from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
 from telliot_feeds.queries.legacy_query import LegacyRequest
 from telliot_feeds.queries.morphware import Morphware
 from telliot_feeds.queries.price.spot_price import SpotPrice
+from telliot_feeds.queries.snapshot import Snapshot
 
 """Main instance of the Query Catalog."""
 query_catalog = Catalog()
@@ -114,4 +115,12 @@ query_catalog.add_entry(
     tag="gas-price-oracle-example",
     title="Gas Price Oracle Mainnet 7/1/2022",
     q=GasPriceOracle(1, 1656633600),
+)
+
+# Source:
+# https://snapshot.org/#/aave.eth/proposal/0xcce9760adea906176940ae5fd05bc007cc9252b524832065800635484cb5cb57
+query_catalog.add_entry(
+    tag="snapshot-proposal-example",
+    title="Snapshot proposal example",
+    q=Snapshot(proposalId="cce9760adea906176940ae5fd05bc007cc9252b524832065800635484cb5cb57"),
 )
