@@ -6,10 +6,11 @@ from dataclasses import dataclass
 from typing import List
 from typing import Tuple
 
-from telliot_feeds.queries.price.spot_price import CURRENCIES, SPOT_PRICE_PAIRS
 from telliot_feeds.dtypes.float_type import UnsignedFloatType
 from telliot_feeds.dtypes.value_type import ValueType
 from telliot_feeds.queries.abi_query import AbiQuery
+from telliot_feeds.queries.price.spot_price import CURRENCIES
+from telliot_feeds.queries.price.spot_price import SPOT_PRICE_PAIRS
 
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ class TWAP(AbiQuery):
         {"name": "asset", "type": "string"},
         {"name": "currency", "type": "string"},
         {"name": "timespan", "type": "uint256"},
-        ]
+    ]
 
     @property
     def value_type(self) -> ValueType:
