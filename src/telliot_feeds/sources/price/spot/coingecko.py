@@ -66,20 +66,21 @@ class CoinGeckoSpotPriceService(WebPriceService):
             else:
                 logger.error(d)
             return None, None
-
         elif "response" in d:
             response = d["response"]
 
             try:
                 price = float(response[coin_id][currency])
+                return price, datetime_now_utc()
             except KeyError as e:
                 msg = "Error parsing Coingecko API response: KeyError: {}".format(e)
-                logger.critical(msg)
+                logger.error(msg)
+                return None, None
 
         else:
-            raise Exception("Invalid response from get_url")
-
-        return price, datetime_now_utc()
+            msg = "Invalid response from get_url"
+            logger.error(msg)
+            return None, None
 
 
 @dataclass
