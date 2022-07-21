@@ -49,7 +49,8 @@ async def run_in_subprocess(coro: Any, *args: Any, **kwargs: Any) -> Any:
     """Use ThreadPoolExecutor to execute tasks"""
     return await asyncio.get_event_loop().run_in_executor(ThreadPoolExecutor(16), coro, *args, **kwargs)
 
-# Multicall interface uses a ProcessPoolExecutor which leaks memory and breaks when used here
+
+# Multicall interface uses ProcessPoolExecutor which leaks memory and breaks when used for the tip listener
 # switching to use ThreadPoolExecutor instead seems to fix that
 multicall.run_in_subprocess = run_in_subprocess
 
@@ -86,7 +87,8 @@ class AutopayCalls:
         """
         Getter for:
         - feed ids list for each query id in catalog
-        - a report's timestamp index from oracle for current timestamp and three months ago (used for getting all timestamps for the past three months)
+        - a report's timestamp index from oracle for current timestamp and three months ago
+        (used for getting all timestamps for the past three months)
 
         Reason of why three months: reporters can't claim tips from funded feeds past three months
         getting three months of timestamp is useful to determine if there will be a balance after every eligible
@@ -126,7 +128,7 @@ class AutopayCalls:
         data = await multi_call.coroutine()
         # remove status boolean thats useless here
         data.pop("disregard_boolean")
-       
+
         return data
 
     async def get_feed_details(self, require_success: bool = True) -> Any:
@@ -142,8 +144,12 @@ class AutopayCalls:
         ('current_values', 'tag', 'current_price'): float(price),
         ('current_values', 'tag', 'timestamp'): 1655137179}
         """
-        
+
         current_feeds = await self.get_current_feeds()
+
+        if not current_feeds:
+            logger.info("No available feeds")
+            return None
 
         # separate items from current feeds
         # create dict of tag and feed_id in current_feeds
@@ -178,9 +184,8 @@ class AutopayCalls:
             for idx in range(start, end)
         ]
 
-        # convert feed details from tuples to list to be able to decrement balance
         def _to_list(val: Any) -> List[Any]:
-
+            """Helper function, converts feed_details from tuple to list"""
             return list(val)
 
         get_data_feed_call = [
@@ -212,21 +217,24 @@ class AutopayCalls:
 
     async def reward_claim_status(self, require_success: bool = True) -> Any:
         """
-        Getter that checks if a timestamp claimed a tip from a funded feed
+        Getter that checks if a timestamp's tip has been claimed
         """
         feed_details_before_check = await self.get_feed_details()
+        if not feed_details_before_check:
+            logger.info("No feeds balance to check")
+            return None
         # create a key to use for the first timestamp since it doesn't have a before value that needs to be checked
         feed_details_before_check[(0, 0)] = 0
         timestamp_before_key = (0, 0)
 
-        feeds={}
-        current_values={}
+        feeds = {}
+        current_values = {}
         for i, j in feed_details_before_check.items():
             if "current_feeds" in i:
                 feeds[i] = j
             elif "current_values" in i:
                 current_values[i] = j
-    
+
         reward_claimed_status_call = []
         for _, tag, feed_id in feeds:
             details = FeedDetails(*feeds[(_, tag, feed_id)])
@@ -260,7 +268,6 @@ class AutopayCalls:
 
         return feeds, current_values, data
 
-
     async def get_current_tip(self, require_success: bool = False) -> Any:
         """
         Return response from autopay getCurrenTip call.
@@ -276,7 +283,6 @@ class AutopayCalls:
 
         return data
 
-
     def _current_price(self, *val: Any) -> Any:
         """
         Helper function to decode price value from oracle
@@ -289,7 +295,9 @@ class AutopayCalls:
 
 
 async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> Any:
-
+    """
+    Get total tips for a query id with funded feeds
+    """
     if not autopay.connect().ok:
         msg = "can't suggest feed, autopay contract not connected"
         error_status(note=msg, log=logger.critical)
@@ -297,7 +305,6 @@ async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> A
     single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
     autopay_calls = AutopayCalls(autopay, catalog=single_query)
     feed_tips = await get_continuous_tips(autopay, autopay_calls)
-    # {'trb-usd-legacy': 30000000000000000000}
     tips = feed_tips[CATALOG_QUERY_IDS[query_id]]
     return tips
 
@@ -305,15 +312,28 @@ async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> A
 async def get_one_time_tips(
     autopay: TellorFlexAutopayContract,
 ) -> Any:
+    """
+    Check query ids in catalog for one-time-tips and return query id with the most tips
+    """
     one_time_tips = AutopayCalls(autopay=autopay, catalog=CATALOG_QUERY_IDS)
     return await one_time_tips.get_current_tip()
 
 
 async def get_continuous_tips(autopay: TellorFlexAutopayContract, tipping_feeds: Any = None) -> Any:
+    """
+    Check query ids in catalog for funded feeds, combine tips, and return query id with most tips
+    """
     if tipping_feeds is None:
         tipping_feeds = AutopayCalls(autopay=autopay, catalog=CATALOG_QUERY_IDS)
-    current_feeds, current_values, claim_status = await tipping_feeds.reward_claim_status()
+    response = await tipping_feeds.reward_claim_status()
+    if not response:
+        logger.info("No feeds to check")
+        return None
+    current_feeds, current_values, claim_status = response
+    # filter out feeds that don't have a remaining balance after accounting for claimed tips
     current_feeds = _remaining_feed_balance(current_feeds, claim_status)
+    # remove "current_feeds" word from tuple key in current_feeds dict to help when checking
+    # current_values dict for corresponding current values
     current_feeds = {(key[1], key[2]): value for key, value in current_feeds.items()}
     values_filtered = {}
     for key, value in current_values.items():
@@ -328,8 +348,8 @@ async def autopay_suggested_report(
     autopay: TellorFlexAutopayContract,
 ) -> Tuple[Optional[str], Any]:
     """
-    Gets one-time tips and continuous tips then extracts query id with the most tips for and suggests a query id to report
-    
+    Gets one-time tips and continuous tips then extracts query id with the most tips for a report suggestion
+
     Return: query id, tip amount
     """
     chain = autopay.node.chain_id
@@ -340,9 +360,14 @@ async def autopay_suggested_report(
         # get query_ids with active feeds
         datafeed_dict = await get_continuous_tips(autopay)
 
-        # remove none type
-        single_tip_suggestion = {i: j for i, j in singletip_dict.items() if j}
-        datafeed_suggestion = {i: j for i, j in datafeed_dict.items() if j}
+        # remove none type from dict
+        single_tip_suggestion = {}
+        if singletip_dict is not None:
+            single_tip_suggestion = {i: j for i, j in singletip_dict.items() if j}
+
+        datafeed_suggestion = {}
+        if datafeed_dict is not None:
+            datafeed_suggestion = {i: j for i, j in datafeed_dict.items() if j}
 
         # combine feed dicts and add tips for duplicate query ids
         combined_dict = {
@@ -362,7 +387,8 @@ async def autopay_suggested_report(
 
 async def _get_feed_suggestion(feeds: Any, current_values: Any) -> Any:
     """
-    Calculates tips and checks if a submission is in an eligible window for a feed submission for a given query_id and feed_ids
+    Calculates tips and checks if a submission is in an eligible window for a feed submission
+    for a given query_id and feed_ids
 
     Return: a dict tag:tip amount
     """
@@ -444,7 +470,7 @@ def _is_timestamp_first_in_window(
 ) -> bool:
     """
     Calculates to check if timestamp(timestamp_to_check) is first in window
-    
+
     Return: bool
     """
     # Number of intervals since start time
@@ -458,7 +484,7 @@ def _is_timestamp_first_in_window(
 def _remaining_feed_balance(current_feeds: Any, reward_claimed_status: Any) -> Any:
     """
     Checks if a feed has a remaining balance
-    
+
     """
     for _, tag, feed_id in current_feeds:
         details = FeedDetails(*current_feeds[_, tag, feed_id])
