@@ -1,4 +1,5 @@
 from telliot_feeds.queries.catalog import Catalog
+from telliot_feeds.queries.daily_volatility import DailyVolitility
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
 from telliot_feeds.queries.legacy_query import LegacyRequest
 from telliot_feeds.queries.morphware import Morphware
@@ -124,4 +125,10 @@ query_catalog.add_entry(
     tag="snapshot-proposal-example",
     title="Snapshot proposal example",
     q=Snapshot(proposalId="cce9760adea906176940ae5fd05bc007cc9252b524832065800635484cb5cb57"),
+)
+
+query_catalog.add_entry(
+    tag="eth-usd-30day_volatility",
+    title="30-Day ETH/USD volatility",
+    q=DailyVolitility(asset="eth", currency="usd", days=30),
 )
