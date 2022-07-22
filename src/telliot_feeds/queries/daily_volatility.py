@@ -35,10 +35,7 @@ class DailyVolitility(AbiQuery):
             "type": "string",
             "name": "currency",
         },
-        {
-            "type": "uint256",
-            "name": "days"
-        },
+        {"type": "uint256", "name": "days"},
     ]
 
     @property
