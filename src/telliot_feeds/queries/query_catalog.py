@@ -1,5 +1,5 @@
 from telliot_feeds.queries.catalog import Catalog
-from telliot_feeds.queries.daily_volatility import DailyVolitility
+from telliot_feeds.queries.daily_volatility import DailyVolatility
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
 from telliot_feeds.queries.legacy_query import LegacyRequest
 from telliot_feeds.queries.morphware import Morphware
@@ -130,5 +130,5 @@ query_catalog.add_entry(
 query_catalog.add_entry(
     tag="eth-usd-30day_volatility",
     title="30-Day ETH/USD volatility",
-    q=DailyVolitility(asset="eth", currency="usd", days=30),
+    q=DailyVolatility(asset="eth", currency="usd", days=30),
 )

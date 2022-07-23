@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class DailyVolitility(AbiQuery):
+class DailyVolatility(AbiQuery):
     """Returns the result for a given DailyVolatility query.
 
     Attributes:
@@ -47,3 +47,8 @@ class DailyVolitility(AbiQuery):
 
         """
         return UnsignedFloatType(abi_type="ufixed256x18", packed=False)
+
+    def __post_init__(self) -> None:
+        """Validate parameters."""
+        self.asset = self.asset.lower()
+        self.currency = self.currency.lower()
