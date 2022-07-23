@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from typing import Any
-from typing import Optional
 from typing import Dict
 from typing import List
+from typing import Optional
 from urllib.parse import urlencode
+
 import pandas as pd
 import requests
 
@@ -119,7 +120,7 @@ class CoingeckoDailyHistoricalPriceService(WebPriceService):
 
 @dataclass
 class CoingeckoDailyHistoricalPriceSource(PriceSource):
-    days: int = 30   # Data up to number of days ago (eg. 1,14,30,max)
+    days: int = 30  # Data up to number of days ago (eg. 1,14,30,max)
     asset: str = ""
     currency: str = ""
     service: CoingeckoDailyHistoricalPriceService = CoingeckoDailyHistoricalPriceService(days=days)
