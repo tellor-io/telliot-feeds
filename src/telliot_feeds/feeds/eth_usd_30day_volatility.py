@@ -11,6 +11,7 @@ from telliot_feeds.queries.daily_volatility import DailyVolatility
 from telliot_feeds.sources.price.historical.coingecko_daily import CoingeckoDailyHistoricalPriceSource
 from telliot_feeds.sources.price.historical.cryptowatch import CryptowatchHistoricalPriceService
 from telliot_feeds.sources.price.historical.cryptowatch import CryptowatchHistoricalPriceSource
+from telliot_feeds.sources.price.historical.kraken_ohlc import KrakenHistoricalPriceSourceOHLC
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 from telliot_feeds.utils.log import get_logger
 
@@ -72,6 +73,7 @@ eth_usd_30day_volatility = DataFeed(
         sources=[
             CryptowatchHistoricalPriceSource(asset="eth", currency="usd", ts=int(midnight)),
             CoingeckoDailyHistoricalPriceSource(asset="eth", currency="usd", days=30),
+            KrakenHistoricalPriceSourceOHLC(asset="eth", currency="usd", ts=int(midnight - thirty_days_seconds)),
         ],
     ),
 )
