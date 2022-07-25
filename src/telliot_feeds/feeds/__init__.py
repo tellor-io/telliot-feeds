@@ -5,6 +5,7 @@ from telliot_feeds.feeds.dai_usd_feed import dai_usd_median_feed
 from telliot_feeds.feeds.eth_jpy_feed import eth_jpy_median_feed
 from telliot_feeds.feeds.eth_usd_30day_volatility import eth_usd_30day_volatility
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feeds.feeds.eur_usd_feed import eur_usd_median_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
@@ -49,6 +50,7 @@ CATALOG_FEEDS = {
     "morphware-v1": morphware_v1_feed,
     "gas-price-oracle-example": gas_price_oracle_feed,
     "eth-usd-30day_volatility": eth_usd_30day_volatility,
+    "eur-usd-spot": eur_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING = {
