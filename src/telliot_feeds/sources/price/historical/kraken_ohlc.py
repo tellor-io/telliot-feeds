@@ -6,8 +6,8 @@ from urllib.parse import urlencode
 import pandas as pd
 
 from telliot_feeds.pricing.price_source import PriceSource
-from telliot_feeds.utils.log import get_logger
 from telliot_feeds.sources.price.historical.kraken import KrakenHistoricalPriceService
+from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
@@ -20,7 +20,6 @@ kraken_currencies = {"USD"}
 
 
 class KrakenHistoricalPriceServiceOHLC(KrakenHistoricalPriceService):
-
     def get_request_url(self, asset: str, currency: str, period_start: int) -> str:
         """Assemble Kraken historical trades request url."""
         asset = asset.upper()
