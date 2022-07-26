@@ -1,126 +1,79 @@
 from dataclasses import dataclass
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
 from urllib.parse import urlencode
-
-import pandas as pd
-import requests
 
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
-from telliot_feeds.pricing.price_service import WebPriceService
 from telliot_feeds.pricing.price_source import PriceSource
+from telliot_feeds.sources.price.spot.coingecko import coingecko_coin_id
+from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceService
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.stdev_calculator import stdev_calculator
 
 
 logger = get_logger(__name__)
 
 
-# Hardcoded supported assets & currencies
-coingecko_asset_id = {"eth": "ethereum"}
-coingecko_supported_currencies = {"usd"}
-
-
-class CoingeckoDailyHistoricalPriceService(WebPriceService):
-    """Coingecko Historical Price Service, default is daily for 30 days"""
-
-    def __init__(
-        self,
-        days: int,
-        timeout: float = 0.5,
-        name: str = "Coingecko Historical Price Service",
-        url: str = "https://api.coingecko.com",
-    ):
-        self.name = name
-        self.url = url
-        self.timeout = timeout
+class CoingeckoDailyHistoricalPriceService(CoinGeckoSpotPriceService):
+    def __init__(self, days: int, **kwargs: Any) -> None:
         self.days = days
+        super().__init__(**kwargs)
 
-    def get_url(self, url: str = "") -> dict[str, Any]:
-        """Helper function to get URL JSON response while handling exceptions
+    async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
+        """Implement PriceServiceInterface
 
-        Args:
-            url: URL to fetch
+        This implementation gets the price from the Coingecko API
 
-        Returns:
-            A dictionary with the following (optional) keys:
-                json (dict or list): Result, if no error occurred
-                error (str): A description of the error, if one occurred
-                exception (Exception): The exception, if one occurred
+        Note that coingecko does not return a timestamp so one is
+        locally generated.
         """
 
-        request_url = self.url + url
-
-        with requests.Session() as s:
-            try:
-                r = s.get(request_url, timeout=self.timeout)
-                json_data = r.json()
-                return {"response": json_data}
-
-            except requests.exceptions.ConnectTimeout as e:
-                return {"error": "Timeout Error", "exception": e}
-
-            except Exception as e:
-                return {"error": str(type(e)), "exception": e}
-
-    def get_request_url(self, asset: str, currency: str, days: int) -> str:
-        """Assemble request url.
-        example_url: # https://api.coingecko.com/api/v3/coins/ethereum/market_chart?
-        vs_currency=usd&days=30&interval=daily
-        """
         asset = asset.lower()
         currency = currency.lower()
 
-        if asset not in coingecko_asset_id:
-            raise Exception(f"Asset not supported: {asset}")
-        if currency not in coingecko_supported_currencies:
-            raise Exception(f"Currency not supported: {currency}")
+        coin_id = coingecko_coin_id.get(asset, None)
+        if not coin_id:
+            raise Exception("Asset not supported: {}".format(asset))
 
-        url_params = urlencode({"vs_currency": currency, "days": days, "interval": "daily"})
+        url_params = urlencode({"vs_currency": currency, "days": self.days, "interval": "daily"})
+        request_url = f"/api/v3/coins/{coin_id}/market_chart?{url_params}"
 
-        # Source: https://www.coingecko.com/en/api/documentation
-        return f"/api/v3/coins/{coingecko_asset_id[asset]}/market_chart?{url_params}"
-
-    def calculate_volatitlity(self, days: int, resp: Dict[str, List[float]]) -> Optional[float]:
-        """Calculate volitility using pandas."""
-        try:
-            if len(resp["prices"]) < days + 1:
-                logger.error(f"Not enough data to generate a {days} volatility index")
-                return None
-
-            prices_df = pd.DataFrame(resp["prices"])
-            volatility = prices_df[1].pct_change().std()
-            return float(volatility)
-        except KeyError as e:
-            msg = f"Error parsing Coingecko API response: KeyError: {e}"
-            logger.critical(msg)
-            return None
-
-    async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
-        """Implement PriceServiceInterface"""
-        req_url = self.get_request_url(asset, currency, self.days)
-
-        d = self.get_url(req_url)
+        d = self.get_url(request_url)
 
         if "error" in d:
-            logger.error(d)
+            if "api.coingecko.com used Cloudflare to restrict access" in str(d["exception"]):
+                logger.warning("CoinGecko API rate limit exceeded")
+            else:
+                logger.error(d)
             return None, None
-
         elif "response" in d:
             response = d["response"]
-            volatility_index = self.calculate_volatitlity(resp=response, days=self.days)
+
+            if len(response["prices"]) < self.days + 1:
+                logger.error(f"Not enough data to generate a {self.days} volatility index")
+                return None, None
+
+            try:
+                close_prices = [float(i[1]) for i in response["prices"]]
+                volatility = stdev_calculator(close_prices)
+                return volatility, datetime_now_utc()
+            except KeyError as e:
+                msg = "Error parsing Coingecko API response: KeyError: {}".format(e)
+                logger.error(msg)
+                return None, None
+            except Exception as e:
+                logger.error(e)
+                return None, None
 
         else:
-            raise Exception("Invalid response from get_url")
-
-        return volatility_index, datetime_now_utc()
+            msg = "Invalid response from get_url"
+            logger.error(msg)
+            return None, None
 
 
 @dataclass
 class CoingeckoDailyHistoricalPriceSource(PriceSource):
-    days: int = 30  # Data up to number of days ago (eg. 1,14,30,max)
+    days: int = 29  # Data up to number of days ago (eg. 1,14,30,max)
     asset: str = ""
     currency: str = ""
     service: CoingeckoDailyHistoricalPriceService = CoingeckoDailyHistoricalPriceService(days=days)

@@ -3,11 +3,10 @@ from typing import Any
 from typing import Optional
 from urllib.parse import urlencode
 
-import pandas as pd
-
 from telliot_feeds.pricing.price_source import PriceSource
 from telliot_feeds.sources.price.historical.kraken import KrakenHistoricalPriceService
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.stdev_calculator import stdev_calculator
 
 logger = get_logger(__name__)
 
@@ -35,23 +34,25 @@ class KrakenHistoricalPriceServiceOHLC(KrakenHistoricalPriceService):
         return f"/0/public/OHLC?{url_params}"
 
     def resp_price_parse(self, asset: str, currency: str, resp: dict[Any, Any]) -> Optional[float]:
-        """Gets first price from trades data."""
+        """Gets OHLC prices from Kraken API"""
         try:
-            # Price of last trade in trades list retrieved from API
+            # OHLC prices for last thrity days
             pair_key = f"X{asset.upper()}Z{currency.upper()}"
-            data = resp["result"][pair_key]
-            df = pd.DataFrame(data, columns=["CloseTime", "Open", "High", "Low", "Close", "?", "V", "QV"])
-            df["Close"] = df["Close"].astype(float)
-            volatility = df["Close"].pct_change().std()
-        except KeyError as e:
-            msg = f"Error parsing Kraken API response: KeyError: {e}"
-            logger.critical(msg)
+            try:
+                data = resp["result"][pair_key]
+                if len(data) < 30:
+                    logger.warning("Not enough data to calculate volatility")
+                    return None
+            except KeyError as e:
+                msg = f"Error parsing Kraken API response: KeyError: {e}"
+                logger.error(msg)
+                return None
+            close_prices = [float(i[4]) for i in data]
+            volatility = stdev_calculator(close_prices)
+        except Exception as e:
+            logger.error(e)
             return None
-
-        if len(data) == 0:
-            logger.warning("No trades found.")
-            return None
-        return float(volatility)
+        return volatility
 
 
 @dataclass
