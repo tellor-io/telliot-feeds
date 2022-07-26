@@ -1,7 +1,3 @@
-import statistics
-
-import pytest
-
 from telliot_feeds.feeds.eth_usd_30day_volatility import eth_usd_30day_volatility
 
 

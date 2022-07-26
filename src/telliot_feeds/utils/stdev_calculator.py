@@ -1,6 +1,6 @@
 from statistics import stdev
-from typing import Optional
 from typing import List
+from typing import Optional
 
 
 def stdev_calculator(close_prices: List[float]) -> Optional[float]:

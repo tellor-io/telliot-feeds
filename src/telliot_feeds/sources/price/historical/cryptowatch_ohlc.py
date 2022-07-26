@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
-from telliot_feeds.sources.price.historical.cryptowatch import CryptowatchHistoricalPriceService
 from telliot_feeds.pricing.price_source import PriceSource
+from telliot_feeds.sources.price.historical.cryptowatch import CryptowatchHistoricalPriceService
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.stdev_calculator import stdev_calculator
 
@@ -20,7 +20,7 @@ class CryptowatchHistoricalOHLCPriceService(CryptowatchHistoricalPriceService):
         currency: str,
         period: int = 30 * 86400,  # thirty days in seconds
         ts: Optional[int] = None,
-        candle_periods: int = 86400  # one day in seconds
+        candle_periods: int = 86400,  # one day in seconds
     ) -> OptionalDataPoint[float]:
 
         """Implement PriceServiceInterface
@@ -38,9 +38,7 @@ class CryptowatchHistoricalOHLCPriceService(CryptowatchHistoricalPriceService):
         if candles is not None:
             try:
                 if len(candles) < 30:
-                    logger.warning(
-                        "Not enough data to calculate volatility."
-                    )
+                    logger.warning("Not enough data to calculate volatility.")
                     return None, None
                 close_prices = [i[4] for i in candles]
 
