@@ -13,7 +13,7 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 thirty_days_seconds = 30 * 86400
-midnight: Callable[[int]] = lambda: datetime.combine(datetime.today(), time.min).timestamp()
+midnight: Callable[[], float] = lambda: datetime.combine(datetime.today(), time.min).timestamp()
 
 
 eth_usd_30day_volatility = DataFeed(
