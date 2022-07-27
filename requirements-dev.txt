@@ -6,7 +6,7 @@ pytest-cov
 pytest-dotenv
 pytest-asyncio
 pre-commit
-multicall
+multicall==0.5.1
 mypy
 mypy-extensions
 types-requests
