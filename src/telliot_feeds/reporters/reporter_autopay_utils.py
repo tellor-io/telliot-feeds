@@ -297,7 +297,7 @@ class AutopayCalls:
         return Web3.toInt(hexstr=val[0].hex()) / 1e18 if val[0] != b"" else val[0]
 
 
-async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> Any:
+async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> Optional[int]:
     """
     Get total tips for a query id with funded feeds
     """
@@ -313,7 +313,9 @@ async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> A
             CATALOG_QUERY_IDS[query_id] = query_id.hex()
             single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
         else:
-            raise Exception(f"Telliot doesn't support this query id: {query_id!r}")
+            msg = f"Telliot doesn't support this query id: {query_id!r}"
+            logger.error(msg)
+            return None
 
     autopay_calls = AutopayCalls(autopay, catalog=single_query)
     feed_tips = await get_continuous_tips(autopay, autopay_calls)
