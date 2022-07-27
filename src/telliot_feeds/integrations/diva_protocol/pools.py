@@ -15,7 +15,7 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-def pools_query(last_id: int, data_provider: str, expiry_since: Optional[int] = None) -> str:
+def query_valid_pools(last_id: int, data_provider: str, expiry_since: Optional[int] = None) -> str:
     """
     Generate query string to fetch pool data from DIVA Protocol subgraph.
 
@@ -26,10 +26,13 @@ def pools_query(last_id: int, data_provider: str, expiry_since: Optional[int] = 
     """
     return """
             {
-                pools (first: 1000, where: {id_gt: %s, expiryTime_gte: "%s", expiryTime_lte: "%s", statusFinalReferenceValue: "Open", dataProvider: "%s"}) {
+                pools (first: 100, where: {id_gt: %s, expiryTime_gte: "%s", expiryTime_lte: "%s", statusFinalReferenceValue: "Open", dataProvider: "%s"}) {
                     id
                     referenceAsset
-                    collateralToken { name }
+                    collateralToken {
+                        symbol
+                        id
+                    }
                     collateralBalance
                     expiryTime
                   }

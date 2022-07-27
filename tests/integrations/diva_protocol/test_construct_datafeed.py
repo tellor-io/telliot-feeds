@@ -1,8 +1,8 @@
 """
 Construct Diva Protocol datafeed from pool info.
 
-Using pool info, fetch sources and construct query based
-off reference asset, collateral token, and expiry date.
+Fetch sources and make query instance from pool info
+(reference asset, collateral token address, pool expiry & ID).
 """
 
 

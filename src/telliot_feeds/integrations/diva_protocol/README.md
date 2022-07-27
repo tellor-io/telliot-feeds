@@ -2,11 +2,9 @@
 
 1. fetch pools from the DIVA subgraph (`test_get_pools.py`)
 2. filter for new & unique pools using pickled dictionary (`test_filter_pools.py`)
-3. fetch pool info given pool ID (`test_fetch_pool_info.py`)
-4. filter out unexpired pools & pools w/o tellor data provider (`test_filter_pools.py`)
-5. construct datafeed from pool info (`test_construct_datafeed.py`)
-6. report using constructed datafeed (`test_report.py`)
-7. settle pool (`test_settle_pool.py`)
+3. construct datafeed from pool info (`test_construct_datafeed.py`)
+4. report using constructed datafeed (`test_report.py`)
+5. settle pool (`test_settle_pool.py`)
 
 `test_cli_cmds.py` Tests the needed commands for reporting using the `telliot-feeds` CLI tool.
 
