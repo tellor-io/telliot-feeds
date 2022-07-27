@@ -308,8 +308,13 @@ async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> A
     try:
         single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
     except KeyError:
-        CATALOG_QUERY_IDS[query_id] = query_id.hex()
-        single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
+        if "TellorRNG" in str(query_id):
+            query_id = Web3.keccak(query_id)
+            CATALOG_QUERY_IDS[query_id] = query_id.hex()
+            single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
+        else:
+            raise Exception(f"Telliot doesn't support this query id: {query_id!r}")
+
     autopay_calls = AutopayCalls(autopay, catalog=single_query)
     feed_tips = await get_continuous_tips(autopay, autopay_calls)
     if feed_tips is None:
