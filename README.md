@@ -1,6 +1,6 @@
-# Telliot Feed Examples
+# Telliot Feeds
 
-This package contains reporting tools and datafeeds for the TellorX and TellorFlex oracles.
+This package contains reporting tools and datafeeds for Tellor oracles.
 
 ## [Project documentation](https://tellor-io.github.io/telliot-feeds/)
 
