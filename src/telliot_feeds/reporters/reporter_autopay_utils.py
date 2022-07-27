@@ -127,8 +127,11 @@ class AutopayCalls:
         multi_call = Multicall(calls=calls, _w3=self.w3, require_success=require_success)
         data = await multi_call.coroutine()
         # remove status boolean thats useless here
-        data.pop("disregard_boolean")
-
+        try:
+            data.pop("disregard_boolean")
+        except KeyError as e:
+            msg = f"No feeds returned by multicall, KeyError: {e}"
+            logger.warning(msg)
         return data
 
     async def get_feed_details(self, require_success: bool = True) -> Any:
@@ -302,9 +305,18 @@ async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> A
         msg = "can't suggest feed, autopay contract not connected"
         error_status(note=msg, log=logger.critical)
         return None
-    single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
+    try:
+        single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
+    except KeyError:
+        CATALOG_QUERY_IDS[query_id] = query_id.hex()
+        single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
     autopay_calls = AutopayCalls(autopay, catalog=single_query)
     feed_tips = await get_continuous_tips(autopay, autopay_calls)
+    if feed_tips is None:
+        tips = 0
+        msg = "No feeds available for query id"
+        logger.warning(msg)
+        return tips
     tips = feed_tips[CATALOG_QUERY_IDS[query_id]]
     return tips
 

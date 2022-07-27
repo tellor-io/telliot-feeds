@@ -1,5 +1,6 @@
 import logging
 import pathlib
+import sys
 from pathlib import Path
 
 from telliot_core.apps.telliot_config import TelliotConfig
@@ -43,7 +44,13 @@ def get_logger(name: str) -> logging.Logger:
     should be the current file name. For example:
     _ = get_logger(name=__name__)
     """
+    log_format = "%(levelname)-7s | %(name)s | %(message)s"
+    formatter = logging.Formatter(log_format)
+    stream = logging.StreamHandler(sys.stdout)
+    stream.setFormatter(formatter)
     logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(stream)
     logger.addFilter(DuplicateFilter())
 
     return logger

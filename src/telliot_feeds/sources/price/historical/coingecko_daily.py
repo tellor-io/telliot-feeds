@@ -1,42 +1,22 @@
 from dataclasses import dataclass
-from dataclasses import field
 from typing import Any
 from urllib.parse import urlencode
 
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
-from telliot_feeds.pricing.price_service import WebPriceService
 from telliot_feeds.pricing.price_source import PriceSource
+from telliot_feeds.sources.price.spot.coingecko import coingecko_coin_id
+from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceService
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.stdev_calculator import stdev_calculator
 
 
 logger = get_logger(__name__)
 
-# Coinbase API uses the 'id' field from /coins/list.
-# Using a manual mapping for now.
-coingecko_coin_id = {
-    "bct": "toucan-protocol-base-carbon-tonne",
-    "btc": "bitcoin",
-    "dai": "dai",
-    "eth": "ethereum",
-    "idle": "idle",
-    "mkr": "maker",
-    "matic": "matic-network",
-    "ric": "richochet",
-    "sushi": "sushi",
-    "trb": "tellor",
-    "ohm": "olympus",
-    "usdc": "usd-coin",
-    "vsq": "vesq",
-}
 
-
-class CoinGeckoSpotPriceService(WebPriceService):
-    """CoinGecko Price Service"""
-
-    def __init__(self, **kwargs: Any) -> None:
-        kwargs["name"] = "CoinGecko Price Service"
-        kwargs["url"] = "https://api.coingecko.com"
+class CoingeckoDailyHistoricalPriceService(CoinGeckoSpotPriceService):
+    def __init__(self, days: int, **kwargs: Any) -> None:
+        self.days = days
         super().__init__(**kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
@@ -55,8 +35,8 @@ class CoinGeckoSpotPriceService(WebPriceService):
         if not coin_id:
             raise Exception("Asset not supported: {}".format(asset))
 
-        url_params = urlencode({"ids": coin_id, "vs_currencies": currency})
-        request_url = "/api/v3/simple/price?{}".format(url_params)
+        url_params = urlencode({"vs_currency": currency, "days": self.days, "interval": "daily"})
+        request_url = f"/api/v3/coins/{coin_id}/market_chart?{url_params}"
 
         d = self.get_url(request_url)
 
@@ -69,12 +49,20 @@ class CoinGeckoSpotPriceService(WebPriceService):
         elif "response" in d:
             response = d["response"]
 
+            if len(response["prices"]) < self.days + 1:
+                logger.error(f"Not enough data to generate a {self.days} volatility index")
+                return None, None
+
             try:
-                price = float(response[coin_id][currency])
-                return price, datetime_now_utc()
+                close_prices = [float(i[1]) for i in response["prices"]]
+                volatility = stdev_calculator(close_prices)
+                return volatility, datetime_now_utc()
             except KeyError as e:
                 msg = "Error parsing Coingecko API response: KeyError: {}".format(e)
                 logger.error(msg)
+                return None, None
+            except Exception as e:
+                logger.error(e)
                 return None, None
 
         else:
@@ -84,7 +72,11 @@ class CoinGeckoSpotPriceService(WebPriceService):
 
 
 @dataclass
-class CoinGeckoSpotPriceSource(PriceSource):
+class CoingeckoDailyHistoricalPriceSource(PriceSource):
+    days: int = 29  # Data up to number of days ago (eg. 1,14,30,max)
     asset: str = ""
     currency: str = ""
-    service: CoinGeckoSpotPriceService = field(default_factory=CoinGeckoSpotPriceService, init=False)
+    service: CoingeckoDailyHistoricalPriceService = CoingeckoDailyHistoricalPriceService(days=days)
+
+    def __post_init__(self) -> None:
+        self.service.days = self.days
