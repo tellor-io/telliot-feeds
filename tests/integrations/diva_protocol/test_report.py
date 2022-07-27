@@ -2,7 +2,6 @@
 
 Prevent early reporting of data for DIVA Protocol queries.
 Ensure others haven't already reported data for the same query."""
-
 import time
 
 import pytest

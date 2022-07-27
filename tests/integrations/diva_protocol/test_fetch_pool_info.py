@@ -1,7 +1,6 @@
 """
 Get pool info from DIVADiamond contract using pool ID.
 """
-
 import pytest
 
 
