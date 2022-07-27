@@ -1,3 +1,4 @@
+import os
 from typing import Any
 from typing import Optional
 
@@ -7,6 +8,10 @@ from telliot_core.cli.utils import cli_core
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
+
+from brownie import chain
+from chained_accounts import ChainedAccount
+from chained_accounts import find_accounts
 
 
 DIVA_PROTOCOL_CHAINS = (137, 80001, 3)
@@ -22,6 +27,29 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     if ctx.obj["SIGNATURE_ACCOUNT_NAME"] is not None:
         # Only supports mainnet
         assert core.config.main.chain_id == 1
+
+    if ctx.obj["TEST_CONFIG"]:
+        core.config.main.chain_id = 1337
+        core.config.main.url = "http://127.0.0.1:8545"
+
+        chain.mine(10)
+
+        accounts = find_accounts(chain_id=1337)
+        if not accounts:
+            # Create a test account using PRIVATE_KEY defined on github.
+            key = os.getenv("PRIVATE_KEY", None)
+            if key:
+                ChainedAccount.add(
+                    "git-tellorflex-test-key",
+                    chains=1337,
+                    key=os.environ["PRIVATE_KEY"],
+                    password="",
+                )
+            else:
+                raise Exception(f"Need an account for {1337}")
+
+
+
 
     assert core.config
 

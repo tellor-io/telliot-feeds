@@ -121,8 +121,7 @@ def test_query_info():
     assert "Current value" in result.stdout
 
 
-@pytest.mark.skip("Asking for password when it should not. Use local ganache endpoint")
-def test_query_parameters():
+def test_gas_price_oracle_build_parameters():
     """Test passing query parameters through user input"""
 
     query_type = "GasPriceOracle"
@@ -132,8 +131,23 @@ def test_query_parameters():
     input_ = query_type + "\n" + str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp) + "\n" + "abc"
 
     runner = CliRunner()
-    result = runner.invoke(cli_main, ["report", "--build-feed", "--submit-once"], input=input_)
+    result = runner.invoke(cli_main, ["--test-config", "report", "--build-feed", "--submit-once"], input=input_)
 
+    assert not result.exception
+
+def test_api_build_parameters():
+    """Test passing query parameters through user input"""
+
+    query_type = "NumericApiResponse"
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"
+    parse_str = "uniswap, usd"
+
+    input_ = query_type + "\n" + str(url) + "\n" + str(parse_str) + "\n" + "abc"
+
+    runner = CliRunner()
+    result = runner.invoke(cli_main, ["--test-config", "report", "--build-feed", "--submit-once"], input=input_)
+
+    print(result.exception)
     assert not result.exception
 
 
@@ -148,6 +162,6 @@ def test_invalid_query_parameters():
     input_ = query_type + "\n" + str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp) + "\n" + "abc"
 
     runner = CliRunner()
-    result = runner.invoke(cli_main, ["report", "--build-feed", "--submit-once"], input=input_)
+    result = runner.invoke(cli_main, ["--test-config", "report", "--build-feed", "--submit-once"], input=input_)
 
     assert "No corresponding datafeed" in result.stdout

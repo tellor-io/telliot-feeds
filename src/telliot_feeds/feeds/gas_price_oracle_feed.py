@@ -1,8 +1,5 @@
 """Datafeed for reporting responses to the GasPriceOracle query type.
 
-This GasPriceOracle data feed example queries the
-gas price on Mainnet Ethereum on April 1, 2022
-
 More info:
 https://github.com/tellor-io/dataSpecs/blob/main/types/GasPriceOracle.md
 

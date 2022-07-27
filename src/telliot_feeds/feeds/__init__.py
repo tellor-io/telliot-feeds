@@ -16,6 +16,7 @@ from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.feeds.vesq import vsq_usd_median_feed
+from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 
 
 # Supported legacy feeds
@@ -54,8 +55,9 @@ DATAFEED_BUILDER_MAPPING = {
     # "apiquery",
     # "divaprotocolpolygon",
     "GasPriceOracle": gas_price_oracle_feed,
+    "NumericApiResponse": numeric_api_response_feed,
     # "legacyrequest",
     # "morphware",
-    # "snapshot",
+    # "Snapshot", snapshot_feed
     # "tellorrng"
 }
