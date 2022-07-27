@@ -13,6 +13,8 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+from clamfig.base import Registry
+from eth_abi import decode_single
 from multicall import Call
 from multicall import Multicall
 from multicall import multicall
@@ -308,14 +310,18 @@ async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> O
     try:
         single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
     except KeyError:
-        if "TellorRNG" in str(query_id):
+        qtype_name, _ = decode_single("(string,bytes)", query_id)
+        if qtype_name not in Registry.registry:
+            logger.warning(f"Unsupported query type: {qtype_name}")
+            return None
+        else:
             query_id = Web3.keccak(query_id)
             CATALOG_QUERY_IDS[query_id] = query_id.hex()
             single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
-        else:
-            msg = f"Telliot doesn't support this query id: {query_id!r}"
-            logger.error(msg)
-            return None
+    except Exception as e:
+        msg = f"Error fetching feed tips for query id: {query_id.hex()}"
+        error_status(note=msg, log=logger.warning, e=e)
+        return None
 
     autopay_calls = AutopayCalls(autopay, catalog=single_query)
     feed_tips = await get_continuous_tips(autopay, autopay_calls)
