@@ -1,16 +1,51 @@
 """
-Unit tests covering telliot_core CLI commands.
+Unit tests covering telliot-feeds CLI commands.
 """
 from io import StringIO
+from unittest import mock
+import click
 
 import pytest
 from click.exceptions import Abort
 from click.testing import CliRunner
 
+from telliot_feeds.cli.utils import build_feed_from_input
 from telliot_feeds.cli.commands.report import get_stake_amount
 from telliot_feeds.cli.commands.report import parse_profit_input
 from telliot_feeds.cli.commands.report import valid_diva_chain
 from telliot_feeds.cli.main import main as cli_main
+
+def stop():
+    click.echo("made it!")
+    return
+def test_build_feed_from_input(capsys):
+    """Test building feed from user input"""
+
+    query_type = "NumericApiResponse"
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"
+    parse_str = "uniswap, usd"    
+
+    with mock.patch("builtins.input", side_effect=[query_type, url, parse_str]):
+        feed = build_feed_from_input()
+        assert feed.query.type == query_type
+        assert feed.query.url == url
+        assert feed.query.parseStr == parse_str
+
+        assert feed.source.type == "NumericApiResponseSource"
+        assert feed.source.url == url
+        assert feed.source.parseStr == parse_str
+
+    query_type = "NumericApiResponse...!!?"
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"
+    parse_str = "uniswap, usd"  
+
+    with mock.patch("builtins.input", side_effect=[query_type, url, parse_str]):
+        feed = build_feed_from_input()
+        
+        expected = f"No corresponding datafeed found for Query Type: {query_type}"
+        captured_output = capsys.readouterr().out.strip()
+
+        assert expected == captured_output
 
 
 def test_parse_profit_input():
@@ -120,8 +155,11 @@ def test_query_info():
     assert not result.exception
     assert "Current value" in result.stdout
 
-
-def test_gas_price_oracle_build_parameters():
+@mock.patch("telliot_feeds.cli.utils.build_feed_from_input", side_effect=stop)
+@mock.patch("getpass.getpass")
+@mock.patch("telliot_core.apps.core.TelliotCore.get_account")
+@mock.patch("chained_accounts.base.ChainedAccount.unlock")
+def test_gas_price_oracle_build_parameters(a,b,c,d):
     """Test passing query parameters through user input"""
 
     query_type = "GasPriceOracle"
@@ -133,9 +171,14 @@ def test_gas_price_oracle_build_parameters():
     runner = CliRunner()
     result = runner.invoke(cli_main, ["--test-config", "report", "--build-feed", "--submit-once"], input=input_)
 
+    assert "made it!" in result.stdout
     assert not result.exception
 
-def test_api_build_parameters():
+@mock.patch("telliot_feeds.cli.utils.build_feed_from_input", side_effect=stop)
+@mock.patch("getpass.getpass")
+@mock.patch("telliot_core.apps.core.TelliotCore.get_account")
+@mock.patch("chained_accounts.base.ChainedAccount.unlock")
+def test_api_build_cli():
     """Test passing query parameters through user input"""
 
     query_type = "NumericApiResponse"
@@ -147,12 +190,15 @@ def test_api_build_parameters():
     runner = CliRunner()
     result = runner.invoke(cli_main, ["--test-config", "report", "--build-feed", "--submit-once"], input=input_)
 
-    print(result.exception)
+    assert "made it!" in result.stdout
     assert not result.exception
 
 
-@pytest.mark.skip("Asking for password when it should not. Use local ganache endpoint")
-def test_invalid_query_parameters():
+@mock.patch("telliot_feeds.cli.utils.build_feed_from_input", side_effect=stop)
+@mock.patch("getpass.getpass")
+@mock.patch("telliot_core.apps.core.TelliotCore.get_account")
+@mock.patch("chained_accounts.base.ChainedAccount.unlock")
+def test_invalid_query_build_cli():
     """Test passing invalid query parameters as user input"""
 
     query_type = "gasPriceOracle!!!"  # wrong casing w/ special characters
@@ -160,8 +206,9 @@ def test_invalid_query_parameters():
     gas_price_oracle_timestamp = "this should be an integer too"
 
     input_ = query_type + "\n" + str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp) + "\n" + "abc"
-
+  
     runner = CliRunner()
     result = runner.invoke(cli_main, ["--test-config", "report", "--build-feed", "--submit-once"], input=input_)
 
-    assert "No corresponding datafeed" in result.stdout
+    assert "made it!" in result.stdout
+    assert not result.exception

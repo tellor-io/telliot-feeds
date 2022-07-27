@@ -3,6 +3,7 @@ from typing import Any
 from typing import Optional
 
 import click
+from dotenv import load_dotenv
 from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import cli_core
 
@@ -15,6 +16,8 @@ from chained_accounts import find_accounts
 
 
 DIVA_PROTOCOL_CHAINS = (137, 80001, 3)
+
+load_dotenv()
 
 
 def reporter_cli_core(ctx: click.Context) -> TelliotCore:
@@ -29,7 +32,7 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
         assert core.config.main.chain_id == 1
 
     if ctx.obj["TEST_CONFIG"]:
-        core.config.main.chain_id = 1337
+        # core.config.main.chain_id = 1337
         core.config.main.url = "http://127.0.0.1:8545"
 
         chain.mine(10)
@@ -46,7 +49,7 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
                     password="",
                 )
             else:
-                raise Exception(f"Need an account for {1337}")
+                raise Exception(f"Need an account for chain_id {1337}")
 
 
 
