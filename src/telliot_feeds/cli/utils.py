@@ -3,16 +3,15 @@ from typing import Any
 from typing import Optional
 
 import click
+from brownie import chain
+from chained_accounts import ChainedAccount
+from chained_accounts import find_accounts
 from dotenv import load_dotenv
 from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import cli_core
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
-
-from brownie import chain
-from chained_accounts import ChainedAccount
-from chained_accounts import find_accounts
 
 
 DIVA_PROTOCOL_CHAINS = (137, 80001, 3)
@@ -51,9 +50,6 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
             else:
                 raise Exception(f"Need an account for chain_id {1337}")
 
-
-
-
     assert core.config
 
     return core
@@ -73,7 +69,7 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
     """
     try:
         query_type = input("Enter a valid Query Type: ")
-        feed = DATAFEED_BUILDER_MAPPING[query_type]
+        feed: DataFeed[Any] = DATAFEED_BUILDER_MAPPING[query_type]
     except KeyError:
         click.echo(f"No corresponding datafeed found for Query Type: {query_type}\n")
         return None
