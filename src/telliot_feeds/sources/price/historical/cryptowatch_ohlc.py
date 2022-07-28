@@ -46,8 +46,8 @@ class CryptowatchHistoricalOHLCPriceService(CryptowatchHistoricalPriceService):
 
                 return volatility, dt
 
-            except KeyError as e:
-                msg = f"Error parsing Cryptowatch API candle data: KeyError: {e}"
+            except IndexError as e:
+                msg = f"Error parsing Cryptowatch API candle data: IndexError: {e}"
                 logger.error(msg)
 
             except Exception as e:

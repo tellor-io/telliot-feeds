@@ -6,12 +6,17 @@ import pytest
 from brownie import accounts
 from brownie import Autopay
 from brownie import chain
+from brownie import multicall as brownie_multicall
 from brownie import StakingToken
 from brownie import TellorFlex
 from brownie import TellorXMasterMock
 from brownie import TellorXOracleMock
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
+from multicall import multicall
+from multicall.constants import MULTICALL2_ADDRESSES
+from multicall.constants import MULTICALL_ADDRESSES
+from multicall.constants import Network
 from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.datasource import DataSource
@@ -237,3 +242,13 @@ def tellorx_oracle_mock_contract():
 @pytest.fixture
 def tellorx_master_mock_contract():
     return accounts[0].deploy(TellorXMasterMock)
+
+
+@pytest.fixture
+def multicall_contract():
+    #  deploy multicall contract to brownie chain and add chain id to multicall module
+    addy = brownie_multicall.deploy({"from": accounts[0]})
+    Network.Brownie = 1337
+    # add multicall contract address to multicall module
+    MULTICALL_ADDRESSES[Network.Brownie] = MULTICALL2_ADDRESSES[Network.Brownie] = addy.address
+    multicall.state_override_supported = lambda _: False
