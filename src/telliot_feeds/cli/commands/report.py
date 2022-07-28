@@ -299,7 +299,7 @@ async def report(
             try:
                 chosen_feed: DataFeed[Any] = CATALOG_FEEDS[query_tag]  # type: ignore
             except KeyError:
-                click.echo(f"No corresponding datafeed found for Query Type: {query_tag}\n")
+                click.echo(f"No corresponding datafeed found for query tag: {query_tag}\n")
                 return
         elif diva_pool_id is not None:
             if not valid_diva_chain(chain_id=cid):
