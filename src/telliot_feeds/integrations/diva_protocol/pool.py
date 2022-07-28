@@ -3,6 +3,7 @@
 from datetime import datetime
 from typing import Any
 from typing import Optional
+from dataclasses import dataclass
 
 import requests
 from requests import JSONDecodeError
@@ -13,6 +14,22 @@ from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
+
+
+@dataclass
+class DivaPool:
+    """
+    Data class for a DIVA Protocol pool.
+
+    Full description of the fields:
+    https://github.com/divaprotocol/oracles#diva-smart-contract
+    """
+    pool_id: int
+    reference_asset: str
+    collateral_token_address: str
+    collateral_token_symbol: str
+    collateral_balance: int
+    expiry_time: int
 
 
 def query_valid_pools(last_id: int, data_provider: str, expiry_since: Optional[int] = None) -> str:

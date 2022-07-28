@@ -14,8 +14,8 @@ from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.cli.utils import valid_diva_chain
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feeds.feeds.tellor_rng_feed import assemble_rng_datafeed
+from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.reporters.flashbot import FlashbotsReporter
 from telliot_feeds.reporters.interval import IntervalReporter

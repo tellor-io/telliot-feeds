@@ -8,8 +8,8 @@ Filter out pools with unsupported reference assets or
 unsupported collateral tokens."""
 import pytest
 
-from telliot_feeds.integrations.diva_protocol.pools import fetch_from_subgraph
-from telliot_feeds.integrations.diva_protocol.pools import query_valid_pools
+from telliot_feeds.integrations.diva_protocol.pool import fetch_from_subgraph
+from telliot_feeds.integrations.diva_protocol.pool import query_valid_pools
 
 
 # centralized oracle ran by DIVA Protocol team
