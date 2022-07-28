@@ -3,33 +3,22 @@
 """
 import logging
 from dataclasses import dataclass
-from typing import List
-from typing import Tuple
 
 from telliot_feeds.dtypes.float_type import UnsignedFloatType
 from telliot_feeds.dtypes.value_type import ValueType
 from telliot_feeds.queries.abi_query import AbiQuery
 from telliot_feeds.queries.price.spot_price import CURRENCIES
-from telliot_feeds.queries.price.spot_price import SPOT_PRICE_PAIRS
+from telliot_feeds.queries.price.spot_price import format_spot_price_pairs
 
 
 logger = logging.getLogger(__name__)
 
 
-def format_spot_price_pairs() -> List[Tuple[str, str]]:
-    """Read the list of valid spot price pairs"""
-
-    pairs = []
-    for s in SPOT_PRICE_PAIRS:
-        asset_id, currency = s.split("/")
-        pairs.append((asset_id.lower(), currency.lower()))
-
-    return pairs
-
-
 @dataclass
 class TWAP(AbiQuery):
     """Returns the spot price of a cryptocurrency asset in the given currency.
+
+    Reference: https://github.com/tellor-io/dataSpecs/blob/main/types/TWAP.md
 
     Attributes:
         1. asset
