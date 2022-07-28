@@ -36,13 +36,16 @@ class NumericApiResponseSource(DataSource[float]):
     """data source for retrieving data from api calls"""
 
     #: URL to call and receive JSON dict to be parsed
-    url: str = ""
+    url: Optional[str] = ""
 
     #: string of comma separated keys/list indices to parse value from JSON blob
-    parseStr: str = ""
+    parseStr: Optional[str] = ""
 
     def main_parser(self) -> Optional[float]:
         """main method, parses key string and calls url to search returned json dict"""
+        if self.url is None or self.parseStr is None:
+            logger.error("Query Parameters are unset")
+            return None
         rsp = api_call(self.url)
         if rsp is None:
             logger.error("None returned from API call")
