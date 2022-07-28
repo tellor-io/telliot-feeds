@@ -253,7 +253,6 @@ async def report(
 
     name = ctx.obj["ACCOUNT_NAME"]
     sig_acct_name = ctx.obj["SIGNATURE_ACCOUNT_NAME"]
-    test_config = ctx.obj["TEST_CONFIG"]
 
     try:
         if not password:
