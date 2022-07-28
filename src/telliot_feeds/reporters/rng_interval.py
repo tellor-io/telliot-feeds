@@ -76,7 +76,9 @@ class RNGReporter(TellorFlexReporter):
             return None
         tip += single_tip
 
-        feed_tip = await get_feed_tip(datafeed.query.query_id, self.autopay)
+        feed_tip = await get_feed_tip(
+            datafeed.query.query_data, self.autopay
+        )  # input query data instead of query id to use tip listener
         if feed_tip is None:
             msg = "Unable to fetch feed tip"
             error_status(msg, log=logger.warning)
