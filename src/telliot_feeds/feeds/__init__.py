@@ -1,3 +1,5 @@
+from typing import Any, Dict
+from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.ampl_usd_vwap_feed import ampl_usd_vwap_feed
 from telliot_feeds.feeds.bct_usd_feed import bct_usd_median_feed
 from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
@@ -11,6 +13,7 @@ from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 from telliot_feeds.feeds.morphware import morphware_v1_feed
+from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
 from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
 from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
@@ -18,7 +21,6 @@ from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.feeds.vesq import vsq_usd_median_feed
-from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 
 
 # Supported legacy feeds
@@ -54,7 +56,7 @@ CATALOG_FEEDS = {
     "eur-usd-spot": eur_usd_median_feed,
 }
 
-DATAFEED_BUILDER_MAPPING = {
+DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     # "spotprice",
     # "apiquery",
     # "divaprotocolpolygon",
