@@ -38,3 +38,23 @@ def test_vsq_usd_twap_price():
 def test_bct_usd_twap_price():
     q = TWAP(asset="bct", currency="usd", timespan=86400)
     assert q.query_id.hex() == "7d959edc69b5c9851ce030eb33d3848451b9636f2ec836158c6450309577f100"
+
+
+def test_encode_decode_reported_val():
+    """Ensure expected encoding/decoding behavior."""
+    q = TWAP(asset="btc", currency="usd", timespan=86400)
+
+    # JSON string containing data specified and
+    # referenced in Tellor /dataSpecs:
+    # https://github.com/tellor-io/dataSpecs/blob/main/types/TWAP.md
+
+    data = 12000  # example BTC/USD price
+
+    submit_value = q.value_type.encode(data)
+    assert isinstance(submit_value, bytes)
+
+    decoded_data = q.value_type.decode(submit_value)
+
+    assert isinstance(decoded_data, float)
+
+    assert decoded_data == 12000
