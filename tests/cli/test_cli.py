@@ -3,28 +3,30 @@ Unit tests covering telliot-feeds CLI commands.
 """
 from io import StringIO
 from unittest import mock
-import click
 
+import click
 import pytest
 from click.exceptions import Abort
 from click.testing import CliRunner
 
-from telliot_feeds.cli.utils import build_feed_from_input
 from telliot_feeds.cli.commands.report import get_stake_amount
 from telliot_feeds.cli.commands.report import parse_profit_input
 from telliot_feeds.cli.commands.report import valid_diva_chain
 from telliot_feeds.cli.main import main as cli_main
+from telliot_feeds.cli.utils import build_feed_from_input
+
 
 def stop():
     click.echo("made it!")
     return
-    
+
+
 def test_build_feed_from_input(capsys):
     """Test building feed from user input"""
 
     query_type = "NumericApiResponse"
-    url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"
-    parse_str = "uniswap, usd"    
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"  # noqa: E501
+    parse_str = "uniswap, usd"
 
     with mock.patch("builtins.input", side_effect=[query_type, url, parse_str]):
         feed = build_feed_from_input()
@@ -37,12 +39,12 @@ def test_build_feed_from_input(capsys):
         assert feed.source.parseStr == parse_str
 
     query_type = "NumericApiResponse...!!?"
-    url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"
-    parse_str = "uniswap, usd"  
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"  # noqa: E501
+    parse_str = "uniswap, usd"
 
     with mock.patch("builtins.input", side_effect=[query_type, url, parse_str]):
         feed = build_feed_from_input()
-        
+
         expected = f"No corresponding datafeed found for Query Type: {query_type}"
         captured_output = capsys.readouterr().out.strip()
 
@@ -141,7 +143,7 @@ def test_get_stake_amount(monkeypatch):
 def test_cmd_settle():
     """Test CLI settle DIVA pool command"""
     runner = CliRunner()
-    result = runner.invoke(cli_main, ["--test_config", "settle", "--pool-id", "a;lsdkfj;ak"])
+    result = runner.invoke(cli_main, ["--test-config", "settle", "--pool-id", "a;lsdkfj;ak"])
 
     expected = "Invalid value"
 
@@ -156,12 +158,13 @@ def test_query_info():
     assert not result.exception
     assert "Current value" in result.stdout
 
-@pytest.skip("mocking ineffective")
+
+@pytest.mark.skip("mocking ineffective")
 @mock.patch("telliot_feeds.cli.utils.build_feed_from_input", side_effect=stop)
 @mock.patch("getpass.getpass")
 @mock.patch("telliot_core.apps.core.TelliotCore.get_account")
 @mock.patch("chained_accounts.base.ChainedAccount.unlock")
-def test_gas_price_oracle_build_parameters(a,b,c,d):
+def test_gas_price_oracle_build_parameters(a, b, c, d):
     """Test passing query parameters through user input"""
 
     query_type = "GasPriceOracle"
@@ -176,6 +179,8 @@ def test_gas_price_oracle_build_parameters(a,b,c,d):
     assert "made it!" in result.stdout
     assert not result.exception
 
+
+@pytest.mark.skip("mocking ineffective")
 @mock.patch("telliot_feeds.cli.utils.build_feed_from_input", side_effect=stop)
 @mock.patch("getpass.getpass")
 @mock.patch("telliot_core.apps.core.TelliotCore.get_account")
@@ -184,7 +189,7 @@ def test_api_build_cli():
     """Test passing query parameters through user input"""
 
     query_type = "NumericApiResponse"
-    url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"  # noqa: E501
     parse_str = "uniswap, usd"
 
     input_ = query_type + "\n" + str(url) + "\n" + str(parse_str) + "\n" + "abc"
@@ -195,7 +200,8 @@ def test_api_build_cli():
     assert "made it!" in result.stdout
     assert not result.exception
 
-@pytest.skip("mocking ineffective")
+
+@pytest.mark.skip("mocking ineffective")
 @mock.patch("telliot_feeds.cli.utils.build_feed_from_input", side_effect=stop)
 @mock.patch("getpass.getpass")
 @mock.patch("telliot_core.apps.core.TelliotCore.get_account")
@@ -208,7 +214,7 @@ def test_invalid_query_build_cli():
     gas_price_oracle_timestamp = "this should be an integer too"
 
     input_ = query_type + "\n" + str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp) + "\n" + "abc"
-  
+
     runner = CliRunner()
     result = runner.invoke(cli_main, ["--test-config", "report", "--build-feed", "--submit-once"], input=input_)
 

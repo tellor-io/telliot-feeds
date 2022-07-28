@@ -1,4 +1,6 @@
-from typing import Any, Dict
+from typing import Any
+from typing import Dict
+
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.ampl_usd_vwap_feed import ampl_usd_vwap_feed
 from telliot_feeds.feeds.bct_usd_feed import bct_usd_median_feed
