@@ -44,11 +44,11 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
                 ChainedAccount.add(
                     "git-tellorflex-test-key",
                     chains=1337,
-                    key=os.environ["PRIVATE_KEY"],
+                    key=key,
                     password="",
                 )
             else:
-                raise Exception(f"Need an account for chain_id {1337}")
+                raise Exception("Need an account for chain_id 1337")
 
     assert core.config
 
@@ -68,7 +68,14 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
     Build a DataFeed from CLI input
     """
     try:
-        query_type = input("Enter a valid Query Type: ")
+        msg = (
+            "Enter a valid Query Type from the options listed below:" +
+            "\n" +
+            "\n".join([i for i in DATAFEED_BUILDER_MAPPING.keys()]) +
+            "\n"
+        )
+        query_type = input(msg)
+        click.echo("Currently supported Query Types:")
         feed: DataFeed[Any] = DATAFEED_BUILDER_MAPPING[query_type]
     except KeyError:
         click.echo(f"No corresponding datafeed found for Query Type: {query_type}\n")
