@@ -89,12 +89,12 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
     except KeyError:
         click.echo(f"No corresponding datafeed found for QueryType: {query_type}\n")
         return None
-    try:
-        for query_param in feed.query.__dict__.keys():
-            # accessing the datatype
-            param_dtype = feed.query.__annotations__[query_param]
-            val = input(f"Enter value for QueryParameter {query_param}: ")
+    for query_param in feed.query.__dict__.keys():
+        # accessing the datatype
+        param_dtype = feed.query.__annotations__[query_param]
+        val = input(f"Enter value for QueryParameter {query_param}: ")
 
+        try:
             if val is not None:
                 # cast input from string to datatype of query parameter
                 val = param_dtype(val)
@@ -105,8 +105,9 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
                 click.echo(f"Must set QueryParameter {query_param} of QueryType {query_type}")
                 return None
 
-        return feed
+        except ValueError:
+            click.echo(f"Value {val} for QueryParameter {query_param} does not match type {param_dtype}")
+            return None
 
-    except ValueError:
-        click.echo(f"Value {val} for QueryParameter {query_param} does not match type {param_dtype}")
-        return None
+
+    return feed
