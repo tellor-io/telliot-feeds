@@ -45,7 +45,7 @@ def test_build_feed_from_input(capsys):
     with mock.patch("builtins.input", side_effect=[query_type, url, parse_str]):
         feed = build_feed_from_input()
 
-        expected = f"No corresponding datafeed found for Query Type: {query_type}"
+        expected = f"No corresponding datafeed found for QueryType: {query_type}"
         captured_output = capsys.readouterr().out.strip()
 
         assert expected == captured_output

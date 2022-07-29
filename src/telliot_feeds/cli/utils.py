@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, get_args, get_type_hints
 from typing import Optional
 
 import click
@@ -84,14 +84,14 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
             "\n"
         )
         query_type = input(msg)
-        click.echo("Currently supported Query Types:")
         feed: DataFeed[Any] = DATAFEED_BUILDER_MAPPING[query_type]
     except KeyError:
         click.echo(f"No corresponding datafeed found for QueryType: {query_type}\n")
         return None
     for query_param in feed.query.__dict__.keys():
         # accessing the datatype
-        param_dtype = feed.query.__annotations__[query_param]
+        type_hints = get_type_hints(feed.query)
+        param_dtype = get_args(type_hints[query_param])[0]  # parse out Optional type
         val = input(f"Enter value for QueryParameter {query_param}: ")
 
         try:
