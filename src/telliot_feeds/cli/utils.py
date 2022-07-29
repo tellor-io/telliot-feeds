@@ -1,5 +1,7 @@
 import os
-from typing import Any, get_args, get_type_hints
+from typing import Any
+from typing import get_args
+from typing import get_type_hints
 from typing import Optional
 
 import click
@@ -78,10 +80,10 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
     """
     try:
         msg = (
-            "Enter a valid QueryType from the options listed below:" +
-            "\n" +
-            "\n".join([i for i in DATAFEED_BUILDER_MAPPING.keys()]) +
-            "\n"
+            "Enter a valid QueryType from the options listed below:"
+            + "\n"
+            + "\n".join([i for i in DATAFEED_BUILDER_MAPPING.keys()])
+            + "\n"
         )
         query_type = input(msg)
         feed: DataFeed[Any] = DATAFEED_BUILDER_MAPPING[query_type]
@@ -108,6 +110,5 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
         except ValueError:
             click.echo(f"Value {val} for QueryParameter {query_param} does not match type {param_dtype}")
             return None
-
 
     return feed
