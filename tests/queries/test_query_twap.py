@@ -19,26 +19,12 @@ def test_constructor():
     assert q.query_id.hex() == exp
 
 
-def test_invalid_currency():
+def test_invalid_params():
     with pytest.raises(ValueError):
         _ = TWAP(asset="btc", currency="xxx", timespan=86400)
 
-
-def test_invalid_pair():
-
     with pytest.raises(ValueError):
         _ = TWAP(asset="xxx", currency="usd", timespan=86400)
-
-
-def test_vsq_usd_twap_price():
-    q = TWAP(asset="vsq", currency="usd", timespan=86400)
-    assert q.query_id.hex() == "2b717a1b27bcee009f8190a78092c2de595566d5998f7ac18cd9d8efd27e24c0"
-
-
-def test_bct_usd_twap_price():
-    q = TWAP(asset="bct", currency="usd", timespan=86400)
-    assert q.query_id.hex() == "7d959edc69b5c9851ce030eb33d3848451b9636f2ec836158c6450309577f100"
-
 
 def test_encode_decode_reported_val():
     """Ensure expected encoding/decoding behavior."""
