@@ -66,10 +66,19 @@ def valid_diva_chain(chain_id: int) -> bool:
 def build_feed_from_input() -> Optional[DataFeed[Any]]:
     """
     Build a DataFeed from CLI input
+    Called when the --build-feed flag is used on the telliot-feeds CLI
+
+    This function takes input from the user for the QueryType
+    and its matching QueryParameters, the builds a DataFeed
+    object if the QueryType is supported and the QueryParameters
+    can be casted to their appropriate data types from an input string.
+
+    Returns: DataFeed[Any]
+
     """
     try:
         msg = (
-            "Enter a valid Query Type from the options listed below:" +
+            "Enter a valid QueryType from the options listed below:" +
             "\n" +
             "\n".join([i for i in DATAFEED_BUILDER_MAPPING.keys()]) +
             "\n"
@@ -78,13 +87,13 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
         click.echo("Currently supported Query Types:")
         feed: DataFeed[Any] = DATAFEED_BUILDER_MAPPING[query_type]
     except KeyError:
-        click.echo(f"No corresponding datafeed found for Query Type: {query_type}\n")
+        click.echo(f"No corresponding datafeed found for QueryType: {query_type}\n")
         return None
     try:
         for query_param in feed.query.__dict__.keys():
             # accessing the datatype
             param_dtype = feed.query.__annotations__[query_param]
-            val = input(f"Enter value for Query Parameter {query_param}: ")
+            val = input(f"Enter value for QueryParameter {query_param}: ")
 
             if val is not None:
                 # cast input from string to datatype of query parameter
@@ -99,5 +108,5 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
         return feed
 
     except ValueError:
-        click.echo(f"Value {val} for Query Parameter {query_param} does not match type {param_dtype}")
+        click.echo(f"Value {val} for QueryParameter {query_param} does not match type {param_dtype}")
         return None
