@@ -26,6 +26,7 @@ def test_invalid_params():
     with pytest.raises(ValueError):
         _ = TWAP(asset="xxx", currency="usd", timespan=86400)
 
+
 def test_encode_decode_reported_val():
     """Ensure expected encoding/decoding behavior."""
     q = TWAP(asset="btc", currency="usd", timespan=86400)
