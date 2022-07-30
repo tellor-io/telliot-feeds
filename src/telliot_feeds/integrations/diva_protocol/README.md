@@ -7,7 +7,6 @@
 4. construct datafeed from pool info (`test_construct_datafeed.py`)
 5. report using constructed datafeed (`test_report.py`)
 7. settle pools (`test_settle_pool.py`)
-    - implement `settle_pool()`
     - implement `get_reported_pools()`
     - implement `set_reported_pools()`
 

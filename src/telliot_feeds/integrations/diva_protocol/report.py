@@ -2,35 +2,52 @@
 DIVA Protocol Reporter
 """
 import asyncio
+import time
 from typing import Any
 from typing import Optional
 from typing import Tuple
-import time
 
 from eth_utils import to_checksum_address
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
-from telliot_feeds.queries.diva_protocol import DIVAProtocolPolygon
-from telliot_feeds.integrations.diva_protocol.pool import DivaPool
-from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
-from telliot_feeds.integrations.diva_protocol.pool import fetch_from_subgraph
-from telliot_feeds.integrations.diva_protocol.pool import query_valid_pools
-from telliot_feeds.integrations.diva_protocol.utils import filter_valid_pools
+from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
+from telliot_feeds.integrations.diva_protocol.pool import DivaPool
+from telliot_feeds.integrations.diva_protocol.pool import fetch_from_subgraph
+from telliot_feeds.integrations.diva_protocol.pool import query_valid_pools
+from telliot_feeds.integrations.diva_protocol.utils import filter_valid_pools
+from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
+from telliot_feeds.integrations.diva_protocol.utils import update_reported_pools
+from telliot_feeds.queries.diva_protocol import DIVAProtocolPolygon
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
 
+
 class DIVAProtocolReporter(TellorFlexReporter):
     """
     DIVA Protocol Reporter
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.middleware_contract = DivaOracleTellorContract(self.endpoint, self.account)
+        self.middleware_contract.connect()
+        
+        min_period_undistputed = self.middleware_contract.get_min_period_undisputed()
+        if min_period_undistputed is None:
+            logger.error("Unable to get min period undistputed")
+            return
+        else:
+            self.settle_period = min_period_undistputed
+
+
     async def filter_unreported_pools(self, pools: list[DivaPool]) -> list[DivaPool]:
         """
         Retrieves first unreported pool.
@@ -57,17 +74,21 @@ class DIVAProtocolReporter(TellorFlexReporter):
         # fetch pools from DIVA subgraph
         query = query_valid_pools(
             last_id=49100,
-            data_provider="0x245b8abbc1b70b370d1b81398de0a7920b25e7ca", # diva oracle
+            data_provider="0x245b8abbc1b70b370d1b81398de0a7920b25e7ca",  # diva oracle
         )
         pools = await fetch_from_subgraph(
             query=query,
             network="ropsten",
         )
+        if pools is None or len(pools) == 0:
+            logger.info("No pools found from subgraph query")
+            return None
+
         # filter for supported pools & pools that haven't been reported for yet
         pools = filter_valid_pools(pools)
         pools = await self.filter_unreported_pools(pools)
-        if len(pools) == 0:
-            logger.info("No pools to report")
+        if pools is None or len(pools) == 0:
+            logger.info("No pools found to report to")
             return None
 
         # choose a pool to report for (fake profit calculation, just choose 1st)
@@ -81,15 +102,26 @@ class DIVAProtocolReporter(TellorFlexReporter):
             return None
         self.datafeed = datafeed
         return datafeed
-    
-    async def settle_pool(self) -> ResponseStatus:
+
+    async def settle_pool(self, pool: DivaPool) -> ResponseStatus:
         """Settle pool"""
-        try:
-            tx_receipt = await self.contract.functions.setFinalReferenceValue
-            return ResponseStatus()
-        except Exception as e:
-            return error_status(note="Unable to settle pool", e=e)
-    
+        if not self.legacy_gas_price:
+            gas_price = await self.fetch_gas_price(self.gas_price_speed)
+            if not gas_price:
+                msg = "Unable to fetch gas price for tx type 0"
+                return error_status(note=msg, log=logger.warning)
+        else:
+            gas_price = self.legacy_gas_price
+        
+        status = await self.middleware_contract.set_final_reference_value(pool_id=pool.pool_id, legacy_gas_price=gas_price)
+        if status is not None and status.ok:
+            logger.info(f"Pool {pool.pool_id} settled.")
+            return status
+        else:
+            msg = f"Unable to settle pool: {pool.pool_id}"
+            return error_status(note=msg, log=logger.warning)
+        
+
     async def settle_pools(self) -> ResponseStatus:
         """
         Settle pools
@@ -100,27 +132,24 @@ class DIVAProtocolReporter(TellorFlexReporter):
         """
         # Get pools to settle
         reported_pools = get_reported_pools()
-        if len(reported_pools) == 0:
-            logger.info("No pools to settle")
-            return None, ResponseStatus()
-        if reported_pools is None:
-            return None, error_status(note="Unable to retrieve reported pools")
+        if reported_pools is None or len(reported_pools) == 0:
+            return error_status(note="No pools to settle", log=logger.info)
 
         # Settle pools
         for pool_id, time_submitted in reported_pools.items():
             # if current time is greater than time_submitted + settle_period, settle pool
             if time_submitted + self.settle_period < time.time():
                 logger.info(f"Settling pool {pool_id}")
-                tx_receipt, status = await self.settle_pool(pool_id)
-                if not status.ok or tx_receipt is None:
+                status = await self.settle_pool(pool_id)
+                if not status.ok:
                     logger.error(f"Unable to settle pool {status.error}")
                     continue
-                logger.info(f"Settled pool {pool_id}")
                 del reported_pools[pool_id]
-        
+
         # Update pickled dictionary
-        set_reported_pools(reported_pools)
+        update_reported_pools(reported_pools)
         return ResponseStatus()
+
 
     async def report_once(
         self,
@@ -253,7 +282,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
         """Report values for pool reference assets & settle pools."""
         while True:
             _, _ = await self.report_once()
-            _, _ = await self.settle_pools()
+            _ = await self.settle_pools()
 
             logger.info(f"Sleeping for {self.wait_period} seconds")
             await asyncio.sleep(self.wait_period)

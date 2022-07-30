@@ -1,5 +1,4 @@
 from typing import Any
-from typing import Optional
 
 from telliot_feeds.integrations.diva_protocol import SUPPORTED_COLLATERAL_TOKEN_SYMBOLS
 from telliot_feeds.integrations.diva_protocol import SUPPORTED_HISTORICAL_PRICE_PAIRS
@@ -76,5 +75,20 @@ def find_most_profitable_pool(pools: list[DivaPool]) -> DivaPool:
 
     Returns:
         Pool with the highest profit.
+    """
+    pass
+
+
+def get_reported_pools():
+    """
+    Retrieve dictionary of reoprted pools from telliot default dir
+    """
+    pass
+
+
+def update_reported_pools():
+    """
+    Remove settled pools from reported pools dict & save to pickle file in
+    telliot default dir
     """
     pass
