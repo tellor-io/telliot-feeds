@@ -8,10 +8,10 @@ from typing import Optional
 from typing import Tuple
 
 from eth_utils import to_checksum_address
+from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
-from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
@@ -35,18 +35,18 @@ class DIVAProtocolReporter(TellorFlexReporter):
     """
     DIVA Protocol Reporter
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.middleware_contract = DivaOracleTellorContract(self.endpoint, self.account)
         self.middleware_contract.connect()
-        
+
         min_period_undistputed = self.middleware_contract.get_min_period_undisputed()
         if min_period_undistputed is None:
             logger.error("Unable to get min period undistputed")
             return
         else:
             self.settle_period = min_period_undistputed
-
 
     async def filter_unreported_pools(self, pools: list[DivaPool]) -> list[DivaPool]:
         """
@@ -112,15 +112,16 @@ class DIVAProtocolReporter(TellorFlexReporter):
                 return error_status(note=msg, log=logger.warning)
         else:
             gas_price = self.legacy_gas_price
-        
-        status = await self.middleware_contract.set_final_reference_value(pool_id=pool.pool_id, legacy_gas_price=gas_price)
+
+        status = await self.middleware_contract.set_final_reference_value(
+            pool_id=pool.pool_id, legacy_gas_price=gas_price
+        )
         if status is not None and status.ok:
             logger.info(f"Pool {pool.pool_id} settled.")
             return status
         else:
             msg = f"Unable to settle pool: {pool.pool_id}"
             return error_status(note=msg, log=logger.warning)
-        
 
     async def settle_pools(self) -> ResponseStatus:
         """
@@ -149,7 +150,6 @@ class DIVAProtocolReporter(TellorFlexReporter):
         # Update pickled dictionary
         update_reported_pools(reported_pools)
         return ResponseStatus()
-
 
     async def report_once(
         self,
