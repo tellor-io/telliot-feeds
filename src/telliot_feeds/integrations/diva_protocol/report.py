@@ -11,6 +11,8 @@ from eth_utils import to_checksum_address
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
+from telliot_feeds.queries.diva_protocol import DIVAProtocolPolygon
+from telliot_feeds.integrations.diva_protocol.pool import DivaPool
 from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
 from telliot_feeds.integrations.diva_protocol.pool import fetch_from_subgraph
 from telliot_feeds.integrations.diva_protocol.pool import query_valid_pools
@@ -29,6 +31,26 @@ class DIVAProtocolReporter(TellorFlexReporter):
     """
     DIVA Protocol Reporter
     """
+    async def filter_unreported_pools(self, pools: list[DivaPool]) -> list[DivaPool]:
+        """
+        Retrieves first unreported pool.
+        """
+        unreported_pools = []
+        for pool in pools:
+            query = DIVAProtocolPolygon(poolId=pool.pool_id)
+            report_count, read_status = await self.get_num_reports_by_id(query.query_id)
+
+            if not read_status.ok:
+                logger.error(f"Unable to read from tellor oracle: {read_status.error}")
+                continue
+
+            if report_count > 0:
+                logger.info(f"Pool {pool.pool_id} already reported")
+                continue
+            unreported_pools.append(pool)
+            if len(unreported_pools) > 0:
+                break
+        return unreported_pools
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         """Fetch datafeed"""
@@ -43,7 +65,10 @@ class DIVAProtocolReporter(TellorFlexReporter):
         )
         # filter for supported pools & pools that haven't been reported for yet
         pools = filter_valid_pools(pools)
-        pools = filter_reported_pools(pools)
+        pools = await self.filter_unreported_pools(pools)
+        if len(pools) == 0:
+            logger.info("No pools to report")
+            return None
 
         # choose a pool to report for (fake profit calculation, just choose 1st)
         pool = pools[0]

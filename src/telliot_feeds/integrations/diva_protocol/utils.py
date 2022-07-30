@@ -1,4 +1,5 @@
 from typing import Any
+from typing import Optional
 
 from telliot_feeds.integrations.diva_protocol import SUPPORTED_COLLATERAL_TOKEN_SYMBOLS
 from telliot_feeds.integrations.diva_protocol import SUPPORTED_HISTORICAL_PRICE_PAIRS
@@ -64,19 +65,6 @@ def filter_valid_pools(pools: list[dict[str, Any]]) -> list[DivaPool]:
         if d["referenceAsset"] in SUPPORTED_HISTORICAL_PRICE_PAIRS
         and d["collateralToken"]["symbol"] in SUPPORTED_COLLATERAL_TOKEN_SYMBOLS
     ]
-
-
-def filter_unreported_pools(pools: list[DivaPool]) -> list[DivaPool]:
-    """
-    Filter out pools that have already been reported.
-
-    Args:
-        pools: List of pools to filter.
-
-    Returns:
-        List of pools that have not yet been reported.
-    """
-    pass
 
 
 def find_most_profitable_pool(pools: list[DivaPool]) -> DivaPool:
