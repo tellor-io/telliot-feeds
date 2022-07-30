@@ -1,10 +1,16 @@
 ## Steps to report for DIVA Protocol
 
-1. fetch pools from the DIVA subgraph (`test_get_pools.py`)
-2. filter for new & unique pools using pickled dictionary (`test_filter_pools.py`)
-3. construct datafeed from pool info (`test_construct_datafeed.py`)
-4. report using constructed datafeed (`test_report.py`)
-5. settle pool (`test_settle_pool.py`)
+1. invoke cli cmd to start diva reporter client (also settles pools)
+2. fetch pools from the DIVA subgraph (`test_get_pools.py`)
+<!-- 2. filter for new & unique pools using pickled dictionary (`test_filter_pools.py`) -->
+3. filter for valid pools
+4. construct datafeed from pool info (`test_construct_datafeed.py`)
+5. report using constructed datafeed (`test_report.py`)
+    - implement `filter_reported_pools()`
+7. settle pools (`test_settle_pool.py`)
+    - implement `settle_pool()`
+    - implement `get_reported_pools()`
+    - implement `set_reported_pools()`
 
 `test_cli_cmds.py` Tests the needed commands for reporting using the `telliot-feeds` CLI tool.
 

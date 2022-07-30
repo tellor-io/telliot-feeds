@@ -1,9 +1,8 @@
 from typing import Any
 
-from telliot_feeds.integrations.diva_protocol.pool import DivaPool
-from telliot_feeds.integrations.diva_protocol import SUPPORTED_HISTORICAL_PRICE_PAIRS
 from telliot_feeds.integrations.diva_protocol import SUPPORTED_COLLATERAL_TOKEN_SYMBOLS
-
+from telliot_feeds.integrations.diva_protocol import SUPPORTED_HISTORICAL_PRICE_PAIRS
+from telliot_feeds.integrations.diva_protocol.pool import DivaPool
 from telliot_feeds.utils.log import get_logger
 
 
@@ -61,8 +60,8 @@ def filter_valid_pools(pools: list[dict[str, Any]]) -> list[DivaPool]:
     """
     return [
         dict_to_pool(d)
-        for d in pools if
-        d["referenceAsset"] in SUPPORTED_HISTORICAL_PRICE_PAIRS
+        for d in pools
+        if d["referenceAsset"] in SUPPORTED_HISTORICAL_PRICE_PAIRS
         and d["collateralToken"]["symbol"] in SUPPORTED_COLLATERAL_TOKEN_SYMBOLS
     ]
 

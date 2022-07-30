@@ -4,8 +4,8 @@ from typing import Any
 from typing import Optional
 
 from telliot_feeds.datasource import DataSource
-from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
+from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.sources.price.historical.cryptowatch import (
     CryptowatchHistoricalPriceSource,
 )
@@ -82,22 +82,12 @@ def get_historical_price_source(asset: str, currency: str, timestamp: int) -> Pr
         currency=currency,
         algorithm="median",
         sources=[
-            CryptowatchHistoricalPriceSource(
-                asset=asset,
-                currency=currency,
-                ts=timestamp),
-            KrakenHistoricalPriceSource(
-                asset="xbt" if asset == "btc" else asset,
-                currency=currency,
-                ts=timestamp),
+            CryptowatchHistoricalPriceSource(asset=asset, currency=currency, ts=timestamp),
+            KrakenHistoricalPriceSource(asset="xbt" if asset == "btc" else asset, currency=currency, ts=timestamp),
+            PoloniexHistoricalPriceSource(asset=asset, currency="dai" if currency == "usd" else currency, ts=timestamp),
             PoloniexHistoricalPriceSource(
-                asset=asset,
-                currency="dai" if currency == "usd" else currency,
-                ts=timestamp),
-            PoloniexHistoricalPriceSource(
-                asset=asset,
-                currency="tusd" if currency == "usd" else currency,
-                ts=timestamp),
+                asset=asset, currency="tusd" if currency == "usd" else currency, ts=timestamp
+            ),
         ],
     )
     return source

@@ -1,9 +1,9 @@
 # Ignoring code formatting errors from flake8:
 # flake8: noqa E501 W291
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 from typing import Optional
-from dataclasses import dataclass
 
 import requests
 from requests import JSONDecodeError
@@ -24,6 +24,7 @@ class DivaPool:
     Full description of the fields:
     https://github.com/divaprotocol/oracles#diva-smart-contract
     """
+
     pool_id: int
     reference_asset: str
     collateral_token_address: str

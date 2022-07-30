@@ -1,13 +1,13 @@
 """Helper functions for reporting data for Diva Protocol."""
 from typing import Optional
 
-from telliot_feeds.integrations.diva_protocol import SUPPORTED_HISTORICAL_PRICE_PAIRS
-from telliot_feeds.integrations.diva_protocol import SUPPORTED_COLLATERAL_TOKEN_SYMBOLS
-from telliot_feeds.integrations.diva_protocol.sources import get_historical_price_source
-from telliot_feeds.integrations.diva_protocol.sources import DivaSource
-from telliot_feeds.integrations.diva_protocol.utils import parse_reference_asset
-from telliot_feeds.integrations.diva_protocol.pool import DivaPool
 from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.integrations.diva_protocol import SUPPORTED_COLLATERAL_TOKEN_SYMBOLS
+from telliot_feeds.integrations.diva_protocol import SUPPORTED_HISTORICAL_PRICE_PAIRS
+from telliot_feeds.integrations.diva_protocol.pool import DivaPool
+from telliot_feeds.integrations.diva_protocol.sources import DivaSource
+from telliot_feeds.integrations.diva_protocol.sources import get_historical_price_source
+from telliot_feeds.integrations.diva_protocol.utils import parse_reference_asset
 from telliot_feeds.queries.diva_protocol import DIVAProtocolPolygon
 from telliot_feeds.utils.log import get_logger
 
@@ -42,13 +42,11 @@ def assemble_diva_datafeed(
 
     source = DivaSource()
     source.reference_asset_source = get_historical_price_source(
-        asset=ref_asset,
-        currency=ref_currency,
-        timestamp=pool.expiry_time)
+        asset=ref_asset, currency=ref_currency, timestamp=pool.expiry_time
+    )
     collat_token_source = get_historical_price_source(
-        asset=pool.collateral_token_symbol.lower(),
-        currency="usd",
-        timestamp=pool.expiry_time)
+        asset=pool.collateral_token_symbol.lower(), currency="usd", timestamp=pool.expiry_time
+    )
     source.collat_token_source = collat_token_source
 
     feed = DataFeed(
