@@ -1,7 +1,14 @@
+import os
 from typing import Any
+from typing import get_args
+from typing import get_type_hints
 from typing import Optional
 
 import click
+from brownie import chain
+from chained_accounts import ChainedAccount
+from chained_accounts import find_accounts
+from dotenv import load_dotenv
 from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import cli_core
 
@@ -10,6 +17,8 @@ from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
 
 
 DIVA_PROTOCOL_CHAINS = (137, 80001, 3)
+
+load_dotenv()
 
 
 def reporter_cli_core(ctx: click.Context) -> TelliotCore:
@@ -22,6 +31,26 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     if ctx.obj["SIGNATURE_ACCOUNT_NAME"] is not None:
         # Only supports mainnet
         assert core.config.main.chain_id == 1
+
+    if ctx.obj["TEST_CONFIG"]:
+        # core.config.main.chain_id = 1337
+        core.config.main.url = "http://127.0.0.1:8545"
+
+        chain.mine(10)
+
+        accounts = find_accounts(chain_id=1337)
+        if not accounts:
+            # Create a test account using PRIVATE_KEY defined on github.
+            key = os.getenv("PRIVATE_KEY", None)
+            if key:
+                ChainedAccount.add(
+                    "git-tellorflex-test-key",
+                    chains=1337,
+                    key=key,
+                    password="",
+                )
+            else:
+                raise Exception("Need an account for chain_id 1337")
 
     assert core.config
 
@@ -39,31 +68,46 @@ def valid_diva_chain(chain_id: int) -> bool:
 def build_feed_from_input() -> Optional[DataFeed[Any]]:
     """
     Build a DataFeed from CLI input
+    Called when the --build-feed flag is used on the telliot-feeds CLI
+
+    This function takes input from the user for the QueryType
+    and its matching QueryParameters, the builds a DataFeed
+    object if the QueryType is supported and the QueryParameters
+    can be casted to their appropriate data types from an input string.
+
+    Returns: DataFeed[Any]
+
     """
     try:
-        query_type = input("Enter a valid Query Type: ")
-        feed = DATAFEED_BUILDER_MAPPING[query_type]
+        msg = (
+            "Enter a valid QueryType from the options listed below:"
+            + "\n"
+            + "\n".join([i for i in DATAFEED_BUILDER_MAPPING.keys()])
+            + "\n"
+        )
+        query_type = input(msg)
+        feed: DataFeed[Any] = DATAFEED_BUILDER_MAPPING[query_type]
     except KeyError:
-        click.echo(f"No corresponding datafeed found for Query Type: {query_type}\n")
+        click.echo(f"No corresponding datafeed found for QueryType: {query_type}\n")
         return None
-    try:
-        for query_param in feed.query.__dict__.keys():
-            # accessing the datatype
-            param_dtype = feed.query.__annotations__[query_param]
-            val = input(f"Enter value for Query Parameter {query_param}: ")
+    for query_param in feed.query.__dict__.keys():
+        # accessing the datatype
+        type_hints = get_type_hints(feed.query)
+        param_dtype = get_args(type_hints[query_param])[0]  # parse out Optional type
+        val = input(f"Enter value for QueryParameter {query_param}: ")
 
-            if val is not None:
+        if val is not None:
+            try:
                 # cast input from string to datatype of query parameter
                 val = param_dtype(val)
                 setattr(feed.query, query_param, val)
                 setattr(feed.source, query_param, val)
-
-            else:
-                click.echo(f"Must set QueryParameter {query_param} of QueryType {query_type}")
+            except ValueError:
+                click.echo(f"Value {val} for QueryParameter {query_param} does not match type {param_dtype}")
                 return None
 
-        return feed
+        else:
+            click.echo(f"Must set QueryParameter {query_param} of QueryType {query_type}")
+            return None
 
-    except ValueError:
-        click.echo(f"Value {val} for Query Parameter {query_param} does not match type {param_dtype}")
-        return None
+    return feed

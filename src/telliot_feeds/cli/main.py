@@ -37,7 +37,7 @@ from telliot_feeds.cli.commands.settle import settle
     type=str,
 )
 @click.option(
-    "--test_config",
+    "--test-config",
     is_flag=True,
     help="Runs command with test configuration (developer use only)",
 )
