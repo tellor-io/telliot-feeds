@@ -13,6 +13,8 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
+from clamfig.base import Registry
+from eth_abi import decode_single
 from multicall import Call
 from multicall import Multicall
 from multicall import multicall
@@ -297,23 +299,33 @@ class AutopayCalls:
         return Web3.toInt(hexstr=val[0].hex()) / 1e18 if val[0] != b"" else val[0]
 
 
-async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> Any:
+async def get_feed_tip(query: bytes, autopay: TellorFlexAutopayContract) -> Optional[int]:
     """
     Get total tips for a query id with funded feeds
+
+    - query: if the query exists in the telliot queries catalog then input should be the query id,
+    otherwise input should be the query data for newly generated ids in order to determine if submission
+    for the query is supported by telliot
     """
     if not autopay.connect().ok:
         msg = "can't suggest feed, autopay contract not connected"
         error_status(note=msg, log=logger.critical)
         return None
     try:
-        single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
+        single_query = {query: CATALOG_QUERY_IDS[query]}
     except KeyError:
-        if "TellorRNG" in str(query_id):
-            query_id = Web3.keccak(query_id)
-            CATALOG_QUERY_IDS[query_id] = query_id.hex()
-            single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
+        qtype_name, _ = decode_single("(string,bytes)", query)
+        if qtype_name not in Registry.registry:
+            logger.warning(f"Unsupported query type: {qtype_name}")
+            return None
         else:
-            raise Exception(f"Telliot doesn't support this query id: {query_id!r}")
+            query = Web3.keccak(query)
+            CATALOG_QUERY_IDS[query] = query.hex()
+            single_query = {query: CATALOG_QUERY_IDS[query]}
+    except Exception as e:
+        msg = f"Error fetching feed tips for query id: {query.hex()}"
+        error_status(note=msg, log=logger.warning, e=e)
+        return None
 
     autopay_calls = AutopayCalls(autopay, catalog=single_query)
     feed_tips = await get_continuous_tips(autopay, autopay_calls)
@@ -322,7 +334,7 @@ async def get_feed_tip(query_id: bytes, autopay: TellorFlexAutopayContract) -> A
         msg = "No feeds available for query id"
         logger.warning(msg)
         return tips
-    tips = feed_tips[CATALOG_QUERY_IDS[query_id]]
+    tips = feed_tips[CATALOG_QUERY_IDS[query]]
     return tips
 
 
