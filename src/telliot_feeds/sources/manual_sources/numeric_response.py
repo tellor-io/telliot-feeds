@@ -1,14 +1,19 @@
 from ast import literal_eval
+from collections import deque
 from dataclasses import dataclass
 from decimal import Decimal
-from collections import deque
-from telliot_feeds.datasource import DataSource
-from typing import Any, List, Tuple
-from telliot_feeds.queries.abi_query import AbiQuery
+from typing import Any
+from typing import List
+from typing import Tuple
+
 from eth_abi import encode_single
-from telliot_core.utils.response import ResponseStatus, error_status
+from telliot_core.utils.response import error_status
+from telliot_core.utils.response import ResponseStatus
+
+from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.queries.abi_query import AbiQuery
 from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
@@ -24,14 +29,14 @@ def is_length_greater_than_one(abi_type: List[str]) -> bool:
 
 
 def is_list(abi_type: str) -> bool:
-    bracket = '[]'
+    bracket = "[]"
     if abi_type[-2:] == bracket or abi_type[-3:-1] == bracket:
         return True
     return False
 
 
 def _validate_user_input_single_item(_abi_type: str, _user_input: Any) -> Tuple[Any, Any]:
-    if _abi_type[0] == '(' and _abi_type[-1] == ')':
+    if _abi_type[0] == "(" and _abi_type[-1] == ")":
         try:
             _usr_input = [tuple(map(Decimal, literal_eval(_user_input)))]
             return _usr_input, status
@@ -50,17 +55,17 @@ def _validate_user_input_single_item(_abi_type: str, _user_input: Any) -> Tuple[
 
 
 def _strip_single_item_input(_user_input: str) -> str:
-    pare_brack = ['[', '(', ')', ']']
+    pare_brack = ["[", "(", ")", "]"]
     if _user_input[0] in pare_brack and _user_input[-1] in pare_brack:
-        return _user_input.strip(f'{_user_input[0]}{_user_input[-1]}')
+        return _user_input.strip(f"{_user_input[0]}{_user_input[-1]}")
     return _user_input
 
 
 def _decimal_conversion(_user_input: str) -> Any:
     """Converts to Decimal in the instance that para"""
-    pare_brack = ['[', '(', ')', ']']
+    pare_brack = ["[", "(", ")", "]"]
     if _user_input[0] in pare_brack and _user_input[-1] in pare_brack:
-        inpt = _user_input.strip(f'{_user_input[0]}{_user_input[-1]}')
+        inpt = _user_input.strip(f"{_user_input[0]}{_user_input[-1]}")
         return [Decimal(inpt)]
     return Decimal(_user_input)
 
@@ -99,8 +104,8 @@ class ManualSource(DataSource[Any]):
     def validate_input(self, abi_type: str, user_input: str) -> Tuple[Any, Any]:
         """Parse input and validate user responses"""
         status = ResponseStatus()
-        if is_length_greater_than_one(abi_type.strip('()').split(",")):
-            _type = abi_type.strip('()').split(",")
+        if is_length_greater_than_one(abi_type.strip("()").split(",")):
+            _type = abi_type.strip("()").split(",")
             try:
                 usr_input = list(literal_eval(user_input))
             except ValueError as e:
@@ -117,9 +122,9 @@ class ManualSource(DataSource[Any]):
                         except TypeError:
                             note = f"Invalid input-> {inpt}; Should be a list"
                             return None, error_status(note=note, log=logger.error)
-                        encode_single(f'({typ})', [inpt])
+                        encode_single(f"({typ})", [inpt])
                     else:
-                        encode_single(f'({typ})', [Decimal(inpt)])
+                        encode_single(f"({typ})", [Decimal(inpt)])
                 except Exception as e:
                     note = f"At least one of your responses is invalid: {inpt}, should be {typ}"
                     return None, error_status(note=note, log=logger.error, e=e)
@@ -155,7 +160,7 @@ class ManualSource(DataSource[Any]):
     def parse_user_input(self) -> Tuple[Any, ResponseStatus]:
         """Decipher user input and determine its type"""
         user_input = self.user_input()
-        if user_input == '':
+        if user_input == "":
             return None, error_status(note="You didn't enter anything", log=logger.error)
         abi_type = self.get_abi_type()
         data, status = self.validate_input(abi_type, user_input)
