@@ -96,19 +96,18 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
         param_dtype = get_args(type_hints[query_param])[0]  # parse out Optional type
         val = input(f"Enter value for QueryParameter {query_param}: ")
 
-        try:
-            if val is not None:
+        if val is not None:
+            try:
                 # cast input from string to datatype of query parameter
                 val = param_dtype(val)
                 setattr(feed.query, query_param, val)
                 setattr(feed.source, query_param, val)
-
-            else:
-                click.echo(f"Must set QueryParameter {query_param} of QueryType {query_type}")
+            except ValueError:
+                click.echo(f"Value {val} for QueryParameter {query_param} does not match type {param_dtype}")
                 return None
 
-        except ValueError:
-            click.echo(f"Value {val} for QueryParameter {query_param} does not match type {param_dtype}")
+        else:
+            click.echo(f"Must set QueryParameter {query_param} of QueryType {query_type}")
             return None
 
     return feed
