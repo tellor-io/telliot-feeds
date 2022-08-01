@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from telliot_feeds.dtypes.float_type import UnsignedFloatType
 from telliot_feeds.dtypes.value_type import ValueType
@@ -17,10 +18,10 @@ class NumericApiResponse(AbiQuery):
             target numerical value in the JSON response returned from the API endpoint
     """
 
-    url: str
-    parseStr: str
+    url: Optional[str]
+    parseStr: Optional[str]
 
-    def __init__(self, url: str, parseStr: str):
+    def __init__(self, url: Optional[str], parseStr: Optional[str]):
         self.url = url
         self.parseStr = parseStr
 
