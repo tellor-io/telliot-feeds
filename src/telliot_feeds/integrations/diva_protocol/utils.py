@@ -1,4 +1,8 @@
+import pickle
 from typing import Any
+from typing import Optional
+
+from telliot_core.utils.home import default_homedir
 
 from telliot_feeds.integrations.diva_protocol import SUPPORTED_COLLATERAL_TOKEN_SYMBOLS
 from telliot_feeds.integrations.diva_protocol import SUPPORTED_HISTORICAL_PRICE_PAIRS
@@ -79,16 +83,35 @@ def find_most_profitable_pool(pools: list[DivaPool]) -> DivaPool:
     pass
 
 
-def get_reported_pools():
+def get_reported_pools() -> dict[int, int]:
     """
     Retrieve dictionary of reoprted pools from telliot default dir
     """
-    pass
+    pools_file = default_homedir() + "/reported_pools.pickle"
+    try:
+        reported_pools = pickle.load(open(pools_file, "rb"))
+    except OSError:
+        reported_pools = {}
+        pickle.dump(reported_pools, open(pools_file, "wb"))
+
+    return reported_pools
 
 
-def update_reported_pools():
+def update_reported_pools(
+    pools=dict[int, int], add: Optional[list[tuple[int, int]]] = None, remove: Optional[list[int]] = None
+) -> None:
     """
     Remove settled pools from reported pools dict & save to pickle file in
     telliot default dir
     """
-    pass
+    pools_file = default_homedir() + "/reported_pools.pickle"
+
+    if add:
+        for pool in add:
+            # pool is a tuple of pool_id, reported_time
+            pools[pool[0]] = pool[1]
+    if remove:
+        for pool_id in remove:
+            del pools[pool_id]
+
+    pickle.dump(pools, open(pools_file, "wb"))

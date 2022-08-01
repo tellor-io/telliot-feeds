@@ -16,6 +16,7 @@ from web3 import Web3
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
 from telliot_feeds.integrations.diva_protocol.pool import DivaPool
 from telliot_feeds.integrations.diva_protocol.pool import fetch_from_subgraph
@@ -148,7 +149,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
                 del reported_pools[pool_id]
 
         # Update pickled dictionary
-        update_reported_pools(reported_pools)
+        update_reported_pools(pool=reported_pools)
         return ResponseStatus()
 
     async def report_once(
@@ -272,6 +273,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
 
         if status.ok and not status.error:
             self.last_submission_timestamp = 0
+            # Update reported pools
+            pools = get_reported_pools()
+            update_reported_pools(pools=pools, add=[(datafeed.query.poolId, datetime_now_utc())])
             logger.info(f"View reported data: \n{tx_url}")
         else:
             logger.error(status)

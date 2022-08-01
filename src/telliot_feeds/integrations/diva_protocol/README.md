@@ -8,11 +8,6 @@
 5. report using constructed datafeed (`test_report.py`)
 7. settle pools (`test_settle_pool.py`)
 
-TODO:
-- implement `get_reported_pools()`
-- implement `set_reported_pools()`
-- fix cli (step #1)
-
 `test_cli_cmds.py` Tests the needed commands for reporting using the `telliot-feeds` CLI tool.
 
 Features for `test_claim_fees.py` are yet to be implemented.
