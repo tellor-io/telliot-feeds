@@ -1,5 +1,4 @@
-"""
-Datafeed for reporting responses to the GasPriceOracle query type.
+"""Datafeed for reporting responses to the GasPriceOracle query type.
 
 More info:
 https://github.com/tellor-io/dataSpecs/blob/main/types/GasPriceOracle.md

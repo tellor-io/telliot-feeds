@@ -294,7 +294,7 @@ async def report(
                 return
 
         # Use selected feed, or choose automatically
-        if query_tag is not None:
+        elif query_tag is not None:
             try:
                 chosen_feed: DataFeed[Any] = CATALOG_FEEDS[query_tag]  # type: ignore
             except KeyError:

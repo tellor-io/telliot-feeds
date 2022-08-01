@@ -1,8 +1,10 @@
 """
-Unit tests covering telliot_core CLI commands.
+Unit tests covering telliot-feeds CLI commands.
 """
 from io import StringIO
+from unittest import mock
 
+import click
 import pytest
 from click.exceptions import Abort
 from click.testing import CliRunner
@@ -11,6 +13,42 @@ from telliot_feeds.cli.commands.report import get_stake_amount
 from telliot_feeds.cli.commands.report import parse_profit_input
 from telliot_feeds.cli.commands.report import valid_diva_chain
 from telliot_feeds.cli.main import main as cli_main
+from telliot_feeds.cli.utils import build_feed_from_input
+
+
+def stop():
+    click.echo("made it!")
+    return
+
+
+def test_build_feed_from_input(capsys):
+    """Test building feed from user input"""
+
+    query_type = "NumericApiResponse"
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"  # noqa: E501
+    parse_str = "uniswap, usd"
+
+    with mock.patch("builtins.input", side_effect=[query_type, url, parse_str]):
+        feed = build_feed_from_input()
+        assert feed.query.type == query_type
+        assert feed.query.url == url
+        assert feed.query.parseStr == parse_str
+
+        assert feed.source.type == "NumericApiResponseSource"
+        assert feed.source.url == url
+        assert feed.source.parseStr == parse_str
+
+    query_type = "NumericApiResponse...!!?"
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"  # noqa: E501
+    parse_str = "uniswap, usd"
+
+    with mock.patch("builtins.input", side_effect=[query_type, url, parse_str]):
+        feed = build_feed_from_input()
+
+        expected = f"No corresponding datafeed found for QueryType: {query_type}"
+        captured_output = capsys.readouterr().out.strip()
+
+        assert expected == captured_output
 
 
 def test_parse_profit_input():
@@ -105,7 +143,7 @@ def test_get_stake_amount(monkeypatch):
 def test_cmd_settle():
     """Test CLI settle DIVA pool command"""
     runner = CliRunner()
-    result = runner.invoke(cli_main, ["--test_config", "settle", "--pool-id", "a;lsdkfj;ak"])
+    result = runner.invoke(cli_main, ["--test-config", "settle", "--pool-id", "a;lsdkfj;ak"])
 
     expected = "Invalid value"
 
@@ -119,35 +157,3 @@ def test_query_info():
     result = runner.invoke(cli_main, ["--test_config", "query", "status", "uspce-legacy"])
     assert not result.exception
     assert "Current value" in result.stdout
-
-
-@pytest.mark.skip("Asking for password when it should not. Use local ganache endpoint")
-def test_query_parameters():
-    """Test passing query parameters through user input"""
-
-    query_type = "GasPriceOracle"
-    gas_price_oracle_chain_id = 56  # bsc
-    gas_price_oracle_timestamp = 1657732678  # july 13, 2022
-
-    input_ = query_type + "\n" + str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp) + "\n" + "abc"
-
-    runner = CliRunner()
-    result = runner.invoke(cli_main, ["report", "--build-feed", "--submit-once"], input=input_)
-
-    assert not result.exception
-
-
-@pytest.mark.skip("Asking for password when it should not. Use local ganache endpoint")
-def test_invalid_query_parameters():
-    """Test passing invalid query parameters as user input"""
-
-    query_type = "gasPriceOracle!!!"  # wrong casing w/ special characters
-    gas_price_oracle_chain_id = "this should be an integer"
-    gas_price_oracle_timestamp = "this should be an integer too"
-
-    input_ = query_type + "\n" + str(gas_price_oracle_chain_id) + "\n" + str(gas_price_oracle_timestamp) + "\n" + "abc"
-
-    runner = CliRunner()
-    result = runner.invoke(cli_main, ["report", "--build-feed", "--submit-once"], input=input_)
-
-    assert "No corresponding datafeed" in result.stdout
