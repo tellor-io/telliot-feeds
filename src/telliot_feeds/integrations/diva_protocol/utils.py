@@ -83,7 +83,7 @@ def find_most_profitable_pool(pools: list[DivaPool]) -> DivaPool:
     pass
 
 
-def get_reported_pools() -> dict[int, int]:
+def get_reported_pools() -> Any:
     """
     Retrieve dictionary of reoprted pools from telliot default dir
     """
@@ -98,7 +98,7 @@ def get_reported_pools() -> dict[int, int]:
 
 
 def update_reported_pools(
-    pools=dict[int, int], add: Optional[list[tuple[int, int]]] = None, remove: Optional[list[int]] = None
+    pools: dict[int, int], add: Optional[list[tuple[int, int]]] = None, remove: Optional[list[int]] = None
 ) -> None:
     """
     Remove settled pools from reported pools dict & save to pickle file in

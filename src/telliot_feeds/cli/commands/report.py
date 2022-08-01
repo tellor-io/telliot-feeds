@@ -367,7 +367,7 @@ async def report(
                     expected_profit=expected_profit,
                     wait_period=wait_period,
                     **common_reporter_kwargs,
-                )
+                )  # type: ignore
             else:
                 reporter = TellorFlexReporter(
                     oracle=tellorflex.oracle,
