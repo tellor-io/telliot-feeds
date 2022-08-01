@@ -7,11 +7,11 @@ https://github.com/tellor-io/dataSpecs/blob/main/types/GasPriceOracle.md
 """
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.snapshot import Snapshot
-from telliot_feeds.sources.manual_input_source import ManualInputSource
+from telliot_feeds.sources.manual_input_source import ManualSnapshotInputSource
 
-proposalId = None
+proposalId = ""
 
-gas_price_oracle_feed = DataFeed(
+snapshot_feed = DataFeed(
     query=Snapshot(proposalId=proposalId),
-    source=ManualInputSource(),
+    source=ManualSnapshotInputSource(),
 )

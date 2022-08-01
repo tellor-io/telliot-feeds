@@ -1,3 +1,4 @@
+from ast import literal_eval
 from dataclasses import dataclass
 
 from telliot_feeds.datasource import DataSource
@@ -10,29 +11,32 @@ logger = get_logger(__name__)
 
 
 @dataclass
-class ManualInputSource(DataSource[float]):
-    """DataSource for USPCE manually-entered data."""
+class ManualSnapshotInputSource(DataSource[float]):
+    """DataSource for Snapshot Vote manually-entered data."""
 
-    def parse_user_val(test_input: str) -> float:
-        """Parse USPCE value from user input."""
-        # This arg is to avoid a TypeError when the default
-        # input() method is overriden in test_source.py.
-        # The error says this method expects no params,
-        # but is passed one. TODO: fix
-        _ = test_input
+    def parse_user_val(self) -> float:
 
-        print("Enter value:")
+        print("Enter vote:")
 
         val = None
-
+        msg = "Invalid input. Enter True/False or 0/1 value (bool)."
         while val is None:
             inpt = input()
 
-            try:
-                inpt = float(inpt)  # type: ignore
-            except ValueError:
-                print("Invalid input. Enter decimal value (float).")
-                continue
+            if inpt == "1":
+                return True
+            elif inpt == "0":
+                return False
+            else:
+                try:
+                    inpt = literal_eval(inpt.capitalize())
+                    assert type(inpt) is bool  # type: ignore
+                except AssertionError:
+                    print(msg)
+                    continue
+                except ValueError:
+                    print(msg)
+                    continue
 
             print(f"Submitting value: {inpt}\nPress [ENTER] to confirm.")
             _ = input()
@@ -47,11 +51,8 @@ class ManualInputSource(DataSource[float]):
         Returns:
             Current time-stamped value
         """
-        uspce = self.parse_user_val()
-
-        datapoint = (uspce, datetime_now_utc())
+        vote = self.parse_user_val()
+        datapoint = (vote, datetime_now_utc())
         self.store_datapoint(datapoint)
-
-        logger.info(f"USPCE {datapoint[0]} retrieved at time {datapoint[1]}")
 
         return datapoint
