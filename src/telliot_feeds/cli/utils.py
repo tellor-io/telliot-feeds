@@ -5,7 +5,6 @@ from typing import get_type_hints
 from typing import Optional
 
 import click
-from brownie import chain
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from dotenv import load_dotenv
@@ -33,6 +32,11 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
         assert core.config.main.chain_id == 1
 
     if ctx.obj["TEST_CONFIG"]:
+        try:
+            from brownie import chain
+        except ModuleNotFoundError:
+            print("pip install -r requirements-dev.txt in venv to use test config")
+
         # core.config.main.chain_id = 1337
         core.config.main.url = "http://127.0.0.1:8545"
 
