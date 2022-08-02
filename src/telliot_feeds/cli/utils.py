@@ -5,7 +5,6 @@ from typing import get_type_hints
 from typing import Optional
 
 import click
-from brownie import chain
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from dotenv import load_dotenv
@@ -33,6 +32,11 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
         assert core.config.main.chain_id == 1
 
     if ctx.obj["TEST_CONFIG"]:
+        try:
+            from brownie import chain
+        except ModuleNotFoundError:
+            print("pip install -r requirements-dev.txt in venv to use test config")
+
         # core.config.main.chain_id = 1337
         core.config.main.url = "http://127.0.0.1:8545"
 
@@ -93,7 +97,12 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
     for query_param in feed.query.__dict__.keys():
         # accessing the datatype
         type_hints = get_type_hints(feed.query)
-        param_dtype = get_args(type_hints[query_param])[0]  # parse out Optional type
+        # get param type if type isn't optional
+        try:
+            param_dtype = get_args(type_hints[query_param])[0]  # parse out Optional type
+        except IndexError:
+            param_dtype = type_hints[query_param]
+
         val = input(f"Enter value for QueryParameter {query_param}: ")
 
         if val is not None:

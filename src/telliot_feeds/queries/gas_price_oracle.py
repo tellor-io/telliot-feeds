@@ -1,5 +1,6 @@
 import logging
 from dataclasses import dataclass
+from typing import Optional
 
 from telliot_feeds.dtypes.float_type import UnsignedFloatType
 from telliot_feeds.queries.abi_query import AbiQuery
@@ -21,8 +22,8 @@ class GasPriceOracle(AbiQuery):
             https://ethereum.org/en/developers/docs/gas/
     """
 
-    chainId: int
-    timestamp: int
+    chainId: Optional[int]
+    timestamp: Optional[int]
 
     #: ABI used for encoding/decoding parameters
     abi = [
