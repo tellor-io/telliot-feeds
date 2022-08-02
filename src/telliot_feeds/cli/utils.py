@@ -93,7 +93,12 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
     for query_param in feed.query.__dict__.keys():
         # accessing the datatype
         type_hints = get_type_hints(feed.query)
-        param_dtype = get_args(type_hints[query_param])[0]  # parse out Optional type
+        # get param type if type isn't optional
+        try:
+            param_dtype = get_args(type_hints[query_param])[0]  # parse out Optional type
+        except IndexError:
+            param_dtype = type_hints[query_param]
+
         val = input(f"Enter value for QueryParameter {query_param}: ")
 
         if val is not None:
