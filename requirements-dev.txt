@@ -1,4 +1,3 @@
-eth-brownie
 mkdocs-material
 mkdocstrings
 pytest
