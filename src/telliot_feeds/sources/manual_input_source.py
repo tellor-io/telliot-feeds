@@ -1,4 +1,3 @@
-from ast import literal_eval
 from dataclasses import dataclass
 
 from telliot_feeds.datasource import DataSource
@@ -15,33 +14,24 @@ class ManualSnapshotInputSource(DataSource[float]):
     """DataSource for Snapshot Vote manually-entered data."""
 
     def parse_user_val(self) -> float:
+        msg = "Did vote pass or fail? Enter (y/n): "
+        print(msg)
 
-        print("Enter vote:")
-
+        err_msg = "Invalid input. " + msg
         val = None
-        msg = "Invalid input. Enter True/False or 0/1 value (bool)."
         while val is None:
-            inpt = input()
+            inpt = input().lower()
 
-            if inpt == "1":
-                return True
-            elif inpt == "0":
-                return False
+            if inpt == "y":
+                val = True
+            elif inpt == "n":
+                val = False
             else:
-                try:
-                    inpt = literal_eval(inpt.capitalize())
-                    assert type(inpt) is bool  # type: ignore
-                except AssertionError:
-                    print(msg)
-                    continue
-                except ValueError:
-                    print(msg)
-                    continue
+                print(err_msg)
+                continue
 
-            print(f"Submitting value: {inpt}\nPress [ENTER] to confirm.")
+            print(f"Submitting result: {inpt}\nPress [ENTER] to confirm.")
             _ = input()
-
-            val = inpt
 
         return val
 

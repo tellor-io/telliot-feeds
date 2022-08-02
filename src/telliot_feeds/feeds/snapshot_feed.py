@@ -11,7 +11,7 @@ from telliot_feeds.sources.manual_input_source import ManualSnapshotInputSource
 
 proposalId = ""
 
-snapshot_feed = DataFeed(
+snapshot_manual_feed = DataFeed(
     query=Snapshot(proposalId=proposalId),
     source=ManualSnapshotInputSource(),
 )
