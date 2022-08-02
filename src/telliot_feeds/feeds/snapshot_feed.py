@@ -1,8 +1,8 @@
 """
-Datafeed for reporting responses to the GasPriceOracle query type.
+Datafeed for reporting responses to the Snapshot query type.
 
 More info:
-https://github.com/tellor-io/dataSpecs/blob/main/types/GasPriceOracle.md
+https://github.com/tellor-io/dataSpecs/blob/main/types/Snapshot.md
 
 """
 from telliot_feeds.datafeed import DataFeed
