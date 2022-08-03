@@ -20,37 +20,58 @@ def query() -> None:
 @click.option("--query-data", "-qd")
 @click.option("--submit-value-bytes", "-svb")
 def decode(query_data: str, submit_value_bytes: str) -> None:
-    """Decode query data."""
-    if query_data is not None:
-        if query_data[:2] == "0x":
-            query_data = query_data[2:]
-        try:
-            query_data = bytes.fromhex(query_data)  # type: ignore
-        except ValueError:
-            click.echo(
-                "Invalid query data. Only hex strings accepted as input. Example Snapshot query data:\n"
-                "0x00000000000000000000000000000000000000000000000000000000000000400"
-                "0000000000000000000000000000000000000000000000000000000000000800000"
-                "000000000000000000000000000000000000000000000000000000000008536e617"
-                "073686f740000000000000000000000000000000000000000000000000000000000"
-                "0000000000000000000000000000000000000000000000000000800000000000000"
-                "0000000000000000000000000000000000000000000000000200000000000000000"
-                "0000000000000000000000000000000000000000000000406363653937363061646"
-                "5613930363137363934306165356664303562633030376363393235326235323438"
-                "333230363538303036333534383463623563623537"
-            )
-        q = None
-        for query in (AbiQuery, LegacyRequest):
-            q = query.get_query_from_data(query_data)  # type: ignore
-            if q:
-                break
-        if q:
-            print(q)
-        else:
-            print("Unable to decode query data.")
+    """Decode query data or reported value."""
+    if query_data:
+        decode_query_data(query_data)
 
-    if submit_value_bytes is not None:
-        click.echo(submit_value_bytes)
+    if submit_value_bytes:
+        decode_submit_value_bytes(submit_value_bytes)
+
+
+def decode_query_data(query_data: str) -> None:
+    """Decode query data."""
+    if len(query_data) > 2 and query_data[:2] == "0x":
+        query_data = query_data[2:]
+
+    try:
+        query_data = bytes.fromhex(query_data)  # type: ignore
+    except ValueError:
+        click.echo(
+            "Invalid query data. Only hex strings accepted as input. Example Snapshot query data:\n"
+            "0x00000000000000000000000000000000000000000000000000000000000000400"
+            "0000000000000000000000000000000000000000000000000000000000000800000"
+            "000000000000000000000000000000000000000000000000000000000008536e617"
+            "073686f740000000000000000000000000000000000000000000000000000000000"
+            "0000000000000000000000000000000000000000000000000000800000000000000"
+            "0000000000000000000000000000000000000000000000000200000000000000000"
+            "0000000000000000000000000000000000000000000000406363653937363061646"
+            "5613930363137363934306165356664303562633030376363393235326235323438"
+            "333230363538303036333534383463623563623537"
+        )
+    q = None
+    for query in (AbiQuery, LegacyRequest):
+        q = query.get_query_from_data(query_data)  # type: ignore
+        if q:
+            break
+    if q:
+        print(q)
+    else:
+        print("Unable to decode query data.")
+
+
+def decode_submit_value_bytes(submit_value_bytes: str) -> None:
+    """Decode reported data."""
+    if len(submit_value_bytes) > 2 and submit_value_bytes[:2] == "0x":
+        submit_value_bytes = submit_value_bytes[2:]
+
+    try:
+        submit_value_bytes = bytes.fromhex(submit_value_bytes)  # type: ignore
+    except ValueError:
+        click.echo(
+            "Invalid submit value bytes. Only hex strings accepted as input. Example Snapshot submit value bytes:\n"
+            "0x0000000000000000000000000000000000000000000000000000000000000001"
+        )
+    print(submit_value_bytes)
 
 
 # @query.command()
