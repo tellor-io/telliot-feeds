@@ -16,12 +16,12 @@ class SpotPriceManualSource(DataSource[float]):
     def parse_user_val(self) -> float:
         """Parse user input for a spot price value."""
 
-        print("\nType your spot price and press [ENTER].\n\nFor example, if price is $1234.0, type 1234 or 1234.0\n")
+        print("\nType your spot price and press [ENTER].\n\nFor example, if price is $1234.0, type 1234 or 1234.0")
 
         spot = None
 
         while spot is None:
-            usr_inpt = input("$ ")
+            usr_inpt = input()
 
             try:
                 usr_inpt = float(usr_inpt)  # type: ignore
@@ -29,10 +29,10 @@ class SpotPriceManualSource(DataSource[float]):
                 print("Invalid input. Enter decimal value (float).")
                 continue
 
-            print(f"\nSpot price (with 18 decimals of precision) to be submitted on chain: {int(usr_inpt*10**18)}")
+            print(f"\nSpot price (with 18 decimals of precision) to be submitted on chain: {usr_inpt*10**18:.0f}")
             print("Press [ENTER] to confirm.")
 
-            _ = input("")
+            _ = input()
 
             spot = usr_inpt
 
