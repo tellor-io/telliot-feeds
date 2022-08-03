@@ -18,12 +18,12 @@ from telliot_feeds.feeds.morphware import morphware_v1_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
 from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
+from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
 from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.feeds.vesq import vsq_usd_median_feed
-
 
 # Supported legacy feeds
 LEGACY_DATAFEEDS = {
@@ -56,6 +56,7 @@ CATALOG_FEEDS = {
     "gas-price-oracle-example": gas_price_oracle_feed,
     "eth-usd-30day_volatility": eth_usd_30day_volatility,
     "eur-usd-spot": eur_usd_median_feed,
+    "snapshot-proposal-example": snapshot_manual_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
