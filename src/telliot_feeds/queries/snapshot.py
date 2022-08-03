@@ -1,5 +1,6 @@
 import logging
 from dataclasses import dataclass
+from typing import Optional
 
 from telliot_feeds.dtypes.value_type import ValueType
 from telliot_feeds.queries.abi_query import AbiQuery
@@ -19,7 +20,7 @@ class Snapshot(AbiQuery):
     see https://snapshot.org/ for proposal results.
     """
 
-    proposalId: str
+    proposalId: Optional[str]
 
     #: ABI used for encoding/decoding parameters
     abi = [{"name": "proposalId", "type": "string"}]
