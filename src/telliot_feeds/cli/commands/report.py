@@ -218,6 +218,24 @@ def reporter() -> None:
     nargs=1,
     type=int,
 )
+@click.option(
+    "--oracle-address",
+    "-oracle",
+    "oracle_address",
+    help="oracle contract address to interact with",
+    nargs=1,
+    type=str,
+    default=None,
+)
+@click.option(
+    "--autopay-address",
+    "-autopay",
+    "autopay_address",
+    help="autopay contract address to interact with",
+    nargs=1,
+    type=str,
+    default=None,
+)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pwd", "--password", type=str)
@@ -242,11 +260,26 @@ async def report(
     password: str,
     signature_password: str,
     rng_auto: bool,
+    oracle_address: str,
+    autopay_address: str,
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
     expected_profit = parse_profit_input(expected_profit)  # type: ignore
     if expected_profit is None:
+        return
+    try:
+        if oracle_address is not None:
+            oracle_address = to_checksum_address(oracle_address)
+    except ValueError:
+        click.echo(f"contract address must be a hex string. Got: {oracle_address}")
+        return
+
+    try:
+        if autopay_address is not None:
+            autopay_address = to_checksum_address(autopay_address)
+    except ValueError:
+        click.echo(f"contract address must be a hex string. Got: {autopay_address}")
         return
 
     assert tx_type in (0, 2)
@@ -349,6 +382,11 @@ async def report(
             stake = get_stake_amount()
 
             tellorflex = core.get_tellorflex_contracts()
+            if oracle_address:
+                tellorflex.oracle.address = oracle_address
+
+            if autopay_address:
+                tellorflex.autopay.address = autopay_address
 
             # Type 2 transactions unsupported currently
             common_reporter_kwargs["transaction_type"] = 0
@@ -376,6 +414,12 @@ async def report(
         # Report to TellorX
         else:
             tellorx = core.get_tellorx_contracts()
+            if oracle_address is not None:
+                tellorflex.oracle.address = oracle_address
+
+            if autopay_address is not None:
+                tellorflex.autopay.address = autopay_address
+
             tellorx_reporter_kwargs = {
                 "master": tellorx.master,
                 "oracle": tellorx.oracle,
