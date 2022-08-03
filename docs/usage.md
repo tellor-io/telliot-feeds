@@ -109,6 +109,10 @@ By default, the reporter will continue to attempt reporting whenever out of repo
 telliot-feeds -a staker1 report --submit-once
 ```
 
+### Build Feed Flag
+
+Use the build-a-feed glag (`--build-feed`) to build a DataFeed of a QueryType with one or more QueryParameters. When reporting, the CLI will list the QueryTypes this flag supports. To select a QueryType, enter a type from the list provided. Then, enter in the corresponding QueryParameters for the QueryType you have selected, and telliot-feeds will build the Query and select the appropriate source.
+
 ## Profit Flag
 
 **Reporting for profit is extremely competitive and profit estimates aren't guarantees that you won't lose money!**
