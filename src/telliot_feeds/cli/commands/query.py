@@ -1,5 +1,8 @@
 import click
 
+from telliot_feeds.queries.abi_query import AbiQuery
+from telliot_feeds.queries.legacy_query import LegacyRequest
+
 # from telliot_core.cli.utils import async_run
 # from telliot_core.cli.utils import cli_core
 
@@ -19,7 +22,33 @@ def query() -> None:
 def decode(query_data: str, submit_value_bytes: str) -> None:
     """Decode query data."""
     if query_data is not None:
-        click.echo(query_data)
+        if query_data[:2] == "0x":
+            query_data = query_data[2:]
+        try:
+            query_data = bytes.fromhex(query_data)  # type: ignore
+        except ValueError:
+            click.echo(
+                "Invalid query data. Only hex strings accepted as input. Example Snapshot query data:\n"
+                "0x00000000000000000000000000000000000000000000000000000000000000400"
+                "0000000000000000000000000000000000000000000000000000000000000800000"
+                "000000000000000000000000000000000000000000000000000000000008536e617"
+                "073686f740000000000000000000000000000000000000000000000000000000000"
+                "0000000000000000000000000000000000000000000000000000800000000000000"
+                "0000000000000000000000000000000000000000000000000200000000000000000"
+                "0000000000000000000000000000000000000000000000406363653937363061646"
+                "5613930363137363934306165356664303562633030376363393235326235323438"
+                "333230363538303036333534383463623563623537"
+            )
+        q = None
+        for query in (AbiQuery, LegacyRequest):
+            q = query.get_query_from_data(query_data)  # type: ignore
+            if q:
+                break
+        if q:
+            print(q)
+        else:
+            print("Unable to decode query data.")
+
     if submit_value_bytes is not None:
         click.echo(submit_value_bytes)
 
