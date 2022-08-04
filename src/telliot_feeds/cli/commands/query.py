@@ -1,6 +1,7 @@
 import click
 
 from telliot_feeds.queries.abi_query import AbiQuery
+from telliot_feeds.queries.json_query import JsonQuery
 from telliot_feeds.queries.legacy_query import LegacyRequest
 
 # from telliot_core.cli.utils import async_run
@@ -49,12 +50,12 @@ def decode_query_data(query_data: str) -> None:
             "333230363538303036333534383463623563623537"
         )
     q = None
-    for query in (AbiQuery, LegacyRequest):
+    for query in (AbiQuery, LegacyRequest, JsonQuery):
         q = query.get_query_from_data(query_data)  # type: ignore
         if q:
             break
     if q:
-        print(q)
+        print(f"Query: {q}")
     else:
         print("Unable to decode query data.")
 

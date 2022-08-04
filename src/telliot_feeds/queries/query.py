@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 from typing import Any
 from typing import Dict
+from typing import Optional
 
 from clamfig import deserialize
 from clamfig import Serializable
@@ -87,7 +88,7 @@ class OracleQuery(Serializable):
         raise NotImplementedError
 
     @staticmethod
-    def get_query_from_data(query_data: bytes) -> OracleQuery:
+    def get_query_from_data(query_data: bytes) -> Optional[OracleQuery]:
         """Recreate an oracle query from `query_data`"""
         raise NotImplementedError
 
