@@ -19,14 +19,14 @@ def query() -> None:
 
 @query.command()
 @click.option("--query-data", "-qd")
-@click.option("--submit-value-bytes", "-svb")
+# @click.option("--submit-value-bytes", "-svb")
 def decode(query_data: str, submit_value_bytes: str) -> None:
     """Decode query data or reported value."""
     if query_data:
         decode_query_data(query_data)
 
-    if submit_value_bytes:
-        decode_submit_value_bytes(submit_value_bytes)
+    # if submit_value_bytes:
+    #     decode_submit_value_bytes(submit_value_bytes)
 
 
 def decode_query_data(query_data: str) -> None:
@@ -60,19 +60,19 @@ def decode_query_data(query_data: str) -> None:
         print("Unable to decode query data.")
 
 
-def decode_submit_value_bytes(submit_value_bytes: str) -> None:
-    """Decode reported data."""
-    if len(submit_value_bytes) > 2 and submit_value_bytes[:2] == "0x":
-        submit_value_bytes = submit_value_bytes[2:]
+# def decode_submit_value_bytes(submit_value_bytes: str) -> None:
+#     """Decode reported data."""
+#     if len(submit_value_bytes) > 2 and submit_value_bytes[:2] == "0x":
+#         submit_value_bytes = submit_value_bytes[2:]
 
-    try:
-        submit_value_bytes = bytes.fromhex(submit_value_bytes)  # type: ignore
-    except ValueError:
-        click.echo(
-            "Invalid submit value bytes. Only hex strings accepted as input. Example Snapshot submit value bytes:\n"
-            "0x0000000000000000000000000000000000000000000000000000000000000001"
-        )
-    print(submit_value_bytes)
+#     try:
+#         submit_value_bytes = bytes.fromhex(submit_value_bytes)  # type: ignore
+#     except ValueError:
+#         click.echo(
+#             "Invalid submit value bytes. Only hex strings accepted as input. Example Snapshot submit value bytes:\n"
+#             "0x0000000000000000000000000000000000000000000000000000000000000001"
+#         )
+#     print(submit_value_bytes)
 
 
 # @query.command()

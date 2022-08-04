@@ -1,1 +1,1 @@
-from telliot_feeds.cli.commands.query import query
+# from telliot_feeds.cli.commands.query import query
