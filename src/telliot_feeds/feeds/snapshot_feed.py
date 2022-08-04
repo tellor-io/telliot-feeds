@@ -9,7 +9,7 @@ from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.snapshot import Snapshot
 from telliot_feeds.sources.manual_input_source import ManualSnapshotInputSource
 
-proposalId = ""
+proposalId = None
 
 snapshot_manual_feed = DataFeed(
     query=Snapshot(proposalId=proposalId),

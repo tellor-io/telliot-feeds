@@ -63,6 +63,7 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     # "spotprice",
     # "apiquery",
     # "divaprotocolpolygon",
+    "SnapshotOracle": snapshot_manual_feed,
     "GasPriceOracle": gas_price_oracle_feed,
     "NumericApiResponse": numeric_api_response_feed,
     # "legacyrequest",
