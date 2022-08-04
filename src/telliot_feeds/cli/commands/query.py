@@ -1,9 +1,11 @@
 import click
+import eth_abi
 
 from telliot_feeds.queries.abi_query import AbiQuery
 from telliot_feeds.queries.json_query import JsonQuery
 from telliot_feeds.queries.legacy_query import LegacyRequest
 from telliot_feeds.queries.query import OracleQuery
+from telliot_feeds.queries.query_catalog import query_catalog
 
 # from telliot_core.cli.utils import async_run
 # from telliot_core.cli.utils import cli_core
@@ -27,8 +29,8 @@ def decode(query_data: str, submit_value_bytes: str) -> None:
         decode_query_data(query_data)
 
     if submit_value_bytes:
-        _ = choose_query_type()
-        decode_submit_value_bytes(submit_value_bytes)
+        query = choose_query_type()
+        decode_submit_value_bytes(query, submit_value_bytes)
 
 
 def decode_query_data(query_data: str) -> None:
@@ -64,18 +66,32 @@ def decode_query_data(query_data: str) -> None:
 
 def choose_query_type() -> OracleQuery:
     """Choose query type."""
-    query_types = []
     print("Choose query type to decode submitted value:")
-    for i, q in enumerate(AbiQuery.__subclasses__()):
-        query_types.append(q)
-        print(f"[{i+1}] -- {q.__name__}")
-    choice = input()
-    # decoded = query_types[choice].decode(submit_value_bytes)
-    # print("Decoded value:", decoded)
-    print("Your choice", choice)
+    queries = []
+    names = set()
+    for entry in query_catalog._entries.values():
+        if entry.query_type not in names:
+            names.add(entry.query_type)
+            queries.append(entry.query)
+            print(f"[{len(queries)}] -- {entry.query_type}")
+
+    choice = None
+    while not choice:
+        try:
+            choice = int(input(f"Enter number from 1-{len(queries)}: "))
+        except ValueError:
+            print("Invalid choice.")
+            continue
+
+        if choice < len(queries) + 1 < choice:
+            choice = None
+            print("Invalid choice.")
+
+    print("Your choice:", type(queries[choice - 1]).__name__)
+    return queries[choice - 1]
 
 
-def decode_submit_value_bytes(submit_value_bytes: str) -> None:
+def decode_submit_value_bytes(query: OracleQuery, submit_value_bytes: str) -> None:
     """Decode reported data."""
     if len(submit_value_bytes) > 2 and submit_value_bytes[:2] == "0x":
         submit_value_bytes = submit_value_bytes[2:]
@@ -87,7 +103,13 @@ def decode_submit_value_bytes(submit_value_bytes: str) -> None:
             "Invalid submit value bytes. Only hex strings accepted as input. Example Snapshot submit value bytes:\n"
             "0x0000000000000000000000000000000000000000000000000000000000000001"
         )
-    print(submit_value_bytes)
+        return
+
+    if isinstance(submit_value_bytes, bytes):
+        try:
+            print(f"Decoded value: {query.value_type.decode(submit_value_bytes)}")
+        except (eth_abi.exceptions.InsufficientDataBytes, eth_abi.exceptions.NonEmptyPaddingBytes):
+            print("Unable to decode value using query type:", query.__class__.__name__)
 
 
 # @query.command()
