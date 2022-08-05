@@ -59,35 +59,35 @@ def decode_query_data(query_data: str) -> None:
         if q:
             break
     if q:
-        print(f"Query: {q}")
+        click.echo(f"Query: {q}")
     else:
-        print("Unable to decode query data.")
+        click.echo("Unable to decode query data.")
 
 
 def choose_query_type() -> OracleQuery:
     """Choose query type."""
-    print("Choose query type to decode submitted value:")
+    click.echo("Choose query type to decode submitted value:")
     queries = []
     names = set()
     for entry in query_catalog._entries.values():
         if entry.query_type not in names:
             names.add(entry.query_type)
             queries.append(entry.query)
-            print(f"[{len(queries)}] -- {entry.query_type}")
+            click.echo(f"[{len(queries)}] -- {entry.query_type}")
 
     choice = None
     while not choice:
         try:
             choice = int(input(f"Enter number from 1-{len(queries)}: "))
         except ValueError:
-            print("Invalid choice.")
+            click.echo("Invalid choice.")
             continue
 
         if choice < len(queries) + 1 < choice:
             choice = None
-            print("Invalid choice.")
+            click.echo("Invalid choice.")
 
-    print("Your choice:", type(queries[choice - 1]).__name__)
+    click.echo(f"Your choice: {type(queries[choice - 1]).__name__}")
     return queries[choice - 1]
 
 
@@ -107,9 +107,9 @@ def decode_submit_value_bytes(query: OracleQuery, submit_value_bytes: str) -> No
 
     if isinstance(submit_value_bytes, bytes):
         try:
-            print(f"Decoded value: {query.value_type.decode(submit_value_bytes)}")
+            click.echo(f"Decoded value: {query.value_type.decode(submit_value_bytes)}")
         except (eth_abi.exceptions.InsufficientDataBytes, eth_abi.exceptions.NonEmptyPaddingBytes):
-            print("Unable to decode value using query type:", query.__class__.__name__)
+            click.echo(f"Unable to decode value using query type: {query.__class__.__name__}")
 
 
 # @query.command()
@@ -130,7 +130,7 @@ def decode_submit_value_bytes(query: OracleQuery, submit_value_bytes: str) -> No
 #         chain_id = core.config.main.chain_id
 #         entries = query_catalog.find(tag=query_tag)
 #         if len(entries) == 0:
-#             print(f"Unknown query tag: {query_tag}.")
+#             click.echo(f"Unknown query tag: {query_tag}.")
 #             return
 #         else:
 #             catalog_entry = entries[0]
@@ -143,30 +143,30 @@ def decode_submit_value_bytes(query: OracleQuery, submit_value_bytes: str) -> No
 #             click.echo(f"Query status not yet supported on Chain ID {chain_id}.")
 #             return
 #         count, status = await tellorx.oracle.getTimestampCountById(queryId)
-#         print(f"Timestamp count: {count}")
+#         click.echo(f"Timestamp count: {count}")
 #         bytes_value, status = await tellorx.oracle.getCurrentValue(queryId)
 #         if bytes_value is not None:
 #             value = q.value_type.decode(bytes_value)
-#             print(f"Current value: {value}")
+#             click.echo(f"Current value: {value}")
 #         else:
-#             print("Current value: None")
+#             click.echo("Current value: None")
 #         tlnv, status = await tellorx.oracle.getTimeOfLastNewValue()
-#         print(f"Time of last new value (all queryIds): {tlnv}")
+#         click.echo(f"Time of last new value (all queryIds): {tlnv}")
 #         tips, status = await tellorx.oracle.getTipsById(queryId)
-#         print(f"Tips (TRB): {tips}")
+#         click.echo(f"Tips (TRB): {tips}")
 #         (tips2, reward), status = await tellorx.oracle.getCurrentReward(queryId)
-#         print(f"Tips/reward (TRB): {tips2} / {reward}")
+#         click.echo(f"Tips/reward (TRB): {tips2} / {reward}")
 #         if count > 0:
-#             print(f"{npoints} most recent on-chain datapoints:")
+#             click.echo(f"{npoints} most recent on-chain datapoints:")
 #             for k in range(count - npoints, count):
 #                 ts, status = await tellorx.oracle.getReportTimestampByIndex(queryId, k)
 #                 blocknum, status = await tellorx.oracle.getBlockNumberByTimestamp(queryId, ts)
 #                 bytes_value, status = await tellorx.oracle.getValueByTimestamp(queryId, ts)
 #                 value = q.value_type.decode(bytes_value)
 #                 reporter, status = await tellorx.oracle.getReporterByTimestamp(queryId, ts)
-#                 print(f" index: {k}, timestamp: {ts}, block: {blocknum}, value:{value}, reporter: {reporter} ")
+#                 click.echo(f" index: {k}, timestamp: {ts}, block: {blocknum}, value:{value}, reporter: {reporter} ")
 #         else:
-#             print("No on-chain datapoints found.")
+#             click.echo("No on-chain datapoints found.")
 
 
 # @query.command()
@@ -178,4 +178,4 @@ def decode_submit_value_bytes(query: OracleQuery, submit_value_bytes: str) -> No
 #         tellorx = core.get_tellorx_contracts()
 #         qtag = await tellor_suggested_report(tellorx.oracle)
 #         assert isinstance(qtag, str)
-#         print(f"Suggested query: {qtag}")
+#         click.echo(f"Suggested query: {qtag}")
