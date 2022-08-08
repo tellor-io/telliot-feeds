@@ -38,15 +38,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
 
     def __init__(self, *args, **kwargs) -> None:  # type: ignore
         super().__init__(*args, **kwargs)
+        self.settle_period: Optional[int] = None
         self.middleware_contract = DivaOracleTellorContract(self.endpoint, self.account)
         self.middleware_contract.connect()
-
-        min_period_undistputed = self.middleware_contract.get_min_period_undisputed()
-        if min_period_undistputed is None:
-            logger.error("Unable to get min period undistputed")
-            return
-        else:
-            self.settle_period = min_period_undistputed
 
     async def filter_unreported_pools(self, pools: list[DivaPool]) -> list[DivaPool]:
         """
@@ -136,6 +130,11 @@ class DIVAProtocolReporter(TellorFlexReporter):
         if reported_pools is None or len(reported_pools) == 0:
             return error_status(note="No pools to settle", log=logger.info)
 
+        if self.settle_period is None:
+            self.settle_period = await self.middleware_contract.get_min_period_undisputed()
+        if self.settle_period is None:
+            return error_status(note="Unable to get min period undisputed from middleware contract", log=logger.warning)
+
         # Settle pools
         for pool_id, time_submitted in reported_pools.items():
             # if current time is greater than time_submitted + settle_period, settle pool
@@ -160,9 +159,10 @@ class DIVAProtocolReporter(TellorFlexReporter):
             logger.warning(status.error)
             return None, status
 
-        status = await self.check_reporter_lock()
-        if not status.ok:
-            return None, status
+        # Don't check reporter lock for testnet
+        # status = await self.check_reporter_lock()
+        # if not status.ok:
+        #     return None, status
 
         datafeed = await self.fetch_datafeed()
         if not datafeed:
