@@ -111,7 +111,20 @@ telliot-feeds -a staker1 report --submit-once
 
 ### Build Feed Flag
 
-Use the build-a-feed glag (`--build-feed`) to build a DataFeed of a QueryType with one or more QueryParameters. When reporting, the CLI will list the QueryTypes this flag supports. To select a QueryType, enter a type from the list provided. Then, enter in the corresponding QueryParameters for the QueryType you have selected, and telliot-feeds will build the Query and select the appropriate source.
+Use the build-a-feed flag (`--build-feed`) to build a DataFeed of a QueryType with one or more QueryParameters. When reporting, the CLI will list the QueryTypes this flag supports. To select a QueryType, enter a type from the list provided. Then, enter in the corresponding QueryParameters for the QueryType you have selected, and telliot-feeds will build the Query and select the appropriate source.
+
+ex: \
+input...
+```sh
+telliot-feeds -a staker1 report --build-feed --submit-once -p YOLO
+```
+
+output...
+```
+Enter a valid Query Type: NumericApiResponse
+Enter value for Query Parameter url: https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw
+Enter value for Query Parameter parseStr: uniswap, usd
+```
 
 ## Profit Flag
 
