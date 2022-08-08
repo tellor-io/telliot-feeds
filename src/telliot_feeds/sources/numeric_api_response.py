@@ -82,7 +82,9 @@ class NumericApiResponseSource(DataSource[float]):
 
         datapoint = (val, datetime_now_utc())
         self.store_datapoint(datapoint)
-
+        print(f"Response value {datapoint[0]} parsed using parse strings [{self.parseStr}] will be submitted on chain;")
+        print("Press [ENTER] to confirm")
+        _ = input()
         logger.info(f"API info {datapoint[0]} retrieved at time {datapoint[1]}")
 
         return datapoint
