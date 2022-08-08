@@ -1,4 +1,5 @@
 from typing import ClassVar
+from typing import Optional
 
 from clamfig import deserialize
 from clamfig.base import Registry
@@ -6,6 +7,10 @@ from eth_abi import decode_abi
 from eth_abi import encode_abi
 
 from telliot_feeds.queries.query import OracleQuery
+from telliot_feeds.utils.log import get_logger
+
+
+logger = get_logger(__name__)
 
 
 class AbiQuery(OracleQuery):
@@ -38,11 +43,18 @@ class AbiQuery(OracleQuery):
         return encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
 
     @staticmethod
-    def get_query_from_data(query_data: bytes) -> OracleQuery:
+    def get_query_from_data(query_data: bytes) -> Optional[OracleQuery]:
         """Recreate an oracle query from the `query_data` field"""
-
-        query_type, encoded_param_values = decode_abi(["string", "bytes"], query_data)
-        cls = Registry.registry[query_type]
+        try:
+            query_type, encoded_param_values = decode_abi(["string", "bytes"], query_data)
+        except OverflowError:
+            logger.error("OverflowError while decoding query data.")
+            return None
+        try:
+            cls = Registry.registry[query_type]
+        except KeyError:
+            logger.error(f"Unsupported query type: {query_type}")
+            return None
         params_abi = cls.abi
         param_names = [p["name"] for p in params_abi]
         param_types = [p["type"] for p in params_abi]
