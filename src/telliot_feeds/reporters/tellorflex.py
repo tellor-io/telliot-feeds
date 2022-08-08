@@ -96,7 +96,7 @@ class TellorFlexReporter(IntervalReporter):
             logger.error(f"Error fetching matic gas prices: {e}")
             return None
 
-        if speed not in prices:
+        if speed not in prices or speed is None:
             logger.error(f"Invalid gas price speed for matic gasstation: {speed}")
             return None
 
