@@ -7,6 +7,5 @@ legacy_id = None
 
 
 legacy_request_manual_feed = DataFeed(
-    query=LegacyRequest(legacy_id=legacy_id),  # type: ignore
-    source=SpotPriceManualSource()
+    query=LegacyRequest(legacy_id=legacy_id), source=SpotPriceManualSource()  # type: ignore
 )
