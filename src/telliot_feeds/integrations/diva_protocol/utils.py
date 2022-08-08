@@ -87,7 +87,7 @@ def get_reported_pools() -> Any:
     """
     Retrieve dictionary of reoprted pools from telliot default dir
     """
-    pools_file = default_homedir() + "/reported_pools.pickle"
+    pools_file = str(default_homedir()) + "/reported_pools.pickle"
     try:
         reported_pools = pickle.load(open(pools_file, "rb"))
     except OSError:
@@ -104,7 +104,7 @@ def update_reported_pools(
     Remove settled pools from reported pools dict & save to pickle file in
     telliot default dir
     """
-    pools_file = default_homedir() + "/reported_pools.pickle"
+    pools_file = str(default_homedir()) + "/reported_pools.pickle"
 
     if add:
         for pool in add:
