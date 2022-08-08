@@ -1,3 +1,7 @@
+"""Report values for construced DIVA Protocol queries.
+
+Prevent early reporting of data for DIVA Protocol queries.
+Ensure others haven't already reported data for the same query."""
 import time
 
 import pytest
@@ -6,8 +10,18 @@ from brownie import DIVAProtocolMock
 from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
-from telliot_feeds.feeds.diva_protocol_feed import assemble_diva_datafeed
+from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+
+
+@pytest.mark.asyncio
+async def test_report():
+    pass
+
+
+@pytest.mark.asyncio
+async def test_report_fail():
+    pass
 
 
 @pytest.fixture

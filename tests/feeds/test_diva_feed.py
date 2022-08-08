@@ -6,10 +6,10 @@ from brownie import DIVAProtocolMock
 from telliot_core.apps.core import TelliotCore
 
 from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.feeds.diva_protocol_feed import assemble_diva_datafeed
-from telliot_feeds.feeds.diva_protocol_feed import DivaPoolParameters
-from telliot_feeds.feeds.diva_protocol_feed import get_pool_params
-from telliot_feeds.feeds.diva_protocol_feed import get_variable_source
+from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
+from telliot_feeds.integrations.diva_protocol.feed import DivaPoolParameters
+from telliot_feeds.integrations.diva_protocol.feed import get_pool_params
+from telliot_feeds.integrations.diva_protocol.feed import get_variable_source
 from telliot_feeds.queries.diva_protocol import DIVAProtocolPolygon
 from telliot_feeds.sources.price.historical.poloniex import (
     PoloniexHistoricalPriceSource,
