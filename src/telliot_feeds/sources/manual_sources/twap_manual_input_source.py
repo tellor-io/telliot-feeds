@@ -1,7 +1,8 @@
-from telliot_feeds.datasource import DataSource
 from dataclasses import dataclass
-from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+
+from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
+from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
@@ -30,10 +31,7 @@ class TWAPManualSource(DataSource[float]):
                 print("Invalid input. Number must greater than 0.")
                 continue
 
-            print(
-                "\nTWAP value (with 18 decimals of precision) "
-                + f"to be submitted on chain:  {inpt*10**18:.0f}"
-            )
+            print("\nTWAP value (with 18 decimals of precision) " + f"to be submitted on chain:  {inpt*10**18:.0f}")
             print("Press [ENTER] to confirm.")
 
             _ = input()

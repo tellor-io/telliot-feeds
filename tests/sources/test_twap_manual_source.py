@@ -24,6 +24,7 @@ async def test_manual_twap_negative_input(capsys):
         assert type(result) is float
         assert result == 1234
 
+
 @pytest.mark.asyncio
 async def test_manual_twap_non_number_input(capsys):
     with mock.patch("builtins.input", side_effect=["hello", "1234", ""]):
