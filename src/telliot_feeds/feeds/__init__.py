@@ -21,6 +21,8 @@ from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_res
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
 from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
+from telliot_feeds.feeds.spot_price_manual_feed import spot_price_manual_feed
+from telliot_feeds.feeds.string_query_feed import string_query_feed
 from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
@@ -62,17 +64,16 @@ CATALOG_FEEDS = {
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
-    # "spotprice",
+    "SpotPrice": spot_price_manual_feed,
     # "apiquery",
     # "divaprotocolpolygon",
     "SnapshotOracle": snapshot_manual_feed,
     "GasPriceOracle": gas_price_oracle_feed,
     "NumericApiResponse": numeric_api_response_feed,
+    "StringQueryOracle": string_query_feed,
     # "legacyrequest",
     "NumericApiManualResponse": numeric_api_response_manual_feed,
     "NumericApiResponse": numeric_api_response_feed,  # this build will parse and submit response value automatically
     "LegacyRequest": legacy_request_manual_feed,
     # "morphware",
-    # "Snapshot", snapshot_feed
-    # "tellorrng"
 }

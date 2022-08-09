@@ -9,7 +9,7 @@ logger = get_logger(__name__)
 
 
 @pytest.mark.asyncio
-async def test_manual_spot_price(
+async def test_manual_spot_price_good_input(
     monkeypatch,
 ):
     monkeypatch.setattr("builtins.input", lambda: "1234")
@@ -18,8 +18,11 @@ async def test_manual_spot_price(
 
 
 @pytest.mark.asyncio
-async def test_bad_user_input():
+async def test_manual_spot_price_bad_input(capsys):
     with mock.patch("builtins.input", side_effect=["float", "5678", ""]):
         result, _ = await SpotPriceManualSource().fetch_new_datapoint()
+        expected = "Invalid input. Enter decimal value (float)."
+        captured_output = capsys.readouterr()
+        assert expected in captured_output.out.strip()
         assert type(result) is float
         assert result == 5678

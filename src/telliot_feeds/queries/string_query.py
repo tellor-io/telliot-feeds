@@ -4,6 +4,7 @@
 # Copyright (c) 2021-, Tellor Development Community
 # Distributed under the terms of the MIT License.
 from dataclasses import dataclass
+from typing import Optional
 
 from telliot_feeds.dtypes.value_type import ValueType
 from telliot_feeds.queries.json_query import JsonQuery
@@ -18,7 +19,7 @@ class StringQuery(JsonQuery):
     """
 
     #: Static query text
-    text: str
+    text: Optional[str]
 
     @property
     def value_type(self) -> ValueType:
