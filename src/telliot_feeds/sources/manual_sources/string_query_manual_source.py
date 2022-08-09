@@ -7,25 +7,16 @@ from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 
 class StringQueryManualSource(DataSource[Optional[str]]):
     async def fetch_new_datapoint(self) -> OptionalDataPoint[str]:
-        text = None
-        msg = "Type your string query response:"
-        print(f"{msg}\n")
 
-        while text is None:
-            usr_inpt = input()
+        print("Type your string query response:\n")
 
-            # not sure what to catch here but possible bytes that could be passed via something other than the cli
-            # since everything will be interepreted to string when passed through the cli.
-            if len(usr_inpt) > 1 and isinstance(usr_inpt, str):
-                text = usr_inpt
-            else:
-                print("Invalid input. use regular text! (Example input: the earth is flat, jk!)")
-                continue
+        usr_inpt = input()
 
-            print(f"\nString query response to be submitted to oracle->: {text}")
-            print("Press [ENTER] to confirm.")
-            _ = input()
-        datapoint = (text, datetime_now_utc())
+        print(f"\nString query response to be submitted to oracle->: {usr_inpt}")
+        print("Press [ENTER] to confirm.")
+        _ = input()
+
+        datapoint = (usr_inpt, datetime_now_utc())
         self.store_datapoint(datapoint)
 
         return datapoint
