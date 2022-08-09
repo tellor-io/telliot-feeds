@@ -100,6 +100,9 @@ class TellorFlexReporter(IntervalReporter):
             logger.error(f"Invalid gas price speed for matic gasstation: {speed}")
             return None
 
+        if prices[speed] is None:
+            logger.error("Unable to fetch gas price from matic gasstation")
+            return None
         return int(prices[speed])
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
