@@ -12,10 +12,12 @@ from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.eur_usd_feed import eur_usd_median_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
+from telliot_feeds.feeds.legacy_request_manual_feed import legacy_request_manual_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 from telliot_feeds.feeds.morphware import morphware_v1_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
+from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
 from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
@@ -70,5 +72,8 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "NumericApiResponse": numeric_api_response_feed,
     "StringQueryOracle": string_query_feed,
     # "legacyrequest",
+    "NumericApiManualResponse": numeric_api_response_manual_feed,
+    "NumericApiResponse": numeric_api_response_feed,  # this build will parse and submit response value automatically
+    "LegacyRequest": legacy_request_manual_feed,
     # "morphware",
 }
