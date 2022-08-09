@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 
 @dataclass
 class NumericApiManualResponse(DataSource[float]):
-    """DataSource for a spot-price manually-entered data."""
+    """DataSource for a manually-entered numeric value."""
 
     def parse_user_val(self) -> float:
         """Parse user input for a numeric value."""
@@ -30,7 +30,7 @@ class NumericApiManualResponse(DataSource[float]):
                 continue
 
             print(
-                "\nNumeric api response value (with 18 decimals of precision) "
+                "\nNumeric API response value (with 18 decimals of precision) "
                 + f"to be submitted on chain:  {usr_inpt*10**18:.0f}"
             )
             print("Press [ENTER] to confirm.")
