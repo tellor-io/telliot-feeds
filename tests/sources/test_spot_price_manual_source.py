@@ -26,4 +26,3 @@ async def test_manual_spot_price_bad_input(capsys):
         assert expected in captured_output.out.strip()
         assert type(result) is float
         assert result == 5678
-
