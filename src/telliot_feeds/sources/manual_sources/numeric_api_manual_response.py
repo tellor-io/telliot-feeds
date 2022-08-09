@@ -30,7 +30,7 @@ class NumericApiManualResponse(DataSource[float]):
                 continue
 
             print(
-                "\nNumeric api response value (with 18 decimals of precision) "
+                "\nNumeric API response value (with 18 decimals of precision) "
                 + f"to be submitted on chain:  {usr_inpt*10**18:.0f}"
             )
             print("Press [ENTER] to confirm.")
