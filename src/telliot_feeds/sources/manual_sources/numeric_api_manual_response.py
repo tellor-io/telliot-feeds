@@ -14,9 +14,9 @@ class NumericApiManualResponse(DataSource[float]):
     """DataSource for a spot-price manually-entered data."""
 
     def parse_user_val(self) -> float:
-        """Parse user input for a spot price value."""
+        """Parse user input for a numeric value."""
 
-        print("\nType your numeric api response value and press [ENTER].\n\nFor example, type 1234 or 1234.56")
+        print("\nType your numeric API response value and press [ENTER].\n\nFor example, type 1234 or 1234.56")
 
         val = None
 
@@ -52,6 +52,6 @@ class NumericApiManualResponse(DataSource[float]):
         datapoint = (response, datetime_now_utc())
         self.store_datapoint(datapoint)
 
-        logger.info(f"Numeric api response value {datapoint[0]} submitted at time {datapoint[1]}")
+        logger.info(f"Numeric API response value {datapoint[0]} submitted at time {datapoint[1]}")
 
         return datapoint
