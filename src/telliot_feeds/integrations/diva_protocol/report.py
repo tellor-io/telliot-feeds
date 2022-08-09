@@ -67,8 +67,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
         """Fetch datafeed"""
         # fetch pools from DIVA subgraph
         query = query_valid_pools(
-            last_id=49100,
-            data_provider="0x245b8abbc1b70b370d1b81398de0a7920b25e7ca",  # diva oracle
+            last_id=50000,
+            # data_provider="0x245b8abbc1b70b370d1b81398de0a7920b25e7ca",  # diva oracle
+            data_provider="0x7B8AC044ebce66aCdF14197E8De38C1Cc802dB4A",  # tellor oracle, ropsten playground
         )
         pools = await fetch_from_subgraph(
             query=query,
@@ -97,7 +98,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
         self.datafeed = datafeed
         return datafeed
 
-    async def settle_pool(self, pool: DivaPool) -> ResponseStatus:
+    async def settle_pool(self, pool_id: int) -> ResponseStatus:
         """Settle pool"""
         if not self.legacy_gas_price:
             gas_price = await self.fetch_gas_price(self.gas_price_speed)
@@ -107,14 +108,12 @@ class DIVAProtocolReporter(TellorFlexReporter):
         else:
             gas_price = self.legacy_gas_price
 
-        status = await self.middleware_contract.set_final_reference_value(
-            pool_id=pool.pool_id, legacy_gas_price=gas_price
-        )
+        status = await self.middleware_contract.set_final_reference_value(pool_id=pool_id, legacy_gas_price=gas_price)
         if status is not None and status.ok:
-            logger.info(f"Pool {pool.pool_id} settled.")
+            logger.info(f"Pool {pool_id} settled.")
             return status
         else:
-            msg = f"Unable to settle pool: {pool.pool_id}"
+            msg = f"Unable to settle pool: {pool_id}"
             return error_status(note=msg, log=logger.warning)
 
     async def settle_pools(self) -> ResponseStatus:
