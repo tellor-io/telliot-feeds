@@ -9,7 +9,6 @@ def test_all_query_types_in_catalog():
     print("Query types in catalog:", q_types)
 
     for q in AbiQuery.__subclasses__():
-        # TODO: Why not checking if NumericApiResponse?
         print("Checking", q.__name__)
         assert q.__name__ in q_types
 
