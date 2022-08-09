@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 
 @dataclass
 class NumericApiManualResponse(DataSource[float]):
-    """DataSource for a spot-price manually-entered data."""
+    """DataSource for a manually-entered numeric value."""
 
     def parse_user_val(self) -> float:
         """Parse user input for a numeric value."""
