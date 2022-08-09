@@ -1,4 +1,5 @@
 import pytest
+import pytest_asyncio
 from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
@@ -9,8 +10,10 @@ from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 
 
-@pytest.fixture(scope="function")
-async def polygon_reporter(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
+@pytest_asyncio.fixture(scope="function")
+async def polygon_reporter(
+    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract, multicall_contract
+):
     async with TelliotCore(config=mumbai_test_cfg) as core:
 
         account = core.get_account()
