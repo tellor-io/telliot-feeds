@@ -69,7 +69,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
         query = query_valid_pools(
             last_id=50000,
             # data_provider="0x245b8abbc1b70b370d1b81398de0a7920b25e7ca",  # diva oracle
-            data_provider="0x7B8AC044ebce66aCdF14197E8De38C1Cc802dB4A",  # tellor oracle, ropsten playground
+            data_provider="0x638c4aB660A9af1E6D79491462A0904b3dA78bB2",  # DivaTellorOracle (middleware) contract
         )
         pools = await fetch_from_subgraph(
             query=query,
