@@ -145,7 +145,10 @@ class DIVAProtocolReporter(TellorFlexReporter):
             # if current time is greater than time_submitted + settle_period, settle pool
             cur_time = int(time.time())
             if (time_submitted + self.settle_period + 10) < cur_time:
-                logger.info(f"Settling pool {pool_id} reported at {time_submitted} given current time {cur_time} and settle period {self.settle_period} plus 10 sec")
+                logger.info(
+                    f"Settling pool {pool_id} reported at {time_submitted} given "
+                    f"current time {cur_time} and settle period {self.settle_period} plus 10 sec"
+                )
                 status = await self.settle_pool(pool_id)
                 if not status.ok:
                     logger.error(f"Unable to settle pool {status.error}")

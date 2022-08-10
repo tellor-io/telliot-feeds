@@ -1,4 +1,3 @@
-import random
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
@@ -27,7 +26,7 @@ class dUSDSource(DataSource[Any]):
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
         """Fetch fake data"""
-        price = 1.
+        price = 1.0
         dt = datetime_now_utc()
         datapoint = (price, dt)
 
