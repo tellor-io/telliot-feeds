@@ -27,7 +27,7 @@ class dUSDSource(DataSource[Any]):
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
         """Fetch fake data"""
-        price = 1
+        price = 1.
         dt = datetime_now_utc()
         datapoint = (price, dt)
 

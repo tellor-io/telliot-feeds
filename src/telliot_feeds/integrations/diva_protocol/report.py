@@ -144,8 +144,8 @@ class DIVAProtocolReporter(TellorFlexReporter):
                 continue
             # if current time is greater than time_submitted + settle_period, settle pool
             cur_time = int(time.time())
-            if (time_submitted + self.settle_period) < cur_time:
-                logger.info(f"Settling pool {pool_id} reported at {time_submitted} given current time {cur_time} and settle period {self.settle_period}")
+            if (time_submitted + self.settle_period + 10) < cur_time:
+                logger.info(f"Settling pool {pool_id} reported at {time_submitted} given current time {cur_time} and settle period {self.settle_period} plus 10 sec")
                 status = await self.settle_pool(pool_id)
                 if not status.ok:
                     logger.error(f"Unable to settle pool {status.error}")
@@ -282,7 +282,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
             # Update reported pools
             pools = get_reported_pools()
             cur_time = int(time.time())
-            update_reported_pools(pools=pools, add=[(datafeed.query.poolId, [cur_time, "not settled"])])
+            update_reported_pools(pools=pools, add=[[datafeed.query.poolId, [cur_time, "not settled"]]])
             logger.info(f"View reported data at timestamp {cur_time}: \n{tx_url}")
         else:
             logger.error(status)
