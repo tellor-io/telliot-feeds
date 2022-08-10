@@ -137,7 +137,11 @@ class DIVAProtocolReporter(TellorFlexReporter):
             return error_status(note="Unable to get min period undisputed from middleware contract", log=logger.warning)
 
         # Settle pools
-        for pool_id, time_submitted in reported_pools.items():
+        for pool_id, (time_submitted, pool_status) in reported_pools.items():
+            if pool_status == "settled":
+                continue
+            if pool_status == "error":
+                continue
             # if current time is greater than time_submitted + settle_period, settle pool
             cur_time = int(time.time())
             if (time_submitted + self.settle_period) < cur_time:
@@ -145,6 +149,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
                 status = await self.settle_pool(pool_id)
                 if not status.ok:
                     logger.error(f"Unable to settle pool {status.error}")
+                    reported_pools[pool_id] = [time_submitted, "error"]
                     continue
                 del reported_pools[pool_id]
 
@@ -277,7 +282,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
             # Update reported pools
             pools = get_reported_pools()
             cur_time = int(time.time())
-            update_reported_pools(pools=pools, add=[(datafeed.query.poolId, cur_time)])
+            update_reported_pools(pools=pools, add=[(datafeed.query.poolId, [cur_time, "not settled"])])
             logger.info(f"View reported data at timestamp {cur_time}: \n{tx_url}")
         else:
             logger.error(status)
