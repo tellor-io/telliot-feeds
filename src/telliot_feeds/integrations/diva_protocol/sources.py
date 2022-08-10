@@ -27,13 +27,13 @@ class dUSDSource(DataSource[Any]):
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
         """Fetch fake data"""
-        data = random.uniform(419, 421)
+        price = 1
         dt = datetime_now_utc()
-        datapoint = (data, dt)
+        datapoint = (price, dt)
 
         self.store_datapoint(datapoint)
 
-        logger.info(f"Stored fake price for DIVA USD at {dt}: {data}")
+        logger.info(f"Stored fake price for DIVA USD at {dt}: {price}")
 
         return datapoint
 
