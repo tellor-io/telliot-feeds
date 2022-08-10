@@ -14,8 +14,8 @@ from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.cli.utils import valid_diva_chain
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.feeds.diva_protocol_feed import assemble_diva_datafeed
 from telliot_feeds.feeds.tellor_rng_feed import assemble_rng_datafeed
+from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.reporters.flashbot import FlashbotsReporter
 from telliot_feeds.reporters.interval import IntervalReporter
@@ -73,7 +73,7 @@ def print_reporter_settings(
     transaction_type: int,
     legacy_gas_price: Optional[int],
     gas_price_speed: str,
-    diva_pool_id: Optional[int],
+    reporting_diva_protocol: bool,
     rng_timestamp: Optional[int],
 ) -> None:
     """Print user settings to console."""
@@ -85,8 +85,8 @@ def print_reporter_settings(
 
     if query_tag:
         click.echo(f"Reporting query tag: {query_tag}")
-    elif diva_pool_id is not None:
-        click.echo(f"Reporting data for Diva Protocol Pool ID {diva_pool_id}")
+    elif reporting_diva_protocol:
+        click.echo("Reporting & settling DIVA Protocol pools")
     else:
         click.echo("Reporting with synchronized queries")
 
@@ -195,14 +195,6 @@ def reporter() -> None:
     default="fast",
 )
 @click.option(
-    "--pool-id",
-    "-pid",
-    "diva_pool_id",
-    help="pool ID for Diva Protocol on Polygon",
-    nargs=1,
-    type=int,
-)
-@click.option(
     "-wp",
     "--wait-period",
     help="wait period between feed suggestion calls",
@@ -236,6 +228,22 @@ def reporter() -> None:
     type=str,
     default=None,
 )
+@click.option(
+    "--diva-protocol",
+    "-dpt",
+    "reporting_diva_protocol",
+    help="Report & settle DIVA Protocol derivative pools",
+    default=False,
+)
+@click.option(
+    "--contract-reporter",
+    "-reporter",
+    "contract_reporter",
+    help="To use a contract reporter instead of oracle",
+    nargs=1,
+    default=None,
+    type=str,
+)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pwd", "--password", type=str)
@@ -255,13 +263,14 @@ async def report(
     submit_once: bool,
     wait_period: int,
     gas_price_speed: str,
-    diva_pool_id: int,
+    reporting_diva_protocol: bool,
     rng_timestamp: int,
     password: str,
     signature_password: str,
     rng_auto: bool,
     oracle_address: str,
     autopay_address: str,
+    contract_reporter: Optional[str],
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
@@ -280,6 +289,13 @@ async def report(
             autopay_address = to_checksum_address(autopay_address)
     except ValueError:
         click.echo(f"contract address must be a hex string. Got: {autopay_address}")
+        return
+
+    try:
+        if contract_reporter is not None:
+            contract_reporter = to_checksum_address(contract_reporter)
+    except ValueError:
+        click.echo(f"contract address must be a hex string. Got: {contract_reporter}")
         return
 
     assert tx_type in (0, 2)
@@ -333,15 +349,11 @@ async def report(
             except KeyError:
                 click.echo(f"No corresponding datafeed found for query tag: {query_tag}\n")
                 return
-        elif diva_pool_id is not None:
+        elif reporting_diva_protocol:
             if not valid_diva_chain(chain_id=cid):
                 click.echo("Diva Protocol not supported for this chain")
                 return
-            # Generate datafeed
-            chosen_feed = await assemble_diva_datafeed(pool_id=diva_pool_id, node=core.endpoint, account=account)
-            if chosen_feed is None:
-                click.echo("DIVA Protocol datafeed generation failed")
-                return
+            chosen_feed = None
         elif rng_timestamp is not None:
             chosen_feed = await assemble_rng_datafeed(timestamp=rng_timestamp, node=core.endpoint, account=account)
         else:
@@ -358,7 +370,7 @@ async def report(
             expected_profit=expected_profit,
             chain_id=cid,
             gas_price_speed=gas_price_speed,
-            diva_pool_id=diva_pool_id,
+            reporting_diva_protocol=reporting_diva_protocol,
             rng_timestamp=rng_timestamp,
         )
 
@@ -375,6 +387,7 @@ async def report(
             "legacy_gas_price": legacy_gas_price,
             "gas_price_speed": gas_price_speed,
             "chain_id": cid,
+            "custom_contract_addr": contract_reporter,
         }
 
         # Report to Polygon TellorFlex
@@ -401,6 +414,16 @@ async def report(
                     wait_period=120 if wait_period < 120 else wait_period,
                     **common_reporter_kwargs,
                 )
+            elif reporting_diva_protocol:
+                reporter = DIVAProtocolReporter(
+                    oracle=tellorflex.oracle,
+                    token=tellorflex.token,
+                    autopay=tellorflex.autopay,
+                    stake=stake,
+                    expected_profit=expected_profit,
+                    wait_period=wait_period,
+                    **common_reporter_kwargs,
+                )  # type: ignore
             else:
                 reporter = TellorFlexReporter(
                     oracle=tellorflex.oracle,

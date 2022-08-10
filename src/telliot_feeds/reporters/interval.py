@@ -50,6 +50,7 @@ class IntervalReporter:
         priority_fee: int = 5,
         legacy_gas_price: Optional[int] = None,
         gas_price_speed: str = "fast",
+        custom_contract_addr: Optional[str] = None,
     ) -> None:
 
         self.endpoint = endpoint
@@ -69,6 +70,10 @@ class IntervalReporter:
         self.gas_price_speed = gas_price_speed
         self.trb_usd_median_feed = trb_usd_median_feed
         self.eth_usd_median_feed = eth_usd_median_feed
+        self.custom_contract_addr = custom_contract_addr
+
+        if self.custom_contract_addr is not None:
+            self.acct_addr = to_checksum_address(self.custom_contract_addr)
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
@@ -136,11 +141,20 @@ class IntervalReporter:
         elif staker_info[0] == 0:
             logger.info("Address not yet staked. Depositing stake.")
 
+            master_address = self.master.address
+            if self.custom_contract_addr is not None:
+
+                self.master.address = self.custom_contract_addr
+                self.master.connect()
+
             _, write_status = await self.master.write(
                 func_name="depositStake",
                 gas_limit=350000,
                 legacy_gas_price=gas_price_gwei,
             )
+            # switch back to main contract incase of contract object change
+            self.master.address = master_address
+            self.master.connect()
 
             if write_status.ok:
                 return True, status
@@ -352,6 +366,10 @@ class IntervalReporter:
             return None, status
 
         # Start transaction build
+        oracle_address = self.oracle.address
+        if self.custom_contract_addr is not None:
+            self.oracle.address = self.custom_contract_addr
+            self.oracle.connect()
         submit_val_func = self.oracle.contract.get_function_by_name("submitValue")
         submit_val_tx = submit_val_func(
             _queryId=query_id,
@@ -359,6 +377,9 @@ class IntervalReporter:
             _nonce=report_count,
             _queryData=query_data,
         )
+        # switch back to main contract incase of contract object change
+        self.oracle.address = oracle_address
+        self.oracle.connect()
         acc_nonce = self.endpoint._web3.eth.get_transaction_count(address)
 
         # Add transaction type 2 (EIP-1559) data

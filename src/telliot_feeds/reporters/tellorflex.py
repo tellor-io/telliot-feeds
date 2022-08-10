@@ -52,6 +52,7 @@ class TellorFlexReporter(IntervalReporter):
         legacy_gas_price: Optional[int] = None,
         gas_price_speed: str = "safeLow",
         wait_period: int = 7,
+        custom_contract_addr: Optional[str] = None,
     ) -> None:
 
         self.endpoint = endpoint
@@ -71,11 +72,13 @@ class TellorFlexReporter(IntervalReporter):
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
-
+        self.custom_contract_addr = custom_contract_addr
+        if self.custom_contract_addr is not None:
+            self.acct_addr = to_checksum_address(self.custom_contract_addr)
         logger.info(f"Reporting with account: {self.acct_addr}")
 
         self.account: ChainedAccount = account
-        assert self.acct_addr == to_checksum_address(self.account.address)
+        # assert self.acct_addr == to_checksum_address(self.account.address)
 
     async def ensure_profitable(
         self,
@@ -100,6 +103,9 @@ class TellorFlexReporter(IntervalReporter):
             logger.error(f"Invalid gas price speed for matic gasstation: {speed}")
             return None
 
+        if prices[speed] is None:
+            logger.error("Unable to fetch gas price from matic gasstation")
+            return None
         return int(prices[speed])
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
@@ -108,10 +114,13 @@ class TellorFlexReporter(IntervalReporter):
         Returns a bool signifying whether the current address is
         staked. If the address is not initially, it attempts to deposit
         the given stake amount."""
+        logger.critical(self.acct_addr)  # remove
+        logger.critical(self.oracle.address)  # remove
         staker_info, read_status = await self.oracle.read(func_name="getStakerInfo", _staker=self.acct_addr)
 
         if (not read_status.ok) or (staker_info is None):
-            msg = "Unable to read reporters staker info"
+            msg = "Unable to read reporters staker info " + self.oracle.address
+            logger.critical(self.oracle.address)  # remove
             return False, error_status(msg, log=logger.info)
 
         (
@@ -144,24 +153,47 @@ class TellorFlexReporter(IntervalReporter):
             if gas_price_gwei is None:
                 return False, error_status("Unable to fetch matic gas price for staking", log=logger.info)
             amount = int(self.stake * 1e18) - staker_balance
+            if self.custom_contract_addr is not None:
+                tellor_oracle = self.oracle.address
+                custom_oracle = self.oracle
+                custom_oracle.address = self.custom_contract_addr
+                custom_oracle.connect()
 
-            _, write_status = await self.token.write(
-                func_name="approve",
-                gas_limit=100000,
-                legacy_gas_price=gas_price_gwei,
-                spender=self.oracle.address,
-                amount=amount,
-            )
+                _, write_status = await self.token.write(
+                    func_name="approve",
+                    gas_limit=100000,
+                    legacy_gas_price=gas_price_gwei,
+                    spender=custom_oracle.address,
+                    amount=amount,
+                )
+            else:
+                _, write_status = await self.token.write(
+                    func_name="approve",
+                    gas_limit=100000,
+                    legacy_gas_price=gas_price_gwei,
+                    spender=self.oracle.address,
+                    amount=amount,
+                )
             if not write_status.ok:
                 msg = "Unable to approve staking"
                 return False, error_status(msg, log=logger.error)
 
-            _, write_status = await self.oracle.write(
-                func_name="depositStake",
-                gas_limit=300000,
-                legacy_gas_price=gas_price_gwei,
-                _amount=amount,
-            )
+            if self.custom_contract_addr is not None:
+                _, write_status = await custom_oracle.write(
+                    func_name="depositStake",
+                    gas_limit=300000,
+                    legacy_gas_price=gas_price_gwei,
+                    _amount=amount,
+                )
+                self.oracle.address = tellor_oracle
+                self.oracle.connect()
+            else:
+                _, write_status = await self.oracle.write(
+                    func_name="depositStake",
+                    gas_limit=300000,
+                    legacy_gas_price=gas_price_gwei,
+                    _amount=amount,
+                )
             if not write_status.ok:
                 msg = (
                     "Unable to stake deposit: "
