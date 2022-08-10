@@ -57,8 +57,8 @@ def query_valid_pools(last_id: int, data_provider: str, expiry_since: Optional[i
                 }
             """ % (
         last_id,
-        expiry_since or (int(datetime.now().timestamp()) - 86400),
-        int(datetime.now().timestamp()),
+        expiry_since or (int(datetime.now().timestamp() - 10) - 86400),
+        int(datetime.now().timestamp() - 10),
         data_provider,
     )
 
