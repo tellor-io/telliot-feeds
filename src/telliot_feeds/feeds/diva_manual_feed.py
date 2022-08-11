@@ -10,5 +10,5 @@ chain_id = None
 
 diva_manual_feed = DataFeed(
     query=DIVAProtocol(poolId=pool_id, divaDiamond=diva_diamond, chainId=chain_id),  # type: ignore
-    source=DivaManualSource()
+    source=DivaManualSource(),
 )

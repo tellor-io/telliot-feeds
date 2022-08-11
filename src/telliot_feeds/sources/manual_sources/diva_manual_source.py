@@ -1,9 +1,9 @@
 from dataclasses import dataclass
+from typing import List
 
 from telliot_feeds.datasource import DataSource
-from telliot_feeds.dtypes.datapoint import OptionalDataPoint
-from typing import List
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
+from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.utils.log import get_logger
 
 
@@ -29,6 +29,7 @@ def _helper(asset_collateral: str) -> float:
 @dataclass
 class DivaManualSource(DataSource[List[float]]):
     """Datasource for Diva Protocol values"""
+
     def parse_user_val(self) -> List[float]:
         vals = ["reference asset", "collateral token"]
 

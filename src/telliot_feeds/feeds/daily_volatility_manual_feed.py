@@ -9,5 +9,5 @@ days = None
 
 daily_volatility_manual_feed = DataFeed(
     query=DailyVolatility(asset=asset, currency=currency, days=days),  # type: ignore
-    source=DailyVolatilityManualSource()
+    source=DailyVolatilityManualSource(),
 )
