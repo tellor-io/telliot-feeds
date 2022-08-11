@@ -4,7 +4,6 @@ telliot's reporters subpackage.
 """
 import asyncio
 from datetime import datetime
-from typing import Any
 from unittest import mock
 
 import pytest
@@ -61,8 +60,12 @@ async def gas_price(speed="average"):
     return 1
 
 
-async def passing():
+async def passing_status(*args, **kwargs):
     return ResponseStatus()
+
+
+async def passing_bool_w_status(*args, **kwargs):
+    return True, ResponseStatus()
 
 
 @pytest.mark.asyncio
@@ -226,13 +229,9 @@ async def test_no_updated_value(eth_usd_reporter, bad_datasource):
     # returns no updated DataPoint
     r.datafeed.source.sources = [bad_datasource]
 
-    # Override reporter profit check
-    async def profit(datafeed: DataFeed[Any]):
-        return ResponseStatus()
-
     r.fetch_gas_price = gas_price
-    r.check_reporter_lock = passing
-    r.ensure_profitable = profit
+    r.check_reporter_lock = passing_status
+    r.ensure_profitable = passing_status
 
     tx_receipt, status = await r.report_once()
 
@@ -248,7 +247,7 @@ async def test_no_token_prices_for_profit_calc(eth_usd_reporter, bad_datasource,
     r = eth_usd_reporter
 
     r.fetch_gas_price = gas_price
-    r.check_reporter_lock = passing
+    r.check_reporter_lock = passing_status
 
     # Simulate TRB/USD price retrieval failure
     r.trb_usd_median_feed.source._history.clear()
@@ -286,3 +285,38 @@ async def test_handle_contract_master_read_timeout(eth_usd_reporter):
         assert not staked
         assert not status.ok
         assert "Unable to read reporters staker status" in status.error
+
+
+@pytest.mark.asyncio
+async def test_ensure_reporter_lock_check_after_submitval_attempt(
+    monkeypatch, eth_usd_reporter, guaranteed_price_source
+):
+    r = eth_usd_reporter
+    r.last_submission_timestamp = 1234
+    r.fetch_gas_price = gas_price
+    r.ensure_staked = passing_bool_w_status
+    r.ensure_profitable = passing_status
+
+    assert r.datafeed
+
+    # Simulate fetching latest value
+    r.eth_usd_median_feed.source.sources = [guaranteed_price_source]
+    r.trb_usd_median_feed.source.sources = [guaranteed_price_source]
+    r.datafeed.source.sources = [guaranteed_price_source]
+
+    async def num_reports(*args, **kwargs):
+        return 1, ResponseStatus()
+
+    r.get_num_reports_by_id = num_reports
+
+    assert r.last_submission_timestamp == 1234
+
+    def send_failure(*args, **kwargs):
+        raise Exception("bingo")
+
+    with mock.patch("web3.eth.Eth.send_raw_transaction", side_effect=send_failure):
+        tx_receipt, status = await r.report_once()
+        assert tx_receipt is None
+        assert not status.ok
+        assert "bingo" in status.error
+        assert r.last_submission_timestamp == 0
