@@ -98,7 +98,7 @@ def get_reported_pools() -> Any:
 
 
 def update_reported_pools(
-    pools: dict[int, int], add: Optional[list[tuple[int, int]]] = None, remove: Optional[list[int]] = None
+    pools: dict[int, int], add: Optional[list[Any]] = None, remove: Optional[list[int]] = None
 ) -> None:
     """
     Remove settled pools from reported pools dict & save to pickle file in
@@ -108,7 +108,7 @@ def update_reported_pools(
 
     if add:
         for pool in add:
-            # pool is a tuple of pool_id, reported_time
+            # pool is a tuple of pool_id and [expiry_time, "not settled"]
             pools[pool[0]] = pool[1]
     if remove:
         for pool_id in remove:
