@@ -1,10 +1,13 @@
 from telliot_feeds.queries.catalog import Catalog
 from telliot_feeds.queries.daily_volatility import DailyVolatility
+from telliot_feeds.queries.diva_protocol import DIVAProtocolPolygon
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
 from telliot_feeds.queries.legacy_query import LegacyRequest
 from telliot_feeds.queries.morphware import Morphware
+from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.queries.snapshot import Snapshot
+from telliot_feeds.queries.string_query import StringQuery
 
 """Main instance of the Query Catalog."""
 query_catalog = Catalog()
@@ -131,4 +134,19 @@ query_catalog.add_entry(
     tag="eth-usd-30day_volatility",
     title="30-Day ETH/USD volatility",
     q=DailyVolatility(asset="eth", currency="usd", days=30),
+)
+query_catalog.add_entry(
+    tag="numeric-api-response-example",
+    title="Numeric API response example",
+    q=NumericApiResponse(
+        url="https://api.coingecko.com/api/v3/simple/price?ids=garlicoin&vs_currencies=usd", parseStr="garlicoin, usd"
+    ),
+)
+query_catalog.add_entry(
+    tag="diva-protocol-example",
+    title="Diva protocol example",
+    q=DIVAProtocolPolygon(poolId=1),
+)
+query_catalog.add_entry(
+    tag="string-query-example", title="String query example", q=StringQuery(text="Where is the Atlantic ocean?")
 )
