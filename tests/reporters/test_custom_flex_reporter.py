@@ -15,7 +15,7 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
-account_fake = accounts.add("0xb80e6a326098e63a16e66504eb994fbbe54000d3f54f3885fabe1eb01fac6cd6")
+account_fake = accounts.add()
 
 
 @pytest.fixture(scope="module", autouse=True)
