@@ -23,7 +23,7 @@ def diva() -> None:
     "--pool-id",
     "-pid",
     "pool_id",
-    help="pool ID for Diva Protocol on Polygon",
+    help="pool ID for Diva Protocol",
     nargs=1,
     type=int,
     required=True,

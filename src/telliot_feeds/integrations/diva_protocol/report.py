@@ -23,7 +23,7 @@ from telliot_feeds.integrations.diva_protocol.pool import query_valid_pools
 from telliot_feeds.integrations.diva_protocol.utils import filter_valid_pools
 from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
 from telliot_feeds.integrations.diva_protocol.utils import update_reported_pools
-from telliot_feeds.queries.diva_protocol import DIVAProtocolPolygon
+from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 from telliot_feeds.utils.log import get_logger
 
@@ -48,7 +48,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
         """
         unreported_pools = []
         for pool in pools:
-            query = DIVAProtocolPolygon(poolId=pool.pool_id)
+            query = DIVAProtocol(
+                poolId=pool.pool_id, divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211", chainId=3
+            )
             report_count, read_status = await self.get_num_reports_by_id(query.query_id)
 
             if not read_status.ok:
