@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import Optional
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
@@ -10,31 +10,41 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-def get_price_from_user(symbol: str) -> float:
+def get_price_from_user(param: str) -> float:
     """Parse price from user input."""
-    symbol_price = None
-    print(f"Type price of {symbol} and press [ENTER]")
+    param_price = None
+    print(f"Type price of {param} and press [ENTER]")
 
-    while symbol_price is None:
+    while param_price is None:
         inpt = input()
         try:
             price = float(inpt)
         except ValueError:
-            print(f"Invalid {symbol} price input. Enter decimal value (float).")
+            print(f"Invalid {param} price input. Enter decimal value (float).")
+            continue
+        if price < 0:
+            print(f"Invalid {param} price input. Number must greater than 0.")
             continue
 
-        symbol_price = price
-    return symbol_price
+        param_price = price
+    return param_price
 
 
 @dataclass
-class DivaManualSource(DataSource[List[float]]):
+class DivaManualSource(DataSource[list[float]]):
     """Datasource for Diva Protocol values"""
+    reference_asset: Optional[str] = None
+    collateral_token: Optional[str] = None
 
-    def parse_user_val(self) -> List[float]:
-        vals = ["reference asset", "collateral token"]
+    def parse_user_val(self) -> list[float]:
+        """Parse user input and return list of prices."""
+        if self.reference_asset is None and self.collateral_token is None:
+            params = ["reference asset", "collateral token"]
+        else:
+            params = [self.reference_asset, self.collateral_token]
 
-        prices = [get_price_from_user(i) for i in vals]
+
+        prices = [get_price_from_user(i) for i in params]
 
         with_precision = [int(i * 1e18) for i in prices]
         print(
@@ -47,7 +57,7 @@ class DivaManualSource(DataSource[List[float]]):
 
         return prices
 
-    async def fetch_new_datapoint(self) -> OptionalDataPoint[List[float]]:
+    async def fetch_new_datapoint(self) -> OptionalDataPoint[list[float]]:
         """Update current value with time-stamped value fetched from user input.
 
         Returns:
