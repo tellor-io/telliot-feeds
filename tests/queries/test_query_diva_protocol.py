@@ -3,10 +3,9 @@
 Copyright (c) 2021-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
+import pytest
 from eth_abi import decode_abi
 from eth_abi import encode_abi
-
-import pytest
 
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 
@@ -52,8 +51,8 @@ def test_constructor():
 
 def test_constructor_error():
     with pytest.raises(ValueError) as excinfo:
-        q = DIVAProtocol(poolId=1234, divaDiamond="blah", chainId=3)
-    
+        _ = DIVAProtocol(poolId=1234, divaDiamond="blah", chainId=3)
+
     assert "when sending a str, it must be a hex string. Got: 'blah'" in str(excinfo.value)
 
 
