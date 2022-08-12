@@ -8,6 +8,8 @@ from chained_accounts import find_accounts
 from click.core import Context
 from eth_utils import to_checksum_address
 from telliot_core.cli.utils import async_run
+from telliot_core.contract.contract import Contract
+from telliot_core.directory import ContractInfo
 
 from telliot_feeds.cli.utils import build_feed_from_input
 from telliot_feeds.cli.utils import reporter_cli_core
@@ -17,6 +19,8 @@ from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
 from telliot_feeds.queries.query_catalog import query_catalog
+from telliot_feeds.reporters.custom_flex_reporter import CustomFlexReporter
+from telliot_feeds.reporters.custom_reporter import CustomXReporter
 from telliot_feeds.reporters.flashbot import FlashbotsReporter
 from telliot_feeds.reporters.interval import IntervalReporter
 from telliot_feeds.reporters.rng_interval import RNGReporter
@@ -236,14 +240,15 @@ def reporter() -> None:
     default=False,
 )
 @click.option(
-    "--contract-reporter",
-    "-reporter",
-    "contract_reporter",
-    help="To use a contract reporter instead of oracle",
+    "--custom-contract",
+    "-custom",
+    "custom_contract_reporter",
+    help="Use a custom contract to report to oracle",
     nargs=1,
     default=None,
     type=str,
 )
+@click.option("--binary-interface", "-abi", "abi", nargs=1, default=None, type=str)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pwd", "--password", type=str)
@@ -270,33 +275,28 @@ async def report(
     rng_auto: bool,
     oracle_address: str,
     autopay_address: str,
-    contract_reporter: Optional[str],
+    custom_contract_reporter: Optional[str],
+    abi: Optional[str],
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
     expected_profit = parse_profit_input(expected_profit)  # type: ignore
     if expected_profit is None:
         return
-    try:
-        if oracle_address is not None:
+
+    if oracle_address:
+        try:
             oracle_address = to_checksum_address(oracle_address)
-    except ValueError:
-        click.echo(f"contract address must be a hex string. Got: {oracle_address}")
-        return
+        except ValueError:
+            click.echo(f"contract address must be a hex string. Got: {oracle_address}")
+            return
 
-    try:
-        if autopay_address is not None:
+    if autopay_address:
+        try:
             autopay_address = to_checksum_address(autopay_address)
-    except ValueError:
-        click.echo(f"contract address must be a hex string. Got: {autopay_address}")
-        return
-
-    try:
-        if contract_reporter is not None:
-            contract_reporter = to_checksum_address(contract_reporter)
-    except ValueError:
-        click.echo(f"contract address must be a hex string. Got: {contract_reporter}")
-        return
+        except ValueError:
+            click.echo(f"contract address must be a hex string. Got: {autopay_address}")
+            return
 
     assert tx_type in (0, 2)
 
@@ -333,6 +333,23 @@ async def report(
             sig_acct_addr = ""  # type: ignore
 
         cid = core.config.main.chain_id
+
+        if custom_contract_reporter:
+            try:
+                custom_contract_reporter = to_checksum_address(custom_contract_reporter)
+            except ValueError:
+                click.echo(f"contract address must be a hex string. Got: {custom_contract_reporter}")
+                return
+            if abi is None:
+                try:
+                    abi = ContractInfo(
+                        name=None, org=None, address={int(core.config.main.chain_id): custom_contract_reporter}
+                    ).get_abi(chain_id=core.config.main.chain_id)
+                except Exception:
+                    print("Unable to fetch contract abi, consider adding abi using -abi flag!")
+                    return
+            custom_contract = Contract(custom_contract_reporter, abi, core.endpoint, account)
+            custom_contract.connect()
 
         # If we need to build a datafeed
         if build_feed:
@@ -387,7 +404,6 @@ async def report(
             "legacy_gas_price": legacy_gas_price,
             "gas_price_speed": gas_price_speed,
             "chain_id": cid,
-            "custom_contract_addr": contract_reporter,
         }
 
         # Report to Polygon TellorFlex
@@ -397,9 +413,11 @@ async def report(
             tellorflex = core.get_tellorflex_contracts()
             if oracle_address:
                 tellorflex.oracle.address = oracle_address
+                tellorflex.oracle.connect()
 
             if autopay_address:
                 tellorflex.autopay.address = autopay_address
+                tellorflex.autopay.connect()
 
             # Type 2 transactions unsupported currently
             common_reporter_kwargs["transaction_type"] = 0
@@ -424,6 +442,17 @@ async def report(
                     wait_period=wait_period,
                     **common_reporter_kwargs,
                 )  # type: ignore
+            elif custom_contract_reporter:
+                reporter = CustomFlexReporter(
+                    custom_contract=custom_contract,
+                    oracle=tellorflex.oracle,
+                    token=tellorflex.token,
+                    autopay=tellorflex.autopay,
+                    stake=stake,
+                    expected_profit=expected_profit,
+                    wait_period=wait_period,
+                    **common_reporter_kwargs,
+                )  # type: ignore
             else:
                 reporter = TellorFlexReporter(
                     oracle=tellorflex.oracle,
@@ -437,11 +466,9 @@ async def report(
         # Report to TellorX
         else:
             tellorx = core.get_tellorx_contracts()
-            if oracle_address is not None:
-                tellorflex.oracle.address = oracle_address
-
-            if autopay_address is not None:
-                tellorflex.autopay.address = autopay_address
+            if oracle_address:
+                tellorx.oracle.address = oracle_address
+                tellorx.oracle.connect()
 
             tellorx_reporter_kwargs = {
                 "master": tellorx.master,
@@ -454,6 +481,11 @@ async def report(
                 reporter = FlashbotsReporter(
                     **tellorx_reporter_kwargs,
                     signature_account=sig_account,
+                )  # type: ignore
+            elif custom_contract_reporter:
+                reporter = CustomXReporter(
+                    custom_contract=custom_contract,
+                    **tellorx_reporter_kwargs,
                 )  # type: ignore
             else:
                 reporter = IntervalReporter(**tellorx_reporter_kwargs)  # type: ignore
