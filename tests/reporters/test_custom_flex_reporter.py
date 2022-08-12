@@ -2,6 +2,7 @@ import pytest
 import pytest_asyncio
 from brownie import accounts
 from brownie import SampleFlexReporter
+from telliot_core.apps.core import ChainedAccount
 from telliot_core.apps.core import Contract
 from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
@@ -15,7 +16,13 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
-account_fake = accounts.add()
+account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
+try:
+    account = ChainedAccount("fake").add(
+        "fake", 80001, "023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9"
+    )
+except Exception:
+    account = ChainedAccount("fake")
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -40,7 +47,6 @@ async def custom_reporter(
     mock_reporter_contract,
 ):
     async with TelliotCore(config=mumbai_test_cfg) as core:
-        account = core.get_account()
         custom_contract = Contract(mock_reporter_contract.address, mock_reporter_contract.abi, core.endpoint, account)
         custom_contract.connect()
         flex = core.get_tellorflex_contracts()
