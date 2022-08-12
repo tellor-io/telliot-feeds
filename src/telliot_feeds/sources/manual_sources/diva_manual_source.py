@@ -33,16 +33,15 @@ def get_price_from_user(param: str) -> float:
 @dataclass
 class DivaManualSource(DataSource[list[float]]):
     """Datasource for Diva Protocol values"""
+
     reference_asset: Optional[str] = None
     collateral_token: Optional[str] = None
 
     def parse_user_val(self) -> list[float]:
         """Parse user input and return list of prices."""
-        if self.reference_asset is None and self.collateral_token is None:
-            params = ["reference asset", "collateral token"]
-        else:
-            params = [self.reference_asset, self.collateral_token]
-
+        params = ["reference asset", "collateral token"]
+        params[0] = self.reference_asset if self.reference_asset is not None else params[0]
+        params[1] = self.collateral_token if self.collateral_token is not None else params[1]
 
         prices = [get_price_from_user(i) for i in params]
 

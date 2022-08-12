@@ -1,8 +1,7 @@
 from datetime import datetime
+from unittest import mock
 
 import pytest
-
-from unittest import mock
 
 from telliot_feeds.sources.manual_sources.diva_manual_source import DivaManualSource
 
