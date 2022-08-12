@@ -1,6 +1,6 @@
 from telliot_feeds.queries.catalog import Catalog
 from telliot_feeds.queries.daily_volatility import DailyVolatility
-from telliot_feeds.queries.diva_protocol import DIVAProtocolPolygon
+from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
 from telliot_feeds.queries.legacy_query import LegacyRequest
 from telliot_feeds.queries.morphware import Morphware
@@ -145,7 +145,7 @@ query_catalog.add_entry(
 query_catalog.add_entry(
     tag="diva-protocol-example",
     title="Diva protocol example",
-    q=DIVAProtocolPolygon(poolId=1),
+    q=DIVAProtocol(poolId=1234, divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211", chainId=3),
 )
 query_catalog.add_entry(
     tag="string-query-example", title="String query example", q=StringQuery(text="Where is the Atlantic ocean?")

@@ -7,7 +7,7 @@ from telliot_core.apps.core import TelliotCore
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
-from telliot_feeds.queries.diva_protocol import DIVAProtocolPolygon
+from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.sources.price.historical.poloniex import (
     PoloniexHistoricalPriceSource,
 )
@@ -51,7 +51,7 @@ async def test_diva_datafeed(ropsten_test_cfg, diva_mock_contract) -> None:
         )
 
         assert isinstance(feed, DataFeed)
-        assert isinstance(feed.query, DIVAProtocolPolygon)
+        assert isinstance(feed.query, DIVAProtocol)
         assert isinstance(feed.source.sources[3], PoloniexHistoricalPriceSource)
         assert isinstance(feed.source.sources[0].ts, int)
         assert feed.source.asset == "eth"
