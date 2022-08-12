@@ -10,20 +10,21 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-def _helper(asset_collateral: str) -> float:
-    asset_collateral_price = None
-    print(f"Type price of the {asset_collateral} and press [ENTER]")
+def get_price_from_user(symbol: str) -> float:
+    """Parse price from user input."""
+    symbol_price = None
+    print(f"Type price of {symbol} and press [ENTER]")
 
-    while asset_collateral_price is None:
+    while symbol_price is None:
         inpt = input()
         try:
             price = float(inpt)
         except ValueError:
-            print(f"Invalid {asset_collateral} price input. Enter decimal value (float).")
+            print(f"Invalid {symbol} price input. Enter decimal value (float).")
             continue
 
-        asset_collateral_price = price
-    return asset_collateral_price
+        symbol_price = price
+    return symbol_price
 
 
 @dataclass
@@ -33,7 +34,7 @@ class DivaManualSource(DataSource[List[float]]):
     def parse_user_val(self) -> List[float]:
         vals = ["reference asset", "collateral token"]
 
-        prices = [_helper(i) for i in vals]
+        prices = [get_price_from_user(i) for i in vals]
 
         with_precision = [int(i * 1e18) for i in prices]
         print(
