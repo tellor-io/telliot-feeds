@@ -66,7 +66,13 @@ def block_num_from_timestamp(timestamp: int) -> Optional[int]:
             logger.error("Etherscan API returned JSON without status")
             return None
 
-        return int(this_block["result"])
+        try:
+            result = int(this_block["result"])
+        except ValueError:
+            logger.error("Etherscan API returned invalid block number")
+            return None
+
+        return result
 
 
 async def get_eth_hash(timestamp: int) -> Optional[str]:
