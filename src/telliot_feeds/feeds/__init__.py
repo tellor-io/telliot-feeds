@@ -6,6 +6,8 @@ from telliot_feeds.feeds.ampl_usd_vwap_feed import ampl_usd_vwap_feed
 from telliot_feeds.feeds.bct_usd_feed import bct_usd_median_feed
 from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feeds.feeds.dai_usd_feed import dai_usd_median_feed
+from telliot_feeds.feeds.daily_volatility_manual_feed import daily_volatility_manual_feed
+from telliot_feeds.feeds.diva_manual_feed import diva_manual_feed
 from telliot_feeds.feeds.eth_jpy_feed import eth_jpy_median_feed
 from telliot_feeds.feeds.eth_usd_30day_volatility import eth_usd_30day_volatility
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
@@ -67,7 +69,7 @@ CATALOG_FEEDS = {
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "SpotPrice": spot_price_manual_feed,
     # "apiquery",
-    # "divaprotocolpolygon",
+    "DivaProtocol": diva_manual_feed,
     "SnapshotOracle": snapshot_manual_feed,
     "GasPriceOracle": gas_price_oracle_feed,
     "NumericApiResponse": numeric_api_response_feed,
@@ -76,6 +78,6 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "NumericApiResponse": numeric_api_response_feed,  # this build will parse and submit response value automatically
     "LegacyRequest": legacy_request_manual_feed,
     "TWAP": twap_manual_feed,
-    # DailyVolatility,
+    "DailyVolatility": daily_volatility_manual_feed,
     # "morphware",
 }

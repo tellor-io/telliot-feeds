@@ -63,7 +63,7 @@ class DivaSource(DataSource[Any]):
 
         self.store_datapoint(datapoint)
 
-        logger.info(f"Stored DIVAProtocolPolygon query response at {dt}: {data}")
+        logger.info(f"Stored DIVAProtocol query response at {dt}: {data}")
 
         return datapoint
 

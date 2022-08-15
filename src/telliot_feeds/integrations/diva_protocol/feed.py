@@ -8,7 +8,7 @@ from telliot_feeds.integrations.diva_protocol.pool import DivaPool
 from telliot_feeds.integrations.diva_protocol.sources import DivaSource
 from telliot_feeds.integrations.diva_protocol.sources import get_historical_price_source
 from telliot_feeds.integrations.diva_protocol.utils import parse_reference_asset
-from telliot_feeds.queries.diva_protocol import DIVAProtocolPolygon
+from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.utils.log import get_logger
 
 
@@ -50,7 +50,7 @@ def assemble_diva_datafeed(
     source.collat_token_source = collat_token_source
 
     feed = DataFeed(
-        query=DIVAProtocolPolygon(pool.pool_id),
+        query=DIVAProtocol(pool.pool_id, divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211", chainId=3),
         source=source,
     )
 

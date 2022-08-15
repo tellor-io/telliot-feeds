@@ -1,8 +1,11 @@
 import logging
 from dataclasses import dataclass
+from typing import Optional
+from typing import Union
 
 from eth_abi import decode_abi
 from eth_abi import encode_abi
+from eth_utils import to_checksum_address
 
 from telliot_feeds.dtypes.value_type import ValueType
 from telliot_feeds.queries.abi_query import AbiQuery
@@ -35,32 +38,65 @@ class DIVAReturnType(ValueType):
 
 
 @dataclass
-class DIVAProtocolPolygon(AbiQuery):
-    """Returns the result for a given option ID (a specific prediction market) on the
-    Diva Protocol on Polygon.
+class DIVAProtocol(AbiQuery):
+    """Returns the result for a given option ID (a specific prediction market),
+    contract address (containing the relevant pool), and
+    chain id to identify the network.
 
     Attributes:
         poolId:
             Specifies the requested data a of a valid prediction market that's ready to
-            be settled on the Diva Protocol, on the Polygon network.
+            be settled on the Diva Protocol.
+
+        divaDiamond:
+            Contract address where the selected pool id exists.
+            Example: "0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211"
+
+        chainId:
+            Network identifier
 
             More about this query:
-            https://github.com/tellor-io/dataSpecs/blob/main/types/DIVAProtocolPolygon.md
+            https://github.com/tellor-io/dataSpecs/blob/main/types/DIVAProtocol.md
 
             More about Diva Protocol:
             https://divaprotocol.io
     """
 
-    poolId: int
+    poolId: Optional[int] = None
+    divaDiamond: Optional[Union[str, bytes]] = None
+    chainId: Optional[int] = None
 
     #: ABI used for encoding/decoding parameters
-    abi = [{"name": "poolId", "type": "uint256"}]
+    abi = [
+        {
+            "type": "uint256",
+            "name": "poolId",
+        },
+        {
+            "type": "address",
+            "name": "divaDiamond",
+        },
+        {
+            "type": "uint256",
+            "name": "chainId",
+        },
+    ]
+
+    def __post_init__(self) -> None:
+        """Validate parameters."""
+        parameters_set = (
+            self.poolId is not None,
+            self.divaDiamond is not None,
+            self.chainId is not None,
+        )
+        if all(parameters_set):
+            self.divaDiamond = to_checksum_address(self.divaDiamond)  # type: ignore
 
     @property
     def value_type(self) -> DIVAReturnType:
-        """Data type returned for a DIVAProtocolPolygon query.
+        """Data type returned for a DIVAProtocol query.
 
-        - `ufixed256x18`: 256-bit unsigned integer with 18 decimals of precision
+        - `(ufixed256x18,ufixed256x18)`: 2x256-bit unsigned integer with 18 decimals of precision
         - `packed`: false
         """
         return DIVAReturnType(abi_type="(ufixed256x18,ufixed256x18)", packed=False)
