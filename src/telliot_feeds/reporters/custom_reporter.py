@@ -1,4 +1,3 @@
-import asyncio
 from typing import Any
 from typing import Optional
 from typing import Tuple
@@ -39,7 +38,7 @@ class CustomXReporter(IntervalReporter):
         master: Contract,
         oracle: Contract,
         datafeed: Optional[DataFeed[Any]] = None,
-        expected_profit: Union[str, float] = 100,
+        expected_profit: Union[str, float] = 100.0,
         transaction_type: int = 0,
         gas_limit: int = 350000,
         max_fee: Optional[int] = None,
@@ -47,26 +46,25 @@ class CustomXReporter(IntervalReporter):
         legacy_gas_price: Optional[int] = None,
         gas_price_speed: str = "fast",
     ) -> None:
-        super().__init__(
-            endpoint,
-            account,
-            chain_id,
-            master,
-            oracle,
-            datafeed,
-            expected_profit,
-            transaction_type,
-            gas_limit,
-            max_fee,
-            priority_fee,
-            legacy_gas_price,
-            gas_price_speed,
-        )
-        self.custom_contract = custom_contract
-        self.eth_usd_median_feed = eth_usd_median_feed
-        self.trb_usd_median_feed = trb_usd_median_feed
 
-        logger.info(f"Reporting with account: {self.acct_addr}")
+        self.endpoint = endpoint
+        self.account = account
+        self.master = master
+        self.oracle = oracle
+        self.datafeed = datafeed
+        self.chain_id = chain_id
+        self.acct_addr = to_checksum_address(custom_contract.address)
+        self.last_submission_timestamp = 0
+        self.expected_profit = expected_profit
+        self.transaction_type = transaction_type
+        self.gas_limit = gas_limit
+        self.max_fee = max_fee
+        self.priority_fee = priority_fee
+        self.legacy_gas_price = legacy_gas_price
+        self.gas_price_speed = gas_price_speed
+        self.trb_usd_median_feed = trb_usd_median_feed
+        self.eth_usd_median_feed = eth_usd_median_feed
+        self.custom_contract = custom_contract
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked
@@ -192,7 +190,6 @@ class CustomXReporter(IntervalReporter):
             _nonce=report_count,
             _queryData=query_data,
         )
-
         acc_nonce = self.endpoint._web3.eth.get_transaction_count(address)
 
         # Add transaction type 2 (EIP-1559) data
@@ -236,6 +233,9 @@ class CustomXReporter(IntervalReporter):
         local_account = self.account.local_account
         tx_signed = local_account.sign_transaction(built_submit_val_tx)
 
+        # Ensure reporter lock is checked again after attempting to submit val
+        self.last_submission_timestamp = 0
+
         try:
             logger.debug("Sending submitValue transaction")
             tx_hash = self.endpoint._web3.eth.send_raw_transaction(tx_signed.rawTransaction)
@@ -258,18 +258,8 @@ class CustomXReporter(IntervalReporter):
             return None, error_status(note, log=logger.error, e=e)
 
         if status.ok and not status.error:
-            # Reset previous submission timestamp
-            self.last_submission_timestamp = 0
-            # Point to relevant explorer
             logger.info(f"View reported data: \n{tx_url}")
         else:
             logger.error(status)
 
         return tx_receipt, status
-
-    async def report(self) -> None:
-        """Submit latest values to the TellorX oracle every 12 hours."""
-
-        while True:
-            _, _ = await self.report_once()
-            await asyncio.sleep(7)

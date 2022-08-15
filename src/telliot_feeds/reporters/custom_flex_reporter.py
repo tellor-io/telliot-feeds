@@ -1,5 +1,4 @@
 """TellorFlex compatible reporters"""
-import asyncio
 from typing import Any
 from typing import Optional
 from typing import Tuple
@@ -27,14 +26,14 @@ class CustomFlexReporter(TellorFlexReporter):
 
     def __init__(
         self,
-        custom_contract: Contract,
         endpoint: RPCEndpoint,
         account: ChainedAccount,
         chain_id: int,
         oracle: Contract,
         token: Contract,
         autopay: Contract,
-        stake: float = 10,
+        custom_contract: Contract,
+        stake: float = 10.0,
         datafeed: Optional[DataFeed[Any]] = None,
         expected_profit: Union[str, float] = "YOLO",
         transaction_type: int = 2,
@@ -45,25 +44,28 @@ class CustomFlexReporter(TellorFlexReporter):
         gas_price_speed: str = "safeLow",
         wait_period: int = 7,
     ) -> None:
-        super().__init__(
-            endpoint,
-            account,
-            chain_id,
-            oracle,
-            token,
-            autopay,
-            stake,
-            datafeed,
-            expected_profit,
-            transaction_type,
-            gas_limit,
-            max_fee,
-            priority_fee,
-            legacy_gas_price,
-            gas_price_speed,
-            wait_period,
-        )
+
+        self.endpoint = endpoint
+        self.oracle = oracle
+        self.token = token
+        self.autopay = autopay
         self.custom_contract = custom_contract
+        self.stake = stake
+        self.datafeed = datafeed
+        self.chain_id = chain_id
+        self.acct_addr = custom_contract.address
+        self.last_submission_timestamp = 0
+        self.expected_profit = expected_profit
+        self.transaction_type = transaction_type
+        self.gas_limit = gas_limit
+        self.max_fee = max_fee
+        self.wait_period = wait_period
+        self.priority_fee = priority_fee
+        self.legacy_gas_price = legacy_gas_price
+        self.gas_price_speed = gas_price_speed
+        logger.info(f"Reporting with account: {self.acct_addr}")
+
+        self.account: ChainedAccount = account
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked.
@@ -277,10 +279,3 @@ class CustomFlexReporter(TellorFlexReporter):
             logger.error(status)
 
         return tx_receipt, status
-
-    async def report(self) -> None:
-        """Submit latest values to the TellorFlex oracle."""
-
-        while True:
-            _, _ = await self.report_once()
-            await asyncio.sleep(self.wait_period)
