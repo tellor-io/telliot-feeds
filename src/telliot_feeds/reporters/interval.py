@@ -402,6 +402,9 @@ class IntervalReporter:
         local_account = self.account.local_account
         tx_signed = local_account.sign_transaction(built_submit_val_tx)
 
+        # Ensure reporter lock is checked again after attempting to submit val
+        self.last_submission_timestamp = 0
+
         try:
             logger.debug("Sending submitValue transaction")
             tx_hash = self.endpoint._web3.eth.send_raw_transaction(tx_signed.rawTransaction)
@@ -424,9 +427,6 @@ class IntervalReporter:
             return None, error_status(note, log=logger.error, e=e)
 
         if status.ok and not status.error:
-            # Reset previous submission timestamp
-            self.last_submission_timestamp = 0
-            # Point to relevant explorer
             logger.info(f"View reported data: \n{tx_url}")
         else:
             logger.error(status)

@@ -38,7 +38,6 @@ def validate_price(v, t):
     print(t)
 
 
-@pytest.mark.skip("failing when run with unrelated tests")
 @pytest.mark.asyncio
 async def test_kraken_get_price():
     """Retrieve singular price close to given timestamp."""
@@ -49,7 +48,6 @@ async def test_kraken_get_price():
     validate_price(v, t)
 
 
-@pytest.mark.skip("failing when run with unrelated tests")
 @pytest.mark.asyncio
 async def test_kraken_get_trades():
     """Retrieve all price data given a timestamp and surrounding time period."""
@@ -84,15 +82,19 @@ async def test_kraken_get_trades():
 @pytest.mark.asyncio
 async def test_poloniex_get_price():
     """Retrieve single historical price close to given timestamp."""
-    v, t = await PoloniexHistoricalPriceService().get_price("eth", "dai", ts=1645813159)
+    six_hours = 60 * 60 * 6  # seconds
+    v, t = await PoloniexHistoricalPriceService().get_price("eth", "tusd", period=six_hours, ts=1647782323)
     validate_price(v, t)
 
-    v, t = await PoloniexHistoricalPriceService().get_price("eth", "tusd", ts=1645822159)
+    # Returns {"code": 500, "message": "System error"} for dai...
+    # v, t = await PoloniexHistoricalPriceService().get_price("eth", "dai", ts=1645822159)
+    # validate_price(v, t)
 
-    v, t = await PoloniexHistoricalPriceService().get_price("btc", "dai", ts=1645813159)
-    validate_price(v, t)
+    # v, t = await PoloniexHistoricalPriceService().get_price("btc", "dai", ts=1645813159)
+    # validate_price(v, t)
 
     v, t = await PoloniexHistoricalPriceService().get_price("btc", "tusd", ts=1645822159)
+    validate_price(v, t)
 
 
 @pytest.mark.asyncio

@@ -96,17 +96,17 @@ class PoloniexHistoricalPriceService:
         d = self.get_url(request_url)
         trades = []
 
-        if "error" in d:
+        if "error" in str(d):
             logger.error(d)
             return None, None
 
         elif "response" in d:
             rsp = d["response"]
-            if type(rsp) == dict and "error" in rsp:
-                logger.error(f'Error in poloniex response: {rsp["error"]}')
+            if isinstance(rsp, list):
+                trades = rsp
+            else:
+                logger.error(f"Unexpected response type: {type(rsp)}")
                 return None, None
-            trades = rsp
-
         else:
             raise Exception("Invalid response from get_url")
 

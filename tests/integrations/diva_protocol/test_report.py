@@ -29,6 +29,7 @@ def mock_diva_contract():
     return accounts[0].deploy(DIVAProtocolMock)
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_diva_protocol_reporter_submit_once(
     ropsten_test_cfg,

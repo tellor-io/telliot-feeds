@@ -23,7 +23,7 @@ from telliot_feeds.integrations.diva_protocol.pool import query_valid_pools
 from telliot_feeds.integrations.diva_protocol.utils import filter_valid_pools
 from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
 from telliot_feeds.integrations.diva_protocol.utils import update_reported_pools
-from telliot_feeds.queries.diva_protocol import DIVAProtocolPolygon
+from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 from telliot_feeds.utils.log import get_logger
 
@@ -48,7 +48,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
         """
         unreported_pools = []
         for pool in pools:
-            query = DIVAProtocolPolygon(poolId=pool.pool_id)
+            query = DIVAProtocol(
+                poolId=pool.pool_id, divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211", chainId=3
+            )
             report_count, read_status = await self.get_num_reports_by_id(query.query_id)
 
             if not read_status.ok:
@@ -67,8 +69,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
         """Fetch datafeed"""
         # fetch pools from DIVA subgraph
         query = query_valid_pools(
-            last_id=49100,
-            data_provider="0x245b8abbc1b70b370d1b81398de0a7920b25e7ca",  # diva oracle
+            last_id=50000,
+            # data_provider="0x245b8abbc1b70b370d1b81398de0a7920b25e7ca",  # diva oracle
+            data_provider="0x638c4aB660A9af1E6D79491462A0904b3dA78bB2",  # DivaTellorOracle (middleware) contract
         )
         pools = await fetch_from_subgraph(
             query=query,
@@ -87,6 +90,8 @@ class DIVAProtocolReporter(TellorFlexReporter):
 
         # choose a pool to report for (fake profit calculation, just choose 1st)
         pool = unreported_pools[0]
+        logger.info(f"Reporting pool expiry time: {pool.expiry_time}")
+        logger.info(f"Current time: {int(time.time())}")
 
         # create datafeed
         datafeed = assemble_diva_datafeed(pool)
@@ -97,7 +102,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
         self.datafeed = datafeed
         return datafeed
 
-    async def settle_pool(self, pool: DivaPool) -> ResponseStatus:
+    async def settle_pool(self, pool_id: int) -> ResponseStatus:
         """Settle pool"""
         if not self.legacy_gas_price:
             gas_price = await self.fetch_gas_price(self.gas_price_speed)
@@ -107,14 +112,12 @@ class DIVAProtocolReporter(TellorFlexReporter):
         else:
             gas_price = self.legacy_gas_price
 
-        status = await self.middleware_contract.set_final_reference_value(
-            pool_id=pool.pool_id, legacy_gas_price=gas_price
-        )
+        status = await self.middleware_contract.set_final_reference_value(pool_id=pool_id, legacy_gas_price=gas_price)
         if status is not None and status.ok:
-            logger.info(f"Pool {pool.pool_id} settled.")
+            logger.info(f"Pool {pool_id} settled.")
             return status
         else:
-            msg = f"Unable to settle pool: {pool.pool_id}"
+            msg = f"Unable to settle pool: {pool_id}"
             return error_status(note=msg, log=logger.warning)
 
     async def settle_pools(self) -> ResponseStatus:
@@ -136,13 +139,22 @@ class DIVAProtocolReporter(TellorFlexReporter):
             return error_status(note="Unable to get min period undisputed from middleware contract", log=logger.warning)
 
         # Settle pools
-        for pool_id, time_submitted in reported_pools.items():
+        for pool_id, (time_submitted, pool_status) in reported_pools.items():
+            if pool_status == "settled":
+                continue
+            if pool_status == "error":
+                continue
             # if current time is greater than time_submitted + settle_period, settle pool
-            if time_submitted + self.settle_period < time.time():
-                logger.info(f"Settling pool {pool_id}")
+            cur_time = int(time.time())
+            if (time_submitted + self.settle_period + 10) < cur_time:
+                logger.info(
+                    f"Settling pool {pool_id} reported at {time_submitted} given "
+                    f"current time {cur_time} and settle period {self.settle_period} plus 10 sec"
+                )
                 status = await self.settle_pool(pool_id)
                 if not status.ok:
                     logger.error(f"Unable to settle pool {status.error}")
+                    reported_pools[pool_id] = [time_submitted, "error"]
                     continue
                 del reported_pools[pool_id]
 
@@ -274,8 +286,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
             self.last_submission_timestamp = 0
             # Update reported pools
             pools = get_reported_pools()
-            update_reported_pools(pools=pools, add=[(datafeed.query.poolId, int(time.time()))])
-            logger.info(f"View reported data: \n{tx_url}")
+            cur_time = int(time.time())
+            update_reported_pools(pools=pools, add=[[datafeed.query.poolId, [cur_time, "not settled"]]])
+            logger.info(f"View reported data at timestamp {cur_time}: \n{tx_url}")
         else:
             logger.error(status)
 

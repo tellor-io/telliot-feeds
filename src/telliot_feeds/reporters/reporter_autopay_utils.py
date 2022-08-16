@@ -315,21 +315,24 @@ async def get_feed_tip(query: bytes, autopay: TellorFlexAutopayContract) -> Opti
         msg = "can't suggest feed, autopay contract not connected"
         error_status(note=msg, log=logger.critical)
         return None
-    try:
-        single_query = {query: CATALOG_QUERY_IDS[query]}
-    except KeyError:
-        qtype_name, _ = decode_single("(string,bytes)", query)
+
+    if query in CATALOG_QUERY_IDS:
+        query_id = query
+        single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
+    else:
+        try:
+            query_data = query
+            qtype_name, _ = decode_single("(string,bytes)", query_data)
+        except OverflowError:
+            logger.warning("Query data not available to decode")
+            return None
         if qtype_name not in Registry.registry:
             logger.warning(f"Unsupported query type: {qtype_name}")
             return None
         else:
-            query = Web3.keccak(query)
-            CATALOG_QUERY_IDS[query] = query.hex()
-            single_query = {query: CATALOG_QUERY_IDS[query]}
-    except Exception as e:
-        msg = f"Error fetching feed tips for query id: {query.hex()}"
-        error_status(note=msg, log=logger.warning, e=e)
-        return None
+            query_id = Web3.keccak(query_data)
+            CATALOG_QUERY_IDS[query_id] = query_id.hex()
+            single_query = {query_id: CATALOG_QUERY_IDS[query_id]}
 
     autopay_calls = AutopayCalls(autopay, catalog=single_query)
     feed_tips = await get_continuous_tips(autopay, autopay_calls)
@@ -338,7 +341,12 @@ async def get_feed_tip(query: bytes, autopay: TellorFlexAutopayContract) -> Opti
         msg = "No feeds available for query id"
         logger.warning(msg)
         return tips
-    tips = feed_tips[CATALOG_QUERY_IDS[query]]
+    try:
+        tips = feed_tips[CATALOG_QUERY_IDS[query_id]]
+    except KeyError:
+        msg = f"Tips for {CATALOG_QUERY_IDS[query_id]} not showing"
+        logger.warning(CATALOG_QUERY_IDS[query_id])
+        return None
     return tips
 
 

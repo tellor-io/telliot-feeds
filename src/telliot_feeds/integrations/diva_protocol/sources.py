@@ -1,4 +1,3 @@
-import random
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
@@ -27,13 +26,13 @@ class dUSDSource(DataSource[Any]):
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
         """Fetch fake data"""
-        data = random.uniform(419, 421)
+        price = 1.0
         dt = datetime_now_utc()
-        datapoint = (data, dt)
+        datapoint = (price, dt)
 
         self.store_datapoint(datapoint)
 
-        logger.info(f"Stored fake price for DIVA USD at {dt}: {data}")
+        logger.info(f"Stored fake price for DIVA USD at {dt}: {price}")
 
         return datapoint
 
@@ -64,7 +63,7 @@ class DivaSource(DataSource[Any]):
 
         self.store_datapoint(datapoint)
 
-        logger.info(f"Stored DIVAProtocolPolygon query response at {dt}: {data}")
+        logger.info(f"Stored DIVAProtocol query response at {dt}: {data}")
 
         return datapoint
 

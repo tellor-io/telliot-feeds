@@ -299,7 +299,7 @@ async def report(
             except KeyError:
                 click.echo(f"No corresponding datafeed found for query tag: {query_tag}\n")
                 return
-        elif reporting_diva_protocol is not None:
+        elif reporting_diva_protocol:
             if not valid_diva_chain(chain_id=cid):
                 click.echo("Diva Protocol not supported for this chain")
                 return
