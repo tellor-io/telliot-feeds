@@ -1,10 +1,12 @@
-from telliot_feeds.datasource import DataSource
-from telliot_feeds.dtypes.datapoint import OptionalDataPoint
-from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from dataclasses import dataclass
+
 from eth_abi import encode_single
-from telliot_feeds.utils.log import get_logger
 from eth_abi.exceptions import ValueOutOfBounds
+
+from telliot_feeds.datasource import DataSource
+from telliot_feeds.dtypes.datapoint import datetime_now_utc
+from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
@@ -12,6 +14,7 @@ logger = get_logger(__name__)
 @dataclass
 class TellorRNGManualInputSource(DataSource[bytes]):
     """Manual input source for query type TellorRNG's value response"""
+
     def parse_user_input(self) -> bytes:
         """Handle user input"""
         print("Type in your TellorRNG response as a hex string:")
@@ -19,11 +22,11 @@ class TellorRNGManualInputSource(DataSource[bytes]):
 
         while response is None:
             user_input = input()
-            if user_input[:2] == '0x':
+            if user_input[:2] == "0x":
                 user_input = user_input[2:]
             try:
                 val = bytes.fromhex(user_input)
-                encode_single('bytes32', val)
+                encode_single("bytes32", val)
             except ValueOutOfBounds:
                 print("Invalid input! Exceeds total byte size for bytes32 encoding")
                 continue
