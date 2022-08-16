@@ -22,6 +22,9 @@ from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.reporters import interval
 from telliot_feeds.reporters.custom_reporter import CustomXReporter
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPrice
+from tests.utils.utils import gas_price
+from tests.utils.utils import passing_bool_w_status
+from tests.utils.utils import passing_status
 
 
 account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
@@ -29,8 +32,9 @@ try:
     account = ChainedAccount("fake").add(
         "fake", 80001, "023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9"
     )
-except Exception:
-    account = ChainedAccount("fake")
+except Exception as e:
+    if e.args[0] == "Account fake already exists ":
+        account = ChainedAccount("fake")
 
 
 @pytest.fixture
@@ -51,7 +55,7 @@ async def custom_reporter(
     tellorx_oracle_mock_contract,
     mock_reporter_contract,
 ):
-    """Returns an instance of an IntervalReporter using
+    """Returns an instance of an CustomReporter using
     the ETH/USD median datafeed."""
     async with TelliotCore(config=rinkeby_test_cfg) as core:
         custom_contract = Contract(mock_reporter_contract.address, mock_reporter_contract.abi, core.endpoint, account)
@@ -84,7 +88,7 @@ async def custom_reporter(
 
 @pytest.mark.asyncio
 async def test_interval_reporter_submit_once(custom_reporter):
-    """Test reporting once to the TellorX through custom contract
+    """Test reporting once to  TellorX through custom contract
     with three retries."""
     r = custom_reporter
 
@@ -111,18 +115,6 @@ async def test_interval_reporter_submit_once(custom_reporter):
         assert not tx_receipt
         assert not status.ok
         assert status.error in EXPECTED_ERRORS
-
-
-async def gas_price(speed="average"):
-    return 1
-
-
-async def passing_status(*args, **kwargs):
-    return ResponseStatus()
-
-
-async def passing_bool_w_status(*args, **kwargs):
-    return True, ResponseStatus()
 
 
 @pytest.mark.asyncio

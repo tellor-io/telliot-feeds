@@ -19,6 +19,9 @@ from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.reporters import interval
 from telliot_feeds.reporters.interval import IntervalReporter
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPrice
+from tests.utils.utils import gas_price
+from tests.utils.utils import passing_bool_w_status
+from tests.utils.utils import passing_status
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -54,18 +57,6 @@ async def eth_usd_reporter(
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
         return r
-
-
-async def gas_price(speed="average"):
-    return 1
-
-
-async def passing_status(*args, **kwargs):
-    return ResponseStatus()
-
-
-async def passing_bool_w_status(*args, **kwargs):
-    return True, ResponseStatus()
 
 
 @pytest.mark.asyncio
