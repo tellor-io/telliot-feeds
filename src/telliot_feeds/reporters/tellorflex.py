@@ -232,6 +232,8 @@ class TellorFlexReporter(IntervalReporter):
         return tip
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
+        """Fetches datafeed suggestion plus the reward amount from autopay if query tag isn't selected
+        if query tag is selected fetches the rewards, if any, for that query tag"""
         if self.datafeed:
             self.autopaytip = await self.rewards()
             return self.datafeed
