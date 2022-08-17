@@ -21,3 +21,6 @@ DIVATellorOracle on Ropsten: `0x2f4218C9262216B7B73A76334e5A98F3eF71A61c`
 
 DIVATellorOracle contract on Ropsten with 10 sec delay for testing:
 `0x638c4aB660A9af1E6D79491462A0904b3dA78bB2`
+
+**IMPORTANT**
+The data provider must be the DIVATellor middleware contract address
