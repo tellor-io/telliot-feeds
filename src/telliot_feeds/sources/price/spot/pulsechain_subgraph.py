@@ -67,8 +67,8 @@ class PulsechainSupgraphService(WebPriceService):
                 logger.warning("Timeout Error, No prices retrieved from Pulsechain Supgraph")
                 return None, None
 
-            except Exception:
-                logger.warning("No prices retrieved from Pulsechain Supgraph")
+            except Exception as e:
+                logger.warning(f"No prices retrieved from Pulsechain Supgraph with Exception {e}")
                 return None, None
 
         if "error" in data:
