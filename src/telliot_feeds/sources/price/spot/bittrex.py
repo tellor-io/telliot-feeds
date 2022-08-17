@@ -47,6 +47,11 @@ class BittrexSpotPriceService(WebPriceService):
         d = self.get_url(request_url)
 
         if "error" in d:
+
+            if "JSON Decode Error" in d["error"]:
+                logger.warning("Unable to decode Bittrex JSON")
+                return None, None
+
             if "restrictions that prevent you from accessing the site" in d["exception"].strerror:
                 logger.warning("Bittrex API rate limit exceeded")
                 return None, None
