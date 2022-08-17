@@ -18,23 +18,22 @@ async def test_rng_valid_input(capsys):
 @pytest.mark.asyncio
 async def test_rng_invalid_input(capsys):
     with mock.patch("builtins.input", side_effect=["exit"]):
-        try:
-            result, _ = await TellorRNGManualInputSource().fetch_new_datapoint()
-        except RuntimeError:
+        with pytest.raises(RuntimeError):
+            _, _ = await TellorRNGManualInputSource().fetch_new_datapoint()
             expected = "Invalid input! Enter hex string value (32 byte size)"
-        captured_output = capsys.readouterr()
-        assert expected in captured_output.out.strip()
+            captured_output = capsys.readouterr()
+            assert expected in captured_output.out.strip()
 
 
 @pytest.mark.asyncio
 async def test_rng_non_input(capsys):
     with mock.patch("builtins.input", side_effect=["", ""]):
-        try:
+        with pytest.raises(RuntimeError):
             _, _ = await TellorRNGManualInputSource().fetch_new_datapoint()
-        except RuntimeError:
             expected = "Invalid input! Not enough characters, Enter a hex string (example: 0x2b563420722cbcfc84857129bef775e0dc5f1401"  # noqa: E501
-        captured_output = capsys.readouterr()
-        assert expected in captured_output.out.strip()
+            captured_output = capsys.readouterr()
+            assert expected in captured_output.out.strip()
+            print("______________-")
 
 
 @pytest.mark.asyncio
@@ -45,9 +44,8 @@ async def test_rng_non_bytes32_input(capsys):
             "0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000954656c6c6f72524e470000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000004d2"  # noqa: E501
         ],
     ):
-        try:
+        with pytest.raises(RuntimeError):
             _, _ = await TellorRNGManualInputSource().fetch_new_datapoint()
-        except RuntimeError:
             expected = "Invalid input! Exceeds total byte size for bytes32 encoding"
-        captured_output = capsys.readouterr()
-        assert expected in captured_output.out.strip()
+            captured_output = capsys.readouterr()
+            assert expected in captured_output.out.strip()
