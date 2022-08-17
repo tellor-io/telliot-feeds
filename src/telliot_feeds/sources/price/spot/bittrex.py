@@ -49,7 +49,7 @@ class BittrexSpotPriceService(WebPriceService):
         if "error" in d:
 
             if "JSON Decode Error" in d["error"]:
-                logger.warning("Unable to decode Bittrex JSON")
+                logger.error("Unable to decode Bittrex JSON")
                 return None, None
 
             if "restrictions that prevent you from accessing the site" in d["exception"].strerror:
