@@ -23,6 +23,7 @@ from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
+from telliot_feeds.reporters.utils import is_online
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPriceSource
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
@@ -437,5 +438,9 @@ class IntervalReporter:
         """Submit latest values to the TellorX oracle every 12 hours."""
 
         while True:
-            _, _ = await self.report_once()
+            online = await is_online()
+            if not online:
+                logger.warning("Unable to connect to the internet!")
+            else:
+                _, _ = await self.report_once()
             await asyncio.sleep(7)

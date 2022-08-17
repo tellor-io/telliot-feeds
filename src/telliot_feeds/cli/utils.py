@@ -1,8 +1,11 @@
 import os
+from time import sleep
 from typing import Any
 from typing import get_args
 from typing import get_type_hints
 from typing import Optional
+
+import requests
 
 import click
 from chained_accounts import ChainedAccount
@@ -67,7 +70,6 @@ def valid_diva_chain(chain_id: int) -> bool:
         print(f"Current chain id ({chain_id}) not supported for reporting Diva Protocol data.")
         return False
     return True
-
 
 def build_feed_from_input() -> Optional[DataFeed[Any]]:
     """

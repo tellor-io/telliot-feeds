@@ -15,6 +15,8 @@ from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
+from telliot_feeds.reporters.utils import is_online
+
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.tellor_rng_feed import assemble_rng_datafeed
@@ -311,6 +313,9 @@ class RNGReporter(TellorFlexReporter):
         """Submit latest values to the TellorFlex oracle."""
         logger.info(f"RNG reporting interval: {INTERVAL} seconds")
         while True:
+            online = await is_online()
+            if not online:
+                logger.warning("Unable to connect to the internet!")
             _, _ = await self.report_once()
             logger.info(f"Sleeping for {self.wait_period} seconds")
             await asyncio.sleep(self.wait_period)

@@ -9,7 +9,7 @@ from click.core import Context
 from eth_utils import to_checksum_address
 from telliot_core.cli.utils import async_run
 
-from telliot_feeds.cli.utils import build_feed_from_input
+from telliot_feeds.cli.utils import build_feed_from_input, is_online
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.cli.utils import valid_diva_chain
 from telliot_feeds.datafeed import DataFeed
