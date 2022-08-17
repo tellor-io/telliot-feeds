@@ -45,6 +45,10 @@ Network.OptimismKovan = 69
 MULTICALL_ADDRESSES[Network.OptimismKovan] = MULTICALL2_ADDRESSES[
     Network.OptimismKovan
 ] = "0xf609687230a65E8bd14caceDEfCF2dea9c15b242"
+Network.PulsechainTestnet = 941
+MULTICALL_ADDRESSES[Network.PulsechainTestnet] = MULTICALL2_ADDRESSES[
+    Network.PulsechainTestnet
+] = "0x959a437F1444DaDaC8aF997E71EAF0479c810267"
 
 
 async def run_in_subprocess(coro: Any, *args: Any, **kwargs: Any) -> Any:
