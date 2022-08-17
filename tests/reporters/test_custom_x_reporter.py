@@ -28,14 +28,16 @@ from tests.utils.utils import passing_status
 
 
 account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
-with mock.patch("builtins.input", side_effect=["", ""]):
-    try:
-        account = ChainedAccount("fake").add(
-            "fake", 80001, "023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9"
-        )
-    except Exception as e:
-        if e.args[0] == "Account fake already exists ":
-            account = ChainedAccount("fake")
+try:
+    account = ChainedAccount.add(
+        name="fake_custom_reporter",
+        chains=4,
+        key="023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9",
+        password="",
+    )
+except Exception as e:
+    if e.args[0] == "Account fake_custom_reporter already exists ":
+        account = ChainedAccount("fake_custom_reporter")
 
 
 @pytest.fixture

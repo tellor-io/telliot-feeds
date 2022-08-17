@@ -17,6 +17,17 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
+try:
+    account = ChainedAccount.add(
+        name="fake_custom_reporter",
+        chains=80001,
+        key="023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9",
+        password="",
+    )
+
+except Exception as e:
+    if e.args[0] == "Account fake_custom_reporter already exists ":
+        account = ChainedAccount("fake_custom_reporter")
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -41,13 +52,6 @@ async def custom_reporter(
     mock_reporter_contract,
 ):
     async with TelliotCore(config=mumbai_test_cfg) as core:
-        try:
-            account = ChainedAccount("fake").add(
-                "fake", 80001, "023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9"
-            )
-        except Exception as e:
-            if e.args[0] == "Account fake already exists ":
-                account = ChainedAccount("fake")
         custom_contract = Contract(mock_reporter_contract.address, mock_reporter_contract.abi, core.endpoint, account)
         custom_contract.connect()
         flex = core.get_tellorflex_contracts()
