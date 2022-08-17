@@ -17,11 +17,17 @@ class TellorRNGManualInputSource(DataSource[bytes]):
 
     def parse_user_input(self) -> bytes:
         """Handle user input"""
-        print("Type in your TellorRNG response as a hex string:")
+        print("Type in your TellorRNG response as a hex string (example: 0x2b563420722cbcfc84857129bef775e0dc5f1401):")
         response = None
 
         while response is None:
             user_input = input()
+            if len(user_input) < 2:
+                print(
+                    "Invalid input! Not enough characters, "
+                    + "Enter a hex string (example: 0x2b563420722cbcfc84857129bef775e0dc5f1401)"
+                )
+                continue
             if user_input[:2] == "0x":
                 user_input = user_input[2:]
             try:
