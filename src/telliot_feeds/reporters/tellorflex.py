@@ -71,19 +71,12 @@ class TellorFlexReporter(IntervalReporter):
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
+        self.autopaytip = 0
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
         self.account: ChainedAccount = account
         assert self.acct_addr == to_checksum_address(self.account.address)
-
-    async def ensure_profitable(
-        self,
-        datafeed: DataFeed[Any],
-    ) -> ResponseStatus:
-        """Make profitability check always pass."""
-
-        return ResponseStatus()
 
     async def fetch_gas_price(self, speed: str = "safeLow") -> Optional[int]:
         """Fetch estimated gas prices for Polygon mainnet."""
@@ -217,46 +210,60 @@ class TellorFlexReporter(IntervalReporter):
         count, read_status = await self.oracle.read(func_name="getNewValueCountbyQueryId", _queryId=query_id)
         return count, read_status
 
-    async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
+    async def rewards(self) -> int:
         tip = 0
+        datafeed: DataFeed[Any] = self.datafeed  # type: ignore
+        # Skip fetching datafeed & checking profitability
+        if self.expected_profit == "YOLO":
+            return tip
 
-        if self.datafeed is not None:
-            # Skip fetching datafeed & checking profitability
-            if self.expected_profit == "YOLO":
-                return self.datafeed
-
-            single_tip, status = await self.autopay.get_current_tip(self.datafeed.query.query_id)
-            if not status.ok:
-                logger.warning("Unable to fetch single tip")
-                return None
-
+        single_tip, status = await self.autopay.get_current_tip(datafeed.query.query_id)
+        if not status.ok:
+            logger.warning("Unable to fetch single tip")
+        else:
             tip += single_tip
 
-            feed_tip = await get_feed_tip(self.datafeed.query.query_id, self.autopay)
-            if feed_tip is None:
-                logger.warning("Unable to fetch feed tip")
-                return None
-
-            tip += feed_tip
+        feed_tip = await get_feed_tip(datafeed.query.query_id, self.autopay)
+        if feed_tip is None:
+            logger.warning("Unable to fetch feed tip")
         else:
-            suggested_qtag, autopay_tip = await autopay_suggested_report(self.autopay)
+            tip += feed_tip
 
-            if suggested_qtag is None:
-                suggested_qtag = await tellor_suggested_report(self.oracle)
+        return tip
 
+    async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
+        """Fetches datafeed suggestion plus the reward amount from autopay if query tag isn't selected
+        if query tag is selected fetches the rewards, if any, for that query tag"""
+        if self.datafeed:
+            self.autopaytip = await self.rewards()
+            return self.datafeed
+
+        suggested_qtag, autopay_tip = await autopay_suggested_report(self.autopay)
+        if suggested_qtag:
+            self.autopaytip = autopay_tip
+            self.datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
+            return self.datafeed
+
+        if suggested_qtag is None:
+            suggested_qtag = await tellor_suggested_report(self.oracle)
             if suggested_qtag is None:
                 logger.warning("Could not suggest query tag")
                 return None
-
-            if autopay_tip is not None:
-                tip += autopay_tip
-
-            if suggested_qtag not in CATALOG_FEEDS:
+            elif suggested_qtag not in CATALOG_FEEDS:
                 logger.warning(f"Suggested query tag not in catalog: {suggested_qtag}")
                 return None
+            else:
+                self.datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
+                self.autopaytip = await self.rewards()
+                return self.datafeed
+        return None
 
-            self.datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
-
+    async def ensure_profitable(
+        self,
+        datafeed: DataFeed[Any],
+    ) -> ResponseStatus:
+        status = ResponseStatus()
+        tip = self.autopaytip
         # Fetch token prices in USD
         price_feeds = [matic_usd_median_feed, trb_usd_median_feed]
         _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
@@ -329,11 +336,14 @@ class TellorFlexReporter(IntervalReporter):
         if (self.expected_profit != "YOLO") and (
             isinstance(self.expected_profit, float) and percent_profit < self.expected_profit
         ):
-            msg = "Estimated profitability below threshold."
-            logger.info(msg)
-            return None
+            status.ok = False
+            status.error = "Estimated profitability below threshold."
+            logger.info(status.error)
+            return status
+        self.autopaytip = 0
+        self.datafeed = None
 
-        return self.datafeed
+        return status
 
     async def report(self) -> None:
         """Submit latest values to the TellorFlex oracle."""

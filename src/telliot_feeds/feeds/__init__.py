@@ -21,6 +21,7 @@ from telliot_feeds.feeds.morphware import morphware_v1_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
+from telliot_feeds.feeds.pls_usd_feed import pls_usd_feed
 from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
 from telliot_feeds.feeds.spot_price_manual_feed import spot_price_manual_feed
@@ -64,6 +65,7 @@ CATALOG_FEEDS = {
     "eth-usd-30day_volatility": eth_usd_30day_volatility,
     "eur-usd-spot": eur_usd_median_feed,
     "snapshot-proposal-example": snapshot_manual_feed,
+    "pls-usd-spot": pls_usd_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
