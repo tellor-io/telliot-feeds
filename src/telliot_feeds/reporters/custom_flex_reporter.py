@@ -63,6 +63,7 @@ class CustomFlexReporter(TellorFlexReporter):
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
+        self.autopaytip = 0
         logger.info(f"Reporting with account: {self.acct_addr}")
 
         self.account: ChainedAccount = account
