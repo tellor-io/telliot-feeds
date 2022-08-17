@@ -12,9 +12,7 @@ from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
-pulsechain_subgraph_supporten_tokens = {
-    "pls": "0x8a810ea8b121d08342e9e7696f4a9915cbe494b7"
-}
+pulsechain_subgraph_supporten_tokens = {"pls": "0x8a810ea8b121d08342e9e7696f4a9915cbe494b7"}
 
 
 class PulsechainSupgraphService(WebPriceService):
@@ -53,8 +51,8 @@ class PulsechainSupgraphService(WebPriceService):
 
         json_data = {
             "query": query,
-            'variables': None,
-            'operationName': None,
+            "variables": None,
+            "operationName": None,
         }
 
         request_url = self.url + "/subgraphs/name/pulsechain/pulsex"
@@ -69,7 +67,7 @@ class PulsechainSupgraphService(WebPriceService):
                 logger.warning("Timeout Error, No prices retrieved from Pulsechain Supgraph")
                 return None, None
 
-            except Exception as e:
+            except Exception:
                 logger.warning("No prices retrieved from Pulsechain Supgraph")
                 return None, None
 

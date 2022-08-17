@@ -17,8 +17,8 @@ from telliot_feeds.sources.price.spot.nomics import NomicsSpotPriceService
 from telliot_feeds.sources.price.spot.pancakeswap import (
     PancakeswapPriceService,
 )
-from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceService
 from telliot_feeds.sources.price.spot.pulsechain_subgraph import PulsechainSupgraphService
+from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceService
 
 
 service = {
