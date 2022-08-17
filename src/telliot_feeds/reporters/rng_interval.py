@@ -15,8 +15,6 @@ from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
-from telliot_feeds.reporters.utils import is_online
-
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.tellor_rng_feed import assemble_rng_datafeed
@@ -24,6 +22,7 @@ from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.queries.tellor_rng import TellorRNG
 from telliot_feeds.reporters.reporter_autopay_utils import get_feed_tip
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.reporters.utils import is_online
 from telliot_feeds.utils.log import get_logger
 
 
