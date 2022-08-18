@@ -27,6 +27,7 @@ from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
 from telliot_feeds.feeds.spot_price_manual_feed import spot_price_manual_feed
 from telliot_feeds.feeds.string_query_feed import string_query_feed
 from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
+from telliot_feeds.feeds.tellor_rng_manual_feed import tellor_rng_manual_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.feeds.twap_manual_feed import twap_manual_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
@@ -70,7 +71,6 @@ CATALOG_FEEDS = {
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "SpotPrice": spot_price_manual_feed,
-    # "apiquery",
     "DivaProtocol": diva_manual_feed,
     "SnapshotOracle": snapshot_manual_feed,
     "GasPriceOracle": gas_price_oracle_feed,
@@ -81,5 +81,6 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "LegacyRequest": legacy_request_manual_feed,
     "TWAP": twap_manual_feed,
     "DailyVolatility": daily_volatility_manual_feed,
+    "TellorRNG": tellor_rng_manual_feed,
     # "morphware",
 }
