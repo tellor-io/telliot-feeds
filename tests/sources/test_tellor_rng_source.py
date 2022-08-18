@@ -7,7 +7,6 @@ import requests
 from telliot_feeds.sources import blockhash_aggregator
 from telliot_feeds.sources.blockhash_aggregator import get_btc_hash
 from telliot_feeds.sources.blockhash_aggregator import get_eth_hash
-from telliot_feeds.sources.blockhash_aggregator import block_num_from_timestamp
 from telliot_feeds.sources.blockhash_aggregator import TellorRNGManualSource
 
 
@@ -79,5 +78,3 @@ async def test_rng_failures(caplog):
             h = await hash_source(timestamp)
             assert h is None
             assert "invalid block number" in caplog.text
-        
-
