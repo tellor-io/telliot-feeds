@@ -7,6 +7,7 @@ import requests
 from telliot_feeds.sources import blockhash_aggregator
 from telliot_feeds.sources.blockhash_aggregator import get_btc_hash
 from telliot_feeds.sources.blockhash_aggregator import get_eth_hash
+from telliot_feeds.sources.blockhash_aggregator import block_num_from_timestamp
 from telliot_feeds.sources.blockhash_aggregator import TellorRNGManualSource
 
 
@@ -64,3 +65,19 @@ async def test_rng_failures(caplog):
             h, j = await hash_source(timestamp)
             assert h is None
             assert "invalid JSON" in caplog.text
+
+    def bad_block_num(url, *args, **kwargs):
+        rsp = requests.Response()
+        rsp.status_code = 200
+        rsp.json = lambda: {"status": "1", "result": "not an int"}
+        return rsp
+
+    with mock.patch("requests.Session.get", side_effect=bad_block_num):
+        for hash_source in [
+            get_eth_hash,
+        ]:
+            h = await hash_source(timestamp)
+            assert h is None
+            assert "invalid block number" in caplog.text
+        
+
