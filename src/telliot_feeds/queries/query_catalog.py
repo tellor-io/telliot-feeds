@@ -8,6 +8,7 @@ from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.queries.snapshot import Snapshot
 from telliot_feeds.queries.string_query import StringQuery
+from telliot_feeds.queries.tellor_rng import TellorRNG
 
 """Main instance of the Query Catalog."""
 query_catalog = Catalog()
@@ -150,3 +151,11 @@ query_catalog.add_entry(
 query_catalog.add_entry(
     tag="string-query-example", title="String query example", q=StringQuery(text="Where is the Atlantic ocean?")
 )
+
+query_catalog.add_entry(
+    tag="pls-usd-spot",
+    title="Pulsechain LiquidLoans feed",
+    q=SpotPrice(asset="pls", currency="usd"),
+)
+
+query_catalog.add_entry(tag="tellor-rng-example", title="Tellor RNG", q=TellorRNG(timestamp=1660567612))
