@@ -29,6 +29,7 @@ SPOT_PRICE_PAIRS = [
     "MATIC/USD",
     "USDC/USD",
     "EUR/USD",
+    "PLS/USD",
 ]
 
 

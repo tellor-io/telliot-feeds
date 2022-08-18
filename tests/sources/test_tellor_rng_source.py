@@ -64,3 +64,17 @@ async def test_rng_failures(caplog):
             h, j = await hash_source(timestamp)
             assert h is None
             assert "invalid JSON" in caplog.text
+
+    def bad_block_num(url, *args, **kwargs):
+        rsp = requests.Response()
+        rsp.status_code = 200
+        rsp.json = lambda: {"status": "1", "result": "not an int"}
+        return rsp
+
+    with mock.patch("requests.Session.get", side_effect=bad_block_num):
+        for hash_source in [
+            get_eth_hash,
+        ]:
+            h = await hash_source(timestamp)
+            assert h is None
+            assert "invalid block number" in caplog.text
