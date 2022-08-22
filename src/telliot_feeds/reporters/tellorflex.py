@@ -72,7 +72,7 @@ class TellorFlexReporter(IntervalReporter):
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
         self.autopaytip = 0
-        self.staked_amount: Optional[float] = None
+        self.new_stake_amount: Optional[float] = None
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
@@ -101,7 +101,7 @@ class TellorFlexReporter(IntervalReporter):
 
     async def in_dispute(self, stake_amount: Any) -> bool:
         """Check if staker balance decreased"""
-        if self.staked_amount is not None and self.staked_amount > stake_amount:
+        if self.new_stake_amount is not None and self.new_stake_amount > stake_amount:
             return True
         return False
 
@@ -145,6 +145,7 @@ class TellorFlexReporter(IntervalReporter):
         # Attempt to stake
         if staker_balance / 1e18 < self.stake:
             logger.info("Current stake too low. Approving & depositing stake.")
+            logger.warning("If current stake amount is inaccurate your address might be in dispute.")
 
             gas_price_gwei = await self.fetch_gas_price()
             if gas_price_gwei is None:
@@ -177,9 +178,9 @@ class TellorFlexReporter(IntervalReporter):
                 return False, error_status(msg, log=logger.error)
 
             logger.info(f"Staked {amount / 1e18} TRB")
-            self.staked_amount = self.stake
-        elif self.staked_amount is None:
-            self.staked_amount = staker_balance
+            self.new_stake_amount = self.stake
+        elif self.new_stake_amount is None:
+            self.new_stake_amount = staker_balance
 
         return True, ResponseStatus()
 
