@@ -31,7 +31,7 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-TELLOR_FLEX_CHAINS = (137, 122, 80001, 3, 69, 1666600000, 1666700000, 421611, 941)
+TELLOR_FLEX_CHAINS = (137, 122, 80001, 3, 69, 1666600000, 1666700000, 421611, 941, 42161)
 
 
 def get_stake_amount() -> float:
