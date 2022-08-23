@@ -32,12 +32,6 @@ class FeedFunder(ABC):
         """
         raise NotImplementedError
 
-    def fund_feed(self) -> None:
-        """
-        Fund feed.
-        """
-        raise NotImplementedError
-
     def alert_funds_exhausted(self) -> None:
         """
         Alert funds exhausted.

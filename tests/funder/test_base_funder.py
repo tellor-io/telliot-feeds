@@ -30,7 +30,4 @@ def test_feed_funder(fake_account):
         feed_funder.fund_feeds()
 
     with pytest.raises(NotImplementedError):
-        feed_funder.fund_feed()
-
-    with pytest.raises(NotImplementedError):
         feed_funder.alert_funds_exhausted()
