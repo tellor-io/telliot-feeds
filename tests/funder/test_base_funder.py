@@ -21,13 +21,7 @@ def fake_account():
 
 def test_feed_funder(fake_account):
     "Test FeedFunder class"
-    feed_funder = FeedFunder(account=fake_account)
-
-    with pytest.raises(NotImplementedError):
-        feed_funder.get_feeds_to_fund()
-
-    with pytest.raises(NotImplementedError):
-        feed_funder.fund_feeds()
-
-    with pytest.raises(NotImplementedError):
-        feed_funder.alert_funds_exhausted()
+    # Can't instantiate abstract class FeedFunder with abstract methods
+    # alert_funds_exhausted, fund_feeds, get_feeds_to_fund
+    with pytest.raises(TypeError):
+        _ = FeedFunder(account=fake_account)
