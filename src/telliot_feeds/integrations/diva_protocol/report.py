@@ -71,8 +71,8 @@ class DIVAProtocolReporter(TellorFlexReporter):
         query = query_valid_pools(
             last_id=50000,
             # data_provider="0x245b8abbc1b70b370d1b81398de0a7920b25e7ca",  # diva oracle (centralized)
-            # data_provider="0x638c4aB660A9af1E6D79491462A0904b3dA78bB2",  # DivaTellorOracle (middleware) contract ropsten
-            data_provider="0x66f84344c786a106AcaE8f54bbb0BdA44Fec6723", # middleware contract on goerli
+            # data_provider="0x638c4aB660A9af1E6D79491462A0904b3dA78bB2",  # middleware ropsten
+            data_provider="0x66f84344c786a106AcaE8f54bbb0BdA44Fec6723",  # middleware goerli
         )
         pools = await fetch_from_subgraph(
             query=query,
