@@ -50,7 +50,8 @@ def assemble_diva_datafeed(
     source.collat_token_source = collat_token_source
 
     feed = DataFeed(
-        query=DIVAProtocol(pool.pool_id, divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211", chainId=3),
+        # query=DIVAProtocol(pool.pool_id, divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211", chainId=3), # ropsten
+        query=DIVAProtocol(pool.pool_id, divaDiamond="0x2d8642777C51dB31945CeDbbC3198d75e497cb48", chainId=5), # goerli
         source=source,
     )
 
