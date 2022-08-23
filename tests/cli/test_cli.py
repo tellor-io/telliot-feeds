@@ -133,8 +133,8 @@ def test_get_stake_amount(monkeypatch, capsys):
     stake = get_stake_amount()
     captured = capsys.readouterr()
     expected = captured.out
-    warning_msg = "\n\U00002757Be aware if your stake was slashed and/or your deposited stake is\
- below the minimum stake amount telliot will automatically approve and deposit 10 TRB"
+    warning_msg = "\n\U00002757Telliot will automatically stake more TRB if you don't have enough staked to report, \
+    even if your stake amount is lower due to a dispute!"
     assert warning_msg in expected
     assert isinstance(stake, float)
     assert stake == 60.0
