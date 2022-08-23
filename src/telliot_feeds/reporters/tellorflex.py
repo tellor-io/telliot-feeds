@@ -145,7 +145,6 @@ class TellorFlexReporter(IntervalReporter):
         # Attempt to stake
         if staker_balance / 1e18 < self.stake:
             logger.info("Current stake too low. Approving & depositing stake.")
-            logger.warning("If current stake amount is inaccurate your address might be in dispute.")
 
             gas_price_gwei = await self.fetch_gas_price()
             if gas_price_gwei is None:

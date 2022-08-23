@@ -45,7 +45,10 @@ def get_stake_amount() -> float:
 
     Retrieves desidred stake amount from user input."""
 
-    msg = "Enter amount TRB to stake if unstaked:"
+    warn = "\n\U00002757Be aware if your stake was slashed and/or your deposited stake is\
+ below the minimum stake amount telliot will automatically approve and deposit 10 TRB"
+    click.echo(warn)
+    msg = "Enter amount TRB to stake if unstaked"
     stake = click.prompt(msg, type=float, default=10.0, show_default=True)
     assert isinstance(stake, float)
     assert stake >= 10.0
