@@ -18,5 +18,5 @@ gas_price_oracle_feed = DataFeed(
 
 gas_price_oracle_feed_example = DataFeed(
     query=GasPriceOracle(1, 1656633600),
-    source=GasPriceOracleSource(chainId=chainId, timestamp=timestamp),
+    source=GasPriceOracleSource(chainId=1, timestamp=1656633600),
 )
