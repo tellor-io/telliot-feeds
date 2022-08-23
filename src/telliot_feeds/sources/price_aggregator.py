@@ -1,6 +1,5 @@
 import asyncio
 import statistics
-from abc import ABC
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Callable
@@ -18,7 +17,7 @@ logger = get_logger(__name__)
 
 
 @dataclass
-class PriceAggregator(DataSource[float], ABC):
+class PriceAggregator(DataSource[float]):
 
     #: Asset
     asset: str = ""
