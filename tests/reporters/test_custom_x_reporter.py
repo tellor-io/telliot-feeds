@@ -9,6 +9,10 @@ from unittest import mock
 import pytest
 import pytest_asyncio
 from brownie import accounts
+from brownie import Reporter
+from telliot_core.apps.core import ChainedAccount
+from telliot_core.apps.core import Contract
+from telliot_core.apps.core import find_accounts
 from telliot_core.apps.core import TelliotCore
 from telliot_core.gas.legacy_gas import ethgasstation
 from telliot_core.utils.response import ResponseStatus
@@ -17,29 +21,55 @@ from web3.datastructures import AttributeDict
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.reporters import interval
-from telliot_feeds.reporters.interval import IntervalReporter
+from telliot_feeds.reporters.custom_reporter import CustomXReporter
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPrice
 from tests.utils.utils import gas_price
 from tests.utils.utils import passing_bool_w_status
 from tests.utils.utils import passing_status
 
 
+account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
+try:
+    account = find_accounts(name="fake_custom_reporter_address", chain_id=4)[0]
+except IndexError:
+    account = ChainedAccount.add(
+        name="fake_custom_reporter_address",
+        chains=4,
+        key="023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9",
+        password="",
+    )
+
+
+@pytest.fixture
+def mock_reporter_contract(tellorx_master_mock_contract, tellorx_oracle_mock_contract):
+    """mock custom reporter contract"""
+    return account_fake.deploy(
+        Reporter,
+        tellorx_master_mock_contract.address,
+        tellorx_oracle_mock_contract.address,
+        0,
+    )
+
+
 @pytest_asyncio.fixture(scope="function")
-async def eth_usd_reporter(
+async def custom_reporter(
     rinkeby_test_cfg,
     tellorx_master_mock_contract,
     tellorx_oracle_mock_contract,
+    mock_reporter_contract,
 ):
-    """Returns an instance of an IntervalReporter using
+    """Returns an instance of an CustomReporter using
     the ETH/USD median datafeed."""
     async with TelliotCore(config=rinkeby_test_cfg) as core:
-        account = core.get_account()
+        custom_contract = Contract(mock_reporter_contract.address, mock_reporter_contract.abi, core.endpoint, account)
+        custom_contract.connect()
         tellorx = core.get_tellorx_contracts()
         tellorx.master.address = tellorx_master_mock_contract.address
         tellorx.oracle.address = tellorx_oracle_mock_contract.address
         tellorx.master.connect()
         tellorx.oracle.connect()
-        r = IntervalReporter(
+        r = CustomXReporter(
+            custom_contract=custom_contract,
             endpoint=core.config.get_endpoint(),
             account=account,
             master=tellorx.master,
@@ -60,8 +90,39 @@ async def eth_usd_reporter(
 
 
 @pytest.mark.asyncio
-async def test_fetch_datafeed(eth_usd_reporter):
-    r = eth_usd_reporter
+async def test_interval_reporter_submit_once(custom_reporter):
+    """Test reporting once to  TellorX through custom contract
+    with three retries."""
+    r = custom_reporter
+
+    # Sync reporter
+    r.datafeed = None
+
+    EXPECTED_ERRORS = {
+        "Current addess disputed. Switch address to continue reporting.",
+        "Current address is locked in dispute or for withdrawal.",
+        "Current address is in reporter lock.",
+        "Estimated profitability below threshold.",
+        "Estimated gas price is above maximum gas price.",
+        "Unable to retrieve updated datafeed value.",
+    }
+
+    oracle_address = r.custom_contract.address
+    tx_receipt, status = await r.report_once()
+    # Reporter submitted
+    if tx_receipt is not None and status.ok:
+        assert isinstance(tx_receipt, AttributeDict)
+        assert tx_receipt.to in oracle_address
+    # Reporter did not submit
+    else:
+        assert not tx_receipt
+        assert not status.ok
+        assert status.error in EXPECTED_ERRORS
+
+
+@pytest.mark.asyncio
+async def test_fetch_datafeed(custom_reporter):
+    r = custom_reporter
     feed = await r.fetch_datafeed()
     assert isinstance(feed, DataFeed)
 
@@ -72,8 +133,8 @@ async def test_fetch_datafeed(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_get_fee_info(eth_usd_reporter):
-    info, time = await eth_usd_reporter.get_fee_info()
+async def test_get_fee_info(custom_reporter):
+    info, time = await custom_reporter.get_fee_info()
 
     assert isinstance(time, datetime)
     assert isinstance(info, EtherscanGasPrice)
@@ -83,8 +144,8 @@ async def test_get_fee_info(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_get_num_reports_by_id(eth_usd_reporter):
-    r = eth_usd_reporter
+async def test_get_num_reports_by_id(custom_reporter):
+    r = custom_reporter
     num, status = await r.get_num_reports_by_id(r.datafeed.query.query_id)
 
     assert isinstance(status, ResponseStatus)
@@ -96,18 +157,17 @@ async def test_get_num_reports_by_id(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_ensure_staked(eth_usd_reporter):
+async def test_ensure_staked(custom_reporter):
     """Test staking status of reporter."""
-    staked, status = await eth_usd_reporter.ensure_staked()
-
+    staked, status = await custom_reporter.ensure_staked()
     assert staked
     assert status.ok
 
 
 @pytest.mark.asyncio
-async def test_check_reporter_lock(eth_usd_reporter):
+async def test_check_reporter_lock(custom_reporter):
     """Test checking if in reporter lock."""
-    r = eth_usd_reporter
+    r = custom_reporter
     r.last_submission_timestamp = 0
 
     status = await r.check_reporter_lock()
@@ -119,9 +179,9 @@ async def test_check_reporter_lock(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_ensure_profitable(eth_usd_reporter):
+async def test_ensure_profitable(custom_reporter):
     """Test profitability check."""
-    r = eth_usd_reporter
+    r = custom_reporter
 
     assert r.expected_profit == "YOLO"
 
@@ -137,9 +197,9 @@ async def test_ensure_profitable(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_fetch_gas_price(eth_usd_reporter):
+async def test_fetch_gas_price(custom_reporter):
     """Test retrieving custom gas price from eth gas station."""
-    r = eth_usd_reporter
+    r = custom_reporter
 
     assert r.gas_price_speed == "safeLow"
 
@@ -154,11 +214,11 @@ async def test_fetch_gas_price(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_ethgasstation_error(eth_usd_reporter):
+async def test_ethgasstation_error(custom_reporter):
     async def no_gas_price(speed):
         return None
 
-    r = eth_usd_reporter
+    r = custom_reporter
     interval.ethgasstation = no_gas_price
 
     staked, status = await r.ensure_staked()
@@ -176,42 +236,9 @@ async def test_ethgasstation_error(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_interval_reporter_submit_once(eth_usd_reporter):
-    """Test reporting once to the TellorX playground on Rinkeby
-    with three retries."""
-    r = eth_usd_reporter
-
-    # Sync reporter
-    r.datafeed = None
-
-    EXPECTED_ERRORS = {
-        "Current addess disputed. Switch address to continue reporting.",
-        "Current address is locked in dispute or for withdrawal.",
-        "Current address is in reporter lock.",
-        "Estimated profitability below threshold.",
-        "Estimated gas price is above maximum gas price.",
-        "Unable to retrieve updated datafeed value.",
-    }
-
-    ORACLE_ADDRESSES = {r.oracle.address}
-
-    tx_receipt, status = await r.report_once()
-
-    # Reporter submitted
-    if tx_receipt is not None and status.ok:
-        assert isinstance(tx_receipt, AttributeDict)
-        assert tx_receipt.to in ORACLE_ADDRESSES
-    # Reporter did not submit
-    else:
-        assert not tx_receipt
-        assert not status.ok
-        assert status.error in EXPECTED_ERRORS
-
-
-@pytest.mark.asyncio
-async def test_no_updated_value(eth_usd_reporter, bad_datasource):
+async def test_no_updated_value(custom_reporter, bad_datasource):
     """Test handling for no updated value returned from datasource."""
-    r = eth_usd_reporter
+    r = custom_reporter
 
     # Clear latest datapoint
     r.datafeed.source._history.clear()
@@ -228,14 +255,13 @@ async def test_no_updated_value(eth_usd_reporter, bad_datasource):
 
     assert not tx_receipt
     assert not status.ok
-    print("status.error:", status.error)
     assert status.error == "Unable to retrieve updated datafeed value."
 
 
 @pytest.mark.asyncio
-async def test_no_token_prices_for_profit_calc(eth_usd_reporter, bad_datasource, guaranteed_price_source):
+async def test_no_token_prices_for_profit_calc(custom_reporter, bad_datasource, guaranteed_price_source):
     """Test handling for no token prices for profit calculation."""
-    r = eth_usd_reporter
+    r = custom_reporter
 
     r.fetch_gas_price = gas_price
     r.check_reporter_lock = passing_status
@@ -262,14 +288,14 @@ async def test_no_token_prices_for_profit_calc(eth_usd_reporter, bad_datasource,
 
 
 @pytest.mark.asyncio
-async def test_handle_contract_master_read_timeout(eth_usd_reporter):
+async def test_handle_contract_master_read_timeout(custom_reporter):
     """Test handling for contract master read timeout."""
 
     def conn_timeout(url, *args, **kwargs):
         raise asyncio.exceptions.TimeoutError()
 
     with mock.patch("web3.contract.ContractFunction.call", side_effect=conn_timeout):
-        r = eth_usd_reporter
+        r = custom_reporter
         r.fetch_gas_price = gas_price
         staked, status = await r.ensure_staked()
 
@@ -280,9 +306,9 @@ async def test_handle_contract_master_read_timeout(eth_usd_reporter):
 
 @pytest.mark.asyncio
 async def test_ensure_reporter_lock_check_after_submitval_attempt(
-    monkeypatch, eth_usd_reporter, guaranteed_price_source
+    monkeypatch, custom_reporter, guaranteed_price_source
 ):
-    r = eth_usd_reporter
+    r = custom_reporter
     r.last_submission_timestamp = 1234
     r.fetch_gas_price = gas_price
     r.ensure_staked = passing_bool_w_status

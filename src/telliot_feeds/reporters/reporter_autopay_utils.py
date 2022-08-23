@@ -45,6 +45,10 @@ Network.OptimismKovan = 69
 MULTICALL_ADDRESSES[Network.OptimismKovan] = MULTICALL2_ADDRESSES[
     Network.OptimismKovan
 ] = "0xf609687230a65E8bd14caceDEfCF2dea9c15b242"
+Network.PulsechainTestnet = 941
+MULTICALL_ADDRESSES[Network.PulsechainTestnet] = MULTICALL2_ADDRESSES[
+    Network.PulsechainTestnet
+] = "0x959a437F1444DaDaC8aF997E71EAF0479c810267"
 
 
 async def run_in_subprocess(coro: Any, *args: Any, **kwargs: Any) -> Any:
@@ -390,7 +394,7 @@ async def autopay_suggested_report(
     Return: query id, tip amount
     """
     chain = autopay.node.chain_id
-    if chain in (137, 80001, 69, 1666600000, 1666700000, 421611):
+    if chain in (137, 80001, 69, 1666600000, 1666700000, 421611, 42161):
         assert isinstance(autopay, TellorFlexAutopayContract)
         # get query_ids with one time tips
         singletip_dict = await get_one_time_tips(autopay)
