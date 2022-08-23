@@ -19,7 +19,7 @@ from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feeds.feeds.eth_usd_legacy_feed import eth_usd_legacy_feed
 from telliot_feeds.reporters import interval
 from telliot_feeds.reporters.custom_reporter import CustomXReporter
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPrice
@@ -74,7 +74,7 @@ async def custom_reporter(
             account=account,
             master=tellorx.master,
             oracle=tellorx.oracle,
-            datafeed=eth_usd_median_feed,
+            datafeed=eth_usd_legacy_feed,
             expected_profit="YOLO",
             transaction_type=0,
             gas_limit=400000,
@@ -225,7 +225,7 @@ async def test_ethgasstation_error(custom_reporter):
     assert not staked
     assert not status.ok
 
-    status = await r.ensure_profitable(eth_usd_median_feed)
+    status = await r.ensure_profitable(eth_usd_legacy_feed)
     assert not status.ok
 
     tx_receipt, status = await r.report_once()
@@ -268,8 +268,8 @@ async def test_no_token_prices_for_profit_calc(custom_reporter, bad_datasource, 
 
     # Simulate TRB/USD price retrieval failure
     r.trb_usd_median_feed.source._history.clear()
-    r.eth_usd_median_feed.source.sources = [guaranteed_price_source]
-    r.trb_usd_median_feed.source.sources = [bad_datasource]
+    r.eth_usd_legacy_feed.source.sources = [guaranteed_price_source]
+    r.trb_usd_legacy_feed.source.sources = [bad_datasource]
     tx_receipt, status = await r.report_once()
 
     assert tx_receipt is None
@@ -277,8 +277,8 @@ async def test_no_token_prices_for_profit_calc(custom_reporter, bad_datasource, 
     assert status.error == "Unable to fetch TRB/USD price for profit calculation"
 
     # Simulate ETH/USD price retrieval failure
-    r.eth_usd_median_feed.source._history.clear()
-    r.eth_usd_median_feed.source.sources = [bad_datasource]
+    r.eth_usd_legacy_feed.source._history.clear()
+    r.eth_usd_legacy_feed.source.sources = [bad_datasource]
     tx_receipt, status = await r.report_once()
 
     assert tx_receipt is None
@@ -317,8 +317,8 @@ async def test_ensure_reporter_lock_check_after_submitval_attempt(
     assert r.datafeed
 
     # Simulate fetching latest value
-    r.eth_usd_median_feed.source.sources = [guaranteed_price_source]
-    r.trb_usd_median_feed.source.sources = [guaranteed_price_source]
+    r.eth_usd_legacy_feed.source.sources = [guaranteed_price_source]
+    r.trb_usd_legacy_feed.source.sources = [guaranteed_price_source]
     r.datafeed.source.sources = [guaranteed_price_source]
 
     async def num_reports(*args, **kwargs):

@@ -21,7 +21,7 @@ from web3.datastructures import AttributeDict
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feeds.feeds.eth_usd_legacy_feed import eth_usd_legacy_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPriceSource
 from telliot_feeds.utils.log import get_logger
@@ -68,7 +68,7 @@ class IntervalReporter:
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
         self.trb_usd_median_feed = trb_usd_median_feed
-        self.eth_usd_median_feed = eth_usd_median_feed
+        self.eth_usd_legacy_feed = eth_usd_legacy_feed
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
@@ -184,10 +184,10 @@ class IntervalReporter:
             return status
 
         # Fetch token prices
-        price_feeds = [self.eth_usd_median_feed, self.trb_usd_median_feed]
+        price_feeds = [self.eth_usd_legacy_feed, self.trb_usd_median_feed]
         _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
 
-        price_eth_usd = self.eth_usd_median_feed.source.latest[0]
+        price_eth_usd = self.eth_usd_legacy_feed.source.latest[0]
         price_trb_usd = self.trb_usd_median_feed.source.latest[0]
 
         if price_eth_usd is None:
