@@ -34,7 +34,7 @@ class PriceServiceInterface(ABC):
         raise NotImplementedError
 
 
-class WebPriceService(PriceServiceInterface, ABC):
+class WebPriceService(PriceServiceInterface):
     """Abstract Base CLass for a Web-based Pricing Service"""
 
     def __init__(self, name: str, url: str, timeout: float = 5.0):
