@@ -297,8 +297,12 @@ class DIVAProtocolReporter(TellorFlexReporter):
     async def report(self) -> None:
         """Report values for pool reference assets & settle pools."""
         while True:
-            _, _ = await self.report_once()
-            _ = await self.settle_pools()
+            online = await self.is_online()
+            if not online:
+                logger.warning("Unable to connect to the internet!")
+            else:
+                _, _ = await self.report_once()
+                _ = await self.settle_pools()
 
             logger.info(f"Sleeping for {self.wait_period} seconds")
             await asyncio.sleep(self.wait_period)
