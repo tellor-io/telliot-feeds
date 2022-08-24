@@ -313,8 +313,10 @@ class RNGReporter(TellorFlexReporter):
         logger.info(f"RNG reporting interval: {INTERVAL} seconds")
         while True:
             online = await is_online()
-            if not online:
+            if online:
+                _, _ = await self.report_once()
+                logger.info(f"Sleeping for {self.wait_period} seconds")
+            else:
                 logger.warning("Unable to connect to the internet!")
-            _, _ = await self.report_once()
-            logger.info(f"Sleeping for {self.wait_period} seconds")
+
             await asyncio.sleep(self.wait_period)

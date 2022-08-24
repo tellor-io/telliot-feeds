@@ -3,8 +3,9 @@ import requests
 
 
 async def is_online() -> bool:
+    """checks internet connection by pinging Cloudflare DNS"""
     try:
-        await requests.get("http://1.1.1.1")
+        requests.get("http://1.1.1.1")
         return True
     except requests.exceptions.ConnectionError:
         return False

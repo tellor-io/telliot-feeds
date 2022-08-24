@@ -351,9 +351,10 @@ class TellorFlexReporter(IntervalReporter):
 
         while True:
             online = await is_online()
-            if not online:
-                logger.warning("Unable to connect to the internet!")
-            else:
+            print("online status: ", online)
+            if online:
                 _, _ = await self.report_once()
-
+            else:
+                logger.warning("Unable to connect to the internet!")
+                
             await asyncio.sleep(self.wait_period)

@@ -19,7 +19,7 @@ logger = get_logger(__name__)
 
 account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
 try:
-    account = find_accounts(name="fake_flex_reporter_address", chain_id=80001)[0]
+    account = find_accounts(name="fake_flex_custom_reporter_address", chain_id=80001)[0]
 except IndexError:
     account = ChainedAccount.add(
         name="fake_flex_custom_reporter_address",
