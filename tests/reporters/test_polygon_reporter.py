@@ -5,7 +5,7 @@ from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.feeds.eth_usd_legacy_feed import eth_usd_legacy_feed
+from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 
@@ -93,7 +93,7 @@ async def test_check_reporter_lock(polygon_reporter):
 
 @pytest.mark.asyncio
 async def test_get_num_reports_by_id(polygon_reporter):
-    qid = eth_usd_legacy_feed.query.query_id
+    qid = eth_usd_median_feed.query.query_id
     count, status = await polygon_reporter.get_num_reports_by_id(qid)
 
     assert isinstance(status, ResponseStatus)

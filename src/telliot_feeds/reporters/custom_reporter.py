@@ -14,7 +14,7 @@ from web3 import Web3
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.feeds.eth_usd_legacy_feed import eth_usd_legacy_feed
+from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.reporters.interval import IntervalReporter
 from telliot_feeds.utils.log import get_logger
@@ -63,7 +63,7 @@ class CustomXReporter(IntervalReporter):
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
         self.trb_usd_median_feed = trb_usd_median_feed
-        self.eth_usd_legacy_feed = eth_usd_legacy_feed
+        self.eth_usd_median_feed = eth_usd_median_feed
         self.custom_contract = custom_contract
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:

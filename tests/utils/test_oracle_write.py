@@ -4,7 +4,7 @@ from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
-from telliot_feeds.feeds.eth_usd_legacy_feed import eth_usd_legacy_feed
+from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.utils.oracle_write import tip_query
 
 
@@ -19,7 +19,7 @@ async def test_tip_query(rinkeby_test_cfg):
         tip = int(0.0001 * 1e18)
         tx_receipt, status = await tip_query(
             oracle=tellorx.oracle,
-            datafeed=eth_usd_legacy_feed,
+            datafeed=eth_usd_median_feed,
             tip=tip,
         )
 
