@@ -23,9 +23,9 @@ from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
-from telliot_feeds.reporters.utils import is_online
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPriceSource
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.reporter_utils import is_online
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
 
 
@@ -292,6 +292,9 @@ class IntervalReporter:
         count, read_status = await self.oracle.read(func_name="getTimestampCountById", _queryId=query_id)
         return count, read_status
 
+    async def is_online() -> bool:
+        return await is_online()
+
     async def report_once(
         self,
     ) -> Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]:
@@ -438,7 +441,7 @@ class IntervalReporter:
         """Submit latest values to the TellorX oracle every 12 hours."""
 
         while True:
-            online = await is_online()
+            online = await self.is_online()
             if online:
                 _, _ = await self.report_once()
             else:

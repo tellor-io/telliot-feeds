@@ -25,7 +25,6 @@ from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
 from telliot_feeds.integrations.diva_protocol.utils import update_reported_pools
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
-from telliot_feeds.reporters.utils import is_online
 from telliot_feeds.utils.log import get_logger
 
 
@@ -298,7 +297,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
     async def report(self) -> None:
         """Report values for pool reference assets & settle pools."""
         while True:
-            online = await is_online()
+            online = await self.is_online()
             if not online:
                 logger.warning("Unable to connect to the internet!")
             else:

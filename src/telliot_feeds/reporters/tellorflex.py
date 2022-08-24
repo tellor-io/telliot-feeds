@@ -24,7 +24,6 @@ from telliot_feeds.reporters.reporter_autopay_utils import (
     autopay_suggested_report,
 )
 from telliot_feeds.reporters.reporter_autopay_utils import get_feed_tip
-from telliot_feeds.reporters.utils import is_online
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
 
@@ -363,11 +362,11 @@ class TellorFlexReporter(IntervalReporter):
         """Submit latest values to the TellorFlex oracle."""
 
         while True:
-            online = await is_online()
+            online = self.is_online()
             print("online status: ", online)
             if online:
                 _, _ = await self.report_once()
             else:
                 logger.warning("Unable to connect to the internet!")
-                
+
             await asyncio.sleep(self.wait_period)

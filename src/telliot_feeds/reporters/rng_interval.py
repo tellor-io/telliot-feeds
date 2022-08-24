@@ -22,7 +22,6 @@ from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.queries.tellor_rng import TellorRNG
 from telliot_feeds.reporters.reporter_autopay_utils import get_feed_tip
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
-from telliot_feeds.reporters.utils import is_online
 from telliot_feeds.utils.log import get_logger
 
 
@@ -312,7 +311,7 @@ class RNGReporter(TellorFlexReporter):
         """Submit latest values to the TellorFlex oracle."""
         logger.info(f"RNG reporting interval: {INTERVAL} seconds")
         while True:
-            online = await is_online()
+            online = await self.is_online()
             if online:
                 _, _ = await self.report_once()
                 logger.info(f"Sleeping for {self.wait_period} seconds")
