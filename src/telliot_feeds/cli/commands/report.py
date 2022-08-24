@@ -31,7 +31,7 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-TELLOR_FLEX_CHAINS = (137, 122, 80001, 3, 69, 1666600000, 1666700000, 421611, 941)
+TELLOR_FLEX_CHAINS = (137, 122, 80001, 3, 69, 1666600000, 1666700000, 421611, 941, 42161)
 
 
 def get_stake_amount() -> float:
@@ -45,7 +45,10 @@ def get_stake_amount() -> float:
 
     Retrieves desidred stake amount from user input."""
 
-    msg = "Enter amount TRB to stake if unstaked:"
+    warn = "\n\U00002757Telliot will automatically stake more TRB if you don't have enough staked to report, \
+    even if your stake amount is lower due to a dispute!"
+    click.echo(warn)
+    msg = "Enter amount TRB to stake if unstaked"
     stake = click.prompt(msg, type=float, default=10.0, show_default=True)
     assert isinstance(stake, float)
     assert stake >= 10.0
