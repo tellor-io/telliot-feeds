@@ -314,7 +314,6 @@ class RNGReporter(TellorFlexReporter):
             online = await self.is_online()
             if online:
                 _, _ = await self.report_once()
-                logger.info(f"Sleeping for {self.wait_period} seconds")
             else:
                 logger.warning("Unable to connect to the internet!")
 

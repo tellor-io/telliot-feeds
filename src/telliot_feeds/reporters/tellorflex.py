@@ -363,7 +363,6 @@ class TellorFlexReporter(IntervalReporter):
 
         while True:
             online = self.is_online()
-            print("online status: ", online)
             if online:
                 _, _ = await self.report_once()
             else:
