@@ -84,4 +84,4 @@ async def test_diva_datafeed_fetch_data():
 
     assert val is not None
     assert val[0] > 0
-    assert 419 < val[1] < 421
+    assert val[1] == 1.
