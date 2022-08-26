@@ -72,6 +72,7 @@ class TellorFlexReporter(IntervalReporter):
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
         self.autopaytip = 0
+        self.staked_amount: Optional[float] = None
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
@@ -97,6 +98,12 @@ class TellorFlexReporter(IntervalReporter):
             logger.error("Unable to fetch gas price from matic gasstation")
             return None
         return int(prices[speed])
+
+    async def in_dispute(self, new_stake_amount: Any) -> bool:
+        """Check if staker balance decreased"""
+        if self.staked_amount is not None and self.staked_amount > new_stake_amount:
+            return True
+        return False
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked.
@@ -131,7 +138,10 @@ class TellorFlexReporter(IntervalReporter):
         )
 
         self.last_submission_timestamp = last_report
-
+        # check if staker balance has decreased after initial assignment
+        if await self.in_dispute(staker_balance):
+            msg = "Staked balance has decreased, account might be in dispute; restart telliot to keep reporting"
+            return False, error_status(msg)
         # Attempt to stake
         if staker_balance / 1e18 < self.stake:
             logger.info("Current stake too low. Approving & depositing stake.")
@@ -167,6 +177,9 @@ class TellorFlexReporter(IntervalReporter):
                 return False, error_status(msg, log=logger.error)
 
             logger.info(f"Staked {amount / 1e18} TRB")
+            self.staked_amount = self.stake
+        elif self.staked_amount is None:
+            self.staked_amount = staker_balance
 
         return True, ResponseStatus()
 
@@ -349,5 +362,10 @@ class TellorFlexReporter(IntervalReporter):
         """Submit latest values to the TellorFlex oracle."""
 
         while True:
-            _, _ = await self.report_once()
+            online = await self.is_online()
+            if online:
+                _, _ = await self.report_once()
+            else:
+                logger.warning("Unable to connect to the internet!")
+
             await asyncio.sleep(self.wait_period)

@@ -2,6 +2,7 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+import requests
 from telliot_core.tellor.tellorflex.oracle import TellorFlexOracleContract
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
 
@@ -43,3 +44,12 @@ async def tellor_suggested_report(
 
     else:
         return None
+
+
+async def is_online() -> bool:
+    """checks internet connection by pinging Cloudflare DNS"""
+    try:
+        requests.get("http://1.1.1.1")
+        return True
+    except requests.exceptions.ConnectionError:
+        return False

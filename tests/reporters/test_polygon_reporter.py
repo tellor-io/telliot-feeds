@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 import pytest_asyncio
 from brownie import accounts
@@ -35,6 +37,7 @@ async def polygon_reporter(
             endpoint=core.endpoint,
             account=account,
             chain_id=80001,
+            transaction_type=0,
         )
         # mint token and send to reporter address
         mock_token_contract.mint(account.address, 1000e18)
@@ -121,3 +124,33 @@ async def test_fetch_gas_price_error(polygon_reporter, caplog):
     assert not staked
     assert not status.ok
     assert "Unable to fetch matic gas price for staking" in status.error
+
+
+@pytest.mark.asyncio
+async def test_reporting_without_internet(polygon_reporter, caplog):
+
+    with patch("asyncio.sleep", side_effect=InterruptedError):
+
+        r = polygon_reporter
+
+        r.is_online = lambda: False
+
+        with pytest.raises(InterruptedError):
+            await r.report()
+
+        assert "Unable to connect to the internet!" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_dispute(polygon_reporter: TellorFlexReporter):
+    # Test when reporter in dispute
+    r = polygon_reporter
+
+    async def in_dispute(_):
+        return True
+
+    r.in_dispute = in_dispute
+    _, status = await r.report_once()
+    assert (
+        "Staked balance has decreased, account might be in dispute; restart telliot to keep reporting" in status.error
+    )
