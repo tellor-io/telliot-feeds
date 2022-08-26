@@ -173,5 +173,5 @@ query_catalog.add_entry(
 
 query_catalog.add_entry(tag="tellor-rng-example", title="Tellor RNG", q=TellorRNG(timestamp=1660567612))
 query_catalog.add_entry(
-    tag="TWAP-example", title="Time Weighted Average Price", q=TWAP(asset="eth", currency="usd", timespan=86400)
+    tag="twap-eth-usd-example", title="Time Weighted Average Price", q=TWAP(asset="eth", currency="usd", timespan=86400)
 )
