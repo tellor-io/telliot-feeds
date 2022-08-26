@@ -14,8 +14,8 @@ logger = get_logger(__name__)
 
 
 # Hardcoded supported assets & currencies
-kraken_assets = {"ETH", "MATIC", "MKR", "SUSHI", "USDC", "XBT"}
-kraken_currencies = {"USD"}
+KRAKEN_ASSETS = {"ETH", "MATIC", "MKR", "SUSHI", "USDC", "XBT"}
+KRAKEN_CURRENCIES = {"USD"}
 
 
 class KrakenSpotPriceService(WebPriceService):
@@ -34,9 +34,9 @@ class KrakenSpotPriceService(WebPriceService):
         asset = asset.upper()
         currency = currency.upper()
 
-        if asset not in kraken_assets:
+        if asset not in KRAKEN_ASSETS:
             raise Exception(f"Asset not supported: {asset}")
-        if currency not in kraken_currencies:
+        if currency not in KRAKEN_CURRENCIES:
             raise Exception(f"Currency not supported: {currency}")
 
         url_params = urlencode({"pair": f"{asset}{currency}"})
