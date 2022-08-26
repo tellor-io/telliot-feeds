@@ -363,7 +363,7 @@ class TellorFlexReporter(IntervalReporter):
         """Submit latest values to the TellorFlex oracle."""
 
         while True:
-            online = self.is_online()
+            online = await self.is_online()
             if online:
                 _, _ = await self.report_once()
             else:
