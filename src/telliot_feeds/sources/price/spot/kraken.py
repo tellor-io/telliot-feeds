@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 
 
 # Hardcoded supported assets & currencies
-kraken_assets = {"ETH", "MATIC", "MKR", "SUSHI", "USDC"}
+kraken_assets = {"ETH", "MATIC", "MKR", "SUSHI", "USDC", "XBT"}
 kraken_currencies = {"USD"}
 
 

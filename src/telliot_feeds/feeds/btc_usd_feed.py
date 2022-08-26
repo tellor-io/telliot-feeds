@@ -18,7 +18,7 @@ btc_usd_median_feed = DataFeed(
             BinanceSpotPriceSource(asset="btc", currency="usdt"),
             CoinbaseSpotPriceSource(asset="btc", currency="usd"),
             GeminiSpotPriceSource(asset="btc", currency="usd"),
-            KrakenSpotPriceSource(asset="btc", currency="usd"),
+            KrakenSpotPriceSource(asset="xbt", currency="usd"),
         ],
     ),
 )
