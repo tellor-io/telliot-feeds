@@ -311,6 +311,10 @@ class RNGReporter(TellorFlexReporter):
         """Submit latest values to the TellorFlex oracle."""
         logger.info(f"RNG reporting interval: {INTERVAL} seconds")
         while True:
-            _, _ = await self.report_once()
-            logger.info(f"Sleeping for {self.wait_period} seconds")
+            online = await self.is_online()
+            if online:
+                _, _ = await self.report_once()
+            else:
+                logger.warning("Unable to connect to the internet!")
+
             await asyncio.sleep(self.wait_period)

@@ -159,6 +159,18 @@ query_catalog.add_entry(
     q=SpotPrice(asset="pls", currency="usd"),
 )
 
+query_catalog.add_entry(
+    tag="eth-usd-spot",
+    title="ETH/USD spot price",
+    q=SpotPrice(asset="eth", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="btc-usd-spot",
+    title="BTC/USD spot price",
+    q=SpotPrice(asset="btc", currency="usd"),
+)
+
 query_catalog.add_entry(tag="tellor-rng-example", title="Tellor RNG", q=TellorRNG(timestamp=1660567612))
 query_catalog.add_entry(
     tag="TWAP-example", title="Time Weighted Average Price", q=TWAP(asset="eth", currency="usd", timespan=86400)
