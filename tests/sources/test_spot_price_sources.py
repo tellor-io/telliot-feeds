@@ -13,6 +13,7 @@ from telliot_feeds.sources.price.spot.bittrex import BittrexSpotPriceService
 from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceService
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceService
 from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceService
+from telliot_feeds.sources.price.spot.kraken import KrakenSpotPriceService
 from telliot_feeds.sources.price.spot.nomics import NomicsSpotPriceService
 from telliot_feeds.sources.price.spot.pancakeswap import (
     PancakeswapPriceService,
@@ -30,6 +31,7 @@ service = {
     "pancakeswap": PancakeswapPriceService(),
     "uniswapV3": UniswapV3PriceService(),
     "pulsechain-subgraph": PulsechainSupgraphService(),
+    "kraken": KrakenSpotPriceService(),
 }
 
 
@@ -84,6 +86,14 @@ async def test_coinbase():
 async def test_coingecko():
     """Test retrieving from Coingecko price source."""
     v, t = await get_price("btc", "usd", service["coingecko"])
+    validate_price(v, t)
+
+
+@pytest.mark.asyncio
+async def test_kraken():
+    """Test retrieving from Kraken price source."""
+    v, t = await get_price("xbt", "usd", service["kraken"])
+    print(v)
     validate_price(v, t)
 
 
