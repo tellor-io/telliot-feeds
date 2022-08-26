@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 import pytest_asyncio
 from brownie import accounts
@@ -122,6 +124,21 @@ async def test_fetch_gas_price_error(polygon_reporter, caplog):
     assert not staked
     assert not status.ok
     assert "Unable to fetch matic gas price for staking" in status.error
+
+
+@pytest.mark.asyncio
+async def test_reporting_without_internet(polygon_reporter, caplog):
+
+    with patch("asyncio.sleep", side_effect=InterruptedError):
+
+        r = polygon_reporter
+
+        r.is_online = lambda: False
+
+        with pytest.raises(InterruptedError):
+            await r.report()
+
+        assert "Unable to connect to the internet!" in caplog.text
 
 
 @pytest.mark.asyncio

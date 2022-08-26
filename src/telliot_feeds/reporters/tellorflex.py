@@ -363,5 +363,10 @@ class TellorFlexReporter(IntervalReporter):
         """Submit latest values to the TellorFlex oracle."""
 
         while True:
-            _, _ = await self.report_once()
+            online = self.is_online()
+            if online:
+                _, _ = await self.report_once()
+            else:
+                logger.warning("Unable to connect to the internet!")
+
             await asyncio.sleep(self.wait_period)
