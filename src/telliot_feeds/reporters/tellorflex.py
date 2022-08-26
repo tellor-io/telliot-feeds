@@ -172,7 +172,8 @@ class TellorFlexReporter(IntervalReporter):
                 msg = (
                     "Unable to stake deposit: "
                     + write_status.error
-                    + f"Make sure {self.acct_addr} has enough MATIC & TRB (10)"
+                    + f"Make sure {self.acct_addr} has enough of the current chain's "
+                    + "currency and the oracle's currency (TRB)"
                 )  # error won't be none # noqa: E501
                 return False, error_status(msg, log=logger.error)
 
