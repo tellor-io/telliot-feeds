@@ -292,7 +292,7 @@ class IntervalReporter:
         count, read_status = await self.oracle.read(func_name="getTimestampCountById", _queryId=query_id)
         return count, read_status
 
-    async def is_online() -> bool:
+    async def is_online(self) -> bool:
         return await is_online()
 
     async def report_once(
