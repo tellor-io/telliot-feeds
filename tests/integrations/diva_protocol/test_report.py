@@ -7,17 +7,19 @@ import time
 import pytest
 from brownie import accounts
 from brownie import DIVAProtocolMock
+from brownie import DivaTellorOracleMock
 from telliot_core.apps.core import TelliotCore
+from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
 from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
-from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 
 
 @pytest.fixture
 def mock_diva_contract():
     return accounts[0].deploy(DIVAProtocolMock)
+
 
 @pytest.fixture
 def mock_middleware_contract():
@@ -49,7 +51,7 @@ async def test_report(
         )
 
         # Use current timestamp minus 30 sec for pool expiry time
-        new_expiry = mock_diva_contract.changePoolExpiry(pool_id, int(time.time() - 30))
+        _ = mock_diva_contract.changePoolExpiry(pool_id, int(time.time() - 30))
 
         flex = core.get_tellorflex_contracts()
         flex.oracle.address = mock_flex_contract.address

@@ -22,7 +22,7 @@ async def test_create_report_settle_pool():
 
     # update min period undisputed in mock contract
     # create temp pickle file for pool info
-    
+
     # instantiate reporter w/ mock contracts & data provider and any other params
 
     # check initial state of pools pickle file

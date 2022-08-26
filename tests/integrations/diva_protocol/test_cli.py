@@ -1,8 +1,3 @@
-
-
-from this import d
-
-
 def test_integrations_help_cmd():
     # ensure diva cmd is available
     pass
@@ -21,4 +16,3 @@ def test_report_cmd():
 def test_settle_cmd():
     # telliot-feeds integrations diva settle --pool-id=<id>
     pass
-
