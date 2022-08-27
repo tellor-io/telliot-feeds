@@ -49,7 +49,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
         unreported_pools = []
         for pool in pools:
             query = DIVAProtocol(
-                poolId=pool.pool_id, divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211", chainId=3
+                poolId=pool.pool_id, divaDiamond="0x2d8642777C51dB31945CeDbbC3198d75e497cb48", chainId=5
             )
             report_count, read_status = await self.get_num_reports_by_id(query.query_id)
 
@@ -69,13 +69,14 @@ class DIVAProtocolReporter(TellorFlexReporter):
         """Fetch datafeed"""
         # fetch pools from DIVA subgraph
         query = query_valid_pools(
-            last_id=50000,
-            # data_provider="0x245b8abbc1b70b370d1b81398de0a7920b25e7ca",  # diva oracle
-            data_provider="0x638c4aB660A9af1E6D79491462A0904b3dA78bB2",  # DivaTellorOracle (middleware) contract
+            last_id=100,
+            # data_provider="0x245b8abbc1b70b370d1b81398de0a7920b25e7ca",  # diva oracle (centralized)
+            # data_provider="0x638c4aB660A9af1E6D79491462A0904b3dA78bB2",  # middleware ropsten
+            data_provider="0x66f84344c786a106AcaE8f54bbb0BdA44Fec6723",  # middleware goerli
         )
         pools = await fetch_from_subgraph(
             query=query,
-            network="ropsten",
+            network="goerli",
         )
         if pools is None or len(pools) == 0:
             logger.info("No pools found from subgraph query")
@@ -128,6 +129,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
         settle them by calling setFinalReferenceValue, & update
         pickled dictionary.
         """
+        logger.info("Settling pools...")
         # Get pools to settle
         reported_pools = get_reported_pools()
         if reported_pools is None or len(reported_pools) == 0:
