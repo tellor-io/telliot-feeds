@@ -3,17 +3,35 @@
 Prevent early reporting of data for DIVA Protocol queries.
 Ensure others haven't already reported data for the same query."""
 import time
-
 import pytest
 from brownie import accounts
 from brownie import DIVAProtocolMock
 from brownie import DIVATellorOracleMock
+from brownie import TellorPlayground
 from telliot_core.apps.core import TelliotCore
 from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 from web3.datastructures import AttributeDict
+from telliot_feeds.integrations.diva_protocol.pool import DivaPool
+
+from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
+from tests.utils.utils import passing_bool_w_status
 
 from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
-from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
+from telliot_core.apps.core import find_accounts
+from telliot_core.apps.core import ChainedAccount
+
+
+chain_id = 5
+_ = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
+try:
+    account = find_accounts(name="fake_goerli_test_acct", chain_id=chain_id)[0]
+except IndexError:
+    account = ChainedAccount.add(
+        name="fake_goerli_test_acct",
+        chains=chain_id,
+        key="023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9",
+        password="",
+    )
 
 
 @pytest.fixture
@@ -23,13 +41,17 @@ def mock_diva_contract():
 
 @pytest.fixture
 def mock_middleware_contract():
-    return accounts[0].deploy(DIVATellorOracleMock)
+    return accounts[0].deploy(DIVATellorOracleMock, 0)
 
+
+@pytest.fixture
+def mock_playground():
+    return accounts[0].deploy(TellorPlayground)
 
 @pytest.mark.asyncio
 async def test_report(
     goerli_test_cfg,
-    mock_flex_contract,
+    mock_playground,
     mock_autopay_contract,
     mock_token_contract,
     mock_diva_contract,
@@ -37,24 +59,25 @@ async def test_report(
 ):
     """Test reporting DIVA Protocol pool response on mumbai."""
     async with TelliotCore(config=goerli_test_cfg) as core:
-        account = core.get_account()
 
-        chain_id = 5
+        past_expiry = int(time.time()) - 1
         pool_id = 1234
-
-        diva_feed = await assemble_diva_datafeed(
-            node=core.endpoint,
-            account=account,
+        fake_pool = DivaPool(
             pool_id=pool_id,
-            diva_address=mock_diva_contract.address,
-            chaind_id=chain_id,
-        )
+            reference_asset="ETH/USD",
+            collateral_token_address="0x1234",
+            collateral_token_symbol= "dUSD",
+            collateral_balance=100,
+            expiry_time=past_expiry,
+            )
+        diva_feed = assemble_diva_datafeed(pool=fake_pool)
+        _ = mock_diva_contract.changePoolExpiry(pool_id, past_expiry)
 
-        # Use current timestamp minus 30 sec for pool expiry time
-        _ = mock_diva_contract.changePoolExpiry(pool_id, int(time.time() - 30))
+        timestamp = mock_playground.getNewValueCountbyQueryId(diva_feed.query.query_id)
+        assert timestamp == 0
 
         flex = core.get_tellorflex_contracts()
-        flex.oracle.address = mock_flex_contract.address
+        flex.oracle.address = mock_playground.address
         flex.autopay.address = mock_autopay_contract.address
         flex.token.address = mock_token_contract.address
         flex.oracle.connect()
@@ -70,9 +93,11 @@ async def test_report(
             oracle=flex.oracle,
             token=flex.token,
             autopay=flex.autopay,
-            datafeed=diva_feed,
             expected_profit="YOLO",
+            datafeed=diva_feed,
+            transaction_type=0,
         )
+        r.ensure_staked = passing_bool_w_status
         r.middleware_contract = DivaOracleTellorContract(core.endpoint, account)
         r.middleware_contract.address = mock_middleware_contract.address
         r.middleware_contract.connect()
@@ -80,9 +105,11 @@ async def test_report(
 
         assert status.ok
         assert isinstance(tx_receipt, AttributeDict)
-        assert tx_receipt.to == mock_flex_contract.address
+        assert tx_receipt.to == mock_playground.address
 
         # Check that the report was recorded in the mock contract
+        timestamp = mock_playground.getNewValueCountbyQueryId(diva_feed.query.query_id)
+        assert timestamp == 1
 
 
 @pytest.mark.asyncio

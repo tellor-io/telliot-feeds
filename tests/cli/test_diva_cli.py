@@ -1,5 +1,3 @@
-
-
 def test_integrations_help_cmd():
     # ensure diva cmd is available
     pass
