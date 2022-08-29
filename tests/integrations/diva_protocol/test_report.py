@@ -109,17 +109,13 @@ async def test_report(
         assert tx_receipt.to == mock_playground.address
 
         # Check that the report was recorded in the mock contract
-        timestamp = mock_playground.getNewValueCountbyQueryId(diva_feed.query.query_id)
-        assert timestamp == 1
+        idx = mock_playground.getNewValueCountbyQueryId(diva_feed.query.query_id)
+        assert idx == 1
 
+        timestamp = mock_playground.getTimestampbyQueryIdandIndex(diva_feed.query.query_id, 0)
+        assert timestamp > past_expiry
 
-@pytest.mark.asyncio
-async def test_report_twice_fail():
-    # ensure can't report same pool twice
-    pass
-
-
-@pytest.mark.asyncio
-async def test_report_early_fail():
-    # ensure can't report before expiry time
-    pass
+        val = mock_playground.retrieveData(diva_feed.query.query_id, timestamp)
+        ref_asset_price, dusd_price = diva_feed.query.value_type.decode(val)
+        assert ref_asset_price > 0
+        assert dusd_price == 1
