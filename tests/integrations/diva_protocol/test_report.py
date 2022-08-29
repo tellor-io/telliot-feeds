@@ -7,7 +7,7 @@ import time
 import pytest
 from brownie import accounts
 from brownie import DIVAProtocolMock
-from brownie import DivaTellorOracleMock
+from brownie import DIVATellorOracleMock
 from telliot_core.apps.core import TelliotCore
 from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 from web3.datastructures import AttributeDict
@@ -23,7 +23,7 @@ def mock_diva_contract():
 
 @pytest.fixture
 def mock_middleware_contract():
-    return accounts[0].deploy(DivaTellorOracleMock)
+    return accounts[0].deploy(DIVATellorOracleMock)
 
 
 @pytest.mark.asyncio
