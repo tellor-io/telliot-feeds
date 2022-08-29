@@ -19,7 +19,6 @@ from multicall import Call
 from multicall import Multicall
 from multicall import multicall
 from multicall.constants import MULTICALL2_ADDRESSES
-from multicall.constants import MULTICALL_ADDRESSES
 from multicall.constants import Network
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.utils.response import error_status
@@ -34,21 +33,13 @@ logger = get_logger(__name__)
 
 # add testnet support for multicall that aren't avaialable in the package
 Network.Mumbai = 80001
-MULTICALL_ADDRESSES[Network.Mumbai] = MULTICALL2_ADDRESSES[
-    Network.Mumbai
-] = "0x35583BDef43126cdE71FD273F5ebeffd3a92742A"
+MULTICALL2_ADDRESSES[Network.Mumbai] = "0x35583BDef43126cdE71FD273F5ebeffd3a92742A"
 Network.ArbitrumRinkeby = 421611
-MULTICALL_ADDRESSES[Network.ArbitrumRinkeby] = MULTICALL2_ADDRESSES[
-    Network.ArbitrumRinkeby
-] = "0xf609687230a65E8bd14caceDEfCF2dea9c15b242"
+MULTICALL2_ADDRESSES[Network.ArbitrumRinkeby] = "0xf609687230a65E8bd14caceDEfCF2dea9c15b242"
 Network.OptimismKovan = 69
-MULTICALL_ADDRESSES[Network.OptimismKovan] = MULTICALL2_ADDRESSES[
-    Network.OptimismKovan
-] = "0xf609687230a65E8bd14caceDEfCF2dea9c15b242"
+MULTICALL2_ADDRESSES[Network.OptimismKovan] = "0xf609687230a65E8bd14caceDEfCF2dea9c15b242"
 Network.PulsechainTestnet = 941
-MULTICALL_ADDRESSES[Network.PulsechainTestnet] = MULTICALL2_ADDRESSES[
-    Network.PulsechainTestnet
-] = "0x959a437F1444DaDaC8aF997E71EAF0479c810267"
+MULTICALL2_ADDRESSES[Network.PulsechainTestnet] = "0x959a437F1444DaDaC8aF997E71EAF0479c810267"
 
 
 async def run_in_subprocess(coro: Any, *args: Any, **kwargs: Any) -> Any:
@@ -89,7 +80,7 @@ class AutopayCalls:
         self.w3: Web3 = autopay.node._web3
         self.catalog = catalog
 
-    async def get_current_feeds(self, require_success: bool = True) -> Any:
+    async def get_current_feeds(self, require_success: bool = False) -> Any:
         """
         Getter for:
         - feed ids list for each query id in catalog
@@ -140,7 +131,7 @@ class AutopayCalls:
             logger.warning(msg)
         return data
 
-    async def get_feed_details(self, require_success: bool = True) -> Any:
+    async def get_feed_details(self, require_success: bool = False) -> Any:
         """
         Getter for:
         - timestamps for three months of reports to oracle using queryId and index
@@ -193,7 +184,7 @@ class AutopayCalls:
             for idx in range(start, end)
         ]
 
-        def _to_list(val: Any) -> List[Any]:
+        def _to_list(_: bool, val: Any) -> List[Any]:
             """Helper function, converts feed_details from tuple to list"""
             return list(val)
 
@@ -224,7 +215,7 @@ class AutopayCalls:
 
         return feed_details
 
-    async def reward_claim_status(self, require_success: bool = True) -> Any:
+    async def reward_claim_status(self, require_success: bool = False) -> Any:
         """
         Getter that checks if a timestamp's tip has been claimed
         """

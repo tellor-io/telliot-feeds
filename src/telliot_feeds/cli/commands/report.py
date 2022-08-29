@@ -46,7 +46,8 @@ def get_stake_amount() -> float:
     Retrieves desidred stake amount from user input."""
 
     warn = (
-        "\n\U00002757Telliot will automatically stake more TRB if you don't have enough staked to report,"
+        "\n\U00002757Telliot will automatically stake more TRB "
+        "if you don't have enough staked to report, "
         "even if your stake amount is lower due to a dispute!"
     )
     click.echo(warn)
