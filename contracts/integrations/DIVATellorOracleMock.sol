@@ -13,4 +13,9 @@ contract DIVATellorOracleMock {
     function getMinPeriodUndisputed() public view returns (uint256) {
         return minPeriodUndisputed;
     }
+
+    function updateMinPeriodUndisputed(uint256 _minPeriodUndisputed) external returns (uint256) {
+        minPeriodUndisputed = _minPeriodUndisputed;
+        return minPeriodUndisputed;
+    }
 }

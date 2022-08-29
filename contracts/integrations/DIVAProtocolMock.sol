@@ -113,4 +113,12 @@ contract DIVAProtocolMock {
         pools[_poolId].expiryTime = _timestamp;
         return pools[_poolId].expiryTime;
     }
+
+    function changePoolDataProvider(uint256 _poolId, address _provider)
+        external
+        returns (address)
+    {
+        pools[_poolId].dataProvider = _provider;
+        return pools[_poolId].dataProvider;
+    }
 }
