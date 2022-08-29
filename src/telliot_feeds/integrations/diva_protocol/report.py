@@ -67,6 +67,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         """Fetch datafeed"""
+        if self.datafeed:
+            return self.datafeed
+
         # fetch pools from DIVA subgraph
         query = query_valid_pools(
             last_id=100,
