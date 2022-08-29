@@ -15,7 +15,6 @@ from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from multicall import multicall
 from multicall.constants import MULTICALL2_ADDRESSES
-from multicall.constants import MULTICALL_ADDRESSES
 from multicall.constants import Network
 from telliot_core.apps.telliot_config import TelliotConfig
 
@@ -250,5 +249,5 @@ def multicall_contract():
     addy = brownie_multicall.deploy({"from": accounts[0]})
     Network.Brownie = 1337
     # add multicall contract address to multicall module
-    MULTICALL_ADDRESSES[Network.Brownie] = MULTICALL2_ADDRESSES[Network.Brownie] = addy.address
+    MULTICALL2_ADDRESSES[Network.Brownie] = addy.address
     multicall.state_override_supported = lambda _: False
