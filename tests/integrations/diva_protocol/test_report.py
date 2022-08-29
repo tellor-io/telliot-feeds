@@ -3,22 +3,22 @@
 Prevent early reporting of data for DIVA Protocol queries.
 Ensure others haven't already reported data for the same query."""
 import time
+
 import pytest
 from brownie import accounts
 from brownie import DIVAProtocolMock
 from brownie import DIVATellorOracleMock
 from brownie import TellorPlayground
+from telliot_core.apps.core import ChainedAccount
+from telliot_core.apps.core import find_accounts
 from telliot_core.apps.core import TelliotCore
 from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 from web3.datastructures import AttributeDict
-from telliot_feeds.integrations.diva_protocol.pool import DivaPool
-
-from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
-from tests.utils.utils import passing_bool_w_status
 
 from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
-from telliot_core.apps.core import find_accounts
-from telliot_core.apps.core import ChainedAccount
+from telliot_feeds.integrations.diva_protocol.pool import DivaPool
+from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
+from tests.utils.utils import passing_bool_w_status
 
 
 chain_id = 5
@@ -48,6 +48,7 @@ def mock_middleware_contract():
 def mock_playground():
     return accounts[0].deploy(TellorPlayground)
 
+
 @pytest.mark.asyncio
 async def test_report(
     goerli_test_cfg,
@@ -66,10 +67,10 @@ async def test_report(
             pool_id=pool_id,
             reference_asset="ETH/USD",
             collateral_token_address="0x1234",
-            collateral_token_symbol= "dUSD",
+            collateral_token_symbol="dUSD",
             collateral_balance=100,
             expiry_time=past_expiry,
-            )
+        )
         diva_feed = assemble_diva_datafeed(pool=fake_pool)
         _ = mock_diva_contract.changePoolExpiry(pool_id, past_expiry)
 
