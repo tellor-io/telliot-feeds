@@ -95,50 +95,9 @@ contract DIVAProtocolMock {
     // Add a new pool
     function addPool(
         uint256 _poolId,
-        string memory _referenceAsset,
-        uint256 _expiryTime,
-        uint256 _floor,
-        uint256 _inflection,
-        uint256 _cap,
-        uint256 _supplyInitial,
-        address _collateralToken,
-        uint256 _collateralBalanceShortInitial,
-        uint256 _collateralBalanceLongInitial,
-        uint256 _collateralBalance,
-        address _shortToken,
-        address _longToken,
-        uint256 _finalReferenceValue,
-        Status _statusFinalReferenceValue,
-        uint256 _redemptionAmountLongToken,
-        uint256 _redemptionAmountShortToken,
-        uint256 _statusTimestamp,
-        address _dataProvider,
-        uint256 _redemptionFee,
-        uint256 _settlementFee,
-        uint256 _capacity
+        Pool memory _poolParams
         ) public {
-        Pool memory pool;
-        pool.referenceAsset = _referenceAsset;
-        pool.expiryTime = _expiryTime;
-        pool.floor = _floor;
-        pool.inflection = _inflection;
-        pool.cap = _cap;
-        pool.supplyInitial = _supplyInitial;
-        pool.collateralToken = _collateralToken;
-        pool.collateralBalanceShortInitial = _collateralBalanceShortInitial;
-        pool.collateralBalanceLongInitial = _collateralBalanceLongInitial;
-        pool.collateralBalance = _collateralBalance;
-        pool.shortToken = _shortToken;
-        pool.longToken = _longToken;
-        pool.finalReferenceValue = _finalReferenceValue;
-        pool.statusFinalReferenceValue = _statusFinalReferenceValue;
-        pool.redemptionAmountLongToken = _redemptionAmountLongToken;
-        pool.redemptionAmountShortToken = _redemptionAmountShortToken;
-        pool.statusTimestamp = _statusTimestamp;
-        pool.dataProvider = _dataProvider;
-        pool.redemptionFee = _redemptionFee;
-        pool.settlementFee = _settlementFee;
-        pool.capacity = _capacity;
+        Pool memory pool = _poolParams;
         pools[_poolId] = pool;
     }
 

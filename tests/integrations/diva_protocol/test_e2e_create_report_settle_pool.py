@@ -45,13 +45,13 @@ def mock_diva_contract():
 
 
 @pytest.fixture
-def mock_middleware_contract():
-    return accounts[0].deploy(DIVATellorOracleMock, 0)
+def mock_playground():
+    return accounts[0].deploy(TellorPlayground)
 
 
 @pytest.fixture
-def mock_playground():
-    return accounts[0].deploy(TellorPlayground)
+def mock_middleware_contract(mock_playground):
+    return accounts[0].deploy(DIVATellorOracleMock, 0, mock_playground.address)
 
 
 @pytest.mark.asyncio
@@ -85,33 +85,42 @@ async def test_create_report_settle_pool(
 
         # create pool in DIVA Protocol
         pool_id = example_pools_updated[0]["id"]
-        mock_diva_contract.addPool.call(
-            _poolId=pool_id,
-            _referenceAsset=example_pools_updated[0]["referenceAsset"],
-            _expiryTime=example_pools_updated[0]["expiryTime"],
-            _floor=0,
-            _inflection=0,
-            _cap=0,
-            _supplyInitial=0,
-            _collateralToken=example_pools_updated[0]["collateralToken"]["id"],
-            _collateralBalanceShortInitial=0,
-            _collateralBalanceLongInitial=0,
-            _collateralBalance=example_pools_updated[0]["collateralBalance"],
-            _shortToken="0x0000000000000000000000000000000000000000",
-            _longToken="0x0000000000000000000000000000000000000000",
-            _finalReferenceValue=0,
-            _statusFinalReferenceValue=0,
-            _redemptionAmountLongToken=0,
-            _redemptionAmountShortToken=0,
-            _statusTimestamp=0,
-            _dataProvider=mock_middleware_contract.address,
-            _redemptionFee=0,
-            _settlementFee=0,
-            _capacity=0,
+        params_sent = mock_diva_contract.addPool.call(
+            pool_id,
+            [
+                # example_pools_updated[0]["referenceAsset"],
+                "blah",
+                example_pools_updated[0]["expiryTime"],
+                0,
+                0,
+                0,
+                0,
+                example_pools_updated[0]["collateralToken"]["id"],
+                0,
+                0,
+                example_pools_updated[0]["collateralBalance"],
+                "0x0000000000000000000000000000000000000000",
+                "0x0000000000000000000000000000000000000000",
+                0,
+                0,
+                0,
+                0,
+                0,
+                mock_middleware_contract.address,
+                0,
+                0,
+                0,
+            ],
+            {"from": accounts[0]},
         )
-
+        print(params_sent)
+        # ensure pool is created
+        params = mock_diva_contract.getPoolParameters.call(pool_id, {"from": accounts[0]})
+        assert params[0] == example_pools_updated[0]["referenceAsset"]
+        assert params[1] == past_expired
+        assert params[17] == mock_middleware_contract.address
         # ensure statusFinalReferenceValue is not submitted (Open)
-        assert mock_diva_contract.getPoolParameters.call(pool_id, {"from": accounts[0]})[13] == 0
+        assert params[13] == 0
 
         # instantiate reporter w/ mock contracts & data provider and any other params
         flex = core.get_tellorflex_contracts()
