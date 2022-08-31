@@ -12,10 +12,7 @@ from telliot_feeds.integrations.diva_protocol.utils import dict_to_pool
 from utils import EXAMPLE_POOLS_FROM_SUBGRAPH
 
 
-EXAMPLE_POOLS = [
-    dict_to_pool(d)
-    for d in EXAMPLE_POOLS_FROM_SUBGRAPH
-]
+EXAMPLE_POOLS = [dict_to_pool(d) for d in EXAMPLE_POOLS_FROM_SUBGRAPH]
 
 
 def test_assemble_diva_datafeed():

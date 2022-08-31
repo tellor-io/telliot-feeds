@@ -7,7 +7,6 @@ Ensure it can't be called twice, or if there's no reported value for the pool,
 or if it's too early for the pool to be settled."""
 import os
 import time
-from unittest import mock
 
 import pytest
 from brownie import accounts
@@ -17,13 +16,14 @@ from brownie import TellorPlayground
 from telliot_core.apps.core import ChainedAccount
 from telliot_core.apps.core import find_accounts
 from telliot_core.apps.core import TelliotCore
-
-from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
-from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
 from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 
-from utils import EXAMPLE_POOLS_FROM_SUBGRAPH
+from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
+from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
 from tests.utils.utils import passing_bool_w_status
+from utils import EXAMPLE_POOLS_FROM_SUBGRAPH
+
+# from unittest import mock
 
 
 chain_id = 5
@@ -92,7 +92,7 @@ async def test_create_report_settle_pool(
         example_pools_updated = EXAMPLE_POOLS_FROM_SUBGRAPH
         example_pools_updated[0]["expiryTime"] = past_expired
         monkeypatch.setattr("telliot_feeds.integrations.diva_protocol.pool.fetch_from_subgraph", example_pools_updated)
-        
+
         # instantiate reporter w/ mock contracts & data provider and any other params
         flex = core.get_tellorflex_contracts()
         flex.oracle.address = mock_playground.address
