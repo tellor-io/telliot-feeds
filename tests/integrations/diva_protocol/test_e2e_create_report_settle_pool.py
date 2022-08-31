@@ -112,7 +112,7 @@ async def test_create_report_settle_pool(
 
         # ensure statusFinalReferenceValue is not submitted (Open)
         assert mock_diva_contract.getPoolParameters.call(pool_id, {"from": accounts[0]})[13] == 0
-            
+
         # instantiate reporter w/ mock contracts & data provider and any other params
         flex = core.get_tellorflex_contracts()
         flex.oracle.address = mock_playground.address
