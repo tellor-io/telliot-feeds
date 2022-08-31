@@ -19,6 +19,11 @@ from telliot_core.apps.core import find_accounts
 from telliot_core.apps.core import TelliotCore
 
 from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
+from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
+from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
+
+from utils import EXAMPLE_POOLS_FROM_SUBGRAPH
+from tests.utils.utils import passing_bool_w_status
 
 
 chain_id = 5
@@ -57,6 +62,7 @@ async def test_create_report_settle_pool(
     mock_token_contract,
     mock_diva_contract,
     mock_middleware_contract,
+    monkeypatch,
 ):
     """
     Test settling a derivative pool in DIVA Protocol after reporting the value of
@@ -77,24 +83,54 @@ async def test_create_report_settle_pool(
         assert mock_middleware_contract.updateMinPeriodUndisputed.call(1, {"from": accounts[0]}) == 1
 
         # mock default_homedir to be current directory
-        def mock_default_homedir():
-            return os.getcwd()
+        monkeypatch.setattr("telliot_feeds.integrations.diva_protocol.utils.default_homedir", lambda: os.getcwd())
 
-        with mock.patch("telliot_feeds.integrations.diva_protocol.utils.default_homedir", mock_default_homedir):
-            # instantiate reporter w/ mock contracts & data provider and any other params
+        # check initial state of pools pickle file
+        assert get_reported_pools() == {}
 
-            # check initial state of pools pickle file
-            assert get_reported_pools() == {}
+        # mock fetch pools from subgraph
+        example_pools_updated = EXAMPLE_POOLS_FROM_SUBGRAPH
+        example_pools_updated[0]["expiryTime"] = past_expired
+        monkeypatch.setattr("telliot_feeds.integrations.diva_protocol.pool.fetch_from_subgraph", example_pools_updated)
+        
+        # instantiate reporter w/ mock contracts & data provider and any other params
+        flex = core.get_tellorflex_contracts()
+        flex.oracle.address = mock_playground.address
+        flex.autopay.address = mock_autopay_contract.address
+        flex.token.address = mock_token_contract.address
+        flex.oracle.connect()
+        flex.token.connect()
+        flex.autopay.connect()
+        mock_token_contract.mint(account.address, 1000e18)
+        accounts[2].transfer(account.address, "1 ether")
 
-            # mock fetch pools from subgraph
-            # run report for diva reporter, mock sleep to stop early
+        r = DIVAProtocolReporter(
+            endpoint=core.endpoint,
+            account=account,
+            chain_id=chain_id,
+            oracle=flex.oracle,
+            token=flex.token,
+            autopay=flex.autopay,
+            expected_profit="YOLO",
+            datafeed=None,
+            transaction_type=0,
+        )
+        r.ensure_staked = passing_bool_w_status
+        r.middleware_contract = DivaOracleTellorContract(core.endpoint, account)
+        r.middleware_contract.address = mock_middleware_contract.address
+        r.middleware_contract.connect()
 
-            # check value reported to flex contract
-            # check pool info updated in pickle file
-            # check pool settled in mock contract
+        tx_receipt, status = await r.report(report_count=1)
 
-            # run report again, check no new pools picked up, unable to report & settle
+        assert status.ok
+        assert tx_receipt.to == mock_playground.address
 
-            # clean up temp pickle file
-            adir = os.getcwd()
-            _ = [os.remove(adir + "/" + f) for f in os.listdir(adir) if f.endswith(".pickle")]
+        # check value reported to flex contract
+        # check pool info updated in pickle file
+        # check pool settled in mock contract
+
+        # run report again, check no new pools picked up, unable to report & settle
+
+        # clean up temp pickle file
+        adir = os.getcwd()
+        _ = [os.remove(adir + "/" + f) for f in os.listdir(adir) if f.endswith(".pickle")]
