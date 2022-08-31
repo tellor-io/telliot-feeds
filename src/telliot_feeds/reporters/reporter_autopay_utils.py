@@ -122,26 +122,7 @@ class AutopayCalls:
                         [["disregard_boolean", None], [(tag, "three_mos_ago"), None]],
                     )
                 )
-        multi_call = Multicall(calls=calls, _w3=self.w3, require_success=require_success)
-        try:
-            data: Dict[str, Any] = await multi_call.coroutine()
-        except ValueError as e:
-            if "unsupported block number" in str(e):
-                msg = f"Unsupported block number in multicall request, KeyError: {e}"
-                logger.warning(msg)
-                return None
-            else:
-                msg = f"Error in multicall request, KeyError {e}"
-                logger.warning(msg)
-                return None
-        # remove status boolean thats useless here
-        try:
-            _ = data.pop("disregard_boolean")
-            return data
-        except KeyError as e:
-            msg = f"No feeds returned by multicall, KeyError: {e}"
-            logger.warning(msg)
-            return None
+        return await safe_multicall(calls, self.w3, require_success)
 
     async def get_feed_details(self, require_success: bool = False) -> Any:
         """
@@ -168,8 +149,7 @@ class AutopayCalls:
         tags_with_feed_ids = {
             tag: feed_id
             for tag, feed_id in current_feeds.items()
-            if isinstance(tag, tuple)
-            if len(current_feeds[tag]) > 0
+            if (isinstance(tag, tuple) and len(current_feeds[tag]) > 0)
         }
         idx_current: List[int] = []  # indices for every query id reports' current timestamps
         idx_three_mos_ago: List[int] = []  # indices for every query id reports' three months ago timestamps
@@ -185,35 +165,46 @@ class AutopayCalls:
         merged_indices = list(zip(idx_current, idx_three_mos_ago))
         merged_query_idx = dict(zip(tags, merged_indices))
 
-        get_timestampby_query_id_n_idx_call = [
-            Call(
-                self.autopay.address,
-                [
-                    "getTimestampbyQueryIdandIndex(bytes32,uint256)(uint256)",
-                    query_catalog._entries[tag].query.query_id,
-                    idx,
-                ],
-                [[(tag, idx), None]],
-            )
-            for (tag, _), (end, start) in merged_query_idx.items()
-            for idx in range(start, end)
-        ]
+        get_timestampby_query_id_n_idx_call = []
+
+        tag: str
+        for (tag, _), (end, start) in merged_query_idx.items():
+            for idx in range(start, end):
+
+                get_timestampby_query_id_n_idx_call.append(
+                    Call(
+                        self.autopay.address,
+                        [
+                            "getTimestampbyQueryIdandIndex(bytes32,uint256)(uint256)",
+                            query_catalog._entries[tag].query.query_id,
+                            idx,
+                        ],
+                        [[(tag, idx), None]],
+                    )
+                )
 
         def _to_list(_: bool, val: Any) -> List[Any]:
             """Helper function, converts feed_details from tuple to list"""
             return list(val)
 
-        get_data_feed_call = [
-            Call(
-                self.autopay.address,
-                ["getDataFeed(bytes32)((uint256,uint256,uint256,uint256,uint256,uint256,uint256))", feed_id],
-                [[("current_feeds", tag, feed_id.hex()), _to_list]],
-            )
-            for tag, feed_ids in merged_query_idx
-            for feed_id in feed_ids
-        ]
-        get_current_values_call = [
-            Call(
+        get_data_feed_call = []
+
+        feed_ids: List[int]
+        for tag, feed_ids in merged_query_idx:
+            for feed_id in feed_ids:
+                c = Call(
+                    self.autopay.address,
+                    ["getDataFeed(bytes32)((uint256,uint256,uint256,uint256,uint256,uint256,uint256))", feed_id],
+                    [[("current_feeds", tag, hex(feed_id)), _to_list]],
+                )
+
+                get_data_feed_call.append(c)
+
+        get_current_values_call = []
+
+        for tag, _ in merged_query_idx:
+
+            c = Call(
                 self.autopay.address,
                 ["getCurrentValue(bytes32)(bool,bytes,uint256)", query_catalog._entries[tag].query.query_id],
                 [
@@ -222,21 +213,11 @@ class AutopayCalls:
                     [("current_values", tag, "timestamp"), None],
                 ],
             )
-            for tag, _ in merged_query_idx
-        ]
+
+            get_current_values_call.append(c)
+
         calls = get_data_feed_call + get_current_values_call + get_timestampby_query_id_n_idx_call
-        multi_call = Multicall(calls=calls, _w3=self.w3, require_success=require_success)
-        try:
-            feed_details = await multi_call.coroutine()
-            return feed_details
-        except ValueError as e:
-            if "unsupported block number" in str(e):
-                msg = f"Unsupported block number in multicall request, KeyError: {e}"
-                logger.warning(msg)
-                return None
-            else:
-                msg = f"Error in multicall request, KeyError {e}"
-                return None
+        return await safe_multicall(calls, self.w3, require_success)
 
     async def reward_claim_status(
         self, require_success: bool = False
@@ -288,19 +269,11 @@ class AutopayCalls:
                                 )
                             )
 
-        multi_call = Multicall(calls=reward_claimed_status_call, _w3=self.w3, require_success=require_success)
-
-        try:
-            data = await multi_call.coroutine()
+        data = await safe_multicall(reward_claimed_status_call, self.w3, require_success)
+        if data is not None:
             return feeds, current_values, data
-        except ValueError as e:
-            if "unsupported block number" in str(e):
-                msg = f"Unsupported block number in multicall request, KeyError: {e}"
-                logger.warning(msg)
-                return None, None, None
-            else:
-                msg = f"Error in multicall request, KeyError {e}"
-                return None, None, None
+        else:
+            return None, None, None
 
     async def get_current_tip(self, require_success: bool = False) -> Optional[Dict[str, Any]]:
         """
@@ -312,22 +285,7 @@ class AutopayCalls:
             Call(self.autopay.address, ["getCurrentTip(bytes32)(uint256)", query_id], [[self.catalog[query_id], None]])
             for query_id in self.catalog
         ]
-        multi_call = Multicall(calls=calls, _w3=self.w3, require_success=require_success)
-        try:
-            data: Optional[Dict[str, Any]] = await multi_call.coroutine()
-            return data
-        except ContractLogicError as e:
-            msg = f"Contract reversion in multicall request, ContractLogicError: {e}"
-            logger.warning(msg)
-            return None
-        except ValueError as e:
-            if "unsupported block number" in str(e):
-                msg = f"Unsupported block number in multicall request, KeyError: {e}"
-                logger.warning(msg)
-                return None
-            else:
-                msg = f"Error in multicall request, KeyError {e}"
-                return None
+        return await safe_multicall(calls, self.w3, require_success)
 
     def _current_price(self, *val: Any) -> Any:
         """
@@ -536,6 +494,37 @@ async def _get_feed_suggestion(feeds: Any, current_values: Any) -> Any:
                     query_id_with_tips[query_tag] += feed_details.reward
 
     return query_id_with_tips
+
+
+async def safe_multicall(calls: List[Call], endpoint: Web3, require_success: bool) -> Optional[Dict[str, Any]]:
+    """
+    Multcall...call with error handling
+
+    Args:
+        calls: list of Call objects, representing calls made by request
+        endpoint: web3 RPC endpoint connection
+        require_success: throws error if True and contract logic reverts
+
+    Returns:
+        data if multicall is successful
+    """
+    mc = Multicall(calls=calls, _w3=endpoint, require_success=require_success)
+
+    try:
+        data: Dict[str, Any] = await mc.coroutine()
+        return data
+    except ContractLogicError as e:
+        msg = f"Contract reversion in multicall request, ContractLogicError: {e}"
+        logger.warning(msg)
+        return None
+    except ValueError as e:
+        if "unsupported block number" in str(e):
+            msg = f"Unsupported block number in multicall request, ValueError: {e}"
+            logger.warning(msg)
+            return None
+        else:
+            msg = f"Error in multicall request, ValueError: {e}"
+            return None
 
 
 def _add_values(x: Optional[int], y: Optional[int]) -> Optional[int]:
