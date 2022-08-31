@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity >=0.8.0;
 
-import "../../interfaces/ITellor.sol";
-import "./interfaces/IDIVADiamond.sol";
-
-contract DIVATellorOracleMock {
+interface IDIVADiamond{
     enum Status {
         Open,
         Submitted,
@@ -34,44 +31,5 @@ contract DIVATellorOracleMock {
         uint256 settlementFee; // Settlement fee prevailing at the time of pool creation
         uint256 capacity; // Maximum collateral that the pool can accept; 0 for unlimited
     }
-
-    uint256 public minPeriodUndisputed;
-    uint256 public currentChainId;
-    ITellor public tellorOracle;
-    IDIVADiamond public divaDiamond;
-
-    constructor(
-        uint256 _minPeriodUndisputed,
-        address _tellorOracle
-    ) {
-        minPeriodUndisputed = _minPeriodUndisputed;
-        tellorOracle = ITellor(_tellorOracle);
-    }
-
-    function getMinPeriodUndisputed() public view returns (uint256) {
-        return minPeriodUndisputed;
-    }
-
-    function updateMinPeriodUndisputed(uint256 _minPeriodUndisputed) external returns (uint256) {
-        minPeriodUndisputed = _minPeriodUndisputed;
-        return minPeriodUndisputed;
-    }
-
-    function updateCurrentChainId(uint256 _currentChainId) external returns (uint256) {
-        currentChainId = _currentChainId;
-        return currentChainId;
-    }
-
-    function setFinalReferenceValue(uint256 _poolId, address _divaDiamond) external returns (uint256) {
-        bytes32 queryId = keccak256(abi.encode(_poolId, _divaDiamond, currentChainId)); // goerli chain id is 5
-        uint256 reportTime = tellorOracle.getTimestampbyQueryIdandIndex(queryId, 0); // get timestamp of first value
-        uint256 poolExpiry = divaDiamond.getPoolParameters(_poolId).expiryTime;
-        require(reportTime > poolExpiry, "Report time must be after pool expiry time");
-        require(block.timestamp > reportTime + minPeriodUndisputed, "minPeriodUndisputed has not elapsed since report time");
-        address reporter = tellorOracle.getReporterByTimestamp(queryId, reportTime);
-        require(reporter == msg.sender, "Only the reporter can set the final reference value");
-        // update statusFinalReferenceValue
-        // call func to update statusFinalReferenceValue in pool struct from divaDiamond
-        return 0;
-    }
+    function getPoolParameters(uint256) external view returns(Pool memory);
 }
