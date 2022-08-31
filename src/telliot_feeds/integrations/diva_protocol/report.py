@@ -40,6 +40,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
         super().__init__(*args, **kwargs)
         self.settle_period: Optional[int] = None
         self.middleware_contract = DivaOracleTellorContract(self.endpoint, self.account)
+        self.middleware_contract.address = "0xF3F62041113c92F080E88200481dFE392369d17b"
         self.middleware_contract.connect()
 
     async def filter_unreported_pools(self, pools: list[DivaPool]) -> list[DivaPool]:
@@ -49,7 +50,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
         unreported_pools = []
         for pool in pools:
             query = DIVAProtocol(
-                poolId=pool.pool_id, divaDiamond="0x2d8642777C51dB31945CeDbbC3198d75e497cb48", chainId=5
+                poolId=pool.pool_id, divaDiamond="0x27D1BD739BD152CDaE38d4444E9aee3498166f01", chainId=5
             )
             report_count, read_status = await self.get_num_reports_by_id(query.query_id)
 
@@ -72,10 +73,10 @@ class DIVAProtocolReporter(TellorFlexReporter):
 
         # fetch pools from DIVA subgraph
         query = query_valid_pools(
-            last_id=100,
+            last_id=0,
             # data_provider="0x245b8abbc1b70b370d1b81398de0a7920b25e7ca",  # diva oracle (centralized)
             # data_provider="0x638c4aB660A9af1E6D79491462A0904b3dA78bB2",  # middleware ropsten
-            data_provider="0x66f84344c786a106AcaE8f54bbb0BdA44Fec6723",  # middleware goerli
+            data_provider="0xF3F62041113c92F080E88200481dFE392369d17b",  # middleware goerli
         )
         pools = await fetch_from_subgraph(
             query=query,
@@ -151,10 +152,10 @@ class DIVAProtocolReporter(TellorFlexReporter):
                 continue
             # if current time is greater than time_submitted + settle_period, settle pool
             cur_time = int(time.time())
-            if (time_submitted + self.settle_period + 10) < cur_time:
+            if (time_submitted + self.settle_period + 60) < cur_time:
                 logger.info(
                     f"Settling pool {pool_id} reported at {time_submitted} given "
-                    f"current time {cur_time} and settle period {self.settle_period} plus 10 sec"
+                    f"current time {cur_time} and settle period {self.settle_period} plus one minute"
                 )
                 status = await self.settle_pool(pool_id)
                 if not status.ok:
@@ -299,9 +300,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
 
         return tx_receipt, status
 
-    async def report(self) -> None:
+    async def report(self, report_count: Optional[int] = None) -> None:
         """Report values for pool reference assets & settle pools."""
-        while True:
+        while report_count is None or report_count > 0:
             online = await self.is_online()
             if not online:
                 logger.warning("Unable to connect to the internet!")
@@ -311,3 +312,5 @@ class DIVAProtocolReporter(TellorFlexReporter):
 
             logger.info(f"Sleeping for {self.wait_period} seconds")
             await asyncio.sleep(self.wait_period)
+            if report_count is not None:
+                report_count -= 1
