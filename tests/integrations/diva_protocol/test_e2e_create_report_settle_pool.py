@@ -85,12 +85,11 @@ async def test_create_report_settle_pool(
         monkeypatch.setattr("telliot_feeds.integrations.diva_protocol.pool.fetch_from_subgraph", example_pools_updated)
 
         # create pool in DIVA Protocol
-        pool_id = example_pools_updated[0]["id"]
-        params_sent = mock_diva_contract.addPool.call(
+        pool_id = int(example_pools_updated[0]["id"])
+        params_sent = mock_diva_contract.addPool(
             pool_id,
             [
-                # example_pools_updated[0]["referenceAsset"],
-                "blah",
+                example_pools_updated[0]["referenceAsset"],
                 example_pools_updated[0]["expiryTime"],
                 0,
                 0,
@@ -116,8 +115,8 @@ async def test_create_report_settle_pool(
         )
         print("params_sent", params_sent)
         # ensure pool is created
-        chain.mine(1)
         params = mock_diva_contract.getPoolParameters.call(pool_id, {"from": accounts[0]})
+        chain.mine(1)
         print("params", params)
         assert params[0] == example_pools_updated[0]["referenceAsset"]
         assert params[1] == past_expired
