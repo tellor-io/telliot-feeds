@@ -29,10 +29,6 @@ async def test_get_current_tips(setup_autopay_call):
     tips = await calls.get_current_tip(require_success=False)
     assert tips["eth-usd-spot"] is None
 
-    with pytest.raises(ContractLogicError):
-        # If no tips are available in autopay getCurrentTip contract call reverts
-        await calls.get_current_tip(require_success=True)
-
 
 @pytest.mark.asyncio
 async def test_get_current_feeds(setup_autopay_call):

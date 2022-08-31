@@ -23,6 +23,7 @@ from multicall.constants import Network
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.utils.response import error_status
 from telliot_core.utils.timestamp import TimeStamp
+from web3.exceptions import ContractLogicError
 from web3.main import Web3
 
 from telliot_feeds.feeds import CATALOG_FEEDS
@@ -80,7 +81,7 @@ class AutopayCalls:
         self.w3: Web3 = autopay.node._web3
         self.catalog = catalog
 
-    async def get_current_feeds(self, require_success: bool = False) -> Any:
+    async def get_current_feeds(self, require_success: bool = False) -> Optional[Dict[str, Any]]:
         """
         Getter for:
         - feed ids list for each query id in catalog
@@ -122,14 +123,25 @@ class AutopayCalls:
                     )
                 )
         multi_call = Multicall(calls=calls, _w3=self.w3, require_success=require_success)
-        data = await multi_call.coroutine()
+        try:
+            data: Dict[str, Any] = await multi_call.coroutine()
+        except ValueError as e:
+            if "unsupported block number" in str(e):
+                msg = f"Unsupported block number in multicall request, KeyError: {e}"
+                logger.warning(msg)
+                return None
+            else:
+                msg = f"Error in multicall request, KeyError {e}"
+                logger.warning(msg)
+                return None
         # remove status boolean thats useless here
         try:
-            data.pop("disregard_boolean")
+            _ = data.pop("disregard_boolean")
+            return data
         except KeyError as e:
             msg = f"No feeds returned by multicall, KeyError: {e}"
             logger.warning(msg)
-        return data
+            return None
 
     async def get_feed_details(self, require_success: bool = False) -> Any:
         """
@@ -154,13 +166,16 @@ class AutopayCalls:
         # separate items from current feeds
         # create dict of tag and feed_id in current_feeds
         tags_with_feed_ids = {
-            tag: feed_id for tag, feed_id in current_feeds.items() if type(tag) != tuple if len(current_feeds[tag]) > 0
+            tag: feed_id
+            for tag, feed_id in current_feeds.items()
+            if isinstance(tag, tuple)
+            if len(current_feeds[tag]) > 0
         }
-        idx_current = []  # indices for every query id reports' current timestamps
-        idx_three_mos_ago = []  # indices for every query id reports' three months ago timestamps
-        tags = []  # query tags from catalog
+        idx_current: List[int] = []  # indices for every query id reports' current timestamps
+        idx_three_mos_ago: List[int] = []  # indices for every query id reports' three months ago timestamps
+        tags: List[str] = []  # query tags from catalog
         for key in current_feeds:
-            if type(key) == tuple and key[0] in tags_with_feed_ids:
+            if isinstance(key, tuple) and key[0] in tags_with_feed_ids:
                 if key[1] == "current_time":
                     idx_current.append(current_feeds[key])
                     tags.append((key[0], tags_with_feed_ids[key[0]]))
@@ -211,18 +226,28 @@ class AutopayCalls:
         ]
         calls = get_data_feed_call + get_current_values_call + get_timestampby_query_id_n_idx_call
         multi_call = Multicall(calls=calls, _w3=self.w3, require_success=require_success)
-        feed_details = await multi_call.coroutine()
+        try:
+            feed_details = await multi_call.coroutine()
+            return feed_details
+        except ValueError as e:
+            if "unsupported block number" in str(e):
+                msg = f"Unsupported block number in multicall request, KeyError: {e}"
+                logger.warning(msg)
+                return None
+            else:
+                msg = f"Error in multicall request, KeyError {e}"
+                return None
 
-        return feed_details
-
-    async def reward_claim_status(self, require_success: bool = False) -> Any:
+    async def reward_claim_status(
+        self, require_success: bool = False
+    ) -> Tuple[Optional[Dict[Any, Any]], Optional[Dict[Any, Any]], Optional[Dict[Any, Any]]]:
         """
         Getter that checks if a timestamp's tip has been claimed
         """
         feed_details_before_check = await self.get_feed_details()
         if not feed_details_before_check:
             logger.info("No feeds balance to check")
-            return None
+            return None, None, None
         # create a key to use for the first timestamp since it doesn't have a before value that needs to be checked
         feed_details_before_check[(0, 0)] = 0
         timestamp_before_key = (0, 0)
@@ -264,11 +289,20 @@ class AutopayCalls:
                             )
 
         multi_call = Multicall(calls=reward_claimed_status_call, _w3=self.w3, require_success=require_success)
-        data = await multi_call.coroutine()
 
-        return feeds, current_values, data
+        try:
+            data = await multi_call.coroutine()
+            return feeds, current_values, data
+        except ValueError as e:
+            if "unsupported block number" in str(e):
+                msg = f"Unsupported block number in multicall request, KeyError: {e}"
+                logger.warning(msg)
+                return None, None, None
+            else:
+                msg = f"Error in multicall request, KeyError {e}"
+                return None, None, None
 
-    async def get_current_tip(self, require_success: bool = False) -> Any:
+    async def get_current_tip(self, require_success: bool = False) -> Optional[Dict[str, Any]]:
         """
         Return response from autopay getCurrenTip call.
         Default value for require_success is False because AutoPay returns an
@@ -279,9 +313,21 @@ class AutopayCalls:
             for query_id in self.catalog
         ]
         multi_call = Multicall(calls=calls, _w3=self.w3, require_success=require_success)
-        data = await multi_call.coroutine()
-
-        return data
+        try:
+            data: Optional[Dict[str, Any]] = await multi_call.coroutine()
+            return data
+        except ContractLogicError as e:
+            msg = f"Contract reversion in multicall request, ContractLogicError: {e}"
+            logger.warning(msg)
+            return None
+        except ValueError as e:
+            if "unsupported block number" in str(e):
+                msg = f"Unsupported block number in multicall request, KeyError: {e}"
+                logger.warning(msg)
+                return None
+            else:
+                msg = f"Error in multicall request, KeyError {e}"
+                return None
 
     def _current_price(self, *val: Any) -> Any:
         """
