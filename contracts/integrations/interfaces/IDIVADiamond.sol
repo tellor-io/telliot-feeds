@@ -32,4 +32,5 @@ interface IDIVADiamond{
         uint256 capacity; // Maximum collateral that the pool can accept; 0 for unlimited
     }
     function getPoolParameters(uint256) external view returns(Pool memory);
+    function updatePoolStatus(uint256, uint256) external returns(Status);
 }

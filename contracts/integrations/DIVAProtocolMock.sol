@@ -171,4 +171,12 @@ contract DIVAProtocolMock {
         pools[_poolId].dataProvider = _provider;
         return pools[_poolId].dataProvider;
     }
+
+    function updatePoolStatus(uint256 _poolId, uint256 _status)
+        external
+        returns (Status)
+    {
+        pools[_poolId].statusFinalReferenceValue = Status(_status);
+        return pools[_poolId].statusFinalReferenceValue;
+    }
 }

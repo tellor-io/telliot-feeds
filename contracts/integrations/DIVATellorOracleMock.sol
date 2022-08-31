@@ -70,8 +70,7 @@ contract DIVATellorOracleMock {
         require(block.timestamp > reportTime + minPeriodUndisputed, "minPeriodUndisputed has not elapsed since report time");
         address reporter = tellorOracle.getReporterByTimestamp(queryId, reportTime);
         require(reporter == msg.sender, "Only the reporter can set the final reference value");
-        // update statusFinalReferenceValue
-        // call func to update statusFinalReferenceValue in pool struct from divaDiamond
-        return 0;
+        uint256 status = uint256(divaDiamond.updatePoolStatus(_poolId, 1)); // 1 = Submitted
+        return status;
     }
 }
