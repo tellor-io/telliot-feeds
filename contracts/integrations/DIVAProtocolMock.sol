@@ -96,9 +96,10 @@ contract DIVAProtocolMock {
     function addPool(
         uint256 _poolId,
         Pool memory _poolParams
-        ) public {
+        ) public returns (Pool memory) {
         Pool memory pool = _poolParams;
         pools[_poolId] = pool;
+        return pool;
     }
 
     /**

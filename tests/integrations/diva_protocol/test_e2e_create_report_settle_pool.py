@@ -10,6 +10,7 @@ import time
 
 import pytest
 from brownie import accounts
+from brownie import chain
 from brownie import DIVAProtocolMock
 from brownie import DIVATellorOracleMock
 from brownie import TellorPlayground
@@ -113,9 +114,11 @@ async def test_create_report_settle_pool(
             ],
             {"from": accounts[0]},
         )
-        print(params_sent)
+        print("params_sent", params_sent)
         # ensure pool is created
+        chain.mine(1)
         params = mock_diva_contract.getPoolParameters.call(pool_id, {"from": accounts[0]})
+        print("params", params)
         assert params[0] == example_pools_updated[0]["referenceAsset"]
         assert params[1] == past_expired
         assert params[17] == mock_middleware_contract.address
