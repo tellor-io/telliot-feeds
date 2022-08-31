@@ -69,17 +69,7 @@ async def test_create_report_settle_pool(
     it's reference asset and collateral token.
     """
     async with TelliotCore(config=goerli_test_cfg) as core:
-        _ = core
-        pool_id = 10
         past_expired = int(time.time()) - 1
-        # update values of fake pool
-        assert mock_diva_contract.changePoolExpiry.call(pool_id, past_expired, {"from": accounts[0]}) == past_expired
-        assert (
-            mock_diva_contract.changePoolDataProvider.call(
-                pool_id, mock_middleware_contract.address, {"from": accounts[0]}
-            )
-            == mock_middleware_contract.address
-        )
         assert mock_middleware_contract.updateMinPeriodUndisputed.call(1, {"from": accounts[0]}) == 1
 
         # mock default_homedir to be current directory
@@ -93,6 +83,36 @@ async def test_create_report_settle_pool(
         example_pools_updated[0]["expiryTime"] = past_expired
         monkeypatch.setattr("telliot_feeds.integrations.diva_protocol.pool.fetch_from_subgraph", example_pools_updated)
 
+        # create pool in DIVA Protocol
+        pool_id = example_pools_updated[0]["id"]
+        mock_diva_contract.addPool.call(
+            _poolId=pool_id,
+            _referenceAsset=example_pools_updated[0]["referenceAsset"],
+            _expiryTime=example_pools_updated[0]["expiryTime"],
+            _floor=0,
+            _inflection=0,
+            _cap=0,
+            _supplyInitial=0,
+            _collateralToken=example_pools_updated[0]["collateralToken"]["id"],
+            _collateralBalanceShortInitial=0,
+            _collateralBalanceLongInitial=0,
+            _collateralBalance=example_pools_updated[0]["collateralBalance"],
+            _shortToken="0x0000000000000000000000000000000000000000",
+            _longToken="0x0000000000000000000000000000000000000000",
+            _finalReferenceValue=0,
+            _statusFinalReferenceValue=0,
+            _redemptionAmountLongToken=0,
+            _redemptionAmountShortToken=0,
+            _statusTimestamp=0,
+            _dataProvider=mock_middleware_contract.address,
+            _redemptionFee=0,
+            _settlementFee=0,
+            _capacity=0,
+        )
+
+        # ensure statusFinalReferenceValue is not submitted (Open)
+        assert mock_diva_contract.getPoolParameters.call(pool_id, {"from": accounts[0]})[13] == 0
+            
         # instantiate reporter w/ mock contracts & data provider and any other params
         flex = core.get_tellorflex_contracts()
         flex.oracle.address = mock_playground.address
@@ -125,11 +145,17 @@ async def test_create_report_settle_pool(
         assert status.ok
         assert tx_receipt.to == mock_playground.address
 
-        # check value reported to flex contract
-        # check pool info updated in pickle file
-        # check pool settled in mock contract
+        # check pool settled, status updated to Submitted
+        assert mock_diva_contract.getPoolParameters.call(pool_id, {"from": accounts[0]})[13] == 1
+
+        # check reported pools pickle file state updated
+        assert get_reported_pools() == {}
 
         # run report again, check no new pools picked up, unable to report & settle
+        tx_receipt, status = await r.report(report_count=1)
+        assert not status.ok
+        assert tx_receipt is None
+        assert get_reported_pools() == {}
 
         # clean up temp pickle file
         adir = os.getcwd()
