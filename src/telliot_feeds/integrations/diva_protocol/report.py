@@ -51,8 +51,14 @@ class DIVAProtocolReporter(TellorFlexReporter):
         """
         Retrieves first unreported pool.
         """
+        # also check against local cache of reported pools
+        local_stored_reported = get_reported_pools()
         unreported_pools = []
         for pool in pools:
+            if pool in local_stored_reported:
+                logger.info(f"Pool {pool.pool_id} already reported. Checked against local storage.")
+                continue
+
             query = DIVAProtocol(
                 poolId=pool.pool_id, divaDiamond="0x27D1BD739BD152CDaE38d4444E9aee3498166f01", chainId=5
             )
@@ -63,8 +69,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
                 continue
 
             if report_count > 0:
-                logger.info(f"Pool {pool.pool_id} already reported")
+                logger.info(f"Pool {pool.pool_id} already reported. Checked against Tellor oracle.")
                 continue
+            
             unreported_pools.append(pool)
             if len(unreported_pools) > 0:
                 break
@@ -102,9 +109,6 @@ class DIVAProtocolReporter(TellorFlexReporter):
         # filter for supported pools & pools that haven't been reported for yet
         valid_pools = filter_valid_pools(pools)
         unreported_pools = await self.filter_unreported_pools(valid_pools)
-        # also check against local cache of reported pools
-        reported_pools = get_reported_pools()
-        unreported_pools = [pool for pool in unreported_pools if pool.pool_id not in reported_pools]
         if unreported_pools is None or len(unreported_pools) == 0:
             logger.info("No pools found to report to")
             return None
