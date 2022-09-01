@@ -498,7 +498,7 @@ async def _get_feed_suggestion(feeds: Any, current_values: Any) -> Any:
 
 async def safe_multicall(calls: List[Call], endpoint: Web3, require_success: bool) -> Optional[Dict[str, Any]]:
     """
-    Multcall...call with error handling
+    Multicall...call with error handling
 
     Args:
         calls: list of Call objects, representing calls made by request
