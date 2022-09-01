@@ -86,7 +86,8 @@ async def test_create_report_settle_pool(
         example_pools_updated[0]["expiryTime"] = past_expired
 
         async def mock_fetch_pools(*args, **kwargs):
-            return example_pools_updated
+            print("mock fetch pools called")
+            return example_pools_updated[:1]
 
         async def mock_set_final_ref_value(*args, **kwargs):
             return ResponseStatus()
@@ -167,8 +168,11 @@ async def test_create_report_settle_pool(
         assert "settled" in updated_pools_pkl_file[pool_id], "pool not marked as settled"
         assert int(time.time()) - updated_pools_pkl_file[pool_id][0] < 3, "reported time is off"
 
+        print("Starting second report/settle attempt")
         # run report again, check no new pools picked up, does not report & settle
+        r.datafeed = None
         await r.report(report_count=1)
+        print("reported pools after second report attempt", get_reported_pools())
         assert len(get_reported_pools()) == 1, "reported pools pickle file state incorrect after second report"
         assert pool_id in get_reported_pools(), "wrong pool in reported pools pickle file"
 
