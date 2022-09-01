@@ -120,6 +120,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
         self.datafeed = datafeed
         return datafeed
 
+    async def set_final_ref_value(self, pool_id: int, gas_price: int) -> ResponseStatus:
+        return await self.middleware_contract.set_final_reference_value(pool_id=pool_id, legacy_gas_price=gas_price)
+
     async def settle_pool(self, pool_id: int) -> ResponseStatus:
         """Settle pool"""
         if not self.legacy_gas_price:
@@ -130,7 +133,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
         else:
             gas_price = self.legacy_gas_price
 
-        status = await self.middleware_contract.set_final_reference_value(pool_id=pool_id, legacy_gas_price=gas_price)
+        status = await self.set_final_ref_value(pool_id=pool_id, gas_price=gas_price)
         if status is not None and status.ok:
             logger.info(f"Pool {pool_id} settled.")
             return status
@@ -166,14 +169,6 @@ class DIVAProtocolReporter(TellorFlexReporter):
                 continue
             # if current time is greater than time_submitted + settle_period, settle pool
             cur_time = int(time.time())
-            print(f"cur_time: {cur_time}")
-            print(f"time_submitted: {time_submitted}")
-            print(f"settle_period: {self.settle_period}")
-            print(f"extra_undisputed_time: {self.extra_undisputed_time}")
-            print("time elapsed", time_submitted + self.settle_period + self.extra_undisputed_time)
-            print(
-                "time elapsed < cur_time", time_submitted + self.settle_period + self.extra_undisputed_time < cur_time
-            )
             if (time_submitted + self.settle_period + self.extra_undisputed_time) < cur_time:
                 logger.info(
                     f"Settling pool {pool_id} reported at {time_submitted} given "
@@ -184,7 +179,11 @@ class DIVAProtocolReporter(TellorFlexReporter):
                     logger.error(f"Unable to settle pool {status.error}")
                     reported_pools[pool_id] = [time_submitted, "error"]
                     continue
-                del reported_pools[pool_id]
+                pools_settled.append(pool_id)
+
+        # Update pickled dictionary
+        for pool_id in pools_settled:
+            reported_pools[pool_id][1] = "settled"
 
         if len(pools_settled) > 0:
             logger.info(f"Settled {len(pools_settled)} pools")

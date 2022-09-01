@@ -16,6 +16,7 @@ from brownie import TellorPlayground
 from telliot_core.apps.core import ChainedAccount
 from telliot_core.apps.core import find_accounts
 from telliot_core.apps.core import TelliotCore
+from telliot_core.utils.response import ResponseStatus
 from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 
 from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
@@ -26,14 +27,14 @@ from utils import EXAMPLE_POOLS_FROM_SUBGRAPH
 # from unittest import mock
 
 
-chain_id = 5
+CHAIN_ID = 5
 _ = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
 try:
-    account = find_accounts(name="fake_goerli_test_acct", chain_id=chain_id)[0]
+    account = find_accounts(name="fake_goerli_test_acct", chain_id=CHAIN_ID)[0]
 except IndexError:
     account = ChainedAccount.add(
         name="fake_goerli_test_acct",
-        chains=chain_id,
+        chains=CHAIN_ID,
         key="023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9",
         password="",
     )
@@ -70,13 +71,13 @@ async def test_create_report_settle_pool(
     """
     async with TelliotCore(config=goerli_test_cfg) as core:
         past_expired = int(time.time()) - 1
-        assert mock_middleware_contract.updateMinPeriodUndisputed.call(1, {"from": accounts[0]}) == 1
+        assert mock_middleware_contract.updateMinPeriodUndisputed.call(1, {"from": accounts[0]}) == 1, "updateMinPeriodUndisputed failed"
 
         # mock default_homedir to be current directory
         monkeypatch.setattr("telliot_feeds.integrations.diva_protocol.utils.default_homedir", lambda: os.getcwd())
 
         # check initial state of pools pickle file
-        assert get_reported_pools() == {}
+        assert get_reported_pools() == {}, "reported pools pickle file not empty before test"
 
         # mock fetch pools from subgraph
         example_pools_updated = EXAMPLE_POOLS_FROM_SUBGRAPH
@@ -116,11 +117,14 @@ async def test_create_report_settle_pool(
         )
         # ensure pool is created
         params = mock_diva_contract.getPoolParameters.call(pool_id, {"from": accounts[0]})  # print("params", params)
-        assert params[0] == example_pools_updated[0]["referenceAsset"]
-        assert params[1] == past_expired
-        assert params[17] == mock_middleware_contract.address
+        assert params[0] == example_pools_updated[0]["referenceAsset"], "reference asset is not correct"
+        assert params[1] == past_expired, "expiryTime is not past_expired"
+        assert params[17] == mock_middleware_contract.address, "incorrect data provider"
         # ensure statusFinalReferenceValue is not submitted (Open)
-        assert params[13] == 0
+        assert params[13] == 0, "statusFinalReferenceValue status should be (Open)"
+
+        async def mock_set_final_ref_value(*args, **kwargs):
+            return ResponseStatus()
 
         # instantiate reporter w/ mock contracts & data provider and any other params
         flex = core.get_tellorflex_contracts()
@@ -136,7 +140,7 @@ async def test_create_report_settle_pool(
         r = DIVAProtocolReporter(
             endpoint=core.endpoint,
             account=account,
-            chain_id=chain_id,
+            chain_id=CHAIN_ID,
             oracle=flex.oracle,
             token=flex.token,
             autopay=flex.autopay,
@@ -148,21 +152,23 @@ async def test_create_report_settle_pool(
         )
         r.ensure_staked = passing_bool_w_status
         r.fetch_unfiltered_pools = mock_fetch_pools
+        r.set_final_ref_value = mock_set_final_ref_value
         r.middleware_contract = DivaOracleTellorContract(core.endpoint, account)
         r.middleware_contract.address = mock_middleware_contract.address
         r.middleware_contract.connect()
 
         await r.report(report_count=1)
 
-        # check pool settled, status updated to Submitted
-        assert mock_diva_contract.getPoolParameters.call(pool_id, {"from": accounts[0]})[13] == 1
-
         # check reported pools pickle file state updated
-        assert get_reported_pools() == {}
+        updated_pools_pkl_file = get_reported_pools()
+        assert pool_id in updated_pools_pkl_file, "pool not in reported pools pickle file"
+        assert "settled" in updated_pools_pkl_file[pool_id], "pool not marked as settled"
+        assert int(time.time()) - updated_pools_pkl_file[pool_id][0] < 3, "reported time is off"
 
-        # run report again, check no new pools picked up, unable to report & settle
+        # run report again, check no new pools picked up, does not report & settle
         await r.report(report_count=1)
-        assert get_reported_pools() == {}
+        assert len(get_reported_pools())== 1, "reported pools pickle file state incorrect after second report"
+        assert pool_id in get_reported_pools(), "wrong pool in reported pools pickle file"
 
         # clean up temp pickle file
         adir = os.getcwd()
