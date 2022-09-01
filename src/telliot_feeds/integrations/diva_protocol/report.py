@@ -36,7 +36,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
     DIVA Protocol Reporter
     """
 
-    def __init__(self, extra_undisputed_time: int = 0, wait_before_settle: int = 0, *args, **kwargs) -> None:  # type: ignore
+    def __init__(
+        self, extra_undisputed_time: int = 0, wait_before_settle: int = 0, *args, **kwargs
+    ) -> None:  # type: ignore
         super().__init__(*args, **kwargs)
         self.extra_undisputed_time = extra_undisputed_time
         self.wait_before_settle = wait_before_settle
@@ -167,9 +169,11 @@ class DIVAProtocolReporter(TellorFlexReporter):
             print(f"cur_time: {cur_time}")
             print(f"time_submitted: {time_submitted}")
             print(f"settle_period: {self.settle_period}")
-            print(f'extra_undisputed_time: {self.extra_undisputed_time}')
-            print('time elapsed', time_submitted + self.settle_period + self.extra_undisputed_time)
-            print('time elapsed < cur_time', time_submitted + self.settle_period + self.extra_undisputed_time < cur_time)
+            print(f"extra_undisputed_time: {self.extra_undisputed_time}")
+            print("time elapsed", time_submitted + self.settle_period + self.extra_undisputed_time)
+            print(
+                "time elapsed < cur_time", time_submitted + self.settle_period + self.extra_undisputed_time < cur_time
+            )
             if (time_submitted + self.settle_period + self.extra_undisputed_time) < cur_time:
                 logger.info(
                     f"Settling pool {pool_id} reported at {time_submitted} given "

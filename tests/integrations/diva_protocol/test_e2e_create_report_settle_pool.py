@@ -7,11 +7,9 @@ Ensure it can't be called twice, or if there's no reported value for the pool,
 or if it's too early for the pool to be settled."""
 import os
 import time
-from unittest import mock
 
 import pytest
 from brownie import accounts
-from brownie import chain
 from brownie import DIVAProtocolMock
 from brownie import DIVATellorOracleMock
 from brownie import TellorPlayground
@@ -83,13 +81,13 @@ async def test_create_report_settle_pool(
         # mock fetch pools from subgraph
         example_pools_updated = EXAMPLE_POOLS_FROM_SUBGRAPH
         example_pools_updated[0]["expiryTime"] = past_expired
+
         async def mock_fetch_pools(*args, **kwargs):
             return example_pools_updated
-        
 
         # create pool in DIVA Protocol
         pool_id = int(example_pools_updated[0]["id"])
-        params_sent = mock_diva_contract.addPool(
+        _ = mock_diva_contract.addPool(
             pool_id,
             [
                 example_pools_updated[0]["referenceAsset"],
@@ -116,9 +114,8 @@ async def test_create_report_settle_pool(
             ],
             {"from": accounts[0]},
         )
-        # print("params_sent", params_sent)
         # ensure pool is created
-        params = mock_diva_contract.getPoolParameters.call(pool_id, {"from": accounts[0]})        # print("params", params)
+        params = mock_diva_contract.getPoolParameters.call(pool_id, {"from": accounts[0]})  # print("params", params)
         assert params[0] == example_pools_updated[0]["referenceAsset"]
         assert params[1] == past_expired
         assert params[17] == mock_middleware_contract.address
