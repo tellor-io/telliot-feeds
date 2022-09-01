@@ -39,6 +39,7 @@ contract DIVATellorOracleMock {
     uint256 public currentChainId;
     ITellor public tellorOracle;
     IDIVADiamond public divaDiamond;
+    bool public setFinalReferenceValueCalled = false;
 
     constructor(
         uint256 _minPeriodUndisputed,
@@ -62,15 +63,20 @@ contract DIVATellorOracleMock {
         return currentChainId;
     }
 
-    function setFinalReferenceValue(uint256 _poolId, address _divaDiamond) external returns (uint256) {
-        bytes32 queryId = keccak256(abi.encode(_poolId, _divaDiamond, currentChainId)); // goerli chain id is 5
-        uint256 reportTime = tellorOracle.getTimestampbyQueryIdandIndex(queryId, 0); // get timestamp of first value
-        uint256 poolExpiry = divaDiamond.getPoolParameters(_poolId).expiryTime;
-        require(reportTime > poolExpiry, "Report time must be after pool expiry time");
-        require(block.timestamp > reportTime + minPeriodUndisputed, "minPeriodUndisputed has not elapsed since report time");
-        address reporter = tellorOracle.getReporterByTimestamp(queryId, reportTime);
-        require(reporter == msg.sender, "Only the reporter can set the final reference value");
-        uint256 status = uint256(divaDiamond.updatePoolStatus(_poolId, 1)); // 1 = Submitted
-        return status;
+    function setFinalReferenceValue(uint256 _poolId, address _divaDiamond) public {
+        // bytes32 queryId = keccak256(abi.encode(_poolId, _divaDiamond, currentChainId)); // goerli chain id is 5
+        // uint256 reportTime = tellorOracle.getTimestampbyQueryIdandIndex(queryId, 0); // get timestamp of first value
+        // uint256 poolExpiry = divaDiamond.getPoolParameters(_poolId).expiryTime;
+        // require(reportTime > poolExpiry, "Report time must be after pool expiry time");
+        // require(block.timestamp > reportTime + minPeriodUndisputed, "minPeriodUndisputed has not elapsed since report time");
+        // address reporter = tellorOracle.getReporterByTimestamp(queryId, reportTime);
+        // require(reporter == msg.sender, "Only the reporter can set the final reference value");
+        // uint256 status = uint256(divaDiamond.updatePoolStatus(_poolId, 1)); // 1 = Submitted
+        // return status;
+        // setFinalReferenceValueCalled = true;
+    }
+
+    function checkPoolSettled() public view returns (bool) {
+        return setFinalReferenceValueCalled;
     }
 }
