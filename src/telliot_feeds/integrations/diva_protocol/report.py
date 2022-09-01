@@ -102,6 +102,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
         # filter for supported pools & pools that haven't been reported for yet
         valid_pools = filter_valid_pools(pools)
         unreported_pools = await self.filter_unreported_pools(valid_pools)
+        # also check against local cache of reported pools
+        reported_pools = get_reported_pools()
+        unreported_pools = [pool for pool in unreported_pools if pool.pool_id not in reported_pools]
         if unreported_pools is None or len(unreported_pools) == 0:
             logger.info("No pools found to report to")
             return None
@@ -167,7 +170,6 @@ class DIVAProtocolReporter(TellorFlexReporter):
                 continue
             if pool_status == "error":
                 continue
-            # if current time is greater than time_submitted + settle_period, settle pool
             cur_time = int(time.time())
             if (time_submitted + self.settle_period + self.extra_undisputed_time) < cur_time:
                 logger.info(
