@@ -66,6 +66,15 @@ class DIVAProtocolReporter(TellorFlexReporter):
                 break
         return unreported_pools
 
+    async def fetch_unfiltered_pools(query: str, network: str) -> Optional[list[dict[str, Any]]]:
+        """
+        Fetch unfiltered derivates pools.
+        """
+        return await fetch_from_subgraph(
+            query=query,
+            network=network,
+        )
+
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         """Fetch datafeed"""
         if self.datafeed:
@@ -78,7 +87,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
             # data_provider="0x638c4aB660A9af1E6D79491462A0904b3dA78bB2",  # middleware ropsten
             data_provider="0xF3F62041113c92F080E88200481dFE392369d17b",  # middleware goerli
         )
-        pools = await fetch_from_subgraph(
+        pools = await self.fetch_unfiltered_pools(
             query=query,
             network="goerli",
         )
