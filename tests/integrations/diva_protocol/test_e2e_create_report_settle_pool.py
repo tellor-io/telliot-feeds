@@ -146,6 +146,8 @@ async def test_create_report_settle_pool(
             expected_profit="YOLO",
             datafeed=None,
             transaction_type=0,
+            wait_period=0,
+            wait_before_settle=1,
         )
         r.ensure_staked = passing_bool_w_status
         r.fetch_unfiltered_pools = mock_fetch_pools

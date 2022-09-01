@@ -36,8 +36,10 @@ class DIVAProtocolReporter(TellorFlexReporter):
     DIVA Protocol Reporter
     """
 
-    def __init__(self, *args, **kwargs) -> None:  # type: ignore
+    def __init__(self, extra_undisputed_time: int = 0, wait_before_settle: int = 0, *args, **kwargs) -> None:  # type: ignore
         super().__init__(*args, **kwargs)
+        self.extra_undisputed_time = extra_undisputed_time
+        self.wait_before_settle = wait_before_settle
         self.settle_period: Optional[int] = None
         self.middleware_contract = DivaOracleTellorContract(self.endpoint, self.account)
         self.middleware_contract.address = "0xF3F62041113c92F080E88200481dFE392369d17b"
@@ -154,6 +156,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
             return error_status(note="Unable to get min period undisputed from middleware contract", log=logger.warning)
 
         # Settle pools
+        pools_settled = []
         for pool_id, (time_submitted, pool_status) in reported_pools.items():
             if pool_status == "settled":
                 continue
@@ -161,10 +164,16 @@ class DIVAProtocolReporter(TellorFlexReporter):
                 continue
             # if current time is greater than time_submitted + settle_period, settle pool
             cur_time = int(time.time())
-            if (time_submitted + self.settle_period + 60) < cur_time:
+            print(f"cur_time: {cur_time}")
+            print(f"time_submitted: {time_submitted}")
+            print(f"settle_period: {self.settle_period}")
+            print(f'extra_undisputed_time: {self.extra_undisputed_time}')
+            print('time elapsed', time_submitted + self.settle_period + self.extra_undisputed_time)
+            print('time elapsed < cur_time', time_submitted + self.settle_period + self.extra_undisputed_time < cur_time)
+            if (time_submitted + self.settle_period + self.extra_undisputed_time) < cur_time:
                 logger.info(
                     f"Settling pool {pool_id} reported at {time_submitted} given "
-                    f"current time {cur_time} and settle period {self.settle_period} plus one minute"
+                    f"current time {cur_time} and settle period {self.settle_period} plus {self.extra_undisputed_time}"
                 )
                 status = await self.settle_pool(pool_id)
                 if not status.ok:
@@ -173,6 +182,10 @@ class DIVAProtocolReporter(TellorFlexReporter):
                     continue
                 del reported_pools[pool_id]
 
+        if len(pools_settled) > 0:
+            logger.info(f"Settled {len(pools_settled)} pools")
+        else:
+            logger.info("No pools settled")
         # Update pickled dictionary
         update_reported_pools(pools=reported_pools)
         return ResponseStatus()
@@ -317,6 +330,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
                 logger.warning("Unable to connect to the internet!")
             else:
                 _, _ = await self.report_once()
+                await asyncio.sleep(self.wait_before_settle)
                 _ = await self.settle_pools()
 
             logger.info(f"Sleeping for {self.wait_period} seconds")
