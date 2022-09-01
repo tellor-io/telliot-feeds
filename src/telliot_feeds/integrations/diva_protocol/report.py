@@ -55,7 +55,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
         local_stored_reported = get_reported_pools()
         unreported_pools = []
         for pool in pools:
-            if pool in local_stored_reported:
+            if pool.pool_id in local_stored_reported:
                 logger.info(f"Pool {pool.pool_id} already reported. Checked against local storage.")
                 continue
 
@@ -88,9 +88,6 @@ class DIVAProtocolReporter(TellorFlexReporter):
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         """Fetch datafeed"""
-        if self.datafeed:
-            return self.datafeed
-
         # fetch pools from DIVA subgraph
         query = query_valid_pools(
             last_id=0,
