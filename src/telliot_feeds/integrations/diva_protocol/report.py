@@ -71,7 +71,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
             if report_count > 0:
                 logger.info(f"Pool {pool.pool_id} already reported. Checked against Tellor oracle.")
                 continue
-            
+
             unreported_pools.append(pool)
             if len(unreported_pools) > 0:
                 break
