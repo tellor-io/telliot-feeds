@@ -16,8 +16,8 @@ from brownie import TellorPlayground
 from telliot_core.apps.core import ChainedAccount
 from telliot_core.apps.core import find_accounts
 from telliot_core.apps.core import TelliotCore
-from telliot_core.utils.response import ResponseStatus
 from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
+from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
 from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
@@ -71,7 +71,9 @@ async def test_create_report_settle_pool(
     """
     async with TelliotCore(config=goerli_test_cfg) as core:
         past_expired = int(time.time()) - 1
-        assert mock_middleware_contract.updateMinPeriodUndisputed.call(1, {"from": accounts[0]}) == 1, "updateMinPeriodUndisputed failed"
+        assert (
+            mock_middleware_contract.updateMinPeriodUndisputed.call(1, {"from": accounts[0]}) == 1
+        ), "updateMinPeriodUndisputed failed"
 
         # mock default_homedir to be current directory
         monkeypatch.setattr("telliot_feeds.integrations.diva_protocol.utils.default_homedir", lambda: os.getcwd())
@@ -85,6 +87,9 @@ async def test_create_report_settle_pool(
 
         async def mock_fetch_pools(*args, **kwargs):
             return example_pools_updated
+
+        async def mock_set_final_ref_value(*args, **kwargs):
+            return ResponseStatus()
 
         # create pool in DIVA Protocol
         pool_id = int(example_pools_updated[0]["id"])
@@ -122,9 +127,6 @@ async def test_create_report_settle_pool(
         assert params[17] == mock_middleware_contract.address, "incorrect data provider"
         # ensure statusFinalReferenceValue is not submitted (Open)
         assert params[13] == 0, "statusFinalReferenceValue status should be (Open)"
-
-        async def mock_set_final_ref_value(*args, **kwargs):
-            return ResponseStatus()
 
         # instantiate reporter w/ mock contracts & data provider and any other params
         flex = core.get_tellorflex_contracts()
@@ -167,7 +169,7 @@ async def test_create_report_settle_pool(
 
         # run report again, check no new pools picked up, does not report & settle
         await r.report(report_count=1)
-        assert len(get_reported_pools())== 1, "reported pools pickle file state incorrect after second report"
+        assert len(get_reported_pools()) == 1, "reported pools pickle file state incorrect after second report"
         assert pool_id in get_reported_pools(), "wrong pool in reported pools pickle file"
 
         # clean up temp pickle file

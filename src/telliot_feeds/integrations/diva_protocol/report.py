@@ -36,9 +36,9 @@ class DIVAProtocolReporter(TellorFlexReporter):
     DIVA Protocol Reporter
     """
 
-    def __init__(
+    def __init__(  # type: ignore
         self, extra_undisputed_time: int = 0, wait_before_settle: int = 0, *args, **kwargs
-    ) -> None:  # type: ignore
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.extra_undisputed_time = extra_undisputed_time
         self.wait_before_settle = wait_before_settle
@@ -70,7 +70,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
                 break
         return unreported_pools
 
-    async def fetch_unfiltered_pools(query: str, network: str) -> Optional[list[dict[str, Any]]]:
+    async def fetch_unfiltered_pools(self, query: str, network: str) -> Optional[list[dict[str, Any]]]:
         """
         Fetch unfiltered derivates pools.
         """
