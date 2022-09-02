@@ -16,9 +16,9 @@ from brownie import TellorPlayground
 from telliot_core.apps.core import ChainedAccount
 from telliot_core.apps.core import find_accounts
 from telliot_core.apps.core import TelliotCore
-from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 from telliot_core.utils.response import ResponseStatus
 
+from telliot_feeds.integrations.diva_protocol.contract import DivaOracleTellorContract
 from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
 from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
 from tests.utils.utils import passing_bool_w_status
@@ -86,7 +86,6 @@ async def test_create_report_settle_pool(
         example_pools_updated[0]["expiryTime"] = past_expired
 
         async def mock_fetch_pools(*args, **kwargs):
-            print("mock fetch pools called")
             return example_pools_updated[:1]
 
         async def mock_set_final_ref_value(*args, **kwargs):
@@ -172,7 +171,6 @@ async def test_create_report_settle_pool(
         # run report again, check no new pools picked up, does not report & settle
         r.datafeed = None
         await r.report(report_count=1)
-        print("reported pools after second report attempt", get_reported_pools())
         assert len(get_reported_pools()) == 1, "reported pools pickle file state incorrect after second report"
         assert pool_id in get_reported_pools(), "wrong pool in reported pools pickle file"
 
