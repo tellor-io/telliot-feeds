@@ -7,6 +7,7 @@ from brownie import accounts
 from brownie import Autopay
 from brownie import chain
 from brownie import multicall as brownie_multicall
+from brownie import QueryDataStorage
 from brownie import StakingToken
 from brownie import TellorFlex
 from brownie import TellorXMasterMock
@@ -222,14 +223,21 @@ def mock_flex_contract(mock_token_contract):
 
 
 @pytest.fixture(scope="module", autouse=True)
-def mock_autopay_contract(mock_flex_contract, mock_token_contract):
+def mock_autopay_contract(mock_flex_contract, mock_token_contract, query_data_storage_contract):
     """mock payments(Autopay) contract for tipping and claiming tips"""
     return accounts[0].deploy(
         Autopay,
         mock_flex_contract.address,
         mock_token_contract.address,
-        accounts[0],
+        query_data_storage_contract.address,
         20,
+    )
+
+
+@pytest.fixture(scope="module", autouse=True)
+def query_data_storage_contract():
+    return accounts[0].deploy(
+        QueryDataStorage,
     )
 
 
