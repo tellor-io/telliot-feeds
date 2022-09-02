@@ -1,4 +1,5 @@
 from click.testing import CliRunner
+
 from telliot_feeds.cli.main import main as cli_main
 
 

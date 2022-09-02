@@ -477,8 +477,8 @@ async def report(
                     expected_profit=expected_profit,
                     wait_period=wait_period,
                     **common_reporter_kwargs,
-                    **diva_reporter_kwargs,
-                )  # type: ignore
+                    **diva_reporter_kwargs,  # type: ignore
+                )
             elif custom_contract_reporter:
                 reporter = CustomFlexReporter(
                     custom_contract=custom_contract,
