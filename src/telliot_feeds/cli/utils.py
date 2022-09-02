@@ -3,6 +3,7 @@ from typing import Any
 from typing import get_args
 from typing import get_type_hints
 from typing import Optional
+from eth_utils import to_checksum_address
 
 import click
 from chained_accounts import ChainedAccount
@@ -120,3 +121,16 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
             return None
 
     return feed
+
+
+def validate_address(ctx: click.Context, param: Any, value: str) -> str:
+    """Ensure input is a valid checksum address"""
+    # Sets default to None if no value is provided
+    if not value:
+        return value
+
+
+    try:
+        return str(to_checksum_address(value))
+    except Exception as e:
+        raise click.BadParameter(f"Address must be a valid hex string. Error: {e}")
