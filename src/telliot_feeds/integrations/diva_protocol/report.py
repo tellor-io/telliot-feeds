@@ -8,7 +8,6 @@ from typing import Optional
 from typing import Tuple
 
 from eth_utils import to_checksum_address
-from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
@@ -23,6 +22,7 @@ from telliot_feeds.integrations.diva_protocol.pool import query_valid_pools
 from telliot_feeds.integrations.diva_protocol.utils import filter_valid_pools
 from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
 from telliot_feeds.integrations.diva_protocol.utils import update_reported_pools
+from telliot_feeds.integrations.diva_protocol.contract import DivaOracleTellorContract
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 from telliot_feeds.utils.log import get_logger
@@ -37,14 +37,20 @@ class DIVAProtocolReporter(TellorFlexReporter):
     """
 
     def __init__(  # type: ignore
-        self, extra_undisputed_time: int = 0, wait_before_settle: int = 0, *args, **kwargs
+        self, 
+        middleware_address: str = "0xF3F62041113c92F080E88200481dFE392369d17b",
+        diva_diamond_address: str = "0x27D1BD739BD152CDaE38d4444E9aee3498166f01",
+        network_name: str = "goerli",
+        extra_undisputed_time: int = 0, wait_before_settle: int = 0, *args, **kwargs
     ) -> None:
         super().__init__(*args, **kwargs)
         self.extra_undisputed_time = extra_undisputed_time
         self.wait_before_settle = wait_before_settle
         self.settle_period: Optional[int] = None
+        self.network_name = network_name
+        self.diva_diamond_address = diva_diamond_address
         self.middleware_contract = DivaOracleTellorContract(self.endpoint, self.account)
-        self.middleware_contract.address = "0xF3F62041113c92F080E88200481dFE392369d17b"
+        self.middleware_contract.address = middleware_address
         self.middleware_contract.connect()
 
     async def filter_unreported_pools(self, pools: list[DivaPool]) -> list[DivaPool]:
@@ -60,7 +66,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
                 continue
 
             query = DIVAProtocol(
-                poolId=pool.pool_id, divaDiamond="0x27D1BD739BD152CDaE38d4444E9aee3498166f01", chainId=5
+                poolId=pool.pool_id, divaDiamond=self.diva_diamond_address, chainId=self.endpoint.chain_id
             )
             report_count, read_status = await self.get_num_reports_by_id(query.query_id)
 
@@ -91,13 +97,11 @@ class DIVAProtocolReporter(TellorFlexReporter):
         # fetch pools from DIVA subgraph
         query = query_valid_pools(
             last_id=0,
-            # data_provider="0x245b8abbc1b70b370d1b81398de0a7920b25e7ca",  # diva oracle (centralized)
-            # data_provider="0x638c4aB660A9af1E6D79491462A0904b3dA78bB2",  # middleware ropsten
-            data_provider="0xF3F62041113c92F080E88200481dFE392369d17b",  # middleware goerli
+            data_provider=self.middleware_contract.address,  # middleware goerli
         )
         pools = await self.fetch_unfiltered_pools(
             query=query,
-            network="goerli",
+            network=self.network_name,
         )
         if pools is None or len(pools) == 0:
             logger.info("No pools found from subgraph query")
@@ -116,7 +120,11 @@ class DIVAProtocolReporter(TellorFlexReporter):
         logger.info(f"Current time: {int(time.time())}")
 
         # create datafeed
-        datafeed = assemble_diva_datafeed(pool)
+        datafeed = assemble_diva_datafeed(
+            pool=pool,
+            diva_diamond=self.diva_diamond_address,
+            chain_id=self.endpoint.chain_id,
+            )
         if datafeed is None:
             msg = "Unable to assemble DIVA Protocol datafeed"
             error_status(note=msg, log=logger.warning)
