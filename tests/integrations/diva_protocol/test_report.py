@@ -12,9 +12,9 @@ from brownie import TellorPlayground
 from telliot_core.apps.core import ChainedAccount
 from telliot_core.apps.core import find_accounts
 from telliot_core.apps.core import TelliotCore
-from telliot_core.tellor.tellorflex.diva import DivaOracleTellorContract
 from web3.datastructures import AttributeDict
 
+from telliot_feeds.integrations.diva_protocol.contract import DivaOracleTellorContract
 from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
 from telliot_feeds.integrations.diva_protocol.pool import DivaPool
 from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
@@ -40,8 +40,8 @@ def mock_diva_contract():
 
 
 @pytest.fixture
-def mock_middleware_contract():
-    return accounts[0].deploy(DIVATellorOracleMock, 0)
+def mock_middleware_contract(mock_playground):
+    return accounts[0].deploy(DIVATellorOracleMock, 0, mock_playground.address)
 
 
 @pytest.fixture
@@ -49,6 +49,7 @@ def mock_playground():
     return accounts[0].deploy(TellorPlayground)
 
 
+@pytest.mark.skip("kind of redundant test since done in e2e one")
 @pytest.mark.asyncio
 async def test_report(
     goerli_test_cfg,

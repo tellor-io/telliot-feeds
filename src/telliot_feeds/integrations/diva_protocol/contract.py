@@ -130,7 +130,7 @@ class DivaOracleTellorContract(Contract):
         max_fee_per_gas: Optional[int] = None,
         gas_limit: int = 320000,
     ) -> Optional[ResponseStatus]:
-        """ "Settle a pool.
+        """Settle a pool.
 
         Must be called after the the minimum period undisputed has elapsed."""
         if self.diva_diamond is None:

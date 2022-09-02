@@ -100,7 +100,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
         # fetch pools from DIVA subgraph
         query = query_valid_pools(
             last_id=0,
-            data_provider=self.middleware_contract.address,  # middleware goerli
+            data_provider=self.middleware_contract.address,
         )
         pools = await self.fetch_unfiltered_pools(
             query=query,

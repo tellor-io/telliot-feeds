@@ -1,7 +1,7 @@
 import pytest
 from brownie import accounts
-from brownie import DIVAOracleMock
 from brownie import DIVAProtocolMock
+from brownie import DIVATellorOracleMock
 from telliot_core.apps.core import TelliotCore
 
 from telliot_feeds.integrations.diva_protocol.contract import DivaOracleTellorContract
@@ -20,9 +20,10 @@ def diva_mock_contract():
 @pytest.fixture
 def diva_oracle_mock_contract():
     """Mock the DIVAOracle contract"""
-    return accounts[0].deploy(DIVAOracleMock)
+    return accounts[0].deploy(DIVATellorOracleMock, 3600, "0x0000000000000000000000000000000000001234")
 
 
+@pytest.mark.skip("don't use this contract currently")
 @pytest.mark.asyncio
 async def test_diva_protocol_contract(ropsten_test_cfg, diva_mock_contract):
     """Test the DIVAProtocol contract"""
