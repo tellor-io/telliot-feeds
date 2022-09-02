@@ -4,7 +4,6 @@ from typing import Any
 from typing import Optional
 
 from chained_accounts import ChainedAccount
-
 from telliot_core.contract.contract import Contract
 from telliot_core.directory import contract_directory
 from telliot_core.model.endpoints import RPCEndpoint
@@ -47,10 +46,10 @@ class DivaProtocolContract(Contract):
     def __init__(self, node: RPCEndpoint, account: Optional[ChainedAccount] = None):
         chain_id = node.chain_id
         assert chain_id is not None and chain_id in (
-            137, # Polygon mainnet
-            80001, # Polygon Mumbai testnet
-            3, # Ropsten
-            5, # Goerli
+            137,  # Polygon mainnet
+            80001,  # Polygon Mumbai testnet
+            3,  # Ropsten
+            5,  # Goerli
         )
 
         contract_info = contract_directory.find(chain_id=chain_id, name="diva-protocol")[0]
@@ -88,7 +87,12 @@ class DivaProtocolContract(Contract):
 class DivaOracleTellorContract(Contract):
     """Diva contract used for settling derivatives pools."""
 
-    def __init__(self, node: RPCEndpoint, account: Optional[ChainedAccount] = None, diva_diamond: Optional[str] = "0x27D1BD739BD152CDaE38d4444E9aee3498166f01",):
+    def __init__(
+        self,
+        node: RPCEndpoint,
+        account: Optional[ChainedAccount] = None,
+        diva_diamond: Optional[str] = "0x27D1BD739BD152CDaE38d4444E9aee3498166f01",
+    ):
         self.diva_diamond = diva_diamond
         chain_id = node.chain_id
         contract_info = contract_directory.find(chain_id=chain_id, name="diva-oracle-tellor")[0]

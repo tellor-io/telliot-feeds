@@ -15,6 +15,7 @@ from web3 import Web3
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.integrations.diva_protocol.contract import DivaOracleTellorContract
 from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
 from telliot_feeds.integrations.diva_protocol.pool import DivaPool
 from telliot_feeds.integrations.diva_protocol.pool import fetch_from_subgraph
@@ -22,7 +23,6 @@ from telliot_feeds.integrations.diva_protocol.pool import query_valid_pools
 from telliot_feeds.integrations.diva_protocol.utils import filter_valid_pools
 from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
 from telliot_feeds.integrations.diva_protocol.utils import update_reported_pools
-from telliot_feeds.integrations.diva_protocol.contract import DivaOracleTellorContract
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 from telliot_feeds.utils.log import get_logger
@@ -37,11 +37,14 @@ class DIVAProtocolReporter(TellorFlexReporter):
     """
 
     def __init__(  # type: ignore
-        self, 
+        self,
         middleware_address: str = "0xF3F62041113c92F080E88200481dFE392369d17b",
         diva_diamond_address: str = "0x27D1BD739BD152CDaE38d4444E9aee3498166f01",
         network_name: str = "goerli",
-        extra_undisputed_time: int = 0, wait_before_settle: int = 0, *args, **kwargs
+        extra_undisputed_time: int = 0,
+        wait_before_settle: int = 0,
+        *args,
+        **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.extra_undisputed_time = extra_undisputed_time
@@ -124,7 +127,7 @@ class DIVAProtocolReporter(TellorFlexReporter):
             pool=pool,
             diva_diamond=self.diva_diamond_address,
             chain_id=self.endpoint.chain_id,
-            )
+        )
         if datafeed is None:
             msg = "Unable to assemble DIVA Protocol datafeed"
             error_status(note=msg, log=logger.warning)
