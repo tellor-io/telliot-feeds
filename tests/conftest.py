@@ -209,6 +209,11 @@ def ropsten_test_cfg(scope="function", autouse=True):
     return local_node_cfg(chain_id=3)
 
 
+@pytest.fixture
+def goerli_test_cfg(scope="function", autouse=True):
+    return local_node_cfg(chain_id=5)
+
+
 @pytest.fixture(scope="module", autouse=True)
 def mock_token_contract():
     """mock token to use for staking"""

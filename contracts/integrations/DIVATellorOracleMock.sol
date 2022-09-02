@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-contract DIVAProtocolMock {
-    mapping(uint256 => Pool) private pools;
+import "../../interfaces/ITellor.sol";
+import "./interfaces/IDIVADiamond.sol";
 
+contract DIVATellorOracleMock {
     enum Status {
         Open,
         Submitted,
         Challenged,
         Confirmed
     }
-
     struct Pool {
         string referenceAsset; // Reference asset string (e.g., "BTC/USD", "ETH Gas Price (Wei)", "TVL Locked in DeFi", etc.)
         uint256 expiryTime; // Expiration time of the pool and as of time of final value expressed as a unix timestamp in seconds
@@ -35,58 +35,48 @@ contract DIVAProtocolMock {
         uint256 capacity; // Maximum collateral that the pool can accept; 0 for unlimited
     }
 
-    // Add some fake pools
-    constructor() {
-        Pool memory fakePool;
+    uint256 public minPeriodUndisputed;
+    uint256 public currentChainId;
+    ITellor public tellorOracle;
+    IDIVADiamond public divaDiamond;
+    bool public setFinalReferenceValueCalled = false;
 
-        fakePool.referenceAsset = "ETH/USD";
-        fakePool.expiryTime = 1657349074;
-        fakePool.floor = 2000000000000000000000;
-        fakePool.inflection = 2000000000000000000000;
-        fakePool.cap = 4500000000000000000000;
-        fakePool.supplyInitial = 100000000000000000000;
-        fakePool.collateralToken = 0x867e53feDe91d27101E062BF7002143EbaEA3e30;
-        fakePool.collateralBalanceShortInitial = 50000000000000000000;
-        fakePool.collateralBalanceLongInitial = 50000000000000000000;
-        fakePool.collateralBalance = 214199598796389167516;
-        fakePool.shortToken = 0x91E75Aebda86a6B02d5510438f2981AC4Af1A44d;
-        fakePool.longToken = 0x945b1fA4DB6Fb1f8d3C7501968F6549C8c147D4e;
-        fakePool.finalReferenceValue = 0;
-        fakePool.statusFinalReferenceValue = Status.Open;
-        fakePool.redemptionAmountLongToken = 0;
-        fakePool.redemptionAmountShortToken = 0;
-        fakePool.statusTimestamp = 1647349398;
-        fakePool.dataProvider = 0xED6D661645a11C45F4B82274db677867a7D32675;
-        fakePool.redemptionFee = 2500000000000000;
-        fakePool.settlementFee = 500000000000000;
-        fakePool.capacity = 0;
-
-        pools[3] = fakePool;
-
-
+    constructor(
+        uint256 _minPeriodUndisputed,
+        address _tellorOracle
+    ) {
+        minPeriodUndisputed = _minPeriodUndisputed;
+        tellorOracle = ITellor(_tellorOracle);
     }
 
-    function addPool(uint256 _poolId, Pool calldata _poolParams
-        ) public returns (Pool memory) {
-        pools[_poolId] = _poolParams;
-        return pools[_poolId];
+    function getMinPeriodUndisputed() public view returns (uint256) {
+        return minPeriodUndisputed;
     }
 
-    /*
-     * @notice Returns the pool parameters for a given pool Id
-     * @param _poolId Id of the pool
-     * @return Pool struct
-     */
-    function getPoolParameters(uint256 _poolId)
-        external
-        view
-        returns (Pool memory)
-    {
-
-        return pools[_poolId];
+    function updateMinPeriodUndisputed(uint256 _minPeriodUndisputed) external returns (uint256) {
+        minPeriodUndisputed = _minPeriodUndisputed;
+        return minPeriodUndisputed;
     }
 
-    function changePoolExpiry(uint256 _poolId, uint256 _expiryTime) public {
-        pools[_poolId].expiryTime = _expiryTime;
+    function updateCurrentChainId(uint256 _currentChainId) external returns (uint256) {
+        currentChainId = _currentChainId;
+        return currentChainId;
+    }
+
+    function setFinalReferenceValue(uint256 _poolId, address _divaDiamond) public {
+        // bytes32 queryId = keccak256(abi.encode(_poolId, _divaDiamond, currentChainId)); // goerli chain id is 5
+        // uint256 reportTime = tellorOracle.getTimestampbyQueryIdandIndex(queryId, 0); // get timestamp of first value
+        // uint256 poolExpiry = divaDiamond.getPoolParameters(_poolId).expiryTime;
+        // require(reportTime > poolExpiry, "Report time must be after pool expiry time");
+        // require(block.timestamp > reportTime + minPeriodUndisputed, "minPeriodUndisputed has not elapsed since report time");
+        // address reporter = tellorOracle.getReporterByTimestamp(queryId, reportTime);
+        // require(reporter == msg.sender, "Only the reporter can set the final reference value");
+        // uint256 status = uint256(divaDiamond.updatePoolStatus(_poolId, 1)); // 1 = Submitted
+        // return status;
+        // setFinalReferenceValueCalled = true;
+    }
+
+    function checkPoolSettled() public view returns (bool) {
+        return setFinalReferenceValueCalled;
     }
 }
