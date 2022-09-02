@@ -135,7 +135,7 @@ class DivaOracleTellorContract(Contract):
         Must be called after the the minimum period undisputed has elapsed."""
         if self.diva_diamond is None:
             diva_protocol_info = contract_directory.find(chain_id=self.node.chain_id, name="diva-protocol")[0]
-            diva_protocol_addr = diva_protocol_info.address[self.node.chain_id]  # type: ignore
+            diva_protocol_addr = diva_protocol_info.address[self.node.chain_id]
             self.diva_diamond = diva_protocol_addr
 
         print(f"setfinalref middleware address: {self.address}")
