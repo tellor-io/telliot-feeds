@@ -17,6 +17,7 @@ from telliot_feeds.cli.utils import valid_diva_chain
 from telliot_feeds.cli.utils import validate_address
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
+from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS, DIVA_TELLOR_MIDDLEWARE_ADDRESS
 from telliot_feeds.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
 from telliot_feeds.queries.query_catalog import query_catalog
@@ -254,7 +255,7 @@ def reporter() -> None:
     nargs=1,
     type=click.UNPROCESSED,
     callback=validate_address,
-    default=None,
+    default=DIVA_DIAMOND_ADDRESS,
     prompt=True,
 )
 @click.option(
@@ -265,7 +266,7 @@ def reporter() -> None:
     nargs=1,
     type=click.UNPROCESSED,
     callback=validate_address,
-    default=None,
+    default=DIVA_TELLOR_MIDDLEWARE_ADDRESS,
     prompt=True,
 )
 @click.option(
