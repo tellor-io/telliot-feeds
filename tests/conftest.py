@@ -216,13 +216,23 @@ def mock_token_contract():
     return accounts[0].deploy(StakingToken)
 
 
-@pytest.fixture(scope="module", autouse=True)
+account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
+
+
+@pytest.fixture
 def mock_flex_contract(mock_token_contract):
     """mock oracle(TellorFlex) contract to stake in"""
-    return accounts[0].deploy(TellorFlex, mock_token_contract.address, accounts[0], 10e18, 60)
+    return account_fake.deploy(
+        TellorFlex,
+        mock_token_contract.address,
+        1,
+        1,
+        1,
+        "0xbbc4a8bd407f07cafa7d741790db72bdf5f891e2d13333f17192c9b9bcbfbe86",
+    )
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture
 def mock_autopay_contract(mock_flex_contract, mock_token_contract, query_data_storage_contract):
     """mock payments(Autopay) contract for tipping and claiming tips"""
     return accounts[0].deploy(
@@ -234,7 +244,7 @@ def mock_autopay_contract(mock_flex_contract, mock_token_contract, query_data_st
     )
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture
 def query_data_storage_contract():
     return accounts[0].deploy(
         QueryDataStorage,

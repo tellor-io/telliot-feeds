@@ -3,6 +3,7 @@ pragma solidity 0.8.3;
 
 interface IERC20 {
     function balanceOf(address account) external view returns (uint256);
+    function approve(address account, uint256 amount) external;
 
     function transfer(address recipient, uint256 amount)
         external

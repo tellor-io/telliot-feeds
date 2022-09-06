@@ -25,6 +25,7 @@ async def test_main(
         flex = core.get_tellorflex_contracts()
         flex.oracle.address = mock_flex_contract.address
         flex.autopay.address = mock_autopay_contract.address
+        flex.autopay.abi = mock_autopay_contract.abi
         flex.token.address = mock_token_contract.address
 
         flex.oracle.connect()
@@ -74,7 +75,7 @@ async def test_main(
         mock_token_contract.approve(mock_autopay_contract.address, 500e18, {"from": account.address})
         _, status = await flex.autopay.write(
             "tip",
-            gas_limit=350000,
+            gas_limit=3500000,
             legacy_gas_price=1,
             _queryId=mkr_query_id,
             _amount=int(10e18),
@@ -101,7 +102,7 @@ async def test_main(
 
         _, status = await flex.autopay.write(
             "tip",
-            gas_limit=350000,
+            gas_limit=3500000,
             legacy_gas_price=1,
             _queryId=ric_query_id,
             _amount=int(20e18),
@@ -126,36 +127,27 @@ async def test_main(
         interval = 100
         window = 99
         price_threshold = 0
+        rewardIncreasePerSecond = 0
         trb_query_data = "0x" + query_catalog._entries["trb-usd-legacy"].query.query_data.hex()
 
         # setup a feed on autopay
-        _, status = await flex.autopay.write(
+        res, status = await flex.autopay.write(
             "setupDataFeed",
-            gas_limit=350000,
+            gas_limit=3500000,
             legacy_gas_price=1,
             _queryId=trb_query_id,
             _reward=reward,
-            _startTime=timestamp,
+            _startTime=start_time,
             _interval=interval,
             _window=window,
             _priceThreshold=price_threshold,
+            _rewardIncreasePerSecond=rewardIncreasePerSecond,
             _queryData=trb_query_data,
+            _amount=0,
         )
         assert status.ok
-
-        # encode feed variables, then hash to get feed id
-        feed_data = encode_single(
-            "(bytes32,uint256,uint256,uint256,uint256,uint256)",
-            [
-                bytes.fromhex(trb_query_id[2:]),
-                reward,
-                start_time,
-                interval,
-                window,
-                price_threshold,
-            ],
-        )
-        feed_id = Web3.keccak(feed_data).hex()
+        # get feed id from log event
+        feed_id = res.logs[1].topics[2].hex()
 
         # fund trb-usd-legacy feed on autopay
         _, status = await flex.autopay.write(
