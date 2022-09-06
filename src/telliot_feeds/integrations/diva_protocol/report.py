@@ -23,6 +23,7 @@ from telliot_feeds.integrations.diva_protocol.pool import query_valid_pools
 from telliot_feeds.integrations.diva_protocol.utils import filter_valid_pools
 from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
 from telliot_feeds.integrations.diva_protocol.utils import update_reported_pools
+from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS, DIVA_TELLOR_MIDDLEWARE_ADDRESS
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 from telliot_feeds.utils.log import get_logger
@@ -38,8 +39,8 @@ class DIVAProtocolReporter(TellorFlexReporter):
 
     def __init__(  # type: ignore
         self,
-        middleware_address: str = "0xF3F62041113c92F080E88200481dFE392369d17b",
-        diva_diamond_address: str = "0x27D1BD739BD152CDaE38d4444E9aee3498166f01",
+        middleware_address: str = DIVA_TELLOR_MIDDLEWARE_ADDRESS,
+        diva_diamond_address: str = DIVA_DIAMOND_ADDRESS,
         network_name: str = "goerli",
         extra_undisputed_time: int = 0,
         wait_before_settle: int = 0,

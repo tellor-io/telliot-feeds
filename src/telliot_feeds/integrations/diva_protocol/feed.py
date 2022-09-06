@@ -2,7 +2,7 @@
 from typing import Optional
 
 from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.integrations.diva_protocol import SUPPORTED_COLLATERAL_TOKEN_SYMBOLS
+from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS, SUPPORTED_COLLATERAL_TOKEN_SYMBOLS
 from telliot_feeds.integrations.diva_protocol import SUPPORTED_HISTORICAL_PRICE_PAIRS
 from telliot_feeds.integrations.diva_protocol.pool import DivaPool
 from telliot_feeds.integrations.diva_protocol.sources import DivaSource
@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 
 
 def assemble_diva_datafeed(
-    pool: DivaPool, diva_diamond: str = "0x27D1BD739BD152CDaE38d4444E9aee3498166f01", chain_id: int = 5
+    pool: DivaPool, diva_diamond: str = DIVA_DIAMOND_ADDRESS, chain_id: int = 5
 ) -> Optional[DataFeed[float]]:
     """
     Assemble DataFeed based on given pool parameters.
