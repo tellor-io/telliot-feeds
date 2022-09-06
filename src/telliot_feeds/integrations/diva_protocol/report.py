@@ -15,6 +15,8 @@ from web3 import Web3
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
+from telliot_feeds.integrations.diva_protocol import DIVA_TELLOR_MIDDLEWARE_ADDRESS
 from telliot_feeds.integrations.diva_protocol.contract import DivaOracleTellorContract
 from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
 from telliot_feeds.integrations.diva_protocol.pool import DivaPool
@@ -23,7 +25,6 @@ from telliot_feeds.integrations.diva_protocol.pool import query_valid_pools
 from telliot_feeds.integrations.diva_protocol.utils import filter_valid_pools
 from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
 from telliot_feeds.integrations.diva_protocol.utils import update_reported_pools
-from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS, DIVA_TELLOR_MIDDLEWARE_ADDRESS
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 from telliot_feeds.utils.log import get_logger

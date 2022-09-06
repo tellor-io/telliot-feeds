@@ -2,7 +2,8 @@
 from typing import Optional
 
 from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS, SUPPORTED_COLLATERAL_TOKEN_SYMBOLS
+from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
+from telliot_feeds.integrations.diva_protocol import SUPPORTED_COLLATERAL_TOKEN_SYMBOLS
 from telliot_feeds.integrations.diva_protocol import SUPPORTED_HISTORICAL_PRICE_PAIRS
 from telliot_feeds.integrations.diva_protocol.pool import DivaPool
 from telliot_feeds.integrations.diva_protocol.sources import DivaSource
