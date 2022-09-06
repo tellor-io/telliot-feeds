@@ -1,3 +1,6 @@
+import sys
+from unittest import mock
+
 from click.testing import CliRunner
 
 from telliot_feeds.cli.main import main as cli_main
@@ -23,6 +26,21 @@ def test_invalid_diva_middleware_address():
     assert result.exit_code == 2
 
     assert "Address must be a valid hex string" in result.stdout
+
+
+def test_default_values_available():
+    """Make sure default contract addresses are available."""
+    runner = CliRunner()
+
+    # mock expected_profit() call so cli quits early
+    def mock_parse_profit(*args, **kwargs):
+        sys.exit(0)
+
+    with mock.patch("telliot_feeds.cli.commands.report.parse_profit_input", side_effect=mock_parse_profit):
+        result = runner.invoke(cli_main, ["report", "--build-feed", "-p", "YOLO"])
+
+        assert result.exit_code == 0
+        assert "Diva diamond address [0x27d1bd739bd152cdae38d4444e9aee3498166f01]: " in result.stdout
 
 
 def test_integrations_help_cmd():
