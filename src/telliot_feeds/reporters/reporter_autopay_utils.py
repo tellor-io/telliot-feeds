@@ -234,7 +234,7 @@ class AutopayCalls:
         feed_details_before_check = await self.get_feed_details()
         if not feed_details_before_check:
             logger.info("No feeds balance to check")
-            return None
+            return None, None, None
         # create a key to use for the first timestamp since it doesn't have a before value that needs to be checked
         feed_details_before_check[(0, 0)] = 0
         timestamp_before_key = (0, 0)
@@ -368,7 +368,7 @@ async def get_continuous_tips(autopay: TellorFlexAutopayContract, tipping_feeds:
     if tipping_feeds is None:
         tipping_feeds = AutopayCalls(autopay=autopay, catalog=CATALOG_QUERY_IDS)
     response = await tipping_feeds.reward_claim_status()
-    if not response:
+    if response == (None, None, None):
         logger.info("No feeds to check")
         return None
     current_feeds, current_values, claim_status = response
