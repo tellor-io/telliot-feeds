@@ -75,7 +75,6 @@ CATALOG_FEEDS = {
     "btc-usd-spot": btc_usd_median_feed,
     "trb-usd-legacy": trb_usd_legacy_feed,
     "trb-usd-spot": trb_usd_median_feed,
-
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
