@@ -33,6 +33,7 @@ from telliot_feeds.feeds.string_query_feed import string_query_feed
 from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
 from telliot_feeds.feeds.tellor_rng_manual_feed import tellor_rng_manual_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
+from telliot_feeds.feeds.trb_usd_legacy_feed import trb_usd_legacy_feed
 from telliot_feeds.feeds.twap_manual_feed import twap_manual_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
@@ -72,7 +73,9 @@ CATALOG_FEEDS = {
     "pls-usd-spot": pls_usd_feed,
     "eth-usd-spot": eth_usd_median_feed,
     "btc-usd-spot": btc_usd_median_feed,
+    "trb-usd-legacy": trb_usd_legacy_feed,
     "trb-usd-spot": trb_usd_median_feed,
+
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
