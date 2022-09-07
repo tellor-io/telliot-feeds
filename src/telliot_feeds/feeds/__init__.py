@@ -53,7 +53,6 @@ CATALOG_FEEDS = {
     "btc-usd-legacy": btc_usd_legacy_feed,
     "ampl-legacy": ampl_usd_vwap_feed,
     "uspce-legacy": uspce_feed,
-    "trb-usd-legacy": trb_usd_median_feed,
     "eth-jpy-legacy": eth_jpy_median_feed,
     "ohm-eth-spot": ohm_eth_median_feed,
     "vsq-usd-spot": vsq_usd_median_feed,
@@ -73,6 +72,8 @@ CATALOG_FEEDS = {
     "pls-usd-spot": pls_usd_feed,
     "eth-usd-spot": eth_usd_median_feed,
     "btc-usd-spot": btc_usd_median_feed,
+    "trb-usd-spot": trb_usd_median_feed,
+
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

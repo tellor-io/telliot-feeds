@@ -45,9 +45,9 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
-    tag="eth-jpy-legacy",
-    title="Legacy ETH/JPY spot price",
-    q=LegacyRequest(legacy_id=59),
+    tag="trb-usd-spot",
+    title="TRB/USD spot price",
+    q=SpotPrice(asset="trb", currency="usd")
 )
 
 query_catalog.add_entry(
