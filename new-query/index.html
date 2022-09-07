@@ -1,0 +1,1013 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Contains examples and plugins for reporting to the TellorX Oracle.">
+      
+      
+        <meta name="author" content="Tellor Development Community">
+      
+      
+        <link rel="canonical" href="https://tellor-io.github.io/telliot-feeds/new-query/">
+      
+      <link rel="icon" href="../assets/favicon-32x32.png">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.3.9">
+    
+    
+      
+        <title>Creating New Queries - Telliot Feed Examples Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.1d29e8d0.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.cbb835fc.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#000000">
+        
+      
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#creating-new-or-custom-oracle-queries" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Telliot Feed Examples Documentation" class="md-header__button md-logo" aria-label="Telliot Feed Examples Documentation" data-md-component="logo">
+      
+  <img src="../assets/tellor_swoosh.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Telliot Feed Examples Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Creating New Queries
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tellor-io/telliot-feeds" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tellor-io/telliot-feeds
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Telliot Feed Examples Documentation" class="md-nav__button md-logo" aria-label="Telliot Feed Examples Documentation" data-md-component="logo">
+      
+  <img src="../assets/tellor_swoosh.png" alt="logo">
+
+    </a>
+    Telliot Feed Examples Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tellor-io/telliot-feeds" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tellor-io/telliot-feeds
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        Getting started
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage/" class="md-nav__link">
+        Usage
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          Examples
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Examples" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Examples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/spot_price_query_example/" class="md-nav__link">
+        SpotPrice Query
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/legacy_query_example/" class="md-nav__link">
+        Legacy Query
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/text_query_example/" class="md-nav__link">
+        Text Query
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          New Oracle Queries
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="New Oracle Queries" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          New Oracle Queries
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Creating New Queries
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Creating New Queries
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-art-of-query-design" class="md-nav__link">
+    The Art of Query Design
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-guide" class="md-nav__link">
+    Detailed Guide
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-query-definition" class="md-nav__link">
+    Step 1: Query Definition
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-query-registration" class="md-nav__link">
+    Step 2: Query Registration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-query-data-sources" class="md-nav__link">
+    Step 3: Query Data Sources
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defining-new-query-types" class="md-nav__link">
+    Defining New Query Types
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#propose-changes" class="md-nav__link">
+    Propose changes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-adding-a-new-spotprice" class="md-nav__link">
+    Example: Adding a new SpotPrice
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          Code Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Code Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Code Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_1" type="checkbox" id="__nav_6_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6_1">
+          Queries Module
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Queries Module" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_1">
+          <span class="md-nav__icon md-icon"></span>
+          Queries Module
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code/query-types/" class="md-nav__link">
+        Query Types
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code/query-base-classes/" class="md-nav__link">
+        Query Base Classes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code/query-catalog/" class="md-nav__link">
+        Query Catalog
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code/datafeed/" class="md-nav__link">
+        Data Feed Module
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code/dtypes/" class="md-nav__link">
+        Types Module
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_7">
+          Contributing
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Contributing" data-md-level="1">
+        <label class="md-nav__title" for="__nav_7">
+          <span class="md-nav__icon md-icon"></span>
+          Contributing
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        Developer's Guide
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../documentation/" class="md-nav__link">
+        Documentation
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-art-of-query-design" class="md-nav__link">
+    The Art of Query Design
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-guide" class="md-nav__link">
+    Detailed Guide
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-query-definition" class="md-nav__link">
+    Step 1: Query Definition
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-query-registration" class="md-nav__link">
+    Step 2: Query Registration
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-query-data-sources" class="md-nav__link">
+    Step 3: Query Data Sources
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defining-new-query-types" class="md-nav__link">
+    Defining New Query Types
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#propose-changes" class="md-nav__link">
+    Propose changes
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-adding-a-new-spotprice" class="md-nav__link">
+    Example: Adding a new SpotPrice
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+<h1 id="creating-new-or-custom-oracle-queries">Creating New or Custom Oracle Queries<a class="headerlink" href="#creating-new-or-custom-oracle-queries" title="Permanent link">&para;</a></h1>
+<p>If the Tellor oracle doesn't have the on-chain data your smart contract needs, this section should
+help you define a new query so that Tellor's decentralized network of reporters can get busy putting
+your data securely on-chain.</p>
+<h2 id="the-art-of-query-design">The Art of Query Design<a class="headerlink" href="#the-art-of-query-design" title="Permanent link">&para;</a></h2>
+<p>Creating new Tellor query is pretty simple - there are only a few steps. Along the way, though,
+there are some important considerations and decisions to make so that Tellor's oracle data serves
+your project well. Here's how to get started.</p>
+<p><em>Step 1. Give the query a name</em></p>
+<p>Call it anything, really (within reason of course). <code>WeatherReport</code>, <code>GameScore</code>, <code>ElectionResult</code>,
+<code>PropertyOwner</code>, or anything else you can imagine. We call this the <em>Query Type</em>. If you stick
+with <a href="https://en.wikipedia.org/wiki/Camel_case">CamelCase</a> names, it would really help us out, so
+thanks in advance!</p>
+<p><em>Step 2. Choose query parameters (if you want to)</em></p>
+<p>A Query Type can also have <em>parameters</em> that serve to customize the response. For
+example, <code>PropertyOwner</code> might have a parameter called <code>address</code>. <code>GameScore</code> might have a few
+<em>parameters</em> such as <code>game_date</code>, <code>home_team</code>, or <code>away_team</code>. You get the idea. It helps if you
+also define what values are allowed for each <em>parameter</em>. One last thing - we know it seems weird,
+but we'd love it if you named your parameters
+using <a href="https://en.wikipedia.org/wiki/Snake_case">SnakeCase</a>.</p>
+<p><em>Step 3. Choose the data type</em></p>
+<p>Tellor's reporters need to know how you'd like your data served (medium rare, a side of fries?).
+When you think about it, reporters need to know the <em>data type</em> used to respond, such as <code>float</code>
+, <code>int</code>, <code>string</code>, bool`, raw bytes, etc. But don't stop there. Interesting queries can have complex
+responses with structured data types that can hold data such as weather reports, addresses, GPS
+locations, game statistics.</p>
+<p>That's the great thing about Tellor, you
+can <a href="https://www.youtube.com/watch?v=KJXzkUH72cY">have it your way</a>!</p>
+<p><em>Step 4. You make the rules</em></p>
+<p>Since it's <em>your</em> data used for <em>your</em> smart contract, you get to make the rules!
+With great power (to create arbitrary queries with arbitrary responses) comes great responsibility.
+Rules about your data are mainly to encourage Tellor's reporters to provide the data with a
+reasonable degree of confidence. Remember, reporters may lose their staked TRB if the network votes
+the answer incorrect!</p>
+<p>This is the part of Query Design that is more of an <em>art</em>. Be sure to carefully describe the
+expected response, including the conditions that you would expect for the value to be disputed and
+removed from the chain. Depending on your design, the <em>rules</em> can have a great impact on the
+security of your network.</p>
+<p><em>Step 5. Define data sources (if you want to)</em></p>
+<p>Another optional step here. Reporters will need to figure out how to get the requested data. If the
+rules are clear, you can leave it up to them - that's totally cool.</p>
+<p>Otherwise, you can point reporters in the right direction. Ideally there are multiple off-chain data
+sources to increase the robustness and decentralization of the feed. Sometimes there are specific
+API endpoints that have exactly the data that you're looking for. If endpoints are paid, you might
+have to <em>tip</em> reporters a bit more as an incentive for the feed.</p>
+<p><em>That's it!</em></p>
+<p>You've learned the art of Tellor Query design, including some important things to consider in the
+process. Please reach out to the
+<a href="https://discord.com/channels/461602746336935936/794270931630948432">integrations team on discord</a>
+for more help in getting started.</p>
+<p>If you're a dev, you can continue reading for a detailed technical
+guide for adding new queries to the tellor network.</p>
+<h2 id="detailed-guide">Detailed Guide<a class="headerlink" href="#detailed-guide" title="Permanent link">&para;</a></h2>
+<p>This section begins a detailed technical description of how to add a new query to the Tellor
+network. The process of adding a new query to the Tellor network involves three steps:</p>
+<ol>
+<li><a class="autorefs autorefs-internal" href="#step-1-query-definition">Define the new query</a></li>
+<li><a class="autorefs autorefs-internal" href="#step-2-query-registration">Register the new query</a></li>
+<li><a class="autorefs autorefs-internal" href="#step-3-query-data-sources">Create a data source to provide data for the new query</a></li>
+</ol>
+<p>Technically speaking, the 3rd step above is not required, but it enables Tellor's existing
+decentralized reporter network to automatically respond to the query. Without this step, customers
+will be required to stand-up their own reporter network.</p>
+<h2 id="step-1-query-definition">Step 1: Query Definition<a class="headerlink" href="#step-1-query-definition" title="Permanent link">&para;</a></h2>
+<p>To define a new query, the first step is to specify its <em>Query Type</em>. If possible, it's easiest to
+use one of the Query Types already defined for the Tellor network (
+e.g. <a class="autorefs autorefs-internal" href="../code/query-types/#telliot_feeds.queries.price.spot_price.SpotPrice"><code>SpotPrice</code></a>). If none of the existing query
+types work, you will need to <a class="autorefs autorefs-internal" href="#defining-new-query-types">define a new query type</a>.</p>
+<p>When using an existing Query Type, you'll need to specify the parameter values that correspond to
+the data you would like put on-chain. For example, when using the <code>SpotPrice</code> query, you'll need to
+specify the values for two parameters: <code>asset</code> and <code>currency</code>.</p>
+<p>It is important to note the difference between defining a <em>Query Type</em> and a defining a <em>query</em>.
+Defining a new Query Type creates an entire new class of queries, whereas defining a new <em>query</em>
+refers to an instance of a QueryType with the value of each parameter specified.</p>
+<p>To formally add the query definition to Tellor network, you'll need
+to <a class="autorefs autorefs-internal" href="#propose-changes">propose changes</a> to
+the <a href="https://github.com/tellor-io/dataSpecs">Tellor Data Specification Repository</a>.</p>
+<h2 id="step-2-query-registration">Step 2: Query Registration<a class="headerlink" href="#step-2-query-registration" title="Permanent link">&para;</a></h2>
+<p>Registering the new query makes users aware of the query and lets reporters know how to respond. It
+requires <a class="autorefs autorefs-internal" href="#propose-changes">proposing changes</a> to
+the <a href="https://github.com/tellor-io/telliot-core"><code>telliot-core</code> repository</a>, and must include two
+things.</p>
+<p>First, it must include a unit test for the new query. Using the pytest framework, create a unit test
+that creates an instance of the query and verify that the values query descriptor, query data, and
+query ID are sensible.</p>
+<p>Second, it must be registered with the Query <a class="autorefs autorefs-internal" href="../code/query-catalog/#telliot_feeds.queries.catalog.Catalog"><code>Catalog</code></a>.</p>
+<p>The <a class="autorefs autorefs-internal" href="#example-adding-a-new-spotprice">example below</a> demonstrates how to test a new query and
+register it in the catalog.</p>
+<h2 id="step-3-query-data-sources">Step 3: Query Data Sources<a class="headerlink" href="#step-3-query-data-sources" title="Permanent link">&para;</a></h2>
+<p>A query <a class="autorefs autorefs-internal" href="../code/datafeed/#telliot_feeds.datasource.DataSource"><code>DataSource</code></a> provides a method to fetch new data
+points in response to a query. It provides an API that enables Tellor's existing decentralized
+reporter network to automatically respond to the query.</p>
+<p>Ideally, a <a class="autorefs autorefs-internal" href="../code/datafeed/#telliot_feeds.datasource.DataSource"><code>DataSource</code></a> should provide additional
+decentralization and robustness by fetching data from multiple sources and aggregating the result.</p>
+<p>A new <a class="autorefs autorefs-internal" href="../code/datafeed/#telliot_feeds.datasource.DataSource"><code>DataSource</code></a> is created
+by <a class="autorefs autorefs-internal" href="#propose-changes">proposing changes</a> to
+the <a href="https://github.com/tellor-io/telliot-feeds"><code>telliot-feeds</code> repository</a>.</p>
+<h2 id="defining-new-query-types">Defining New Query Types<a class="headerlink" href="#defining-new-query-types" title="Permanent link">&para;</a></h2>
+<p>If none of the existing Tellor Query Types works for your application, you can define a new <em>Query
+Type</em>.</p>
+<p>A new <em>Query Type</em> definition specifies:</p>
+<ul>
+<li>The <em>name</em> of the query type</li>
+<li>The data type or structure of the value expected query response (i.e.
+  its <a class="autorefs autorefs-internal" href="../code/dtypes/#telliot_feeds.dtypes.value_type.ValueType"><code>ValueType</code></a>)</li>
+<li>Optionally, the name and data type of each query <em>parameter</em></li>
+<li>Encoding method - the method used to encode the Query Type and parameter values into
+  the <a class="autorefs autorefs-internal" href="../code/query-base-classes/#telliot_feeds.queries.query.OracleQuery.query_data"><code>query_data</code></a> field used for Tellor
+  contract interactions.</li>
+</ul>
+<p>It is important to note the difference between defining a <em>Query Type</em> and a defining a <em>query</em>.
+Defining a new Query Type creates an entire new class of queries, whereas defining a new <em>query</em>
+refers to an instance of a QueryType with the value of each parameter specified.</p>
+<p>To define a new Query Type, <a class="autorefs autorefs-internal" href="#propose-changes">propose changes</a> to
+the <a href="https://github.com/tellor-io/telliot-core"><code>telliot-core</code> repository</a> defining a new subclass
+of <a class="autorefs autorefs-internal" href="../code/query-base-classes/#telliot_feeds.queries.query.OracleQuery"><code>OracleQuery</code></a> that implements all required methods and
+properties.</p>
+<p>New users may choose between subclassing <a class="autorefs autorefs-internal" href="../code/query-base-classes/#telliot_feeds.queries.json_query.JsonQuery"><code>JsonQuery</code></a>
+and the<br />
+<a class="autorefs autorefs-internal" href="../code/query-base-classes/#telliot_feeds.queries.abi_query.AbiQuery"><code>AbiQuery</code></a>. These queries are identical in every way
+except for the coder/decoder that converts between the query name/parameters and the query data
+field used in contract interfaces. The latter format is recommended if on-chain read/write access to
+parameter values is required.</p>
+<p>You'll also need to create a <a href="https://github.com/tellor-io/telliot-core/blob/main/tests/test_query_snapshot.py">test file</a> for your new <em>Query Type</em>.</p>
+<p>To get the <a class="autorefs autorefs-internal" href="../code/query-base-classes/#telliot_feeds.queries.query.OracleQuery.query_data"><code>query_data</code></a> and <a class="autorefs autorefs-internal" href="../code/query-base-classes/#telliot_feeds.queries.query.OracleQuery.query_id"><code>query_id</code></a> in hex format, open up a Python shell and enter the following. We'll be using the [<code>Snapshot</code>] query as an example.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">telliot_feeds.queries.snapshot</span> <span class="kn">import</span> <span class="n">Snapshot</span>
+
+<span class="n">q</span> <span class="o">=</span> <span class="n">Snapshot</span><span class="p">(</span><span class="n">proposal_id</span><span class="o">=</span><span class="s2">&quot;QmbZ6cYVvfoKvkDX14jRcN86z6bfV135npUfhxmENjHnQ1&quot;</span><span class="p">)</span>
+<span class="n">q</span><span class="o">.</span><span class="n">query_data</span>
+<span class="n">q</span><span class="o">.</span><span class="n">query_id</span><span class="o">.</span><span class="n">hex</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="propose-changes">Propose changes<a class="headerlink" href="#propose-changes" title="Permanent link">&para;</a></h2>
+<p>To propose changes to a Tellor repository, perform the following steps:</p>
+<ol>
+<li>Fork the tellor repository to your github account.</li>
+<li>Follow our <a href="https://tellor-io.github.io/telliot-core/contributing/">developer's guide</a> and make the proposed changes in your forked repository.</li>
+<li>Submit a pull-request to incorporate the changes from your fork into the main tellor repository.</li>
+</ol>
+<p>Alternately, standalone changes can be proposed in a separate repository, but it is the user's
+responsibility to ensure compatibility with
+the <a href="https://github.com/tellor-io/telliot-core"><code>telliot-core</code></a> framework.</p>
+<h2 id="example-adding-a-new-spotprice">Example: Adding a new <code>SpotPrice</code><a class="headerlink" href="#example-adding-a-new-spotprice" title="Permanent link">&para;</a></h2>
+<p>In this example, a new <a class="autorefs autorefs-internal" href="../code/query-types/#telliot_feeds.queries.price.spot_price.SpotPrice"><code>SpotPrice</code></a> query is
+defined for the price of BTC in USD.</p>
+<p>To add a new spot price, use the
+existing <a class="autorefs autorefs-internal" href="../code/query-types/#telliot_feeds.queries.price.spot_price.SpotPrice"><code>SpotPrice</code></a>
+Query Type and simply define a new <code>asset</code>/<code>currency</code> pair.</p>
+<p><em>Example: Create and test the SpotPrice query for BTC/USD.</em></p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">telliot_feeds.queries.price.spot_price</span> <span class="kn">import</span> <span class="n">SpotPrice</span>
+
+
+<span class="k">def</span> <span class="nf">test_new_query</span><span class="p">():</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">SpotPrice</span><span class="p">(</span><span class="n">asset</span><span class="o">=</span><span class="s2">&quot;BTC&quot;</span><span class="p">,</span> <span class="n">currency</span><span class="o">=</span><span class="s2">&quot;USD&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">q</span><span class="o">.</span><span class="n">descriptor</span> <span class="o">==</span> <span class="s1">&#39;{&quot;type&quot;:&quot;SpotPrice&quot;,&quot;asset&quot;:&quot;btc&quot;,&quot;currency&quot;:&quot;usd&quot;}&#39;</span>
+    <span class="k">assert</span> <span class="n">q</span><span class="o">.</span><span class="n">query_data</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">&#39;{&quot;type&quot;:&quot;SpotPrice&quot;,&quot;asset&quot;:&quot;btc&quot;,&quot;currency&quot;:&quot;usd&quot;}&#39;</span>
+    <span class="k">assert</span> <span class="n">q</span><span class="o">.</span><span class="n">query_id</span><span class="o">.</span><span class="n">hex</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;d66b36afdec822c56014e56f468dee7c7b082ed873aba0f7663ec7c6f25d2c0a&quot;</span>
+</code></pre></div>
+<p><em>Example: Add the query to the Query <a class="autorefs autorefs-internal" href="../code/query-catalog/#telliot_feeds.queries.catalog.Catalog"><code>Catalog</code></a></em></p>
+<p>Add the following statements to <code>telliot_feeds.queries.query_catalog.py</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="n">query_catalog</span><span class="o">.</span><span class="n">add_entry</span><span class="p">(</span>
+    <span class="n">tag</span><span class="o">=</span><span class="s2">&quot;btc-usd-spot&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;BTC/USD spot price&quot;</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">SpotPrice</span><span class="p">(</span><span class="n">asset</span><span class="o">=</span><span class="s2">&quot;BTC&quot;</span><span class="p">,</span> <span class="n">currency</span><span class="o">=</span><span class="s2">&quot;USD&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div>
+
+              
+            </article>
+            
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../examples/text_query_example/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Text Query" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Text Query
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../code/query-types/" class="md-footer__link md-footer__link--next" aria-label="Next: Query Types" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Query Types
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright (c) 2021-, Tellor Development Community
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.sections"], "search": "../assets/javascripts/workers/search.b97dbffb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.6c7ad80a.min.js"></script>
+      
+    
+  </body>
+</html>
