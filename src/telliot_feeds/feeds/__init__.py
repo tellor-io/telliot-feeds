@@ -73,7 +73,6 @@ CATALOG_FEEDS = {
     "eth-usd-spot": eth_usd_median_feed,
     "btc-usd-spot": btc_usd_median_feed,
     "trb-usd-spot": trb_usd_median_feed,
-
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
