@@ -36,7 +36,7 @@ logger = get_logger(__name__)
 Network.Mumbai = 80001
 MULTICALL2_ADDRESSES[Network.Mumbai] = "0x35583BDef43126cdE71FD273F5ebeffd3a92742A"
 Network.ArbitrumRinkeby = 421611
-MULTICALL2_ADDRESSES[Network.ArbitrumRinkeby] = "0xf609687230a65E8bd14caceDEfCF2dea9c15b242"
+MULTICALL2_ADDRESSES[Network.ArbitrumRinkeby] = "0xb84C5c81A9774722701d751bd3D2c0f19bfC25fa"
 Network.OptimismKovan = 69
 MULTICALL2_ADDRESSES[Network.OptimismKovan] = "0xf609687230a65E8bd14caceDEfCF2dea9c15b242"
 Network.PulsechainTestnet = 941
@@ -122,7 +122,13 @@ class AutopayCalls:
                         [["disregard_boolean", None], [(tag, "three_mos_ago"), None]],
                     )
                 )
-        return await safe_multicall(calls, self.w3, require_success)
+        data = await safe_multicall(calls, self.w3, require_success)
+        try:
+            data.pop("disregard_boolean")  # type: ignore
+        except KeyError as e:
+            msg = f"No feeds returned by multicall, KeyError: {e}"
+            logger.warning(msg)
+        return data
 
     async def get_feed_details(self, require_success: bool = False) -> Any:
         """
@@ -149,7 +155,7 @@ class AutopayCalls:
         tags_with_feed_ids = {
             tag: feed_id
             for tag, feed_id in current_feeds.items()
-            if (isinstance(tag, tuple) and len(current_feeds[tag]) > 0)
+            if (not isinstance(tag, tuple) and len(current_feeds[tag]) > 0)
         }
         idx_current: List[int] = []  # indices for every query id reports' current timestamps
         idx_three_mos_ago: List[int] = []  # indices for every query id reports' three months ago timestamps
@@ -189,13 +195,13 @@ class AutopayCalls:
 
         get_data_feed_call = []
 
-        feed_ids: List[int]
+        feed_ids: List[bytes]
         for tag, feed_ids in merged_query_idx:
             for feed_id in feed_ids:
                 c = Call(
                     self.autopay.address,
                     ["getDataFeed(bytes32)((uint256,uint256,uint256,uint256,uint256,uint256,uint256))", feed_id],
-                    [[("current_feeds", tag, hex(feed_id)), _to_list]],
+                    [[("current_feeds", tag, feed_id.hex()), _to_list]],
                 )
 
                 get_data_feed_call.append(c)
@@ -228,7 +234,7 @@ class AutopayCalls:
         feed_details_before_check = await self.get_feed_details()
         if not feed_details_before_check:
             logger.info("No feeds balance to check")
-            return None, None, None
+            return None
         # create a key to use for the first timestamp since it doesn't have a before value that needs to be checked
         feed_details_before_check[(0, 0)] = 0
         timestamp_before_key = (0, 0)
