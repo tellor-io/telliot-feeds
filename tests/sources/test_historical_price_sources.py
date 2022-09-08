@@ -85,7 +85,9 @@ async def test_kraken_get_trades():
 @pytest.mark.asyncio
 async def test_poloniex_get_price():
     """Retrieve single historical price close to given timestamp."""
-    v, t = await PoloniexHistoricalPriceService().get_price("eth", "tusd", period=SIX_HOURS_SECONDS, ts=ONE_DAY_AGO_TIMESTAMP)
+    v, t = await PoloniexHistoricalPriceService().get_price(
+        "eth", "tusd", period=SIX_HOURS_SECONDS, ts=ONE_DAY_AGO_TIMESTAMP
+    )
     validate_price(v, t)
 
     # Returns {"code": 500, "message": "System error"} for dai...
