@@ -83,7 +83,7 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "SnapshotOracle": snapshot_manual_feed,
     "GasPriceOracle": gas_price_oracle_feed,
     "NumericApiResponse": numeric_api_response_feed,
-    "StringQueryOracle": string_query_feed,
+    "StringQuery": string_query_feed,
     "NumericApiManualResponse": numeric_api_response_manual_feed,
     "NumericApiResponse": numeric_api_response_feed,  # this build will parse and submit response value automatically
     "LegacyRequest": legacy_request_manual_feed,
