@@ -36,7 +36,7 @@ logger = get_logger(__name__)
 Network.Mumbai = 80001
 MULTICALL2_ADDRESSES[Network.Mumbai] = "0x35583BDef43126cdE71FD273F5ebeffd3a92742A"
 Network.ArbitrumRinkeby = 421611
-MULTICALL2_ADDRESSES[Network.ArbitrumRinkeby] = "0xf609687230a65E8bd14caceDEfCF2dea9c15b242"
+MULTICALL2_ADDRESSES[Network.ArbitrumRinkeby] = "0xb84C5c81A9774722701d751bd3D2c0f19bfC25fa"
 Network.OptimismKovan = 69
 MULTICALL2_ADDRESSES[Network.OptimismKovan] = "0xf609687230a65E8bd14caceDEfCF2dea9c15b242"
 Network.PulsechainTestnet = 941
@@ -122,7 +122,13 @@ class AutopayCalls:
                         [["disregard_boolean", None], [(tag, "three_mos_ago"), None]],
                     )
                 )
-        return await safe_multicall(calls, self.w3, require_success)
+        data = await safe_multicall(calls, self.w3, require_success)
+        try:
+            data.pop("disregard_boolean")  # type: ignore
+        except KeyError as e:
+            msg = f"No feeds returned by multicall, KeyError: {e}"
+            logger.warning(msg)
+        return data
 
     async def get_feed_details(self, require_success: bool = False) -> Any:
         """
@@ -145,11 +151,16 @@ class AutopayCalls:
             return None
 
         # separate items from current feeds
-        # create dict of tag and feed_id in current_feeds
+        # multicall for multiple different functions returns different types of data at once
+        # ie the response is {"tag": (feedids, ), ('trb-usd-legacy', 'current_time'): 0,
+        # ('trb-usd-legacy', 'three_mos_ago'): 0,eth-jpy-legacy: (),'eth-jpy-legacy', 'current_time'): 0,
+        # ('eth-jpy-legacy', 'three_mos_ago'): 0}
+        # here we filter out the tag key if it is string and its value is of length > 0
+
         tags_with_feed_ids = {
             tag: feed_id
             for tag, feed_id in current_feeds.items()
-            if (isinstance(tag, tuple) and len(current_feeds[tag]) > 0)
+            if (not isinstance(tag, tuple) and len(current_feeds[tag]) > 0)
         }
         idx_current: List[int] = []  # indices for every query id reports' current timestamps
         idx_three_mos_ago: List[int] = []  # indices for every query id reports' three months ago timestamps
@@ -189,13 +200,13 @@ class AutopayCalls:
 
         get_data_feed_call = []
 
-        feed_ids: List[int]
+        feed_ids: List[bytes]
         for tag, feed_ids in merged_query_idx:
             for feed_id in feed_ids:
                 c = Call(
                     self.autopay.address,
                     ["getDataFeed(bytes32)((uint256,uint256,uint256,uint256,uint256,uint256,uint256))", feed_id],
-                    [[("current_feeds", tag, hex(feed_id)), _to_list]],
+                    [[("current_feeds", tag, feed_id.hex()), _to_list]],
                 )
 
                 get_data_feed_call.append(c)
@@ -362,7 +373,7 @@ async def get_continuous_tips(autopay: TellorFlexAutopayContract, tipping_feeds:
     if tipping_feeds is None:
         tipping_feeds = AutopayCalls(autopay=autopay, catalog=CATALOG_QUERY_IDS)
     response = await tipping_feeds.reward_claim_status()
-    if not response:
+    if response == (None, None, None):
         logger.info("No feeds to check")
         return None
     current_feeds, current_values, claim_status = response
