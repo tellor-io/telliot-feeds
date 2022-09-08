@@ -43,18 +43,32 @@ def validate_price(v, t):
 
 
 @pytest.mark.asyncio
-async def test_kraken_get_price():
+async def test_kraken_get_price(caplog):
     """Retrieve singular price close to given timestamp."""
-    v, t = await KrakenHistoricalPriceService().get_price("eth", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
+    v, t = await KrakenHistoricalPriceService(timeout=3).get_price("eth", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
     validate_price(v, t)
 
-    v, t = await KrakenHistoricalPriceService().get_price("xbt", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
+    v, t = await KrakenHistoricalPriceService(timeout=3).get_price("xbt", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
     validate_price(v, t)
+
+    # Test invalid asset
+    v, t = await KrakenHistoricalPriceService().get_price("invalid", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
+    assert v is None
+    assert t is None
+    assert "Asset not supported" in caplog.text
 
 
 @pytest.mark.asyncio
-async def test_kraken_get_trades():
+async def test_kraken_get_trades(caplog):
     """Retrieve all price data given a timestamp and surrounding time period."""
+    # Test invalid currency
+    trades, t = await KrakenHistoricalPriceService().get_trades(
+        asset="eth", currency="invalid", period=SIX_HOURS_SECONDS, ts=ONE_DAY_AGO_TIMESTAMP
+    )
+    assert trades is None
+    assert t is None
+    assert "Currency not supported" in caplog.text
+
     trades, t = await KrakenHistoricalPriceService().get_trades(
         "eth",
         "usd",
