@@ -35,9 +35,9 @@ class KrakenSpotPriceService(WebPriceService):
         currency = currency.upper()
 
         if asset not in KRAKEN_ASSETS:
-            logger.info(f"Asset not supported: {asset}")
+            logger.warning(f"Asset not supported: {asset}")
         if currency not in KRAKEN_CURRENCIES:
-            logger.info(f"Currency not supported: {currency}")
+            logger.warning(f"Currency not supported: {currency}")
 
         url_params = urlencode({"pair": f"{asset}{currency}"})
 
