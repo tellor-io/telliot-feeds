@@ -14,9 +14,12 @@ from telliot_core.directory import ContractInfo
 from telliot_feeds.cli.utils import build_feed_from_input
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.cli.utils import valid_diva_chain
+from telliot_feeds.cli.utils import validate_address
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.tellor_rng_feed import assemble_rng_datafeed
+from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
+from telliot_feeds.integrations.diva_protocol import DIVA_TELLOR_MIDDLEWARE_ADDRESS
 from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.reporters.custom_flex_reporter import CustomFlexReporter
@@ -246,6 +249,28 @@ def reporter() -> None:
     default=False,
 )
 @click.option(
+    "--diva-diamond-address",
+    "-dda",
+    "diva_diamond_address",
+    help="DIVA Protocol contract address",
+    nargs=1,
+    type=click.UNPROCESSED,
+    callback=validate_address,
+    default=DIVA_DIAMOND_ADDRESS,
+    prompt=True,
+)
+@click.option(
+    "--diva-middleware-address",
+    "-dma",
+    "diva_middleware_address",
+    help="DIVA Protocol middleware contract address",
+    nargs=1,
+    type=click.UNPROCESSED,
+    callback=validate_address,
+    default=DIVA_TELLOR_MIDDLEWARE_ADDRESS,
+    prompt=True,
+)
+@click.option(
     "--custom-contract",
     "-custom",
     "custom_contract_reporter",
@@ -275,6 +300,8 @@ async def report(
     wait_period: int,
     gas_price_speed: str,
     reporting_diva_protocol: bool,
+    diva_diamond_address: Optional[str],
+    diva_middleware_address: Optional[str],
     rng_timestamp: int,
     password: str,
     signature_password: str,
@@ -439,6 +466,11 @@ async def report(
                     **common_reporter_kwargs,
                 )
             elif reporting_diva_protocol:
+                diva_reporter_kwargs = {}
+                if diva_diamond_address is not None:
+                    diva_reporter_kwargs["diva_diamond_address"] = diva_diamond_address
+                if diva_middleware_address is not None:
+                    diva_reporter_kwargs["middleware_address"] = diva_middleware_address
                 reporter = DIVAProtocolReporter(
                     oracle=tellorflex.oracle,
                     token=tellorflex.token,
@@ -447,7 +479,8 @@ async def report(
                     expected_profit=expected_profit,
                     wait_period=wait_period,
                     **common_reporter_kwargs,
-                )  # type: ignore
+                    **diva_reporter_kwargs,  # type: ignore
+                )
             elif custom_contract_reporter:
                 reporter = CustomFlexReporter(
                     custom_contract=custom_contract,

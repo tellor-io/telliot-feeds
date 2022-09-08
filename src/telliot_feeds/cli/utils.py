@@ -8,6 +8,7 @@ import click
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from dotenv import load_dotenv
+from eth_utils import to_checksum_address
 from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import cli_core
 
@@ -120,3 +121,15 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
             return None
 
     return feed
+
+
+def validate_address(ctx: click.Context, param: Any, value: str) -> str:
+    """Ensure input is a valid checksum address"""
+    # Sets default to None if no value is provided
+    if not value:
+        return value
+
+    try:
+        return str(to_checksum_address(value))
+    except Exception as e:
+        raise click.BadParameter(f"Address must be a valid hex string. Error: {e}")
