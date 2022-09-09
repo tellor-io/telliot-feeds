@@ -84,17 +84,19 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
 
     """
     try:
+        num_feeds = len(DATAFEED_BUILDER_MAPPING)
         # list choices
         click.echo("Choose query type:")
         for i, q_type in enumerate(sorted(DATAFEED_BUILDER_MAPPING.keys())):
-            click.echo(f"{i+1} -- {q_type}")
+            choice_num = f"{i + 1}".zfill(len(str(num_feeds)))
+            click.echo(f"{choice_num} -- {q_type}")
 
         # get user choice
         choice = None
         query_type = None
         while not choice or not query_type:
             try:
-                choice = int(input(f"Enter number from 1-{len(DATAFEED_BUILDER_MAPPING)}: "))
+                choice = int(input(f"Enter number from 1-{num_feeds}: "))
                 query_type = sorted(DATAFEED_BUILDER_MAPPING.keys())[choice - 1]
             except (ValueError, IndexError):
                 choice = None
