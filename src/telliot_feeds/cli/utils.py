@@ -84,13 +84,27 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
 
     """
     try:
-        msg = (
-            "Enter a valid QueryType from the options listed below:"
-            + "\n"
-            + "\n".join([i for i in DATAFEED_BUILDER_MAPPING.keys()])
-            + "\n"
-        )
-        query_type = input(msg)
+        num_feeds = len(DATAFEED_BUILDER_MAPPING)
+        # list choices
+        click.echo("Choose query type:")
+        for i, q_type in enumerate(sorted(DATAFEED_BUILDER_MAPPING.keys())):
+            choice_num = f"{i + 1}".zfill(len(str(num_feeds)))
+            click.echo(f"{choice_num} -- {q_type}")
+
+        # get user choice
+        choice = None
+        query_type = None
+        while not choice or not query_type:
+            try:
+                choice = int(input(f"Enter number from 1-{num_feeds}: "))
+                query_type = sorted(DATAFEED_BUILDER_MAPPING.keys())[choice - 1]
+            except (ValueError, IndexError):
+                choice = None
+                query_type = None
+                click.echo("Invalid choice.")
+                continue
+
+        click.echo("Your choice: " + query_type)
         feed: DataFeed[Any] = DATAFEED_BUILDER_MAPPING[query_type]
     except KeyError:
         click.echo(f"No corresponding datafeed found for QueryType: {query_type}\n")
