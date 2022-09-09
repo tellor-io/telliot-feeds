@@ -24,13 +24,13 @@ def stop():
 def test_build_feed_from_input(capsys):
     """Test building feed from user input"""
 
-    query_type = "NumericApiResponse"
+    num_choice = 6  # NumericApiResponse is the 6th option
     url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"  # noqa: E501
     parse_str = "uniswap, usd"
 
-    with mock.patch("builtins.input", side_effect=[query_type, url, parse_str]):
+    with mock.patch("builtins.input", side_effect=[num_choice, url, parse_str]):
         feed = build_feed_from_input()
-        assert feed.query.type == query_type
+        assert feed.query.type == "NumericApiResponse"
         assert feed.query.url == url
         assert feed.query.parseStr == parse_str
 
@@ -38,17 +38,15 @@ def test_build_feed_from_input(capsys):
         assert feed.source.url == url
         assert feed.source.parseStr == parse_str
 
-    query_type = "NumericApiResponse...!!?"
+    num_choice = 420
     url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"  # noqa: E501
     parse_str = "uniswap, usd"
 
-    with mock.patch("builtins.input", side_effect=[query_type, url, parse_str]):
-        feed = build_feed_from_input()
+    with mock.patch("builtins.input", side_effect=[num_choice, url, parse_str]):
+        with pytest.raises(StopIteration):
+            _ = build_feed_from_input()
 
-        expected = f"No corresponding datafeed found for QueryType: {query_type}"
-        captured_output = capsys.readouterr().out.strip()
-
-        assert expected == captured_output
+            assert "Invalid choice" in capsys.readouterr().out.strip()
 
 
 def test_parse_profit_input():
