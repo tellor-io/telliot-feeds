@@ -6,7 +6,8 @@ from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from telliot_core.apps.telliot_config import TelliotConfig
 
-def mainnet_config() -> TelliotConfig:
+
+def mainnet_config() -> Optional[TelliotConfig]:
     cfg = TelliotConfig()
     cfg.main.chain_id = 1
     endpoint = cfg.get_endpoint()
@@ -21,7 +22,8 @@ def mainnet_config() -> TelliotConfig:
         if key:
             ChainedAccount.add("git-mainnet-key", chains=1, key=os.environ["PRIVATE_KEY"], password="")
         else:
-            raise Exception("Need a mainnet account")
+            logger.warning("No mainnet account added!")
+            return None
 
     return cfg
 
