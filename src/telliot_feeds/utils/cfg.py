@@ -1,10 +1,15 @@
+import os
 from typing import Optional
 
 import click
-
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from telliot_core.apps.telliot_config import TelliotConfig
+
+from telliot_feeds.utils.log import get_logger
+
+
+logger = get_logger(__name__)
 
 
 def mainnet_config() -> Optional[TelliotConfig]:
@@ -27,15 +32,16 @@ def mainnet_config() -> Optional[TelliotConfig]:
 
     return cfg
 
-def setup_account(cfg:TelliotConfig, account_name: Optional[str]) -> TelliotConfig:
+
+def setup_account(cfg: TelliotConfig, account_name: Optional[str]) -> TelliotConfig:
     """Setup account via CLI if not already configured"""
 
-    #check if configs are setup
-    #prompt the user to select a differnt chain id
-    #prompt the user to add a chained account
-    #add...
-        #account name
-        #private key
+    # check if configs are setup
+    # prompt the user to select a differnt chain id
+    # prompt the user to add a chained account
+    # add...
+    # account name
+    # private key
 
     # if testing...
     #     add test account with .env private key
@@ -51,9 +57,6 @@ def setup_account(cfg:TelliotConfig, account_name: Optional[str]) -> TelliotConf
     #         prompt with click to add an account. we need to add:
     #             account name
     #             private key
-                
-
-
 
     # accounts = find_accounts(chain_id=chain_id)
     # if not accounts:
@@ -64,12 +67,11 @@ def setup_account(cfg:TelliotConfig, account_name: Optional[str]) -> TelliotConf
     #     else:
     #         input(f"We need an account on chain_id {chain_id}.")
 
-
     # return cfg
     pass
 
 
-def setup_endpoint(cfg:TelliotConfig, chain_id:int):
+def setup_endpoint(cfg: TelliotConfig, chain_id: int):
     """Setup Endpoints via CLI if not already configured"""
     pass
     # if test config...
@@ -89,17 +91,48 @@ def setup_endpoint(cfg:TelliotConfig, chain_id:int):
     #             rpc url
     #             explorer url
 
-
     # if "INFURA_API_KEY" in endpoint.url:
     #     endpoint.url = f'wss://mainnet.infura.io/ws/v3/{os.environ["INFURA_API_KEY"]}'
 
 
-def check_config(cfg: TelliotConfig):
+def print_current_config(cfg: TelliotConfig = None) -> None:
+    """Print the current config settings"""
+    if cfg is None:
+        cfg = TelliotConfig()
+    click.echo(f"Chain ID: {cfg.main.chain_id}")
+    click.echo(f"Endpoint: {cfg.get_endpoint()}")
+    click.echo(f"Account: {cfg.get_account()}")
 
-    #do they want the current chain id, endpint and account?
-    # if yes, proceed to reporting
-    # if not, trigger above functions
 
-    # print current settings of cfg, does the user want to replace any?
-    click.echo(f"Your current config settings on chain_id {cfg.main.chain_id}: " + str(cfg.main))
-    # replace the ones the user wants to replace
+def write_configs(cfg: TelliotConfig) -> None:
+    """Update the current config settings in their respective files"""
+    pass
+
+
+def update_current_config(cfg: TelliotConfig = None) -> TelliotConfig:
+    """Update the current config settings"""
+    if cfg is None:
+        cfg = TelliotConfig()
+
+    # keep current config settings
+    print_current_config(cfg=cfg)
+    if click.prompt("Do you want to use the current config settings?", type=bool):
+        return cfg
+
+    # update current config settings
+    chain_id = click.prompt("What chain ID do you want to use?", type=int)
+    # list available accounts for the chain_id
+        # if none available...
+            # prompt user to add an account
+        # if multiple available...
+            # prompt user to select one or add a new one
+    # list available endpoints for the chain_id
+        # if none available...
+            # prompt user to add an endpoint
+        # if multiple available...
+            # prompt user to select one or add a new one
+
+    # write the new config settings to the config files
+    write_configs(cfg=cfg)
+
+    return cfg
