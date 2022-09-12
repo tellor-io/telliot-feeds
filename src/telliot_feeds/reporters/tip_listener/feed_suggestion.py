@@ -1,10 +1,12 @@
-from typing import Dict, Tuple
+from typing import Dict
 from typing import Optional
+from typing import Tuple
 
+from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
+
+from telliot_feeds.reporters.tip_listener.autopay_multicalls import AutopayMulticalls
 from telliot_feeds.reporters.tip_listener.funded_feeds import FundedFeeds
 from telliot_feeds.reporters.tip_listener.funded_feeds_filter import FundedFeedFilter
-from telliot_feeds.reporters.tip_listener.autopay_multicalls import AutopayMulticalls
-from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_feeds.reporters.tip_listener.one_time_tips import OneTimeTips
 from telliot_feeds.utils.log import get_logger
 
@@ -32,8 +34,7 @@ async def feed_suggestion(autopay: TellorFlexAutopayContract) -> Optional[Tuple[
     if feed_tips and single_tips:
         # merge autopay tips and get feed with max amount of tip
         combined_dict = {
-            key: sum_dict_values(single_tips.get(key), feed_tips.get(key))
-            for key in single_tips | feed_tips
+            key: sum_dict_values(single_tips.get(key), feed_tips.get(key)) for key in single_tips | feed_tips
         }
         tips_sorted = sort_by_max_tip(combined_dict)  # type: ignore
         return tips_sorted[0]

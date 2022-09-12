@@ -1,15 +1,19 @@
 """Fetch and filter(based on telliot registry) funded queries from autopay
 Make calls forward and fill in FullFeedQueryDetails
 """
-from telliot_feeds.reporters.tip_listener.utils_tip_listener import FullFeedQueryDetails
-from telliot_feeds.reporters.tip_listener.utils_tip_listener import FeedDetails
-from telliot_feeds.reporters.tip_listener.funded_feeds_filter import FundedFeedFilter
-from telliot_feeds.utils.log import get_logger
-from typing import Dict, List, Optional, Tuple
-from telliot_feeds.reporters.tip_listener.autopay_multicalls import AutopayMulticalls
-from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
 
+from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.utils.timestamp import TimeStamp
+
+from telliot_feeds.reporters.tip_listener.autopay_multicalls import AutopayMulticalls
+from telliot_feeds.reporters.tip_listener.funded_feeds_filter import FundedFeedFilter
+from telliot_feeds.reporters.tip_listener.utils_tip_listener import FeedDetails
+from telliot_feeds.reporters.tip_listener.utils_tip_listener import FullFeedQueryDetails
+from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
@@ -17,11 +21,9 @@ logger = get_logger(__name__)
 
 class FundedFeeds:
     """Fetch Feeds from autopay and filter"""
+
     def __init__(
-        self,
-        autopay: TellorFlexAutopayContract,
-        multi_call: AutopayMulticalls,
-        feed_filter: FundedFeedFilter
+        self, autopay: TellorFlexAutopayContract, multi_call: AutopayMulticalls, feed_filter: FundedFeedFilter
     ) -> None:
         self.multi_call = multi_call
         self.feed_filter = feed_filter
@@ -71,9 +73,7 @@ class FundedFeeds:
         # start autopay calls with multicall
         # sigs: getDataBefore, getIndexforDataBefore x2
         feeds_with_timestamp_index = await self.multi_call.timestamp_index_and_current_values_call(
-            feeds=catalog_supported_feeds,
-            month_old_timestamp=monthold_timestamp,
-            now_timestamp=now_timestamp
+            feeds=catalog_supported_feeds, month_old_timestamp=monthold_timestamp, now_timestamp=now_timestamp
         )
 
         # after getting current values to check against, if price threshold == 0
@@ -88,11 +88,9 @@ class FundedFeeds:
                     feed_start_timestamp=feed_detail.feed_details.startTime,
                     feed_window=feed_detail.feed_details.window,
                     timestamp_before=feed_detail.current_value_timestamp,
-                    timestamp_to_check=now_timestamp
+                    timestamp_to_check=now_timestamp,
                 )
-                feed_detail.feed_details.reward += (
-                    feed_detail.feed_details.rewardIncreasePerSecond * time_based_reward
-                )
+                feed_detail.feed_details.reward += feed_detail.feed_details.rewardIncreasePerSecond * time_based_reward
                 if not in_eligible_window:
                     # if now_timestamp is not in eligible window, discard funded feed
                     # remove feedId from feedId to queryId mapping
@@ -104,7 +102,6 @@ class FundedFeeds:
             return None
 
         feeds_with_timestamps_lis = await self.multi_call.timestamps_list_call(feeds=feeds_with_timestamp_index)
-
 
         if not feeds_with_timestamps_lis:
             logger.info("No submission reports for all query ids")
@@ -122,7 +119,7 @@ class FundedFeeds:
                     timestamp_to_check=feed_detail.queryId_timestamps_list[i - 1],
                     feed_start_timestamp=feed_detail.feed_details.startTime,
                     feed_window=feed_detail.feed_details.window,
-                    feed_interval=feed_detail.feed_details.interval
+                    feed_interval=feed_detail.feed_details.interval,
                 )
                 if not in_eligibile_window:
                     feed_detail.queryId_timestamps_list.remove(feed_detail.details.timestamps[i - 1])
@@ -135,7 +132,7 @@ class FundedFeeds:
         for feed_detail in list(feeds_with_timestamps_lis):
             key = (feed_detail.feed_id, feed_detail.query_id)
             unclaimed_count = reward_claimed_status[key]
-            feed_detail.feed_details.balance -= (feed_detail.feed_details.reward * unclaimed_count)
+            feed_detail.feed_details.balance -= feed_detail.feed_details.reward * unclaimed_count
             # if remaining balance is zero filter out the feed from the dictionary
             if feed_detail.feed_details.balance <= 0:
                 feeds_with_timestamps_lis.remove(feed_detail)
@@ -147,8 +144,7 @@ class FundedFeeds:
         one_month_ago = current_time - 2_592_000
 
         eligible_funded_feeds: Optional[List[FullFeedQueryDetails]] = await self.filter_funded_feeds(
-            now_timestamp=current_time,
-            monthold_timestamp=one_month_ago
+            now_timestamp=current_time, monthold_timestamp=one_month_ago
         )
         if not eligible_funded_feeds:
             return None
@@ -162,15 +158,13 @@ class FundedFeeds:
                     timestamp_to_check=current_time,
                     feed_start_timestamp=funded_feed.feed_details.startTime,
                     feed_window=funded_feed.feed_details.window,
-                    feed_interval=funded_feed.feed_details.interval
+                    feed_interval=funded_feed.feed_details.interval,
                 )
-                funded_feed.feed_details.reward += (
-                    funded_feed.feed_details.rewardIncreasePerSecond * time_based_reward
-                )
+                funded_feed.feed_details.reward += funded_feed.feed_details.rewardIncreasePerSecond * time_based_reward
                 if window_eligiblity is False:
                     price_change = await self.feed_filter.price_change(
                         query_id=funded_feed.query_id,  # type: ignore
-                        value_before=int(int(funded_feed.current_value.hex(), 16) / 10**18)
+                        value_before=int(int(funded_feed.current_value.hex(), 16) / 10**18),
                     )
                     if price_change is None:
                         continue

@@ -1,20 +1,16 @@
 import pytest
 from brownie import accounts
-from web3 import Web3
-from telliot_core.utils.timestamp import TimeStamp
-from telliot_core.utils.response import ResponseStatus
 from telliot_core.apps.core import TelliotCore
+from telliot_core.utils.response import ResponseStatus
+from telliot_core.utils.timestamp import TimeStamp
+from web3 import Web3
+
 from telliot_feeds.queries.query_catalog import query_catalog
 
 
-CATALOG_QUERY_IDS = {
-    query_catalog._entries[tag].query.query_id: tag
-    for tag in query_catalog._entries
-}
-CATALOG_QUERY_DATA = {
-    query_catalog._entries[tag].query.query_data: tag
-    for tag in query_catalog._entries
-}
+CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
+CATALOG_QUERY_DATA = {query_catalog._entries[tag].query.query_data: tag for tag in query_catalog._entries}
+
 
 @pytest.fixture(scope="function")
 async def autopay_contract_setup(
@@ -27,7 +23,7 @@ async def autopay_contract_setup(
 
         flex = core.get_tellorflex_contracts()
         flex.oracle.address = mock_flex_contract.address
-        flex.oracle.abi =mock_flex_contract.abi
+        flex.oracle.abi = mock_flex_contract.abi
         flex.autopay.address = mock_autopay_contract.address
         flex.autopay.abi = mock_autopay_contract.abi
         flex.token.address = mock_token_contract.address
@@ -91,9 +87,10 @@ async def setup_datafeed(autopay_contract_setup):
                 _priceThreshold=price_threshold,
                 _rewardIncreasePerSecond=0,
                 _queryData=query_data,
-                _amount=int(count*10**18)
+                _amount=int(count * 10**18),
             )
     return contract
+
 
 @pytest.fixture(scope="function")
 async def setup_one_time_tips(autopay_contract_setup):
@@ -114,6 +111,7 @@ async def setup_one_time_tips(autopay_contract_setup):
             assert status.ok
             count += 1
     return contract
+
 
 @pytest.fixture(scope="function")
 async def both_setup(setup_datafeed):

@@ -1,17 +1,17 @@
 import math
-
-from typing import Tuple
 from typing import List
 from typing import Optional
-from eth_utils.conversions import to_bytes
+from typing import Tuple
+
 from eth_abi import encode_single
+from eth_utils.conversions import to_bytes
+from telliot_core.utils.response import error_status
 from web3 import Web3 as w3
 
-from telliot_feeds.reporters.tip_listener.tip_listener_filter import TipListenerFilter
-from telliot_feeds.reporters.tip_listener.utils_tip_listener import FullFeedQueryDetails
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.queries.query_catalog import query_catalog
-from telliot_core.utils.response import error_status
+from telliot_feeds.reporters.tip_listener.tip_listener_filter import TipListenerFilter
+from telliot_feeds.reporters.tip_listener.utils_tip_listener import FullFeedQueryDetails
 from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
@@ -90,8 +90,7 @@ class FundedFeedFilter(TipListenerFilter):
         return price_change
 
     def price_threshold_check_filter(self, feeds: List[FullFeedQueryDetails]) -> List[FullFeedQueryDetails]:
-        """Filter funded feeds based on threshold and telliot catalog feeds
-        """
+        """Filter funded feeds based on threshold and telliot catalog feeds"""
         for feed in list(feeds):
             feed_id, query_id = self.generate_ids(feed)
             feed.feed_id = feed_id

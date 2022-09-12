@@ -1,10 +1,10 @@
-from typing import List
+from collections import defaultdict
+from dataclasses import dataclass
 from typing import Any
 from typing import Dict
+from typing import List
 from typing import Optional
 
-from dataclasses import dataclass
-from collections import defaultdict
 from telliot_core.utils.timestamp import TimeStamp
 
 
@@ -35,12 +35,13 @@ class FullFeedQueryDetails:
     - queryId_timestamps_list: List[int]
     - feed_details: FeedDetails
     """
+
     feed_details: FeedDetails
     query_data: bytes
     feed_id: Optional[bytes] = None
     query_id: Optional[bytes] = None
     queryId_timestamps_list: List[TimeStamp] = []
-    current_value: bytes = b''
+    current_value: bytes = b""
     current_value_timestamp: TimeStamp = 0
     current_value_index: int = 0
     month_old_index: int = 0
