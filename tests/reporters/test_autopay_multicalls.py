@@ -106,3 +106,22 @@ async def test_safe_multicall(caplog, setup_autopay_call):
 
         assert res is None
         assert "Contract reversion in multicall request" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_index_error(setup_autopay_call, caplog):
+    bad_response = {
+        "ric-usd-spot": (),
+        "disregard_boolean": None,
+        ("ric-usd-spot", "current_time"): None,
+        ("ric-usd-spot", "three_mos_ago"): None,
+    }
+    call: AutopayCalls = await setup_autopay_call
+
+    async def fake_func():
+        return bad_response
+
+    call.get_current_feeds = fake_func
+    res = await call.reward_claim_status()
+    assert res == (None, None, None)
+    assert "No feeds balance to check"

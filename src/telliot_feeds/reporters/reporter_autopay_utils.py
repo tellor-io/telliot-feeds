@@ -160,7 +160,7 @@ class AutopayCalls:
         tags_with_feed_ids = {
             tag: feed_id
             for tag, feed_id in current_feeds.items()
-            if (not isinstance(tag, tuple) and len(current_feeds[tag]) > 0)
+            if (not isinstance(tag, tuple) and (current_feeds[tag]))
         }
         idx_current: List[int] = []  # indices for every query id reports' current timestamps
         idx_three_mos_ago: List[int] = []  # indices for every query id reports' three months ago timestamps
@@ -180,19 +180,20 @@ class AutopayCalls:
 
         tag: str
         for (tag, _), (end, start) in merged_query_idx.items():
-            for idx in range(start, end):
+            if start and end:
+                for idx in range(start, end):
 
-                get_timestampby_query_id_n_idx_call.append(
-                    Call(
-                        self.autopay.address,
-                        [
-                            "getTimestampbyQueryIdandIndex(bytes32,uint256)(uint256)",
-                            query_catalog._entries[tag].query.query_id,
-                            idx,
-                        ],
-                        [[(tag, idx), None]],
+                    get_timestampby_query_id_n_idx_call.append(
+                        Call(
+                            self.autopay.address,
+                            [
+                                "getTimestampbyQueryIdandIndex(bytes32,uint256)(uint256)",
+                                query_catalog._entries[tag].query.query_id,
+                                idx,
+                            ],
+                            [[(tag, idx), None]],
+                        )
                     )
-                )
 
         def _to_list(_: bool, val: Any) -> List[Any]:
             """Helper function, converts feed_details from tuple to list"""
@@ -303,7 +304,7 @@ class AutopayCalls:
         Helper function to decode price value from oracle
         """
         if len(val) > 1:
-            if val[1] == b"":
+            if val[1] == b"" or val[1] is None:
                 return val[1]
             return Web3.toInt(hexstr=val[1].hex()) / 1e18
         return Web3.toInt(hexstr=val[0].hex()) / 1e18 if val[0] != b"" else val[0]
