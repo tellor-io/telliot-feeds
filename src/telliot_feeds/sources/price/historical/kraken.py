@@ -72,9 +72,9 @@ class KrakenHistoricalPriceService(WebPriceService):
         currency = currency.upper()
 
         if asset not in kraken_assets:
-            raise Exception(f"Asset not supported: {asset}")
+            logger.warning(f"Asset not supported: {asset}")
         if currency not in kraken_currencies:
-            raise Exception(f"Currency not supported: {currency}")
+            logger.warning(f"Currency not supported: {currency}")
 
         url_params = urlencode({"pair": f"{asset}{currency}", "since": period_start})  # Unix timestamp
 
@@ -129,7 +129,8 @@ class KrakenHistoricalPriceService(WebPriceService):
         elif "response" in d:
             response = d["response"]
             price = self.resp_price_parse(resp=response, asset=asset, currency=currency)
-
+            if price is None:
+                return None, None
         else:
             raise Exception("Invalid response from get_url")
 
@@ -174,6 +175,8 @@ class KrakenHistoricalPriceService(WebPriceService):
         elif "response" in d:
             response = d["response"]
             trades = self.resp_all_trades_parse(resp=response, asset=asset, currency=currency)
+            if trades is None:
+                return None, None
 
         else:
             raise Exception("Invalid response from get_url")
