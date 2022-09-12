@@ -116,21 +116,21 @@ def update_current_config(cfg: TelliotConfig = None) -> TelliotConfig:
 
     # keep current config settings
     print_current_config(cfg=cfg)
-    if click.prompt("Do you want to use the current config settings?", type=bool):
+    if click.confirm("Do you want to use the current config settings?"):
         return cfg
 
     # update current config settings
     chain_id = click.prompt("What chain ID do you want to use?", type=int)
     # list available accounts for the chain_id
-        # if none available...
-            # prompt user to add an account
-        # if multiple available...
-            # prompt user to select one or add a new one
+    # if none available...
+    # prompt user to add an account
+    # if multiple available...
+    # prompt user to select one or add a new one
     # list available endpoints for the chain_id
-        # if none available...
-            # prompt user to add an endpoint
-        # if multiple available...
-            # prompt user to select one or add a new one
+    # if none available...
+    # prompt user to add an endpoint
+    # if multiple available...
+    # prompt user to select one or add a new one
 
     # write the new config settings to the config files
     write_configs(cfg=cfg)
