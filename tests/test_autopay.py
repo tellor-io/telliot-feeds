@@ -123,42 +123,29 @@ async def test_main(
         # variables for feed setup and to get feedId
         trb_query_id = query_catalog._entries["trb-usd-legacy"].query_id
         reward = 30 * 10**18
-        start_time = timestamp
         interval = 100
         window = 99
         price_threshold = 0
-        rewardIncreasePerSecond = 0
         trb_query_data = "0x" + query_catalog._entries["trb-usd-legacy"].query.query_data.hex()
 
         # setup a feed on autopay
-        res, status = await flex.autopay.write(
+        response, status = await flex.autopay.write(
             "setupDataFeed",
             gas_limit=3500000,
             legacy_gas_price=1,
             _queryId=trb_query_id,
             _reward=reward,
-            _startTime=start_time,
+            _startTime=timestamp,
             _interval=interval,
             _window=window,
             _priceThreshold=price_threshold,
-            _rewardIncreasePerSecond=rewardIncreasePerSecond,
+            _rewardIncreasePerSecond=0,
             _queryData=trb_query_data,
-            _amount=0,
-        )
-        assert status.ok
-        # get feed id from log event
-        feed_id = res.logs[1].topics[2].hex()
-
-        # fund trb-usd-legacy feed on autopay
-        _, status = await flex.autopay.write(
-            "fundFeed",
-            gas_limit=350000,
-            legacy_gas_price=1,
-            _feedId=feed_id,
-            _queryId=trb_query_id,
             _amount=50 * 10**18,
         )
         assert status.ok
+
+        feed_id = response.logs[1].topics[2].hex()
 
         # get suggestion from telliot on query with highest tip
         suggested_qtag, tip = await autopay_suggested_report(flex.autopay)

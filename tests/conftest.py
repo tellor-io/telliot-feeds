@@ -215,29 +215,19 @@ def goerli_test_cfg(scope="function", autouse=True):
     return local_node_cfg(chain_id=5)
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def mock_token_contract():
     """mock token to use for staking"""
     return accounts[0].deploy(StakingToken)
 
 
-account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
-
-
-@pytest.fixture
+@pytest.fixture(scope="function", autouse=True)
 def mock_flex_contract(mock_token_contract):
     """mock oracle(TellorFlex) contract to stake in"""
-    return account_fake.deploy(
-        TellorFlex,
-        mock_token_contract.address,
-        1,
-        1,
-        1,
-        "0xbbc4a8bd407f07cafa7d741790db72bdf5f891e2d13333f17192c9b9bcbfbe86",
-    )
+    return accounts[0].deploy(TellorFlex, mock_token_contract.address, accounts[0], 10e18, 60)
 
 
-@pytest.fixture
+@pytest.fixture(scope="function", autouse=True)
 def mock_autopay_contract(mock_flex_contract, mock_token_contract, query_data_storage_contract):
     """mock payments(Autopay) contract for tipping and claiming tips"""
     return accounts[0].deploy(
@@ -245,11 +235,12 @@ def mock_autopay_contract(mock_flex_contract, mock_token_contract, query_data_st
         mock_flex_contract.address,
         mock_token_contract.address,
         query_data_storage_contract.address,
+        # accounts[0],
         20,
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="function", autouse=True)
 def query_data_storage_contract():
     return accounts[0].deploy(
         QueryDataStorage,

@@ -635,7 +635,7 @@ contract Autopay is UsingTellor {
                 _min = _mid;
             }
         }
-        (, uint256 _timestampBefore) = getDataBefore(_queryId, _timestamp);
+        (,, uint256 _timestampBefore) = getDataBefore(_queryId, _timestamp);
         require(
             _timestampBefore < _tips[_min].timestamp,
             "tip earned by previous submission"
@@ -732,7 +732,7 @@ contract Autopay is UsingTellor {
         uint256 _c = _feed.details.startTime + _feed.details.interval * _n; // finds start timestamp _c of interval _n
         bytes memory _valueRetrieved = retrieveData(_queryId, _timestamp);
         require(_valueRetrieved.length != 0, "no value exists at timestamp");
-        (
+        (,
             bytes memory _valueRetrievedBefore,
             uint256 _timestampBefore
         ) = getDataBefore(_queryId, _timestamp);

@@ -1,39 +1,45 @@
 from abc import ABC
 from abc import abstractmethod
-from typing import Any
-from typing import Dict
 from typing import List
 from typing import Tuple
 
-from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
-from telliot_core.utils.response import ResponseStatus
-
 
 class TipListener(ABC):
-    """Calculator of feed with highest tip"""
-
-    def __init__(self, autopay: TellorFlexAutopayContract) -> None:
-        self.autopay = autopay
-
-    @abstractmethod
-    async def autopay_function_call(self, func_name: str, **kwargs: Dict[str, Any]) -> Tuple[Any, ResponseStatus]:
-        """Make autopay function calls
-        Args:
-        - func_name: function name
-        - kwargs: any params require for function contrac call
-
-        :return: data
-        """
+    """Check if query data supported"""
 
     @abstractmethod
     def decode_typ_name(self, query_data: bytes) -> str:
-        """Decode query type name from query data"""
+        """Decode query type name from query data
+
+        Return: string query type name
+        """
 
     @abstractmethod
     def qtype_name_in_registry(self, qtyp_name: str) -> bool:
         """Check if query type exists in telliot registry
 
-        :return: bool
+        Return: bool
+        """
+
+    @abstractmethod
+    def qdata_in_feed_catalog(self, query_data: bytes) -> bool:
+        """Check if query tag for given query data is available in CATALOG_FEEDS
+
+        Return: bool
+        """
+
+    @abstractmethod
+    def qtype_in_feed_mapping(self, qtyp_name: str) -> bool:
+        """Check if query type in DATAFEED_BUILDER_MAPPING
+
+        Return: bool
+        """
+
+    @abstractmethod
+    def get_query_from_qtyp_name(self, qtyp_name: str) -> object:
+        """Get query from query type name
+
+        Return: query
         """
 
     @abstractmethod
