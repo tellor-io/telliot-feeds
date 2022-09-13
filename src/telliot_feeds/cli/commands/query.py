@@ -1,13 +1,8 @@
 import click
-import eth_abi
 
-from telliot_feeds.queries.abi_query import AbiQuery
-from telliot_feeds.queries.json_query import JsonQuery
-from telliot_feeds.queries.legacy_query import LegacyRequest
-from telliot_feeds.queries.query import OracleQuery
-from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.queries.utils import choose_query_type
-from telliot_feeds.utils.decode import decode_query_data, decode_submit_value_bytes
+from telliot_feeds.utils.decode import decode_query_data
+from telliot_feeds.utils.decode import decode_submit_value_bytes
 
 # from telliot_core.cli.utils import async_run
 # from telliot_core.cli.utils import cli_core

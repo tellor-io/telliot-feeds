@@ -1,12 +1,11 @@
-from typing import Union
-from logging import Logger
-import click
+from typing import Any
+from typing import Callable
 
 from telliot_feeds.queries.query import OracleQuery
 from telliot_feeds.queries.query_catalog import query_catalog
 
 
-def choose_query_type(log: Union[print, click.echo, Logger] = print) -> OracleQuery:
+def choose_query_type(log: Callable[..., Any] = print) -> OracleQuery:
     """Choose query type."""
     log("Choose query type to decode submitted value:")
     queries = []
