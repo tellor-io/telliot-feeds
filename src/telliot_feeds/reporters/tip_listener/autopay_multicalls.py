@@ -45,6 +45,18 @@ class AutopayMulticalls:
     def single_autopay_function_call(
         self, *args: Any, func_sig: str, handler_func: Optional[Callable[[Any], Any]] = None, **kwargs: Any
     ) -> Call:
+        """Assemble a single Call object to use in a batch call through multicall
+
+        Args:
+        - *args: key identifier to use in the dictionary to identify the reponse from the multicall
+        and avoid data deletion by overwriting the dictionary
+        - func_sig: the function to call with params' types and return type
+        i.e. "funcsig(paramtype1, paramtype2)(returntype1)"
+        - handler_func: optional function to handle call response, default None
+        - *kwargs: setting the query_id and feed_id (don't include feed_id if args included)
+
+        Return: Call object
+        """
         return Call(
             target=self.autopay.address,
             function=[func_sig] + list(kwargs.values()),
@@ -56,7 +68,7 @@ class AutopayMulticalls:
             else [[(kwargs["feed_id"], kwargs["query_id"]), handler_func]],
         )
 
-    def get_data_before_calls(self, query_id: Optional[bytes], now_timestamp: TimeStamp) -> Call:
+    def get_data_before_calls(self, query_id: bytes, now_timestamp: TimeStamp) -> Call:
         """concatenate getDataBefore autopay Call object for list of query ids
 
         Return: list of Call objects for batch call
@@ -69,7 +81,7 @@ class AutopayMulticalls:
             param1=now_timestamp,
         )
 
-    def get_index_for_data_before_now(self, query_id: Optional[bytes], now_timestamp: TimeStamp) -> Call:
+    def get_index_for_data_before_now(self, query_id: bytes, now_timestamp: TimeStamp) -> Call:
         """concatenate getIndexForDataBefore autopay Call object for current timestamp
 
         Return: list of Call objects for batch call
@@ -82,7 +94,7 @@ class AutopayMulticalls:
             param2=now_timestamp,
         )
 
-    def get_index_for_data_before_month(self, query_id: Optional[bytes], month_old: TimeStamp) -> Call:
+    def get_index_for_data_before_month(self, query_id: bytes, month_old: TimeStamp) -> Call:
         """concatenate getIndexForDataBefore autopay Call object for month old timestamp
 
         Return: list of Call objects for batch call
@@ -110,7 +122,7 @@ class AutopayMulticalls:
         )
 
     def get_reward_claimed_status(
-        self, feed_id: Optional[bytes], query_id: Optional[bytes], timestamps: Optional[List[int]]
+        self, feed_id: Optional[bytes], query_id: bytes, timestamps: Optional[List[int]]
     ) -> Call:
         """Concatenate Call object for a batch multicall of getRewardClaimStatusList
         to fetch claim status of each timestamp

@@ -163,7 +163,7 @@ class FundedFeeds:
                 funded_feed.feed_details.reward += funded_feed.feed_details.rewardIncreasePerSecond * time_based_reward
                 if window_eligiblity is False:
                     price_change = await self.feed_filter.price_change(
-                        query_id=funded_feed.query_id,  # type: ignore
+                        query_id=funded_feed.query_id,
                         value_before=int(int(funded_feed.current_value.hex(), 16) / 10**18),
                     )
                     if price_change is None:

@@ -9,14 +9,13 @@ from telliot_core.utils.response import error_status
 from web3 import Web3 as w3
 
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.queries.query_catalog import query_catalog
+from telliot_feeds.reporters.tip_listener import CATALOG_QUERY_IDS
 from telliot_feeds.reporters.tip_listener.tip_listener_filter import TipListenerFilter
 from telliot_feeds.reporters.tip_listener.utils_tip_listener import FullFeedQueryDetails
 from telliot_feeds.utils.log import get_logger
 
+
 logger = get_logger(__name__)
-# Mapping of queryId to query tag for supported queries
-CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
 
 
 class FundedFeedFilter(TipListenerFilter):

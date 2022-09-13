@@ -40,8 +40,8 @@ class FullFeedQueryDetails:
 
     feed_details: FeedDetails
     query_data: bytes
-    feed_id: Optional[bytes] = None
-    query_id: Optional[bytes] = None
+    feed_id: bytes = field(default_factory=bytes)
+    query_id: bytes = field(default_factory=bytes)
     queryId_timestamps_list: List[TimeStamp] = field(default_factory=list)
     current_value: bytes = b""
     current_value_timestamp: TimeStamp = 0
