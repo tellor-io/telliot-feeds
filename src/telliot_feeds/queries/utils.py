@@ -3,7 +3,7 @@ from logging import Logger
 import click
 
 from telliot_feeds.queries.query import OracleQuery
-from telliot_feeds.queries.catalog import query_catalog
+from telliot_feeds.queries.query_catalog import query_catalog
 
 
 def choose_query_type(log: Union[print, click.echo, Logger] = print) -> OracleQuery:
@@ -31,4 +31,3 @@ def choose_query_type(log: Union[print, click.echo, Logger] = print) -> OracleQu
 
     log(f"Your choice: {type(queries[choice - 1]).__name__}")
     return queries[choice - 1]
-    
