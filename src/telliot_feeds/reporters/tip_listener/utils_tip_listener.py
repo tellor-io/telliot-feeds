@@ -1,9 +1,11 @@
 from collections import defaultdict
 from dataclasses import dataclass
+from dataclasses import field
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Tuple
 
 from telliot_core.utils.timestamp import TimeStamp
 
@@ -40,7 +42,7 @@ class FullFeedQueryDetails:
     query_data: bytes
     feed_id: Optional[bytes] = None
     query_id: Optional[bytes] = None
-    queryId_timestamps_list: List[TimeStamp] = []
+    queryId_timestamps_list: List[TimeStamp] = field(default_factory=list)
     current_value: bytes = b""
     current_value_timestamp: TimeStamp = 0
     current_value_index: int = 0
@@ -74,3 +76,30 @@ def filter_batch_result(data: Dict[Any, Any]) -> defaultdict[Any, List[Any]]:
             results[query_id].append(value)
 
     return results
+
+
+def sum_values(x: Optional[int], y: Optional[int]) -> Optional[int]:
+    """Takes two values and returns sum and handles Nonetype"""
+    return sum((num for num in (x, y) if num is not None))
+
+
+def sort_by_max_tip(dict: Dict[bytes, int]) -> list[Tuple[bytes, int]]:
+    """Takes dictionary of int type value and sorts by max value"""
+    sorted_lis = sorted(dict.items(), key=lambda item: item[1], reverse=True)
+    return sorted_lis
+
+
+def get_suggestion(
+    feed_tips: Optional[Dict[bytes, int]], onetime_tips: Optional[Dict[bytes, int]]
+) -> Tuple[bytes, int]:
+
+    if feed_tips and onetime_tips:
+        # merge autopay tips and get feed with max amount of tip
+        combined_dict = {key: sum_values(onetime_tips.get(key), feed_tips.get(key)) for key in onetime_tips | feed_tips}
+        tips_sorted = sort_by_max_tip(combined_dict)  # type: ignore
+        suggestion = tips_sorted[0]
+    elif feed_tips is not None:
+        suggestion = sort_by_max_tip(feed_tips)[0]
+    elif onetime_tips is not None:
+        suggestion = sort_by_max_tip(onetime_tips)[0]
+    return suggestion

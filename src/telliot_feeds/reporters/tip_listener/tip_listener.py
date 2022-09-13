@@ -1,6 +1,7 @@
 from abc import ABC
 from abc import abstractmethod
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 
@@ -8,7 +9,7 @@ class TipListener(ABC):
     """Check if query data supported"""
 
     @abstractmethod
-    def decode_typ_name(self, query_data: bytes) -> str:
+    def decode_typ_name(self, qdata: bytes) -> str:
         """Decode query type name from query data
 
         Return: string query type name
@@ -22,10 +23,10 @@ class TipListener(ABC):
         """
 
     @abstractmethod
-    def qdata_in_feed_catalog(self, query_data: bytes) -> bool:
+    def qtag_from_feed_catalog(self, qdata: bytes) -> Optional[str]:
         """Check if query tag for given query data is available in CATALOG_FEEDS
 
-        Return: bool
+        Return: str
         """
 
     @abstractmethod
@@ -36,7 +37,7 @@ class TipListener(ABC):
         """
 
     @abstractmethod
-    def get_query_from_qtyp_name(self, qtyp_name: str) -> object:
+    def get_query_from_qtyp_name(self, qdata: bytes, qtyp_name: str) -> object:
         """Get query from query type name
 
         Return: query

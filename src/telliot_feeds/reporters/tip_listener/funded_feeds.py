@@ -45,7 +45,7 @@ class FundedFeeds:
 
         for (details, query_data) in list(funded_feeds):
             # get data type name
-            qtype_name = self.feed_filter.decode_typ_name(query_data=query_data)
+            qtype_name = self.feed_filter.decode_typ_name(qdata=query_data)
             # bool response if query type supported by telliot
             if not self.feed_filter.qtype_name_in_registry(qtyp_name=qtype_name):
                 funded_feeds.remove((details, query_data))

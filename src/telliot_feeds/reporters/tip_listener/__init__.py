@@ -6,9 +6,8 @@ from multicall import multicall
 from multicall.constants import MULTICALL2_ADDRESSES
 from multicall.constants import Network
 
-# from multicall import multicall
-# import asyncio
-# from concurrent.futures import ThreadPoolExecutor
+from telliot_feeds.queries.query_catalog import query_catalog
+
 
 # add testnet support for multicall that aren't avaialable in the package
 Network.Mumbai = 80001
@@ -29,3 +28,6 @@ async def run_in_subprocess(coro: Any, *args: Any, **kwargs: Any) -> Any:
 # Multicall interface uses ProcessPoolExecutor which leaks memory and breaks when used for the tip listener
 # switching to use ThreadPoolExecutor instead seems to fix that
 multicall.run_in_subprocess = run_in_subprocess
+
+CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
+CATALOG_QUERY_DATA = {query_catalog._entries[tag].query.query_data: tag for tag in query_catalog._entries}

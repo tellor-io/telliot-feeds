@@ -5,11 +5,8 @@ from telliot_core.utils.response import ResponseStatus
 from telliot_core.utils.timestamp import TimeStamp
 from web3 import Web3
 
-from telliot_feeds.queries.query_catalog import query_catalog
-
-
-CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
-CATALOG_QUERY_DATA = {query_catalog._entries[tag].query.query_data: tag for tag in query_catalog._entries}
+from telliot_feeds.reporters.tip_listener import CATALOG_QUERY_DATA
+from telliot_feeds.reporters.tip_listener import CATALOG_QUERY_IDS
 
 
 @pytest.fixture(scope="function")
@@ -97,19 +94,18 @@ async def setup_one_time_tips(autopay_contract_setup):
     contract = await autopay_contract_setup
     count = 1  # tip must be greater than zero
     for query_id, query_data in zip(CATALOG_QUERY_IDS, CATALOG_QUERY_DATA):
-        if "legacy" not in CATALOG_QUERY_IDS[query_id]:
-            # legacy is query ids are not encoded the same way as the current query ids
-            # so we just avoid it here
-            _, status = await contract.write(
-                "tip",
-                gas_limit=3500000,
-                legacy_gas_price=1,
-                _queryId=query_id,
-                _amount=int(int(count) * 10**18),
-                _queryData=query_data,
-            )
-            assert status.ok
-            count += 1
+        # legacy is query ids are not encoded the same way as the current query ids
+        # so we just avoid it here
+        _, status = await contract.write(
+            "tip",
+            gas_limit=3500000,
+            legacy_gas_price=1,
+            _queryId=query_id,
+            _amount=int(int(count) * 10**18),
+            _queryData=query_data,
+        )
+        assert status.ok
+        count += 1
     return contract
 
 

@@ -3,7 +3,6 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Tuple
-from typing import Union
 
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 
@@ -23,7 +22,7 @@ class OneTimeTips(TipListenerFilter):
         Return: list of tuples of only query data and tips
         that exist in telliot registry
         """
-        onetime_tips: Optional[List[Tuple[Union[bytes, int]]]]
+        onetime_tips: Optional[List[Tuple[bytes, int]]]
         onetime_tips, status = await self.autopay.read("getFundedSingleTipsInfo")
 
         if not status.ok or not onetime_tips:
@@ -31,10 +30,14 @@ class OneTimeTips(TipListenerFilter):
             return None
 
         for (query_data, reward) in list(onetime_tips):
-            # add error catch here
-            qtype_name = self.decode_typ_name(query_data=query_data)  # type: ignore
-            if not self.qtype_name_in_registry(qtyp_name=qtype_name):
-                onetime_tips.remove((query_data, reward))  # type: ignore
+            if query_data == b"":
+                print("Bad query data response")
+                onetime_tips.remove((query_data, reward))
+                continue
 
-        single_tips = {query_data: tip for (query_data, tip) in onetime_tips}  # type: ignore
+            qtype_name = self.decode_typ_name(qdata=query_data)
+            if not self.qtype_name_in_registry(qtyp_name=qtype_name):
+                onetime_tips.remove((query_data, reward))
+
+        single_tips = {query_data: reward for (query_data, reward) in onetime_tips}
         return single_tips
