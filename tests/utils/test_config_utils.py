@@ -1,6 +1,6 @@
-from tabnanny import check
-from telliot_feeds.utils.cfg import check_config
 from telliot_core.apps.telliot_config import TelliotConfig
+
+from telliot_feeds.utils.cfg import check_config
 
 
 def test_check_config():

@@ -1,11 +1,18 @@
+import os
 from typing import Optional
 
-import click
+from simple_term_menu import TerminalMenu
 
+import click
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.model.endpoints import RPCEndpoint
+
+from telliot_feeds.utils.log import get_logger
+
+
+logger = get_logger(__name__)
 
 
 def mainnet_config() -> Optional[TelliotConfig]:
@@ -28,13 +35,14 @@ def mainnet_config() -> Optional[TelliotConfig]:
 
     return cfg
 
-def setup_account(cfg:TelliotConfig, account_name: Optional[str]) -> TelliotConfig:
-    """Setup account via CLI if not already configured"""
 
-    choice = input(f"Chain_id is {cfg.main.chain_id}. Do you want to update it? (y/n)")
+def setup_config(cfg: TelliotConfig, account_name: Optional[str]) -> TelliotConfig:
+    """Setup TelliotConfig via CLI if not already configured"""
+
+    choice = click.confirm(f"Chain_id is {cfg.main.chain_id}. Do you want to update it?")
 
     if choice.lower() == "y":
-        new_chain_id = input("Enter a new chain id")    # chck if confings are setup
+        new_chain_id = click.prompt("Enter a new chain id", type=int)    # chck if confings are setup
         cfg.main.chain_id = new_chain_id
 
     config_is_setup = check_config(cfg)
@@ -48,7 +56,9 @@ def setup_account(cfg:TelliotConfig, account_name: Optional[str]) -> TelliotConf
             f"Account {find_accounts(chain_id=cfg.main.chain_id)}"
         )
 
-    choice = input("Do you want to change the Endpoints? (y/n)")
+        setup_endpoint(cfg, cfg.main.chain_id)
+
+        choice = click.confirm("Do you want to update your  ")
 
     # if not..
     
@@ -71,9 +81,6 @@ def setup_account(cfg:TelliotConfig, account_name: Optional[str]) -> TelliotConf
     #         prompt with click to add an account. we need to add:
     #             account name
     #             private key
-                
-
-
 
     # accounts = find_accounts(chain_id=chain_id)
     # if not accounts:
@@ -83,7 +90,6 @@ def setup_account(cfg:TelliotConfig, account_name: Optional[str]) -> TelliotConf
     #         ChainedAccount.add(account_name, chains=chain_id, key=os.environ["PRIVATE_KEY"], password="")
     #     else:
     #         input(f"We need an account on chain_id {chain_id}.")
-
 
     # return cfg
     pass
@@ -104,9 +110,9 @@ def setup_endpoint(cfg:TelliotConfig, chain_id:int) -> TelliotConfig:
     
     #     print settings if there are endpoints available
     if found_endpoint:
-        choice = input(
+        choice = click.confirm(
             f"This endpoint is available for chain_id {chain_id}: {str(endpoint)}"
-            "Do you want to use it? (y/n)"
+            "Do you want to use it?"
             )
 
         if choice.lower() == "y":
@@ -115,11 +121,11 @@ def setup_endpoint(cfg:TelliotConfig, chain_id:int) -> TelliotConfig:
 
         if choice.lower == "n":
 
-            return set_endpoint(cfg, chain_id)
+            return prompt_for_endpoint(cfg, chain_id)
 
     if not found_endpoint:
 
-        return set_endpoint(cfg, chain_id)
+        return prompt_for_endpoint(cfg, chain_id)
 
 
 def check_config(cfg: TelliotConfig) -> bool:
@@ -140,12 +146,12 @@ def check_config(cfg: TelliotConfig) -> bool:
 
 
 
-def set_endpoint(cfg: TelliotConfig, chain_id:int):
+def prompt_for_endpoint(cfg: TelliotConfig, chain_id:int):
 
-    network_name = input("Enter network name: ")
-    provider = input("Enter Provider: ")
-    rpc_url = input("Enter RPC url")
-    explorer_url = input("Enter Explorer url: ")
+    network_name = click.prompt("Enter network name: ", type=str)
+    provider = click.prompt("Enter Provider: ", type=str)
+    rpc_url = click.prompt("Enter RPC url", type=str)
+    explorer_url = click.prompt("Enter Explorer url: ", type=str)
 
     new_endpoint = RPCEndpoint(chain_id, network_name, provider, rpc_url, explorer_url)
 
@@ -156,5 +162,44 @@ def set_endpoint(cfg: TelliotConfig, chain_id:int):
     return cfg
 
 
-def set_config():
-    pass
+def setup_account(chain_id:int):
+    """Set up ChainedAccount for TelliotConfig if not already configured"""
+
+    # find account
+    accounts = find_accounts(chain_id=chain_id)
+    # if no account found...
+    if accounts is None:
+        prompt_for_account(chain_id)
+
+    #if account(s) found...
+    else:
+        #pick an account
+        title = f"You have these accounts on chain_id {chain_id}"
+        options = [a.name + " " + a.address for a in accounts] + ["add account..."]
+
+        menu = TerminalMenu(options, title=title)
+        selected_index = menu.show()
+
+        if options[selected_index] == "add account...":
+            prompt_for_account(chain_id=chain_id)
+        else:
+            selected_account = accounts[selected_index]
+            click.echo(f"Account {selected_account.name} at {selected_account.address} selected.")
+            return selected_account
+
+
+def prompt_for_account(chain_id:int) -> None:
+    """take user input to create a new ChainedAccount account for the Telliot Config"""
+
+    #prompt for account
+    # account name
+    acc_name = click.prompt("Enter account name: ", type=str)
+    #private key
+    private_key = click.prompt("Enter private key: ", type=str)
+    # chain id
+    chain_id = click.prompt("Enter chain id: ", type=int)
+    #add account
+    try:
+        ChainedAccount.add(acc_name, chain_id, private_key, password=None)
+    except:
+        click.echo("Cannot add account: Invalid account properties")
