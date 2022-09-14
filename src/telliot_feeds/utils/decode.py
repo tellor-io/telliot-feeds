@@ -1,11 +1,13 @@
 """
 Helper functions for decoding query data and submitted values.
 """
+import binascii
 from typing import Any
 from typing import Callable
 from typing import Optional
 
 import eth_abi
+from eth_utils.conversions import to_bytes
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
@@ -20,12 +22,9 @@ def bytes_from_string(
     string: str, err_msg: str, log: Callable[..., Any] = print
 ) -> tuple[ResponseStatus, Optional[bytes]]:
     """Ensure valid hex string and convert to bytes."""
-    if len(string) > 2 and string[:2] == "0x":
-        string = string[2:]
-
     try:
-        return ResponseStatus(), bytes.fromhex(string)
-    except ValueError as e:
+        return ResponseStatus(), to_bytes(hexstr=string)
+    except binascii.Error as e:
         return error_status(note=err_msg, e=e, log=log), None
 
 
