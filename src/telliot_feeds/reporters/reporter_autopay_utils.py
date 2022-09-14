@@ -123,8 +123,10 @@ class AutopayCalls:
                     )
                 )
         data = await safe_multicall(calls, self.w3, require_success)
+        if not data:
+            return None
         try:
-            data.pop("disregard_boolean")  # type: ignore
+            data.pop("disregard_boolean")
         except KeyError as e:
             msg = f"No feeds returned by multicall, KeyError: {e}"
             logger.warning(msg)
@@ -160,7 +162,7 @@ class AutopayCalls:
         tags_with_feed_ids = {
             tag: feed_id
             for tag, feed_id in current_feeds.items()
-            if (not isinstance(tag, tuple) and len(current_feeds[tag]) > 0)
+            if (not isinstance(tag, tuple) and (current_feeds[tag]))
         }
         idx_current: List[int] = []  # indices for every query id reports' current timestamps
         idx_three_mos_ago: List[int] = []  # indices for every query id reports' three months ago timestamps
@@ -180,19 +182,20 @@ class AutopayCalls:
 
         tag: str
         for (tag, _), (end, start) in merged_query_idx.items():
-            for idx in range(start, end):
+            if start and end:
+                for idx in range(start, end):
 
-                get_timestampby_query_id_n_idx_call.append(
-                    Call(
-                        self.autopay.address,
-                        [
-                            "getTimestampbyQueryIdandIndex(bytes32,uint256)(uint256)",
-                            query_catalog._entries[tag].query.query_id,
-                            idx,
-                        ],
-                        [[(tag, idx), None]],
+                    get_timestampby_query_id_n_idx_call.append(
+                        Call(
+                            self.autopay.address,
+                            [
+                                "getTimestampbyQueryIdandIndex(bytes32,uint256)(uint256)",
+                                query_catalog._entries[tag].query.query_id,
+                                idx,
+                            ],
+                            [[(tag, idx), None]],
+                        )
                     )
-                )
 
         def _to_list(_: bool, val: Any) -> List[Any]:
             """Helper function, converts feed_details from tuple to list"""
@@ -220,7 +223,7 @@ class AutopayCalls:
                 ["getCurrentValue(bytes32)(bool,bytes,uint256)", query_catalog._entries[tag].query.query_id],
                 [
                     [("current_values", tag), None],
-                    [("current_values", tag, "current_price"), self._current_price],
+                    [("current_values", tag, "current_price"), None],
                     [("current_values", tag, "timestamp"), None],
                 ],
             )
@@ -297,16 +300,6 @@ class AutopayCalls:
             for query_id in self.catalog
         ]
         return await safe_multicall(calls, self.w3, require_success)
-
-    def _current_price(self, *val: Any) -> Any:
-        """
-        Helper function to decode price value from oracle
-        """
-        if len(val) > 1:
-            if val[1] == b"":
-                return val[1]
-            return Web3.toInt(hexstr=val[1].hex()) / 1e18
-        return Web3.toInt(hexstr=val[0].hex()) / 1e18 if val[0] != b"" else val[0]
 
 
 async def get_feed_tip(query: bytes, autopay: TellorFlexAutopayContract) -> Optional[int]:
@@ -483,6 +476,13 @@ async def _get_feed_suggestion(feeds: Any, current_values: Any) -> Any:
         else:
             datafeed = CATALOG_FEEDS[query_tag]
             value_now = await datafeed.source.fetch_new_datapoint()  # type: ignore
+            # value is always a number for a price oracle submission
+            # convert bytes value to int
+            try:
+                value_before_now = int(int(current_values[(query_tag, "current_price")].hex(), 16) / 1e18)
+            except ValueError:
+                logger.info("Can't check price threshold, oracle price submission not a number")
+                continue
             if not value_now:
                 note = f"Unable to fetch {datafeed} price for tip calculation"
                 error_status(note=note, log=logger.warning)
