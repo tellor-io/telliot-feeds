@@ -1,11 +1,8 @@
 import click
-import eth_abi
 
-from telliot_feeds.queries.abi_query import AbiQuery
-from telliot_feeds.queries.json_query import JsonQuery
-from telliot_feeds.queries.legacy_query import LegacyRequest
-from telliot_feeds.queries.query import OracleQuery
-from telliot_feeds.queries.query_catalog import query_catalog
+from telliot_feeds.queries.utils import choose_query_type
+from telliot_feeds.utils.decode import decode_query_data
+from telliot_feeds.utils.decode import decode_submit_value_bytes
 
 # from telliot_core.cli.utils import async_run
 # from telliot_core.cli.utils import cli_core
@@ -25,91 +22,16 @@ def query() -> None:
 @click.option("--submit-value-bytes", "-svb")
 def decode(query_data: str, submit_value_bytes: str) -> None:
     """Decode query data or reported value."""
+    query = None
     if query_data:
-        decode_query_data(query_data)
+        status, q = decode_query_data(query_data=query_data, log=click.echo)
+        if status.ok:
+            query = q
 
     if submit_value_bytes:
-        query = choose_query_type()
-        decode_submit_value_bytes(query, submit_value_bytes)
-
-
-def decode_query_data(query_data: str) -> None:
-    """Decode query data."""
-    if len(query_data) > 2 and query_data[:2] == "0x":
-        query_data = query_data[2:]
-
-    try:
-        query_data = bytes.fromhex(query_data)  # type: ignore
-    except ValueError:
-        click.echo(
-            "Invalid query data. Only hex strings accepted as input. Example Snapshot query data:\n"
-            "0x00000000000000000000000000000000000000000000000000000000000000400"
-            "0000000000000000000000000000000000000000000000000000000000000800000"
-            "000000000000000000000000000000000000000000000000000000000008536e617"
-            "073686f740000000000000000000000000000000000000000000000000000000000"
-            "0000000000000000000000000000000000000000000000000000800000000000000"
-            "0000000000000000000000000000000000000000000000000200000000000000000"
-            "0000000000000000000000000000000000000000000000406363653937363061646"
-            "5613930363137363934306165356664303562633030376363393235326235323438"
-            "333230363538303036333534383463623563623537"
-        )
-    q = None
-    for query in (AbiQuery, LegacyRequest, JsonQuery):
-        q = query.get_query_from_data(query_data)  # type: ignore
-        if q:
-            break
-    if q:
-        click.echo(f"Query: {q}")
-    else:
-        click.echo("Unable to decode query data.")
-
-
-def choose_query_type() -> OracleQuery:
-    """Choose query type."""
-    click.echo("Choose query type to decode submitted value:")
-    queries = []
-    names = set()
-    for entry in query_catalog._entries.values():
-        if entry.query_type not in names:
-            names.add(entry.query_type)
-            queries.append(entry.query)
-            click.echo(f"[{len(queries)}] -- {entry.query_type}")
-
-    choice = None
-    while not choice:
-        try:
-            choice = int(input(f"Enter number from 1-{len(queries)}: "))
-        except ValueError:
-            click.echo("Invalid choice.")
-            continue
-
-        if choice < len(queries) + 1 < choice:
-            choice = None
-            click.echo("Invalid choice.")
-
-    click.echo(f"Your choice: {type(queries[choice - 1]).__name__}")
-    return queries[choice - 1]
-
-
-def decode_submit_value_bytes(query: OracleQuery, submit_value_bytes: str) -> None:
-    """Decode reported data."""
-    if len(submit_value_bytes) > 2 and submit_value_bytes[:2] == "0x":
-        submit_value_bytes = submit_value_bytes[2:]
-
-    try:
-        submit_value_bytes = bytes.fromhex(submit_value_bytes)  # type: ignore
-    except ValueError:
-        click.echo(
-            "Invalid submit value bytes. Only hex strings accepted as input. Example Snapshot submit value bytes:\n"
-            "0x0000000000000000000000000000000000000000000000000000000000000001"
-        )
-        return
-
-    if isinstance(submit_value_bytes, bytes):
-        try:
-            click.echo(f"Decoded value: {query.value_type.decode(submit_value_bytes)}")
-        except (eth_abi.exceptions.InsufficientDataBytes, eth_abi.exceptions.NonEmptyPaddingBytes):
-            click.echo(f"Unable to decode value using query type: {query.__class__.__name__}")
+        if not query:
+            query = choose_query_type()
+        _, _ = decode_submit_value_bytes(query, submit_value_bytes, log=click.echo)
 
 
 # @query.command()
