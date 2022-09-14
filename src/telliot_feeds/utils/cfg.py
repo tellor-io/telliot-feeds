@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import List, Optional
 
 from simple_term_menu import TerminalMenu
 
@@ -39,26 +39,31 @@ def mainnet_config() -> Optional[TelliotConfig]:
 def setup_config(cfg: TelliotConfig, account_name: Optional[str]) -> TelliotConfig:
     """Setup TelliotConfig via CLI if not already configured"""
 
-    choice = click.confirm(f"Chain_id is {cfg.main.chain_id}. Do you want to update it?")
+    if cfg is None:
+        cfg = TelliotConfig()
 
-    if choice.lower() == "y":
-        new_chain_id = click.prompt("Enter a new chain id", type=int)    # chck if confings are setup
+    want_to_update = click.confirm(f"Chain_id is {cfg.main.chain_id}. Do you want to update it?")
+
+    if want_to_update:
+        new_chain_id = click.prompt("Enter a new chain id", type=int) 
         cfg.main.chain_id = new_chain_id
 
-    config_is_setup = check_config(cfg)
+    accounts = check_accounts(cfg)
+    endpoint = check_endpoint(cfg)
+
     # if configs are setup...
          # print current settings of cfg
-    if config_is_setup:
+    if accounts is not None and endpoint is not None:
         click.echo(
             f"Your current configuration...\n"
             f"Chain id is {cfg.main.chain_id}\n"
-            f"Endpoint {cfg.get_endpoint()}\n"
-            f"Account {find_accounts(chain_id=cfg.main.chain_id)}"
+            f"Endpoint {endpoint}\n"
+            f"Account {accounts[0]}"
         )
 
         setup_endpoint(cfg, cfg.main.chain_id)
 
-        choice = click.confirm("Do you want to update your  ")
+        setup_account(cfg, cfg.main.chain_id)
 
     # if not..
     
@@ -110,16 +115,16 @@ def setup_endpoint(cfg:TelliotConfig, chain_id:int) -> TelliotConfig:
     
     #     print settings if there are endpoints available
     if found_endpoint:
-        choice = click.confirm(
+        keep = click.confirm(
             f"This endpoint is available for chain_id {chain_id}: {str(endpoint)}"
             "Do you want to use it?"
             )
 
-        if choice.lower() == "y":
+        if keep:
 
             return cfg
 
-        if choice.lower == "n":
+        else:
 
             return prompt_for_endpoint(cfg, chain_id)
 
@@ -128,20 +133,18 @@ def setup_endpoint(cfg:TelliotConfig, chain_id:int) -> TelliotConfig:
         return prompt_for_endpoint(cfg, chain_id)
 
 
-def check_config(cfg: TelliotConfig) -> bool:
-
-    # do they want the current chain id, endpint and account?
-    # if yes, proceed to reporting
-    # if not, trigger above functions
+def check_endpoint(cfg: TelliotConfig) -> Optional[RPCEndpoint]:
+    """Check if there is a pre-set endpoint in the config"""
 
     try:
-        cfg.get_endpoint()
+        return cfg.get_endpoint()
     except:
-        return False
-    if find_accounts(chain_id=cfg.main.chain_id) is not None:
-        return True
-    else: 
-        return False
+        return None
+
+def check_accounts(cfg: TelliotConfig) -> Optional[List[ChainedAccount]]:
+    """CHeck if there is a pre-set account in the config"""
+
+    return find_accounts(chain_id=cfg.main.chain_id)
 
 
 
