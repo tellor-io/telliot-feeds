@@ -1,6 +1,7 @@
+from itertools import chain
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feeds.utils.cfg import check_config
+from telliot_feeds.utils.cfg import setup_config
 
 
 def test_check_config():
@@ -8,4 +9,4 @@ def test_check_config():
 
     cfg = TelliotConfig()
 
-    check_config(cfg=cfg)
+    setup_config(cfg=cfg)

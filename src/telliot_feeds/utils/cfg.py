@@ -36,7 +36,7 @@ def mainnet_config() -> Optional[TelliotConfig]:
     return cfg
 
 
-def setup_config(cfg: TelliotConfig, account_name: Optional[str]) -> TelliotConfig:
+def setup_config(cfg: TelliotConfig) -> TelliotConfig:
     """Setup TelliotConfig via CLI if not already configured"""
 
     if cfg is None:
@@ -56,9 +56,9 @@ def setup_config(cfg: TelliotConfig, account_name: Optional[str]) -> TelliotConf
     if accounts is not None and endpoint is not None:
         click.echo(
             f"Your current configuration...\n"
-            f"Chain id is {cfg.main.chain_id}\n"
-            f"Endpoint {endpoint}\n"
-            f"Account {accounts[0]}"
+            f"Your chain id: {cfg.main.chain_id}\n"
+            f"Your endpoint: {endpoint}\n"
+            f"Your account name: {accounts[0].name}"
         )
 
         setup_endpoint(cfg, cfg.main.chain_id)
@@ -107,14 +107,11 @@ def setup_endpoint(cfg:TelliotConfig, chain_id:int) -> TelliotConfig:
     #     check for and add the test endpoint
     # else...
     #     check if any endpoints available for the chain_id
-    found_endpoint = True
-    try:
-        endpoint = cfg.get_endpoint(chain_id)
-    except:
-        found_endpoint = False
+
+    endpoint = check_endpoint(cfg)
     
     #     print settings if there are endpoints available
-    if found_endpoint:
+    if endpoint is not None:
         keep = click.confirm(
             f"This endpoint is available for chain_id {chain_id}: {str(endpoint)}"
             "Do you want to use it?"
@@ -128,7 +125,7 @@ def setup_endpoint(cfg:TelliotConfig, chain_id:int) -> TelliotConfig:
 
             return prompt_for_endpoint(cfg, chain_id)
 
-    if not found_endpoint:
+    else:
 
         return prompt_for_endpoint(cfg, chain_id)
 
@@ -156,9 +153,12 @@ def prompt_for_endpoint(cfg: TelliotConfig, chain_id:int):
     rpc_url = click.prompt("Enter RPC url", type=str)
     explorer_url = click.prompt("Enter Explorer url: ", type=str)
 
-    new_endpoint = RPCEndpoint(chain_id, network_name, provider, rpc_url, explorer_url)
-
-    cfg.endpoints.add(new_endpoint)
+    try:
+        new_endpoint = RPCEndpoint(chain_id, network_name, provider, rpc_url, explorer_url)
+    except:
+        click.echo(f"Cannot add endpoint: invalid endpoint properties")
+    
+    cfg.endpoints.append(new_endpoint)
 
     click.echo(f"{new_endpoint} added!")
 
