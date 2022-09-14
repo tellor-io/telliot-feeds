@@ -479,7 +479,7 @@ async def _get_feed_suggestion(feeds: Any, current_values: Any) -> Any:
             # value is always a number for a price oracle submission
             # convert bytes value to int
             try:
-                value_before_now = int(int(current_values[(query_tag, "current_price")].hex(), 16) / 1e18)  
+                value_before_now = int(int(current_values[(query_tag, "current_price")].hex(), 16) / 1e18)
             except ValueError:
                 logger.info("Can't check price threshold, oracle price submission not a number")
                 continue
