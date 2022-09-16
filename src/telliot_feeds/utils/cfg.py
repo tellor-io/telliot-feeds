@@ -61,43 +61,10 @@ def setup_config(cfg: TelliotConfig) -> TelliotConfig:
             f"Your account name: {accounts[0].name}"
         )
 
-        setup_endpoint(cfg, cfg.main.chain_id)
+    setup_endpoint(cfg, cfg.main.chain_id)
 
-        setup_account(cfg, cfg.main.chain_id)
+    setup_account(cfg.main.chain_id)
 
-    # if not..
-    
-    #prompt the user to add a chained account
-    #add...
-        #account name
-        #private key
-
-    # if testing...
-    #     add test account with .env private key
-    # else:
-    #     account_found = False
-    #     for i in supported chains:
-    #         find accounts of i
-    #     if multiple accounts FOUND...
-    #         select one or overwrite
-    #     else if one account found...
-    #         select it or overwrite
-    #     else not accounts:
-    #         prompt with click to add an account. we need to add:
-    #             account name
-    #             private key
-
-    # accounts = find_accounts(chain_id=chain_id)
-    # if not accounts:
-    #     # Create a test account using PRIVATE_KEY defined on github.
-    #     key = os.getenv("PRIVATE_KEY", None)
-    #     if key:
-    #         ChainedAccount.add(account_name, chains=chain_id, key=os.environ["PRIVATE_KEY"], password="")
-    #     else:
-    #         input(f"We need an account on chain_id {chain_id}.")
-
-    # return cfg
-    pass
 
 
 def setup_endpoint(cfg:TelliotConfig, chain_id:int) -> TelliotConfig:
@@ -165,7 +132,7 @@ def prompt_for_endpoint(cfg: TelliotConfig, chain_id:int):
     return cfg
 
 
-def setup_account(chain_id:int):
+def setup_account(chain_id:int) -> Optional[ChainedAccount]:
     """Set up ChainedAccount for TelliotConfig if not already configured"""
 
     # find account
