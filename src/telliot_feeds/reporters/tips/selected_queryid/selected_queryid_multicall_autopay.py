@@ -1,14 +1,14 @@
 """To fetch tip amount for query_id when query tag selected in cli"""
 from typing import List
-from typing import Tuple
 from typing import Optional
+from typing import Tuple
+
+from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.reporters.tips.listener.dtypes import FeedDetails
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
 from telliot_feeds.reporters.tips.listener.utils import filter_batch_result
 from telliot_feeds.reporters.tips.selected_queryid.selected_queryid_functions import CallFunctionSingle
-
-from telliot_core.utils.response import ResponseStatus
 
 
 class AutopayMulticall(CallFunctionSingle):
@@ -65,7 +65,7 @@ class AutopayMulticall(CallFunctionSingle):
                 current_queryid_value=resp[("current_value", query_id)],
                 current_value_timestamp=resp[("current_value_timestamp", query_id)],
                 current_value_index=resp[("current_value_index", query_id)],
-                month_old_index=resp[("month_old_index", query_id)]
+                month_old_index=resp[("month_old_index", query_id)],
             )
             feeds.append(feed)
 

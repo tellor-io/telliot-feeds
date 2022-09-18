@@ -1,22 +1,21 @@
-import sys
 import ast
-
+import sys
+from typing import Any
 from typing import Iterable
 from typing import List
 from typing import Optional
 from typing import Tuple
 
 from clamfig.base import Registry
-
-from web3 import Web3 as w3
 from eth_abi import decode_single
 from eth_utils.conversions import to_bytes
+from web3 import Web3 as w3
 
-from telliot_feeds.feeds import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
+from telliot_feeds.feeds import DataFeed
+from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
 from telliot_feeds.feeds import LEGACY_DATAFEEDS
 from telliot_feeds.queries.query import OracleQuery
-from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
 from telliot_feeds.reporters.tips import CATALOG_QUERY_IDS
 from telliot_feeds.reporters.tips.listener.tip_listener import TipListener
 
@@ -43,7 +42,7 @@ class TipListenerFilter(TipListener):
             return qtag
         return None
 
-    def qtag_in_feed_mapping(self, qdata: bytes) -> DataFeed:
+    def qtag_in_feed_mapping(self, qdata: bytes) -> Optional[DataFeed[Any]]:
         qtag = self.qtag_from_feed_catalog(qdata)
         if qtag in CATALOG_FEEDS:
             datafeed = CATALOG_FEEDS[qtag]
@@ -53,7 +52,7 @@ class TipListenerFilter(TipListener):
             return None
         return datafeed
 
-    def qtype_in_feed_builder_mapping(self, qdata: bytes) -> DataFeed:
+    def qtype_in_feed_builder_mapping(self, qdata: bytes) -> Optional[DataFeed[Any]]:
         qtyp_name = self.decode_typ_name(qdata)
         if qtyp_name in DATAFEED_BUILDER_MAPPING:
             datafeed = DATAFEED_BUILDER_MAPPING[qtyp_name]

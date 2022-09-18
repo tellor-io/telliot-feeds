@@ -1,13 +1,13 @@
 from typing import List
 
-from telliot_core.utils.timestamp import TimeStamp
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
+from telliot_core.utils.timestamp import TimeStamp
 
-from telliot_feeds.utils.log import get_logger
-from telliot_feeds.reporters.tips.listener.utils import sort_by_max_tip
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
 from telliot_feeds.reporters.tips.listener.funded_feeds_filter import FundedFeedFilter
+from telliot_feeds.reporters.tips.listener.utils import sort_by_max_tip
 from telliot_feeds.reporters.tips.selected_queryid.selected_queryid_multicall_autopay import AutopayMulticall
+from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 call = AutopayMulticall()
@@ -20,7 +20,7 @@ async def fetch_feed_tip(
     """Fetch tip amount for a query id"""
     call.autopay = autopay
     month_old = int(timestamp - 2_592_000)
-    tip_amount = 0
+    tip_amount: int = 0
 
     # get tip amount for one time tip if available
     one_time_tip, status = await autopay.get_current_tip(query_id=query_id)

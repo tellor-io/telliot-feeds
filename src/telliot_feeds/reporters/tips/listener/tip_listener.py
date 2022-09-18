@@ -1,8 +1,11 @@
 from abc import ABC
 from abc import abstractmethod
+from typing import Any
 from typing import List
 from typing import Optional
 from typing import Tuple
+
+from telliot_feeds.feeds import DataFeed
 
 
 class TipListener(ABC):
@@ -30,14 +33,14 @@ class TipListener(ABC):
         """
 
     @abstractmethod
-    def qtag_in_feed_mapping(self, qdata: bytes) -> Optional[object]:
+    def qtag_in_feed_mapping(self, qdata: bytes) -> Optional[DataFeed[Any]]:
         """Check if query type in DATAFEED_BUILDER_MAPPING
 
         Return: DataFeed
         """
 
     @abstractmethod
-    def get_query_from_qtyp_name(self, qdata: bytes, qtyp_name: str) -> object:
+    def get_query_from_qtyp_name(self, qdata: bytes, qtyp_name: str) -> DataFeed[Any]:
         """Get query from query type name
 
         Return: query

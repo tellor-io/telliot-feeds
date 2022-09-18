@@ -2,13 +2,14 @@ from typing import Any
 from typing import Optional
 from typing import Tuple
 
-from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.reporters.tips.funded_feeds.multicall_autopay import MulticallAutopay
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
+
+from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.reporters.tips.funded_feeds.funded_feeds import FundedFeeds
+from telliot_feeds.reporters.tips.funded_feeds.multicall_autopay import MulticallAutopay
 from telliot_feeds.reporters.tips.listener.funded_feeds_filter import FundedFeedFilter
-from telliot_feeds.reporters.tips.onetime.one_time_tips import OneTimeTips
 from telliot_feeds.reporters.tips.listener.utils import get_sorted_tips
+from telliot_feeds.reporters.tips.onetime.one_time_tips import OneTimeTips
 from telliot_feeds.utils.log import get_logger
 
 

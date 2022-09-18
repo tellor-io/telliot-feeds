@@ -1,23 +1,20 @@
 import math
-from typing import List
 from typing import Dict
-from typing import Tuple
+from typing import List
 from typing import Optional
+from typing import Tuple
 
-from web3 import Web3 as w3
 from eth_abi import encode_single
 from eth_utils.conversions import to_bytes
-
-from telliot_core.utils.timestamp import TimeStamp
 from telliot_core.utils.response import error_status
-
+from telliot_core.utils.timestamp import TimeStamp
+from web3 import Web3 as w3
 
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds import LEGACY_DATAFEEDS
 from telliot_feeds.reporters.tips import CATALOG_QUERY_IDS
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
 from telliot_feeds.reporters.tips.listener.tip_listener_filter import TipListenerFilter
-
 from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
