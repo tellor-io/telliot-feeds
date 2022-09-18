@@ -59,64 +59,62 @@ class FundedFeeds:
 
     async def filtered_funded_feeds(
         self, now_timestamp: int, month_old_timestamp: int
-    ) -> Optional[List[QueryIdandFeedDetails]]:
+    ) -> Tuple[Optional[List[QueryIdandFeedDetails]], ResponseStatus]:
 
         telliot_supported_feeds, status = await self.get_funded_feed_queries()
 
         if not status.ok:
-            logger.info(status.error)
-            return None
+            return None, status
 
-        # remove feeds with price threshold > 0 and no api support to check threshold
+        # remove feeds with price threshold > 0 and no api support
         catalog_supported_feeds = self.feed_filter.price_threshold_check_filter(telliot_supported_feeds)
 
-        # check timestamps for window eligibilty before reward call
-        # start autopay calls with multicall
-        # sigs: getDataBefore, getIndexforDataBefore x2
+        # make the first multicall and get current value, current index, and month old value index
         feeds_with_timestamp_index, status = await self.multi_call.timestamp_index_and_current_values_call(
             feeds=catalog_supported_feeds, month_old_timestamp=month_old_timestamp, now_timestamp=now_timestamp
         )
 
         if not status.ok:
-            logger.info(status.error)
-            return None
-        # after getting current values to check against, if price threshold == 0
-        # check if timestamp now first in window
+            return None, status
+
+        # filter out feeds where price threshold is zero but now timestamp not in window
         remove_uneligible_feeds = await self.feed_filter.filter_uneligible_feeds(
             feeds_with_timestamp_index, now_timestamp
         )
 
         if not remove_uneligible_feeds:
-            logger.info("All feeds were filtered out no feeds with eligible tips to report on")
-            return None
+            msg = "All feeds were filtered out no feeds with eligible tips to report on"
+            return None, ResponseStatus(error=msg)
 
+        # multicall to get all timestamps for a query id in the past month
         feeds_with_timestamps_lis, status = await self.multi_call.timestamps_list_call(feeds=remove_uneligible_feeds)
 
+        # return list of feeds if all query ids never had an oracle report
         if "No getTimestampbyQueryIdandIndex Calls to assemble" in status.error:
-            return feeds_with_timestamp_index
+            return feeds_with_timestamp_index, ResponseStatus()
 
-        # after getting a timestamp list for all reported values for every query id
-        # filter out timestamps that aren't first in a feeds eligible window
+        # for each queryids timestamps list remove timestamp that wasn't eligible for tip
         timestamps_list_filtered = self.feed_filter.timestamps_filter(feeds_with_timestamps_lis)
 
-        # get claim status count for every query ids eligible timestamp per feed
+        # get claim status count for every query ids eligible timestamp
         reward_claimed_status, status = await self.multi_call.rewards_claimed_status_call(timestamps_list_filtered)
 
         if reward_claimed_status is None:
-            return feeds_with_timestamps_lis
+            return timestamps_list_filtered, ResponseStatus()
 
-        funded_feeds = self.feed_filter.get_real_balance(feeds_with_timestamps_lis, reward_claimed_status)
+        funded_feeds = self.feed_filter.get_real_balance(timestamps_list_filtered, reward_claimed_status)
 
-        return funded_feeds
+        return funded_feeds, ResponseStatus()
 
     async def querydata_and_tip(self) -> Optional[Dict[bytes, int]]:
         current_time = TimeStamp.now().ts
         one_month_ago = current_time - 2_592_000
 
-        eligible_funded_feeds: Optional[List[QueryIdandFeedDetails]] = await self.filtered_funded_feeds(
+        eligible_funded_feeds, status = await self.filtered_funded_feeds(
             now_timestamp=current_time, month_old_timestamp=one_month_ago
         )
         if not eligible_funded_feeds:
+            logger.info(status.error)
             return None
         # dictionary of key: queryData with value: tipAmount
         querydata_and_tip = {}

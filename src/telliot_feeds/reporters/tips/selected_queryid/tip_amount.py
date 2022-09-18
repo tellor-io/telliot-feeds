@@ -5,7 +5,6 @@ from telliot_core.utils.timestamp import TimeStamp
 
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
 from telliot_feeds.reporters.tips.listener.funded_feeds_filter import FundedFeedFilter
-from telliot_feeds.reporters.tips.listener.utils import sort_by_max_tip
 from telliot_feeds.reporters.tips.selected_queryid.selected_queryid_multicall_autopay import AutopayMulticall
 from telliot_feeds.utils.log import get_logger
 
@@ -32,7 +31,7 @@ async def fetch_feed_tip(
     results, status = await call.currentfeeds_databefore_timestampindexnow_timestampindexold(
         query_id=query_id, now_timestamp=timestamp, month_old_timestamp=month_old
     )
-    print(results, "batch_one_response")
+
     if not status.ok:
         return tip_amount
 
@@ -41,7 +40,6 @@ async def fetch_feed_tip(
 
     if not status.ok:
         return tip_amount
-    print(timestamps_list_and_datafeed, "batch_two_response")
 
     # filter out uneligible feeds
     eligible_feeds = await filtr.filter_uneligible_feeds(timestamps_list_and_datafeed, timestamp)
@@ -49,6 +47,7 @@ async def fetch_feed_tip(
     if not eligible_feeds:
         logger.info("All feeds filtered out current timestamp not eligible for feed tip")
         return tip_amount
+
     # filter out query id timestamps not eligible for tip
     feeds_with_timestamps_filtered = filtr.timestamps_filter(eligible_feeds)
 
@@ -69,13 +68,9 @@ async def fetch_feed_tip(
 
 
 def tip(feeds: List[QueryIdandFeedDetails]) -> int:
-    tips = {}
+    tip_total = 0
 
     for feed in feeds:
-        query_id = feed.query_id
-        if query_id not in tips:
-            tips[query_id] = feed.params.reward
-        else:
-            tips[query_id] += feed.params.reward
-    tip_amount = sort_by_max_tip(tips)[0][1]
-    return tip_amount
+        if feed.params.balance >= feed.params.reward:
+            tip_total += feed.params.reward
+    return tip_total
