@@ -7,6 +7,8 @@ from multicall import Multicall
 from telliot_core.apps.core import TelliotCore
 from web3.exceptions import ContractLogicError
 
+from telliot_feeds.reporters import reporter_autopay_utils
+from telliot_feeds.reporters.reporter_autopay_utils import autopay_suggested_report
 from telliot_feeds.reporters.reporter_autopay_utils import AutopayCalls
 from telliot_feeds.reporters.reporter_autopay_utils import safe_multicall
 
@@ -125,3 +127,17 @@ async def test_index_error(setup_autopay_call, caplog):
     res = await call.reward_claim_status()
     assert res == (None, None, None)
     assert "No feeds balance to check"
+
+
+@pytest.mark.asyncio
+async def test_multicall_return_none(setup_autopay_call):
+    calls: AutopayCalls = await setup_autopay_call
+
+    async def none(x, y, z):
+        return None
+
+    reporter_autopay_utils.safe_multicall = none
+    resp = await calls.get_current_feeds()
+    assert resp is None
+    resp = await autopay_suggested_report(calls.autopay)
+    assert resp == (None, None)
