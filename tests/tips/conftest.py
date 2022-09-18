@@ -53,12 +53,12 @@ async def autopay_contract_setup(
         # approve token to be spent by autopay contract
         mock_token_contract.approve(mock_autopay_contract.address, 100000e18, {"from": account.address})
 
-        return flex.autopay
+        return flex.autopay, flex.oracle
 
 
 @pytest.fixture(scope="function")
 async def setup_datafeed(autopay_contract_setup):
-    contract = await autopay_contract_setup
+    contract, _ = await autopay_contract_setup
     reward = 1 * 10**18
     start_time = TimeStamp.now().ts
     interval = 100
@@ -91,21 +91,22 @@ async def setup_datafeed(autopay_contract_setup):
 
 @pytest.fixture(scope="function")
 async def setup_one_time_tips(autopay_contract_setup):
-    contract = await autopay_contract_setup
+    contract, _ = await autopay_contract_setup
     count = 1  # tip must be greater than zero
     for query_id, query_data in zip(CATALOG_QUERY_IDS, CATALOG_QUERY_DATA):
         # legacy is query ids are not encoded the same way as the current query ids
         # so we just avoid it here
-        _, status = await contract.write(
-            "tip",
-            gas_limit=3500000,
-            legacy_gas_price=1,
-            _queryId=query_id,
-            _amount=int(int(count) * 10**18),
-            _queryData=query_data,
-        )
-        assert status.ok
-        count += 1
+        if "legacy" not in CATALOG_QUERY_IDS[query_id]:
+            _, status = await contract.write(
+                "tip",
+                gas_limit=3500000,
+                legacy_gas_price=1,
+                _queryId=query_id,
+                _amount=int(int(count) * 10**18),
+                _queryData=query_data,
+            )
+            assert status.ok
+            count += 1
     return contract
 
 

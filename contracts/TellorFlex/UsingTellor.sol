@@ -55,7 +55,6 @@ contract UsingTellor {
      * @dev Retrieves the latest value for the queryId before the specified timestamp
      * @param _queryId is the queryId to look up the value for
      * @param _timestamp before which to search for latest value
-     * @return _ifRetrieve bool true if able to retrieve a non-zero value
      * @return _value the value retrieved
      * @return _timestampRetrieved the value's timestamp
      */
@@ -63,7 +62,6 @@ contract UsingTellor {
         public
         view
         returns (
-            bool _ifRetrieve,
             bytes memory _value,
             uint256 _timestampRetrieved
         )
@@ -72,12 +70,12 @@ contract UsingTellor {
             _queryId,
             _timestamp
         );
-        if (!_found) return (false, bytes(""), 0);
+        if (!_found) return (bytes(""), 0);
         uint256 _time = tellor.getTimestampbyQueryIdandIndex(_queryId, _index);
         _value = tellor.retrieveData(_queryId, _time);
         if (keccak256(_value) != keccak256(bytes("")))
-            return (true, _value, _time);
-        return (false, bytes(""), 0);
+            return (_value, _time);
+        return (bytes(""), 0);
     }
 
     /**
