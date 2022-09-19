@@ -167,7 +167,7 @@ class FundedFeedFilter(TipListenerFilter):
                     feeds.remove(feed)
                 continue
 
-            if price_threshold != 0:
+            if price_threshold != 0 and not in_eligible_window:
                 try:
                     value_before = int(int(feed.current_queryid_value.hex(), 16) / 10**18)
                 except ValueError:
@@ -180,7 +180,7 @@ class FundedFeedFilter(TipListenerFilter):
                 if price_change is None:
                     # unable to fetch price data
                     continue
-                if price_change < price_threshold and not in_eligible_window:
+                if price_change < price_threshold:
                     feeds.remove(feed)
                     continue
 

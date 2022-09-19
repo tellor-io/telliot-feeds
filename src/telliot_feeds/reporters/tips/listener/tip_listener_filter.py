@@ -50,7 +50,7 @@ class TipListenerFilter(TipListener):
             datafeed = LEGACY_DATAFEEDS[qtag]
         else:
             return None
-        return datafeed
+        return datafeed  # type: ignore
 
     def qtype_in_feed_builder_mapping(self, qdata: bytes) -> Optional[DataFeed[Any]]:
         qtyp_name = self.decode_typ_name(qdata)
