@@ -106,8 +106,7 @@ class FundedFeeds:
 
         return funded_feeds, ResponseStatus()
 
-    async def querydata_and_tip(self) -> Optional[Dict[bytes, int]]:
-        current_time = TimeStamp.now().ts
+    async def querydata_and_tip(self, current_time: TimeStamp) -> Optional[Dict[bytes, int]]:
         one_month_ago = current_time - 2_592_000
 
         eligible_funded_feeds, status = await self.filtered_funded_feeds(

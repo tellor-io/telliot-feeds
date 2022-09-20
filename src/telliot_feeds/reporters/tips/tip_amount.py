@@ -1,4 +1,5 @@
 from typing import List
+from typing import Optional
 
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.utils.timestamp import TimeStamp
@@ -14,8 +15,10 @@ filtr = FundedFeedFilter()
 
 
 async def fetch_feed_tip(
-    autopay: TellorFlexAutopayContract, query_id: bytes, timestamp: TimeStamp = TimeStamp.now().ts
+    autopay: TellorFlexAutopayContract, query_id: bytes, timestamp: Optional[TimeStamp] = None
 ) -> int:
+    if timestamp is None:
+        timestamp = TimeStamp.now().ts
     """Fetch tip amount for a query id"""
     call.autopay = autopay
     month_old = int(timestamp - 2_592_000)

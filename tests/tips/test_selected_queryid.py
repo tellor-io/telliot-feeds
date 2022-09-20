@@ -5,7 +5,7 @@ from eth_utils import to_bytes
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.reporters.tips import CATALOG_QUERY_DATA
 from telliot_feeds.reporters.tips import CATALOG_QUERY_IDS
-from telliot_feeds.reporters.tips.selected_queryid.tip_amount import fetch_feed_tip
+from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
 
 
 query_id, query_data = list(zip(CATALOG_QUERY_IDS, CATALOG_QUERY_DATA))[0]

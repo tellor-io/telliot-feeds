@@ -3,6 +3,7 @@ from typing import Optional
 from typing import Tuple
 
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
+from telliot_core.utils.timestamp import TimeStamp
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.reporters.tips.funded_feeds.funded_feeds import FundedFeeds
@@ -19,12 +20,15 @@ logger = get_logger(__name__)
 # suggest a feed here not a query tag, because build feed portion
 # or check both mappings for type
 async def feed_suggestion(
-    autopay: TellorFlexAutopayContract,
+    autopay: TellorFlexAutopayContract, current_timestamp: Optional[TimeStamp] = None
 ) -> Optional[Tuple[Optional[DataFeed[Any]], Optional[int]]]:
     chain_id = autopay.node.chain_id
 
     if chain_id in (137, 80001, 69, 1666600000, 1666700000, 421611, 42161):
         assert isinstance(autopay, TellorFlexAutopayContract)
+
+    if current_timestamp is None:
+        current_timestamp = TimeStamp.now().ts
 
     multi_call = MulticallAutopay()
     feed_filter = FundedFeedFilter()
@@ -32,7 +36,7 @@ async def feed_suggestion(
     one_time_tips = OneTimeTips(autopay=autopay)
     funded_feeds = FundedFeeds(autopay=autopay, multi_call=multi_call, feed_filter=feed_filter)
 
-    feed_tips = await funded_feeds.querydata_and_tip()
+    feed_tips = await funded_feeds.querydata_and_tip(current_time=current_timestamp)
     onetime_tips = await one_time_tips.get_funded_one_time_tips()
 
     if not feed_tips and not onetime_tips:
@@ -43,6 +47,8 @@ async def feed_suggestion(
     for suggestion in sorted_tips:
         query_data = suggestion[0]
         tip_amount = suggestion[1]
+        if tip_amount == 0:
+            return None, None
 
         datafeed = feed_filter.qtag_in_feed_mapping(query_data)
         if datafeed is None:

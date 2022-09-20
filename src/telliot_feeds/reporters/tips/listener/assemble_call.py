@@ -3,6 +3,7 @@ from typing import Callable
 from typing import Dict
 from typing import Iterable
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 from multicall import Call
@@ -19,7 +20,9 @@ class AssembleCall:
     def __init__(self) -> None:
         self.autopay: TellorFlexAutopayContract
 
-    async def multi_call(self, calls: List[Call], success: bool = False) -> Tuple[Dict[Any, Any], ResponseStatus]:
+    async def multi_call(
+        self, calls: List[Call], success: bool = False
+    ) -> Tuple[Optional[Dict[Any, Any]], ResponseStatus]:
         """Make multi-call given a list of Calls
 
         Arg:
@@ -33,11 +36,12 @@ class AssembleCall:
         multi_call = Multicall(calls=calls, _w3=self.autopay.node._web3, require_success=success)
         try:
             data: Dict[Any, Any] = await multi_call.coroutine()
+            return data, status
         except Exception as e:
             status.ok = False
             status.e = e
             status.error = "multicall failed to fetch data"
-        return data, status
+            return None, status
 
     def assemble_call_object(
         self, func_sig: str, returns: Iterable[Tuple[str, Callable[..., Any]]], **kwargs: Dict[Any, Any]
