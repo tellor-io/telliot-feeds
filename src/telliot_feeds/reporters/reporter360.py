@@ -1,24 +1,23 @@
-from dataclasses import dataclass
 import math
 import time
+from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
-from typing import Union
-from typing import Tuple
 from typing import Optional
+from typing import Tuple
+from typing import Union
 
 from chained_accounts import ChainedAccount
 from eth_utils import to_checksum_address
-
-from telliot_core.utils.response import ResponseStatus
-from telliot_core.utils.response import error_status
-from telliot_core.utils.timestamp import TimeStamp
 from telliot_core.contract.contract import Contract
 from telliot_core.model.endpoints import RPCEndpoint
+from telliot_core.utils.response import error_status
+from telliot_core.utils.response import ResponseStatus
+from telliot_core.utils.timestamp import TimeStamp
 
 from telliot_feeds.feeds import DataFeed
-from telliot_feeds.utils.log import get_logger
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
@@ -37,6 +36,7 @@ class StakerInfo:
     vote_count: int
     in_total_stakers: bool
     """
+
     start_date: TimeStamp
     stake_balance: int
     locked_balance: int
@@ -129,7 +129,6 @@ class reporter360(TellorFlexReporter):
                 "Current stake is low. "
                 # Add more TRB to continue reporting
                 + "Approving & depositing stake."
-
             )
             logger.info(msg)
 
@@ -150,17 +149,13 @@ class reporter360(TellorFlexReporter):
 
             txn_kwargs = {"gas_limit": 300000, "legacy_gas_price": gas_price_gwei, "_amount": stake_diff}
             # approve token spending
-            _, approve_status = await self.token.write(
-                func_name="approve", spender=self.oracle.address, **txn_kwargs
-            )
+            _, approve_status = await self.token.write(func_name="approve", spender=self.oracle.address, **txn_kwargs)
             if not approve_status.ok:
                 msg = "Unable to approve staking"
                 return False, error_status(msg, log=logger.error)
 
             # deposit stake
-            _, deposit_status = self.oracle.write(
-                "depositStake", **txn_kwargs
-            )
+            _, deposit_status = self.oracle.write("depositStake", **txn_kwargs)
             if not deposit_status.ok:
                 msg = (
                     "Unable to stake deposit: "
@@ -177,7 +172,7 @@ class reporter360(TellorFlexReporter):
         account_staked_bal = self.staker_info.stake_balance  # type: ignore
         reporter_lock = 43200 / math.floor(account_staked_bal / self.stake)  # type: ignore
 
-        time_remaining = round(self.staker_info.last_report + reporter_lock - time.time())
+        time_remaining = round(self.staker_info.last_report + reporter_lock - time.time())  # type: ignore
         if time_remaining > 0:
             hr_min_sec = str(timedelta(seconds=time_remaining))
             msg = "Currently in reporter lock. Time left: " + hr_min_sec
