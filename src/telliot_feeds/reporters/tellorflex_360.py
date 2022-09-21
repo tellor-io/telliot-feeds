@@ -139,7 +139,7 @@ class TellorFlex360Reporter(TellorFlexReporter):
             msg = (
                 "Current stake is low. "
                 # Add more TRB to continue reporting
-                + "Depositing stake."
+                + "Approving and depositing stake."
             )
             logger.info(msg)
 
@@ -160,6 +160,11 @@ class TellorFlex360Reporter(TellorFlexReporter):
 
             txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": gas_price_gwei}
 
+            # approve token spending
+            _, approve_status = await self.token.write(func_name="approve", spender=self.oracle.address, amount=stake_diff, **txn_kwargs)
+            if not approve_status.ok:
+                msg = "Unable to approve staking"
+                return False, error_status(msg, log=logger.error)
             # deposit stake
             _, deposit_status = await self.oracle.write("depositStake", _amount=stake_diff, **txn_kwargs)
 
