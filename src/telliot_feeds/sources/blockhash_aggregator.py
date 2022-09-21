@@ -9,18 +9,18 @@ from typing import Tuple
 import requests
 from requests import JSONDecodeError
 from requests.adapters import HTTPAdapter
+from telliot_core.apps.telliot_config import TelliotConfig
 from urllib3.util import Retry
 from web3 import Web3
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
-from telliot_feeds.utils.cfg import mainnet_config
 from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
 
-cfg = mainnet_config()
+cfg = TelliotConfig()
 cfg.get_endpoint().connect()
 w3 = cfg.get_endpoint().web3
 

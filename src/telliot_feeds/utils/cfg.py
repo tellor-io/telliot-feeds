@@ -44,7 +44,7 @@ def setup_config(cfg: TelliotConfig) -> TelliotConfig:
 
     want_to_update = click.confirm(f"Chain_id is {cfg.main.chain_id}. Do you want to update it?")
 
-    if want_to_update:
+    if want_to_update:  # noqa: F821
         new_chain_id = click.prompt("Enter a new chain id", type=int)
         cfg.main.chain_id = new_chain_id
 
@@ -115,7 +115,7 @@ def check_endpoint(cfg: TelliotConfig) -> Optional[RPCEndpoint]:
 def check_accounts(cfg: TelliotConfig) -> List[ChainedAccount]:
     """Check if there is a pre-set account in the config"""
 
-    return find_accounts(chain_id=cfg.main.chain_id)
+    return find_accounts(chain_id=cfg.main.chain_id)  # type: ignore
 
 
 def prompt_for_endpoint(chain_id: int) -> Optional[RPCEndpoint]:

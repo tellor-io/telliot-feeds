@@ -28,6 +28,7 @@ from telliot_feeds.reporters.flashbot import FlashbotsReporter
 from telliot_feeds.reporters.interval import IntervalReporter
 from telliot_feeds.reporters.rng_interval import RNGReporter
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
 
 
@@ -333,14 +334,7 @@ async def report(
 
     assert tx_type in (0, 2)
 
-    name = ctx.obj["ACCOUNT_NAME"]
     sig_acct_name = ctx.obj["SIGNATURE_ACCOUNT_NAME"]
-
-    try:
-        if not password:
-            password = getpass.getpass(f"Enter password for {name} keyfile: ")
-    except ValueError:
-        click.echo("Invalid Password")
 
     if sig_acct_name is not None:
         try:
@@ -351,6 +345,8 @@ async def report(
 
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
+
+        core._config = setup_config(core.config)
 
         # Make sure current account is unlocked
         account = core.get_account()
