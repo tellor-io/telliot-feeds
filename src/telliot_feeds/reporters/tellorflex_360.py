@@ -48,7 +48,7 @@ class StakerInfo:
     in_total_stakers: bool
 
 
-class reporter360(TellorFlexReporter):
+class TellorFlex360Reporter(TellorFlexReporter):
     def __init__(
         self,
         endpoint: RPCEndpoint,
@@ -91,9 +91,14 @@ class reporter360(TellorFlexReporter):
         self.staker_info: Optional[StakerInfo] = None
         self.allowed_stake_amount = 0
 
+        logger.info(f"Reporting with account: {self.acct_addr}")
+
+        self.account: ChainedAccount = account
+        assert self.acct_addr == to_checksum_address(self.account.address)
+
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         # get oracle required stake amount
-        stake, status = await self.oracle.read("getStakedAmount")
+        stake, status = await self.oracle.read("getStakeAmount")
 
         if (not status.ok) or (stake is None):
             msg = "Unable to read current stake amount"
@@ -104,31 +109,37 @@ class reporter360(TellorFlexReporter):
             "getStakerInfo",
             _stakerAddress=self.acct_addr,
         )
-
         if (not status.ok) or (staker_info is None):
             msg = "Unable to read reporters staker info"
             return False, error_status(msg, log=logger.info)
-
-        if self.stake is None:
-            self.stake = stake
-        else:
-            msg = "Stake amount has changed due to TRB price change."
-            logger.info(msg)
 
         if self.staker_info is None:
             self.staker_info = StakerInfo(*staker_info)
         elif self.staker_info.stake_balance > staker_info[1]:
             # update balance after depositing more stake
+            self.staker_info.last_report = staker_info[4]
             self.staker_info.stake_balance = staker_info[1]
             logger.info("your staked balance has decreased and account might be in dispute")
+        else:
+            self.staker_info.last_report = staker_info[4]
 
         account_staked_bal = self.staker_info.stake_balance
+        if self.stake is None:
+            self.stake = stake
+        elif stake > self.stake:
+            self.stake = stake
+            msg = "Stake amount has increased due to TRB price change."
+            logger.info(msg)
+        elif stake < self.stake:
+            self.stake = stake
+            msg = "Stake amount has decreased,"
+            logger.info(msg)
 
-        if self.stake > account_staked_bal:
+        if stake > account_staked_bal:
             msg = (
                 "Current stake is low. "
                 # Add more TRB to continue reporting
-                + "Approving & depositing stake."
+                + "Depositing stake."
             )
             logger.info(msg)
 
@@ -137,25 +148,21 @@ class reporter360(TellorFlexReporter):
                 return False, error_status("Unable to fetch matic gas price for staking", log=logger.info)
 
             # diff in required stake and account staked balance
-            stake_diff = self.stake - account_staked_bal
+            stake_diff = self.stake - account_staked_bal  # type: ignore
 
             # check TRB wallet balance!
-            wallet_balance = self.token.read("balanceOf", account=self.acct_addr)
+            wallet_balance, status = await self.token.read("balanceOf", account=self.acct_addr)
             logger.info(f"Current wallet TRB balance: {wallet_balance}")
 
             if stake_diff > wallet_balance:
                 msg = "Not enough TRB in the account to cover the stake"
                 return False, error_status(msg, log=logger.warning)
 
-            txn_kwargs = {"gas_limit": 300000, "legacy_gas_price": gas_price_gwei, "_amount": stake_diff}
-            # approve token spending
-            _, approve_status = await self.token.write(func_name="approve", spender=self.oracle.address, **txn_kwargs)
-            if not approve_status.ok:
-                msg = "Unable to approve staking"
-                return False, error_status(msg, log=logger.error)
+            txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": gas_price_gwei}
 
             # deposit stake
-            _, deposit_status = self.oracle.write("depositStake", **txn_kwargs)
+            _, deposit_status = await self.oracle.write("depositStake", _amount=stake_diff, **txn_kwargs)
+
             if not deposit_status.ok:
                 msg = (
                     "Unable to stake deposit: "
@@ -164,6 +171,12 @@ class reporter360(TellorFlexReporter):
                     + "currency and the oracle's currency (TRB)"
                 )
                 return False, error_status(msg, log=logger.error)
+                # get accounts current stake total
+            staker_info, status = await self.oracle.read(
+                "getStakerInfo",
+                _stakerAddress=self.acct_addr,
+            )
+            self.staker_info = StakerInfo(*staker_info)
 
         return True, ResponseStatus()
 
