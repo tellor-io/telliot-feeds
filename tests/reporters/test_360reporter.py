@@ -3,6 +3,7 @@ import pytest_asyncio
 from brownie import accounts
 from brownie import TellorFlex360
 from telliot_core.apps.core import TelliotCore
+
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.reporters.tellorflex_360 import TellorFlex360Reporter
 
@@ -10,6 +11,8 @@ from telliot_feeds.reporters.tellorflex_360 import TellorFlex360Reporter
 trb_id = query_catalog._entries["trb-usd-spot"].query.query_id
 txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
 account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
+
+
 @pytest.fixture(scope="function")
 def tellorflex_360_contract(mock_token_contract):
     return account_fake.deploy(
@@ -19,7 +22,9 @@ def tellorflex_360_contract(mock_token_contract):
         1,
         1,
         trb_id.hex(),
-        )
+    )
+
+
 @pytest_asyncio.fixture(scope="function")
 async def reporter_360(
     mumbai_test_cfg, tellorflex_360_contract, mock_autopay_contract, mock_token_contract, multicall_contract
@@ -59,6 +64,7 @@ async def reporter_360(
 
         return r
 
+
 @pytest.mark.asyncio
 async def test_report(reporter_360, caplog):
     """Test 360 reporter deposit and balance changes when stakeAmount changes"""
@@ -78,7 +84,7 @@ async def test_report(reporter_360, caplog):
     await r.report_once()
     # staker balance increased due to updateStakeAmount call
     assert r.staker_info.stake_balance == stake_amount
-    assert "Currently in reporter lock. Time left: 11:59" in caplog.text #12hr
+    assert "Currently in reporter lock. Time left: 11:59" in caplog.text  # 12hr
     # report count before second report
     assert r.staker_info.reports_count == 1
     # decrease stakeAmount should increase reporting frequency
@@ -88,6 +94,6 @@ async def test_report(reporter_360, caplog):
     assert stake_amount == int(10e18)
 
     assert r.staker_info.stake_balance == int(20e18)
-    
+
     await r.report_once()
-    assert "Currently in reporter lock. Time left: 5:59" in caplog.text #6hr
+    assert "Currently in reporter lock. Time left: 5:59" in caplog.text  # 6hr
