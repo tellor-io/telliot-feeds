@@ -97,6 +97,12 @@ class TellorFlex360Reporter(TellorFlexReporter):
         assert self.acct_addr == to_checksum_address(self.account.address)
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
+        """Compares stakeAmount and stakerInfo every loop to monitor changes to the stakeAmount or stakerInfo
+        and deposits stake if needed for continuous reporting
+
+        Return:
+        - (bool, ResponseStatus)
+        """
         # get oracle required stake amount
         stake, status = await self.oracle.read("getStakeAmount")
 
@@ -115,7 +121,8 @@ class TellorFlex360Reporter(TellorFlexReporter):
 
         if self.staker_info is None:
             self.staker_info = StakerInfo(*staker_info)
-        elif self.staker_info.stake_balance > staker_info[1]:
+
+        if self.staker_info.stake_balance > staker_info[1]:
             # update balance after depositing more stake
             self.staker_info.last_report = staker_info[4]
             self.staker_info.stake_balance = staker_info[1]
@@ -124,13 +131,16 @@ class TellorFlex360Reporter(TellorFlexReporter):
             self.staker_info.last_report = staker_info[4]
 
         account_staked_bal = self.staker_info.stake_balance
+
         if self.stake is None:
             self.stake = stake
-        elif stake > self.stake:
+
+        if stake > self.stake:
             self.stake = stake
             msg = "Stake amount has increased due to TRB price change."
             logger.info(msg)
-        elif stake < self.stake:
+
+        if stake < self.stake:
             self.stake = stake
             msg = "Stake amount has decreased,"
             logger.info(msg)
@@ -151,17 +161,23 @@ class TellorFlex360Reporter(TellorFlexReporter):
             stake_diff = self.stake - account_staked_bal  # type: ignore
 
             # check TRB wallet balance!
-            wallet_balance, status = await self.token.read("balanceOf", account=self.acct_addr)
+            wallet_balance, wallet_balance_status = await self.token.read("balanceOf", account=self.acct_addr)
+            if not wallet_balance_status.ok:
+                msg = "unable to read account TRB balance"
+                return False, error_status(msg, log=logger.info)
+
             logger.info(f"Current wallet TRB balance: {wallet_balance}")
 
             if stake_diff > wallet_balance:
                 msg = "Not enough TRB in the account to cover the stake"
                 return False, error_status(msg, log=logger.warning)
 
-            txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": gas_price_gwei}
+            txn_kwargs = {"gas_limit": 350000, "legacy_gas_price": gas_price_gwei}
 
             # approve token spending
-            _, approve_status = await self.token.write(func_name="approve", spender=self.oracle.address, amount=stake_diff, **txn_kwargs)
+            _, approve_status = await self.token.write(
+                func_name="approve", spender=self.oracle.address, amount=stake_diff, **txn_kwargs
+            )
             if not approve_status.ok:
                 msg = "Unable to approve staking"
                 return False, error_status(msg, log=logger.error)
@@ -186,11 +202,19 @@ class TellorFlex360Reporter(TellorFlexReporter):
         return True, ResponseStatus()
 
     async def check_reporter_lock(self) -> ResponseStatus:
+        """Checks reporter lock time to determine when reporting is allowed
 
-        account_staked_bal = self.staker_info.stake_balance  # type: ignore
-        reporter_lock = 43200 / math.floor(account_staked_bal / self.stake)  # type: ignore
+        Return:
+        - ResponseStatus: yay or nay
+        """
+        if self.staker_info is None or self.stake is None:
+            msg = "Unable to calculate reporter lock remaining time"
+            return error_status(msg, log=logger.info)
+        account_staked_bal = self.staker_info.stake_balance
+        # 12hrs in seconds is 43200
+        reporter_lock = 43200 / math.floor(account_staked_bal / self.stake)
 
-        time_remaining = round(self.staker_info.last_report + reporter_lock - time.time())  # type: ignore
+        time_remaining = round(self.staker_info.last_report + reporter_lock - time.time())
         if time_remaining > 0:
             hr_min_sec = str(timedelta(seconds=time_remaining))
             msg = "Currently in reporter lock. Time left: " + hr_min_sec
