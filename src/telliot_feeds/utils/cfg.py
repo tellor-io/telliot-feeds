@@ -1,6 +1,7 @@
 import os
 from typing import List
 from typing import Optional
+from typing import Tuple
 
 import click
 from chained_accounts import ChainedAccount
@@ -36,8 +37,16 @@ def mainnet_config() -> Optional[TelliotConfig]:
     return cfg
 
 
-def setup_config(cfg: TelliotConfig) -> TelliotConfig:
-    """Setup TelliotConfig via CLI if not already configured"""
+def setup_config(cfg: TelliotConfig) -> Tuple[TelliotConfig, ChainedAccount]:
+    """Setup TelliotConfig via CLI if not already configured
+
+    Inputs:
+    - cfg (TelliotConfig) -- current Telliot configuration
+
+    Returns:
+    - TelliotConfig -- updated Telliot configuration post-setup
+    - ChainedAccount -- account configuration to choose as current account
+    """
 
     if cfg is None:
         cfg = TelliotConfig()
@@ -48,43 +57,36 @@ def setup_config(cfg: TelliotConfig) -> TelliotConfig:
         new_chain_id = click.prompt("Enter a new chain id", type=int)
         cfg.main.chain_id = new_chain_id
 
-    accounts = check_accounts(cfg)
-    endpoint = check_endpoint(cfg)
+    # accounts = check_accounts(cfg)
+    # endpoint = check_endpoint(cfg)
 
     # if configs are setup...
     # print current settings of cfg
     # if accounts is not None and endpoint is not None:
-    click.echo(
-        f"Your current configuration...\n"
-        f"Your chain id: {cfg.main.chain_id}\n"
-        f"Your endpoint: {endpoint}\n"
-        f"Your account name: {accounts[0].name}"
-    )
+    # click.echo(
+    #     f"Your current configuration...\n"
+    #     f"Your chain id: {cfg.main.chain_id}\n"
+    #     f"Your endpoint: {endpoint}\n"
+    #     f"Your account name: {accounts[0].name}"
+    # )
 
     new_endpoint = setup_endpoint(cfg, cfg.main.chain_id)
-
     if new_endpoint is not None:
         cfg.endpoints.endpoints.insert(0, new_endpoint)
         click.echo(f"{new_endpoint} added!")
 
     new_account = setup_account(cfg.main.chain_id)
     if new_account is not None:
-        click.echo(f"{new_account} added!")
+        click.echo(f"{new_account.name} selected!")
 
-    return cfg
+    return cfg, new_account
 
 
 def setup_endpoint(cfg: TelliotConfig, chain_id: int) -> RPCEndpoint:
     """Setup Endpoints via CLI if not already configured"""
-    # pass
-    # if test config...
-    #     check for and add the test endpoint
-    # else...
-    #     check if any endpoints available for the chain_id
 
     endpoint = check_endpoint(cfg)
 
-    #     print settings if there are endpoints available
     if endpoint is not None:
         keep = click.confirm(
             f"This endpoint is available for chain_id {chain_id}: {str(endpoint)}. Do you want to use it?"
@@ -99,7 +101,7 @@ def setup_endpoint(cfg: TelliotConfig, chain_id: int) -> RPCEndpoint:
             return prompt_for_endpoint(chain_id)
 
     else:
-
+        click.echo(f"No endpoints are available for chain_id {chain_id}. Pleae add one")
         return prompt_for_endpoint(chain_id)
 
 

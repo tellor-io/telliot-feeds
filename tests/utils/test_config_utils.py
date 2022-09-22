@@ -20,7 +20,7 @@ def mock_account():
         fake_private_key = "ff27eb0c5059fc99f9d7b48931d135b20f1293db8d0f4fec4ecf5131fb40f1f5"  # https://vanity-eth.tk/
         return ChainedAccount.add("mock-account", 4, fake_private_key, "password")
     except Exception:
-        find_accounts(chain_id=4)
+        return find_accounts(chain_id=4, name="mock-account")[0]
 
 
 def test_update_all_configs():
@@ -42,13 +42,14 @@ def test_update_all_configs():
         mock.patch("click.confirm", side_effect=[update_chain_id, use_endpoint]),
         mock.patch("click.prompt", side_effect=[new_chain_id]),
         mock.patch("telliot_feeds.utils.cfg.setup_endpoint", side_effect=[mock_endpoint]),
-        mock.patch("telliot_feeds.utils.cfg.setup_account", side_effect=[mock_account]),
+        mock.patch("telliot_feeds.utils.cfg.setup_account", return_value=mock_account()),
     ):
 
-        cfg = setup_config(cfg=cfg)
+        cfg, account = setup_config(cfg=cfg)
+        print("account ", account)
         assert cfg.main.chain_id == new_chain_id
         assert check_endpoint(cfg) == mock_endpoint
-        assert "mock-account" in [a.name for a in check_accounts(cfg)]
+        assert "mock-account" in account.name
 
 
 def test_prompt_for_endpoint():

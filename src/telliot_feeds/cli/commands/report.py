@@ -346,10 +346,9 @@ async def report(
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
-        core._config = setup_config(core.config)
+        core._config, account = setup_config(core.config)
 
         # Make sure current account is unlocked
-        account = core.get_account()
         if not account.is_unlocked:
             account.unlock(password)
 
