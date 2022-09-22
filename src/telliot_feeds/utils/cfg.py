@@ -57,19 +57,6 @@ def setup_config(cfg: TelliotConfig) -> Tuple[TelliotConfig, ChainedAccount]:
         new_chain_id = click.prompt("Enter a new chain id", type=int)
         cfg.main.chain_id = new_chain_id
 
-    # accounts = check_accounts(cfg)
-    # endpoint = check_endpoint(cfg)
-
-    # if configs are setup...
-    # print current settings of cfg
-    # if accounts is not None and endpoint is not None:
-    # click.echo(
-    #     f"Your current configuration...\n"
-    #     f"Your chain id: {cfg.main.chain_id}\n"
-    #     f"Your endpoint: {endpoint}\n"
-    #     f"Your account name: {accounts[0].name}"
-    # )
-
     new_endpoint = setup_endpoint(cfg, cfg.main.chain_id)
     if new_endpoint is not None:
         cfg.endpoints.endpoints.insert(0, new_endpoint)
