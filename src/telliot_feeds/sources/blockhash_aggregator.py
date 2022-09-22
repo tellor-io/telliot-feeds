@@ -21,6 +21,7 @@ logger = get_logger(__name__)
 
 
 cfg = TelliotConfig()
+cfg.main.chain_id = 1
 cfg.get_endpoint().connect()
 w3 = cfg.get_endpoint().web3
 
