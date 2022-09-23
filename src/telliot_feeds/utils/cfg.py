@@ -57,10 +57,28 @@ def setup_config(cfg: TelliotConfig) -> Tuple[TelliotConfig, ChainedAccount]:
         new_chain_id = click.prompt("Enter a new chain id", type=int)
         cfg.main.chain_id = new_chain_id
 
+    accounts = check_accounts(cfg)
+    endpoint = check_endpoint(cfg)
+
+    if endpoint is not None:
+        click.echo(
+            f"Your current configuration...\n"
+            f"Your chain id: {cfg.main.chain_id}\n"
+            f"Your {endpoint.network} endpoint: \n"
+            f" - provider: {endpoint.provider}\n"
+            f" - RPC url: {endpoint.url}\n"
+            f" - explorer url: {endpoint.explorer}"
+        )
+
+    else:
+        click.echo(f"Your current configuration...\nYour chain id: {cfg.main.chain_id}")
+
     new_endpoint = setup_endpoint(cfg, cfg.main.chain_id)
     if new_endpoint is not None:
         cfg.endpoints.endpoints.insert(0, new_endpoint)
         click.echo(f"{new_endpoint} added!")
+
+    click.echo(f"Your account name: {accounts[0].name}")
 
     new_account = setup_account(cfg.main.chain_id)
     if new_account is not None:
@@ -75,9 +93,7 @@ def setup_endpoint(cfg: TelliotConfig, chain_id: int) -> RPCEndpoint:
     endpoint = check_endpoint(cfg)
 
     if endpoint is not None:
-        keep = click.confirm(
-            f"This endpoint is available for chain_id {chain_id}: {str(endpoint)}. Do you want to use it?"
-        )
+        keep = click.confirm(f"Do you want to use this endpoint on chain_id {chain_id}?")
 
         if keep:
 
@@ -109,10 +125,10 @@ def check_accounts(cfg: TelliotConfig) -> List[ChainedAccount]:
 
 def prompt_for_endpoint(chain_id: int) -> Optional[RPCEndpoint]:
 
-    network_name = click.prompt("Enter network name: ", type=str)
-    provider = click.prompt("Enter Provider: ", type=str)
+    network_name = click.prompt("Enter network name", type=str)
+    provider = click.prompt("Enter Provider", type=str)
     rpc_url = click.prompt("Enter RPC url", type=str)
-    explorer_url = click.prompt("Enter Explorer url: ", type=str)
+    explorer_url = click.prompt("Enter Explorer url", type=str)
 
     try:
         return RPCEndpoint(chain_id, network_name, provider, rpc_url, explorer_url)
@@ -124,15 +140,11 @@ def prompt_for_endpoint(chain_id: int) -> Optional[RPCEndpoint]:
 def setup_account(chain_id: int) -> Optional[ChainedAccount]:
     """Set up ChainedAccount for TelliotConfig if not already configured"""
 
-    # find account
     accounts = find_accounts(chain_id=chain_id)
-    # if no account found...
     if accounts is None:
         return prompt_for_account(chain_id)
 
-    # if account(s) found...
     else:
-        # pick an account
         title = f"You have these accounts on chain_id {chain_id}"
         options = [a.name + " " + a.address for a in accounts] + ["add account..."]
 
@@ -150,14 +162,10 @@ def setup_account(chain_id: int) -> Optional[ChainedAccount]:
 def prompt_for_account(chain_id: int) -> Optional[ChainedAccount]:
     """take user input to create a new ChainedAccount account for the Telliot Config"""
 
-    # prompt for account
-    # account name
-    acc_name = click.prompt("Enter account name: ", type=str)
-    # private key
-    private_key = click.prompt("Enter private key: ", type=str)
-    # chain id
-    chain_id = click.prompt("Enter chain id: ", type=int)
-    # add account
+    acc_name = click.prompt("Enter account name", type=str)
+    private_key = click.prompt("Enter private key", type=str)
+    chain_id = click.prompt("Enter chain id", type=int)
+
     try:
         return ChainedAccount.add(acc_name, chain_id, private_key, password=None)
     except Exception as e:
