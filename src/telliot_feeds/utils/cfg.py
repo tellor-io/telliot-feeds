@@ -19,6 +19,7 @@ logger = get_logger(__name__)
 def mainnet_config() -> Optional[TelliotConfig]:
     cfg = TelliotConfig()
     cfg.main.chain_id = 1
+    logger.info("Using Mainnet Config for RNG Reporter")
     endpoint = cfg.get_endpoint()
 
     if "INFURA_API_KEY" in endpoint.url:
