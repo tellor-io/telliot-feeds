@@ -15,9 +15,6 @@ from telliot_feeds.integrations.diva_protocol.pool import fetch_from_subgraph
 from telliot_feeds.integrations.diva_protocol.pool import query_valid_pools
 
 
-# centralized oracle ran by DIVA Protocol team
-# DIVA_ORACLE = "0x245b8abbc1b70b370d1b81398de0a7920b25e7ca
-
 # int timestamp of yesterday
 yesterday = int(datetime.datetime.now().timestamp() - 60 * 60 * 24)
 # int timestamp of today's date

@@ -98,7 +98,6 @@ async def fetch_from_subgraph(query: str, network: str) -> Optional[list[dict[st
             return None
 
         try:
-            print(rsp)
             data = rsp.json()
         except JSONDecodeError:
             logger.error("Subgraph API returned invalid JSON")
