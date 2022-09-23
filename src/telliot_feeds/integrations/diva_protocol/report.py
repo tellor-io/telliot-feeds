@@ -54,7 +54,11 @@ class DIVAProtocolReporter(TellorFlexReporter):
         self.settle_period: Optional[int] = None
         self.network_name = network_name
         self.diva_diamond_address = diva_diamond_address
-        self.middleware_contract = DivaOracleTellorContract(self.endpoint, self.account)
+        self.middleware_contract = DivaOracleTellorContract(
+            node=self.endpoint,
+            account=self.account,
+            diva_diamond=diva_diamond_address,
+            )
         self.middleware_contract.address = middleware_address
         self.middleware_contract.connect()
 
