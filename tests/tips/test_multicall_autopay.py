@@ -1,7 +1,7 @@
 import pytest
 from multicall import Call
 
-from telliot_feeds.reporters.tips.funded_feeds.multicall_autopay import MulticallAutopay
+from telliot_feeds.reporters.tips.multicall_functions.multicall_autopay import MulticallAutopay
 
 
 @pytest.fixture

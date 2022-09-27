@@ -9,7 +9,7 @@ from telliot_core.utils.timestamp import TimeStamp
 from web3 import Web3
 
 from telliot_feeds.queries.query_catalog import query_catalog
-from telliot_feeds.reporters.tips.suggest_datafeed import feed_suggestion
+from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
 
 
@@ -64,7 +64,7 @@ async def test_main(
         assert staker_info == [pytest.approx(timestamp, 200), 10e18, 0, 0, 0]
 
         # get suggestion from telliot on query with highest tip
-        suggested_qtag, tip = await feed_suggestion(flex.autopay, chain.time())
+        suggested_qtag, tip = await get_feed_and_tip(flex.autopay, chain.time())
         assert suggested_qtag is None
         assert tip is None
 
@@ -90,7 +90,7 @@ async def test_main(
         assert current_tip == 10e18
 
         # get suggestion from telliot on query with highest tip
-        datafeed, tip = await feed_suggestion(flex.autopay)
+        datafeed, tip = await get_feed_and_tip(flex.autopay)
         assert datafeed.query.query_id == mkr_query_id
         assert tip == 10e18
 
@@ -113,7 +113,7 @@ async def test_main(
         assert current_tip == 20e18
 
         # get suggestion from telliot on query with highest tip
-        datafeed, tip = await feed_suggestion(flex.autopay)
+        datafeed, tip = await get_feed_and_tip(flex.autopay)
         assert datafeed.query.query_id == ric_query_id
         assert tip == 20e18
 
@@ -145,7 +145,7 @@ async def test_main(
         feed_id = response.logs[1].topics[2].hex()
 
         # get suggestion from telliot on query with highest tip
-        datafeed, tip = await feed_suggestion(flex.autopay)
+        datafeed, tip = await get_feed_and_tip(flex.autopay)
         assert datafeed.query.query_id == trb_query_id
         assert tip == 30e18
 
@@ -164,7 +164,7 @@ async def test_main(
         )
 
         # get suggestion from telliot on query with highest tip
-        datafeed, tip = await feed_suggestion(flex.autopay, chain.time() + 1)
+        datafeed, tip = await get_feed_and_tip(flex.autopay, chain.time() + 1)
         assert datafeed.query.query_id == ric_query_id
         assert tip == 20e18
 
@@ -186,7 +186,7 @@ async def test_main(
         assert status.ok
 
         # get suggestion from telliot on query with highest tip
-        datafeed, tip = await feed_suggestion(flex.autopay)
+        datafeed, tip = await get_feed_and_tip(flex.autopay)
         assert datafeed.query.query_id == ric_query_id
         assert tip == 20e18
 
@@ -204,7 +204,7 @@ async def test_main(
         assert status.ok
 
         # get suggestion from telliot on query with highest tip
-        datafeed, tip = await feed_suggestion(flex.autopay)
+        datafeed, tip = await get_feed_and_tip(flex.autopay)
         assert datafeed.query.query_id == mkr_query_id
         assert tip == 10e18
 
@@ -225,6 +225,6 @@ async def test_main(
         assert status.ok
 
         # get suggestion from telliot on query with highest tip
-        datafeed, tip = await feed_suggestion(flex.autopay)
+        datafeed, tip = await get_feed_and_tip(flex.autopay)
         assert datafeed is None
         assert tip is None
