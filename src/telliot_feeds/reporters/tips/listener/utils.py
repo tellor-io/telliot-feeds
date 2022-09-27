@@ -1,12 +1,9 @@
 from collections import defaultdict
 from typing import Any
-from typing import Dict
-from typing import List
 from typing import Optional
-from typing import Tuple
 
 
-def filter_batch_result(data: Dict[Any, Any]) -> defaultdict[Any, List[Any]]:
+def filter_batch_result(data: dict[Any, Any]) -> defaultdict[Any, list[Any]]:
     """Filter data dictionary with tuple key
 
     >>> example {(current_value, queryid): 0, (current_timestamp, queryid): 123}
@@ -31,32 +28,41 @@ def filter_batch_result(data: Dict[Any, Any]) -> defaultdict[Any, List[Any]]:
     return results
 
 
-def sum_values(x: Optional[int], y: Optional[int]) -> Optional[int]:
+def sum_values(x: Optional[int], y: Optional[int]) -> int:
     """Takes two values and returns sum and handles Nonetype"""
     return sum((num for num in (x, y) if num is not None))
 
 
-def sort_by_max_tip(dict: Dict[bytes, int]) -> list[Tuple[bytes, int]]:
+def sort_by_max_tip(dict: dict[bytes, int]) -> list[tuple[bytes, int]]:
     """Takes dictionary of int type value and sorts by max value"""
-    sorted_lis = sorted(dict.items(), key=lambda item: item[1], reverse=True)
-    return sorted_lis
+    return sorted(dict.items(), key=lambda item: item[1], reverse=True)
 
 
 def get_sorted_tips(
-    feed_tips: Optional[Dict[bytes, int]], onetime_tips: Optional[Dict[bytes, int]]
-) -> List[Tuple[bytes, int]]:
+    feed_tips: Optional[dict[bytes, int]], onetime_tips: Optional[dict[bytes, int]]
+) -> list[tuple[bytes, int]]:
     """combine and sort tips"""
-    if feed_tips and onetime_tips:
-        # merge autopay tips and get feed with max amount of tip
-        combined_dict = {key: sum_values(onetime_tips.get(key), feed_tips.get(key)) for key in onetime_tips | feed_tips}
-        tips_sorted = sort_by_max_tip(combined_dict)  # type: ignore
-        suggestion = tips_sorted
-    elif feed_tips is not None:
-        suggestion = sort_by_max_tip(feed_tips)
-    elif onetime_tips is not None:
-        suggestion = sort_by_max_tip(onetime_tips)
-    return suggestion
+    if feed_tips and onetime_tips is None:
+        return sort_by_max_tip(feed_tips)
+    if onetime_tips and feed_tips is None:
+        return sort_by_max_tip(onetime_tips)
+    else:
+        if feed_tips is not None and onetime_tips is not None:
+            # merge autopay tips and get feed with max amount of tip
+            combined_dict = {
+                key: sum_values(onetime_tips.get(key), feed_tips.get(key)) for key in onetime_tips | feed_tips
+            }
+        return sort_by_max_tip(combined_dict)
 
 
 def handler_func(res: Any) -> int:
+    """handler function used for multicall response
+    takes the list of booleans thats returned and return
+    a count of False value
+
+    Args:
+    - list of booleans
+
+    Return: count of False values
+    """
     return len(list(filter((True).__ne__, res)))
