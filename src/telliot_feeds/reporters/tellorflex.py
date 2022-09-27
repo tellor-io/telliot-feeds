@@ -20,7 +20,7 @@ from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.reporters.interval import IntervalReporter
-from telliot_feeds.reporters.tips.suggest_datafeed import feed_suggestion
+from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
@@ -223,15 +223,13 @@ class TellorFlexReporter(IntervalReporter):
         return count, read_status
 
     async def rewards(self) -> int:
-        tip = 0
-        datafeed: DataFeed[Any] = self.datafeed  # type: ignore
-
-        fetch_autopay_tip = await fetch_feed_tip(self.autopay, datafeed.query.query_id)
+        if self.datafeed is not None:
+            fetch_autopay_tip = await fetch_feed_tip(self.autopay, self.datafeed.query.query_id)
 
         if fetch_autopay_tip is not None:
             return fetch_autopay_tip
 
-        return tip
+        return 0
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         """Fetches datafeed suggestion plus the reward amount from autopay if query tag isn't selected
@@ -239,7 +237,7 @@ class TellorFlexReporter(IntervalReporter):
         if self.datafeed:
             self.autopaytip = await self.rewards()
             return self.datafeed
-        suggested_feed, tip_amount = await feed_suggestion(self.autopay)
+        suggested_feed, tip_amount = await get_feed_and_tip(self.autopay)
 
         if suggested_feed is not None:
             self.autopaytip = tip_amount  # type: ignore
