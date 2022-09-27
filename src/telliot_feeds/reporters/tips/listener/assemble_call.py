@@ -1,14 +1,12 @@
 from typing import Any
 from typing import Callable
-from typing import Dict
 from typing import Iterable
-from typing import List
 from typing import Optional
-from typing import Tuple
 
 from multicall import Call
 from multicall import Multicall
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
+from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
 
@@ -21,8 +19,8 @@ class AssembleCall:
         self.autopay: TellorFlexAutopayContract
 
     async def multi_call(
-        self, calls: List[Call], success: bool = False
-    ) -> Tuple[Optional[Dict[Any, Any]], ResponseStatus]:
+        self, calls: list[Call], success: bool = False
+    ) -> tuple[Optional[dict[Any, Any]], ResponseStatus]:
         """Make multi-call given a list of Calls
 
         Arg:
@@ -35,16 +33,14 @@ class AssembleCall:
         status = ResponseStatus()
         multi_call = Multicall(calls=calls, _w3=self.autopay.node._web3, require_success=success)
         try:
-            data: Dict[Any, Any] = await multi_call.coroutine()
+            data: dict[Any, Any] = await multi_call.coroutine()
             return data, status
         except Exception as e:
-            status.ok = False
-            status.e = e
-            status.error = "multicall failed to fetch data"
-            return None, status
+            msg = "multicall failed to fetch data"
+            return None, error_status(note=msg, e=e)
 
     def assemble_call_object(
-        self, func_sig: str, returns: Iterable[Tuple[str, Callable[..., Any]]], **kwargs: Dict[Any, Any]
+        self, func_sig: str, returns: Iterable[tuple[str, Callable[..., Any]]], **kwargs: dict[Any, Any]
     ) -> Call:
         """Assemble a single Call object to use in a batch call through multicall
 

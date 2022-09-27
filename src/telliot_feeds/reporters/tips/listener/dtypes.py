@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from dataclasses import field
-from typing import List
 
 from telliot_core.utils.timestamp import TimeStamp
 
@@ -42,4 +41,4 @@ class QueryIdandFeedDetails:
     current_queryid_value: bytes = field(default_factory=bytes)
     current_value_timestamp: TimeStamp = field(default_factory=int)
     month_old_index: int = field(default_factory=int)
-    queryid_timestamps_list: List[TimeStamp] = field(default_factory=list)
+    queryid_timestamps_list: list[TimeStamp] = field(default_factory=list)
