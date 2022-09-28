@@ -6,16 +6,14 @@ Filter out pools that have already been reported.
 Filter out pools that have already been settled.
 Filter out pools with unsupported reference assets or
 unsupported collateral tokens."""
-import pytest
 import datetime
 
+import pytest
+
+from telliot_feeds.integrations.diva_protocol import DIVA_TELLOR_MIDDLEWARE_ADDRESS
 from telliot_feeds.integrations.diva_protocol.pool import fetch_from_subgraph
 from telliot_feeds.integrations.diva_protocol.pool import query_valid_pools
-from telliot_feeds.integrations.diva_protocol import DIVA_TELLOR_MIDDLEWARE_ADDRESS
 
-
-# centralized oracle ran by DIVA Protocol team
-# DIVA_ORACLE = "0x245b8abbc1b70b370d1b81398de0a7920b25e7ca
 
 # int timestamp of yesterday
 yesterday = int(datetime.datetime.now().timestamp() - 60 * 60 * 24)
