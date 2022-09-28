@@ -54,5 +54,5 @@ class AssembleCall:
         Return: Call object
         """
         return Call(
-            target=self.autopay.address, function=[func_sig] + list(kwargs.values()), returns=returns  # type: ignore
+            target=self.autopay.address, function=[func_sig] + list(kwargs.values()), returns=returns
         )
