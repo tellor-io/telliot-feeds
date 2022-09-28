@@ -37,10 +37,14 @@ async def get_feed_and_tip(
     multi_call = MulticallAutopay()
     listener_filter = TipListenerFilter()
 
-    funded_feeds = FundedFeeds(autopay=autopay, multi_call=multi_call, listener_filter=listener_filter)
+    funded_feeds = FundedFeeds(
+        autopay=autopay, multi_call=multi_call, listener_filter=listener_filter.qtype_name_in_registry
+    )
 
     feed_tips = await funded_feeds.querydata_and_tip(current_time=current_timestamp)
-    onetime_tips = await get_funded_one_time_tips(autopay=autopay, filtr=listener_filter.qtype_name_in_registry)
+    onetime_tips = await get_funded_one_time_tips(
+        autopay=autopay, listener_filter=listener_filter.qtype_name_in_registry
+    )
 
     if not feed_tips and not onetime_tips:
         logger.info("No tips available in autopay")

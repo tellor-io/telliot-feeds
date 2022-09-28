@@ -10,7 +10,7 @@ logger = get_logger(__name__)
 
 
 async def get_funded_one_time_tips(
-    autopay: TellorFlexAutopayContract, filtr: Callable[[bytes], bool]
+    autopay: TellorFlexAutopayContract, listener_filter: Callable[[bytes], bool]
 ) -> Optional[dict[bytes, int]]:
     """Trigger autopay call and filter response data
 
@@ -29,7 +29,7 @@ async def get_funded_one_time_tips(
             onetime_tips.remove((query_data, reward))
             continue
 
-        if not filtr(query_data):
+        if not listener_filter(query_data):
             onetime_tips.remove((query_data, reward))
 
     single_tips = {query_data: reward for (query_data, reward) in onetime_tips}

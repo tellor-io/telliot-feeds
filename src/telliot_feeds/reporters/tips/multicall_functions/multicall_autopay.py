@@ -5,10 +5,10 @@ from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.reporters.tips.funded_feeds.call_functions import CallFunctions
+from telliot_feeds.reporters.tips.listener.dtypes import FeedDetails
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
 from telliot_feeds.reporters.tips.listener.utils import filter_batch_result
 from telliot_feeds.reporters.tips.listener.utils import handler_func
-from telliot_feeds.reporters.tips.listener.dtypes import FeedDetails
 
 
 class MulticallAutopay(CallFunctions):

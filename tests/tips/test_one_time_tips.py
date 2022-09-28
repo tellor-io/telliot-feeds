@@ -19,7 +19,7 @@ async def test_get_one_time_tip_funded_queries(setup_one_time_tips):
     """
     contract = await setup_one_time_tips
     count = 1
-    tips = await get_funded_one_time_tips(contract, filtr=filtr.qtype_name_in_registry)
+    tips = await get_funded_one_time_tips(contract, listener_filter=filtr.qtype_name_in_registry)
     for query_data, tip in tips.items():
         try:
             query_data = decode_single("(string,bytes)", query_data)[0]
@@ -52,7 +52,7 @@ async def test_nonexisting_qtype_filter(setup_one_time_tips):
     )
     full_funded_queries_list, status = await contract.read("getFundedSingleTipsInfo")
     assert status.ok
-    filtered_queries_list = await get_funded_one_time_tips(contract, filtr=filtr.qtype_name_in_registry)
+    filtered_queries_list = await get_funded_one_time_tips(contract, listener_filter=filtr.qtype_name_in_registry)
     assert isinstance(full_funded_queries_list, list)
     assert (fquery_encoded, int(5 * 10**18)) in full_funded_queries_list
     assert (fquery_encoded, int(5 * 10**18)) not in filtered_queries_list
@@ -62,5 +62,5 @@ async def test_nonexisting_qtype_filter(setup_one_time_tips):
 async def test_no_tips(autopay_contract_setup, caplog):
     """Test None by mocking contract call response to return None"""
     contract, _ = await autopay_contract_setup
-    await get_funded_one_time_tips(contract, filtr=filtr.qtype_name_in_registry)
+    await get_funded_one_time_tips(contract, listener_filter=filtr.qtype_name_in_registry)
     assert "No one time tip funded queries available" in caplog.text
