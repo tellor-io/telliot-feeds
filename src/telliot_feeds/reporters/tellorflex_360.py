@@ -13,7 +13,6 @@ from telliot_core.contract.contract import Contract
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
-from telliot_core.utils.timestamp import TimeStamp
 
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
@@ -37,11 +36,11 @@ class StakerInfo:
     in_total_stakers: bool
     """
 
-    start_date: TimeStamp
+    start_date: int
     stake_balance: int
     locked_balance: int
     reward_debt: int
-    last_report: TimeStamp
+    last_report: int
     reports_count: int
     gov_vote_count: int
     vote_count: int
@@ -142,20 +141,14 @@ class TellorFlex360Reporter(TellorFlexReporter):
 
         if stake < self.stake:
             self.stake = stake
-            msg = "Stake amount has decreased,"
-            logger.info(msg)
+            logger.info("Stake amount has decreased")
 
         if stake > account_staked_bal:
-            msg = (
-                "Current stake is low. "
-                # Add more TRB to continue reporting
-                + "Approving and depositing stake."
-            )
-            logger.info(msg)
+            logger.info("Current stake is low. Approving and depositing stake.")
 
             gas_price_gwei = await self.fetch_gas_price()
             if gas_price_gwei is None:
-                return False, error_status("Unable to fetch matic gas price for staking", log=logger.info)
+                return False, error_status("Unable to fetch gas price for staking", log=logger.info)
 
             # diff in required stake and account staked balance
             stake_diff = self.stake - account_staked_bal  # type: ignore
