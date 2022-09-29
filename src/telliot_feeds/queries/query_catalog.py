@@ -1,5 +1,5 @@
-from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AMPLUSDVWAP
-from telliot_feeds.queries.ampleforth.uspce import USPCE
+from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AmpleforthCustomSpotPrice
+from telliot_feeds.queries.ampleforth.uspce import AmpleforthUSPCE
 from telliot_feeds.queries.catalog import Catalog
 from telliot_feeds.queries.daily_volatility import DailyVolatility
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
@@ -150,10 +150,10 @@ query_catalog.add_entry(
 query_catalog.add_entry(
     tag="uspce",
     title="USPCE",
-    q=USPCE(),
+    q=AmpleforthUSPCE(),
 )
 query_catalog.add_entry(
     tag="ampl-usd-vwap",
     title="AMPL/USD VWAP",
-    q=AMPLUSDVWAP(),
+    q=AmpleforthCustomSpotPrice(),
 )

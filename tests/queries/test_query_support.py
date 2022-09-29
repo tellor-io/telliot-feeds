@@ -11,7 +11,7 @@ def test_all_query_types_in_catalog():
     for q in AbiQuery.__subclasses__():
         print("Checking", q.__name__)
         # skip legacy type
-        if q.__name__ == "LegacyRequest":
+        if q.__name__ in ("LegacyRequest", "FakeQueryType"):
             continue
         assert q.__name__ in q_types
 

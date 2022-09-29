@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class AMPLUSDVWAP(AbiQuery):
+class AmpleforthCustomSpotPrice(AbiQuery):
     """Returns VWAP for AMPL in USD.
 
-    More details in the data spec: https://github.com/tellor-io/dataSpecs/blob/master/AMPLUSDVWAP.md
+    More details in the data spec: https://github.com/tellor-io/dataSpecs/blob/master/AmpleforthCustomSpotPrice.md
     """
 
     @property

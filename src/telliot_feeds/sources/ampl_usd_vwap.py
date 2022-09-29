@@ -174,7 +174,7 @@ class BraveNewCoinSource(DataSource[float]):
 
 
 @dataclass
-class AMPLUSDVWAPSource(DataSource[float]):
+class AmpleforthCustomSpotPriceSource(DataSource[float]):
     #: Asset
     asset: str = "ampl"
 

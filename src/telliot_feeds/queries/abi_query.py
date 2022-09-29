@@ -5,6 +5,7 @@ from clamfig import deserialize
 from clamfig.base import Registry
 from eth_abi import decode_abi
 from eth_abi import encode_abi
+from eth_abi import encode_single
 
 from telliot_feeds.queries.query import OracleQuery
 from telliot_feeds.utils.log import get_logger
@@ -36,11 +37,21 @@ class AbiQuery(OracleQuery):
 
         This method uses ABI encoding to encode the query's parameter values.
         """
-        param_values = [getattr(self, p["name"]) for p in self.abi]
-        param_types = [p["type"] for p in self.abi]
-        encoded_params = encode_abi(param_types, param_values)
+        # If the query has parameters
+        if self.abi:
+            param_values = [getattr(self, p["name"]) for p in self.abi]
+            param_types = [p["type"] for p in self.abi]
+            encoded_params = encode_abi(param_types, param_values)
 
-        return encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
+            return encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
+        # If the query has no parameters
+        else:
+            encoded_params = encode_single("bytes", b"")
+            q_data_hex_str = encode_abi(["string", "bytes"], [type(self).__name__, encoded_params]).hex()
+            q_data_hex_lis = list(q_data_hex_str)
+            q_data_hex_lis[-66] = "2"
+            q_data_hex_str = "".join(q_data_hex_lis)
+            return bytes.fromhex(q_data_hex_str)
 
     @staticmethod
     def get_query_from_data(query_data: bytes) -> Optional[OracleQuery]:

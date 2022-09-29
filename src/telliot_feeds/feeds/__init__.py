@@ -83,6 +83,6 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "DailyVolatility": daily_volatility_manual_feed,
     "TellorRNG": tellor_rng_feed,
     "TellorRNGManualResponse": tellor_rng_manual_feed,
-    "AMPLUSDVWAP": ampl_usd_vwap_feed,
+    "AmpleforthCustomSpotPrice": ampl_usd_vwap_feed,
     "USPCE": uspce_feed,
 }

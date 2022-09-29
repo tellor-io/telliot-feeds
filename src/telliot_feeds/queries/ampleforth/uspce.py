@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class USPCE(AbiQuery):
+class AmpleforthUSPCE(AbiQuery):
     """Returns the USPCE value for the Ampleforth integration."""
 
     @property
