@@ -51,11 +51,9 @@ LEGACY_DATAFEEDS = {
 }
 
 CATALOG_FEEDS = {
-    "eth-usd-legacy": eth_usd_legacy_feed,
-    "btc-usd-legacy": btc_usd_legacy_feed,
-    "ampl-legacy": ampl_usd_vwap_feed,
-    "uspce-legacy": uspce_feed,
-    "eth-jpy-legacy": eth_jpy_median_feed,
+    "ampl-usd-vwap": ampl_usd_vwap_feed,
+    "uspce": uspce_feed,
+    "eth-jpy-spot": eth_jpy_median_feed,
     "ohm-eth-spot": ohm_eth_median_feed,
     "vsq-usd-spot": vsq_usd_median_feed,
     "bct-usd-spot": bct_usd_median_feed,
@@ -66,7 +64,6 @@ CATALOG_FEEDS = {
     "sushi-usd-spot": sushi_usd_median_feed,
     "matic-usd-spot": matic_usd_median_feed,
     "usdc-usd-spot": usdc_usd_median_feed,
-    "morphware-v1": morphware_v1_feed,
     "gas-price-oracle-example": gas_price_oracle_feed_example,
     "eth-usd-30day_volatility": eth_usd_30day_volatility,
     "eur-usd-spot": eur_usd_median_feed,
@@ -74,7 +71,6 @@ CATALOG_FEEDS = {
     "pls-usd-spot": pls_usd_feed,
     "eth-usd-spot": eth_usd_median_feed,
     "btc-usd-spot": btc_usd_median_feed,
-    "trb-usd-legacy": trb_usd_legacy_feed,
     "trb-usd-spot": trb_usd_median_feed,
 }
 
@@ -83,14 +79,13 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "DivaProtocol": diva_manual_feed,
     "SnapshotOracle": snapshot_manual_feed,
     "GasPriceOracle": gas_price_oracle_feed,
-    "NumericApiResponse": numeric_api_response_feed,
     "StringQuery": string_query_feed,
     "NumericApiManualResponse": numeric_api_response_manual_feed,
     "NumericApiResponse": numeric_api_response_feed,  # this build will parse and submit response value automatically
-    "LegacyRequest": legacy_request_manual_feed,
     "TWAP": twap_manual_feed,
     "DailyVolatility": daily_volatility_manual_feed,
     "TellorRNG": tellor_rng_feed,
     "TellorRNGManualResponse": tellor_rng_manual_feed,
-    # "morphware",
+    "AMPLUSDVWAP": ampl_usd_vwap_feed,
+    "USPCE": uspce_feed,
 }
