@@ -51,8 +51,11 @@ class GeminiSpotPriceService(WebPriceService):
         request_url = "/v1/pubticker/{}{}".format(asset.lower(), currency.lower())
 
         d = self.get_url(request_url)
-        if "error" in d:
-            if "used Cloudflare to restrict access" in d["exception"].strerror:
+        if d is None:
+            logger.warning("No data returned from Gemini")
+            return None, None
+        elif "error" in d:
+            if "used Cloudflare to restrict access" in str(d["exception"]):
                 logger.warning("Gemini API rate limit exceeded")
                 return None, None
 
