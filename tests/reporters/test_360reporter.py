@@ -5,7 +5,7 @@ from brownie import TellorFlex360
 from telliot_core.apps.core import TelliotCore
 
 from telliot_feeds.queries.query_catalog import query_catalog
-from telliot_feeds.reporters.tellorflex_360 import TellorFlex360Reporter
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 
 trb_id = query_catalog._entries["trb-usd-spot"].query.query_id
@@ -33,34 +33,35 @@ async def reporter_360(
 
         account = core.get_account()
 
-        flex = core.get_tellorflex_contracts()
-        flex.oracle.address = tellorflex_360_contract.address
-        flex.oracle.abi = tellorflex_360_contract.abi
-        flex.autopay.address = mock_autopay_contract.address
-        flex.autopay.abi = mock_autopay_contract.abi
-        flex.token.address = mock_token_contract.address
+        tellor360 = core.get_tellor360_contracts()
+        tellor360.oracle.address = tellorflex_360_contract.address
+        tellor360.oracle.abi = tellorflex_360_contract.abi
+        tellor360.autopay.address = mock_autopay_contract.address
+        tellor360.autopay.abi = mock_autopay_contract.abi
+        tellor360.token.address = mock_token_contract.address
 
-        flex.oracle.connect()
-        flex.token.connect()
-        flex.autopay.connect()
-        flex = core.get_tellorflex_contracts()
+        tellor360.oracle.connect()
+        tellor360.token.connect()
+        tellor360.autopay.connect()
+        tellor360 = core.get_tellor360_contracts()
 
-        r = TellorFlex360Reporter(
-            oracle=flex.oracle,
-            token=flex.token,
-            autopay=flex.autopay,
+        r = Tellor360Reporter(
+            oracle=tellor360.oracle,
+            token=tellor360.token,
+            autopay=tellor360.autopay,
             endpoint=core.endpoint,
             account=account,
             chain_id=80001,
             transaction_type=0,
         )
+
         # mint token and send to reporter address
         mock_token_contract.mint(account.address, 1000e18)
 
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
         # init governance address
-        await flex.oracle.write("init", _governanceAddress=accounts[0].address, **txn_kwargs)
+        await tellor360.oracle.write("init", _governanceAddress=accounts[0].address, **txn_kwargs)
 
         return r
 
@@ -68,7 +69,7 @@ async def reporter_360(
 @pytest.mark.asyncio
 async def test_report(reporter_360, caplog):
     """Test 360 reporter deposit and balance changes when stakeAmount changes"""
-    r: TellorFlex360Reporter = reporter_360
+    r: Tellor360Reporter = reporter_360
 
     await r.report_once()
     assert r.staker_info.stake_balance == int(1e18)
