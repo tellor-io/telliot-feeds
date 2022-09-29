@@ -143,6 +143,7 @@ async def test_gemini(caplog, monkeypatch):
     # mock GeminiSpotPriceService.get_url() to return None
     def mock_get_url(*args, **kwargs):
         return None
+
     monkeypatch.setattr(GeminiSpotPriceService, "get_url", mock_get_url)
     v, t = await get_price("btc", "usd", service["gemini"])
     assert v is None
