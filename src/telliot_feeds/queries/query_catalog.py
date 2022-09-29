@@ -1,3 +1,5 @@
+from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AMPLUSDVWAP
+from telliot_feeds.queries.ampleforth.uspce import USPCE
 from telliot_feeds.queries.catalog import Catalog
 from telliot_feeds.queries.daily_volatility import DailyVolatility
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
@@ -9,8 +11,6 @@ from telliot_feeds.queries.price.twap import TWAP
 from telliot_feeds.queries.snapshot import Snapshot
 from telliot_feeds.queries.string_query import StringQuery
 from telliot_feeds.queries.tellor_rng import TellorRNG
-from telliot_feeds.queries.ampleforth.uspce import USPCE
-from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AMPLUSDVWAP
 
 """Main instance of the Query Catalog."""
 query_catalog = Catalog()
