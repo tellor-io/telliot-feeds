@@ -86,7 +86,7 @@ class Tellor360Reporter(TellorFlexReporter):
         self.legacy_gas_price = legacy_gas_price
         self.gas_price_speed = gas_price_speed
         self.autopaytip = 0
-        self.stake_amount: int = 0
+        self.stake_amount: Optional[int] = None
         self.staker_info: Optional[StakerInfo] = None
         self.allowed_stake_amount = 0
 
@@ -103,6 +103,7 @@ class Tellor360Reporter(TellorFlexReporter):
         - (bool, ResponseStatus)
         """
         # get oracle required stake amount
+        stake_amount: int
         stake_amount, status = await self.oracle.read("getStakeAmount")
         logger.info(f"Current Oracle stakeAmount: {stake_amount / 1e18!r}")
 
