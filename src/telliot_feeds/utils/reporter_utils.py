@@ -31,7 +31,7 @@ async def tellor_suggested_report(
         assert isinstance(oracle, TellorxOracleContract)
         timestamp, status = await oracle.getTimeOfLastNewValue()
     elif chain in (137, 80001):
-        assert isinstance(oracle, TellorFlexOracleContract)
+
         timestamp, status = await oracle.get_time_of_last_new_value()
     else:
         return None
