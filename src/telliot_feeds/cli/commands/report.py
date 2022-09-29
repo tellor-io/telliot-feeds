@@ -27,6 +27,7 @@ from telliot_feeds.reporters.custom_reporter import CustomXReporter
 from telliot_feeds.reporters.flashbot import FlashbotsReporter
 from telliot_feeds.reporters.interval import IntervalReporter
 from telliot_feeds.reporters.rng_interval import RNGReporter
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 from telliot_feeds.utils.log import get_logger
 
@@ -279,6 +280,7 @@ def reporter() -> None:
     default=None,
     type=str,
 )
+@click.option("--flex-360/--old-flex", default=True, help="Choose between tellor360 reporter or old flex")
 @click.option("--binary-interface", "-abi", "abi", nargs=1, default=None, type=str)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
@@ -310,6 +312,7 @@ async def report(
     autopay_address: str,
     custom_contract_reporter: Optional[str],
     abi: Optional[str],
+    flex_360: bool,
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
@@ -492,7 +495,18 @@ async def report(
                     wait_period=wait_period,
                     **common_reporter_kwargs,
                 )  # type: ignore
-            else:
+            elif flex_360:
+                tellor360 = core.get_tellor360_contracts()
+                reporter = Tellor360Reporter(
+                    oracle=tellor360.oracle,
+                    token=tellor360.token,
+                    autopay=tellor360.autopay,
+                    stake=stake,
+                    expected_profit=expected_profit,
+                    wait_period=wait_period,
+                    **common_reporter_kwargs,
+                )  # type: ignore
+            elif not flex_360:
                 reporter = TellorFlexReporter(
                     oracle=tellorflex.oracle,
                     token=tellorflex.token,
