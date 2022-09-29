@@ -17,10 +17,8 @@ from telliot_feeds.feeds.eur_usd_feed import eur_usd_median_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed_example
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
-from telliot_feeds.feeds.legacy_request_manual_feed import legacy_request_manual_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
-from telliot_feeds.feeds.morphware import morphware_v1_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
@@ -34,7 +32,6 @@ from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
 from telliot_feeds.feeds.tellor_rng_feed import tellor_rng_feed
 from telliot_feeds.feeds.tellor_rng_manual_feed import tellor_rng_manual_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
-from telliot_feeds.feeds.trb_usd_legacy_feed import trb_usd_legacy_feed
 from telliot_feeds.feeds.twap_manual_feed import twap_manual_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed

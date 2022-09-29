@@ -3,8 +3,6 @@
 """
 import logging
 from dataclasses import dataclass
-from typing import List
-from typing import Tuple
 
 from telliot_feeds.dtypes.float_type import UnsignedFloatType
 from telliot_feeds.dtypes.value_type import ValueType
@@ -17,7 +15,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AMPLUSDVWAP(AbiQuery):
     """Returns VWAP for AMPL in USD.
-    
+
     More details in the data spec: https://github.com/tellor-io/dataSpecs/blob/master/AMPLUSDVWAP.md
     """
 

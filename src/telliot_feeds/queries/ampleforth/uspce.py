@@ -11,8 +11,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class USPCE(AbiQuery):
-    """Returns the USPCE value for the Ampleforth integration.
-    """
+    """Returns the USPCE value for the Ampleforth integration."""
 
     @property
     def value_type(self) -> ValueType:

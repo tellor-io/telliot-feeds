@@ -9,6 +9,8 @@ from telliot_feeds.queries.price.twap import TWAP
 from telliot_feeds.queries.snapshot import Snapshot
 from telliot_feeds.queries.string_query import StringQuery
 from telliot_feeds.queries.tellor_rng import TellorRNG
+from telliot_feeds.queries.ampleforth.uspce import USPCE
+from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AMPLUSDVWAP
 
 """Main instance of the Query Catalog."""
 query_catalog = Catalog()
@@ -143,4 +145,15 @@ query_catalog.add_entry(
 query_catalog.add_entry(tag="tellor-rng-example", title="Tellor RNG", q=TellorRNG(timestamp=1660567612))
 query_catalog.add_entry(
     tag="twap-eth-usd-example", title="Time Weighted Average Price", q=TWAP(asset="eth", currency="usd", timespan=86400)
+)
+
+query_catalog.add_entry(
+    tag="uspce",
+    title="USPCE",
+    q=USPCE(),
+)
+query_catalog.add_entry(
+    tag="ampl-usd-vwap",
+    title="AMPL/USD VWAP",
+    q=AMPLUSDVWAP(),
 )
