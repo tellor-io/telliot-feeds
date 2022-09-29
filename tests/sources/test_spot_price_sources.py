@@ -130,7 +130,7 @@ async def test_bittrex(caplog):
 
 
 @pytest.mark.asyncio
-async def test_gemini(caplog):
+async def test_gemini(caplog, monkeypatch):
     """Test retrieving from Gemini price source."""
     v, t = await get_price("btc", "usd", service["gemini"])
 
@@ -139,6 +139,15 @@ async def test_gemini(caplog):
         assert t is None
     else:
         validate_price(v, t)
+
+    # mock GeminiSpotPriceService.get_url() to return None
+    def mock_get_url(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(GeminiSpotPriceService, "get_url", mock_get_url)
+    v, t = await get_price("btc", "usd", service["gemini"])
+    assert v is None
+    assert t is None
 
 
 @pytest.mark.asyncio
