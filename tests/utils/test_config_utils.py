@@ -1,9 +1,14 @@
+import os
+import shutil
+from pathlib import Path
 from unittest import mock
 
+import pytest
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from simple_term_menu import TerminalMenu
 from telliot_core.apps.telliot_config import TelliotConfig
+from telliot_core.model.endpoints import EndpointList
 from telliot_core.model.endpoints import RPCEndpoint
 
 from telliot_feeds.utils.cfg import check_accounts
@@ -11,6 +16,29 @@ from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import prompt_for_endpoint
 from telliot_feeds.utils.cfg import setup_account
 from telliot_feeds.utils.cfg import setup_config
+
+
+@pytest.fixture
+def mock_config():
+
+    ep = EndpointList()
+
+    cfg = TelliotConfig()
+    mock_config_dir = os.path.join(os.getcwd(), ".mock_config")
+
+    mock_path = Path.home() / mock_config_dir
+    mock_path = mock_path.resolve().absolute()
+
+    if not os.path.isdir(mock_config_dir):
+        os.makedirs(mock_config_dir)
+
+    cfg.config_dir = mock_path
+    cfg._ep_config_file.config_dir = mock_path
+    cfg._ep_config_file.save_config(ep)
+
+    yield cfg  # test happens here
+
+    shutil.rmtree(os.path.join(os.getcwd(), ".mock_config"))
 
 
 def mock_account():
@@ -23,14 +51,15 @@ def mock_account():
         return find_accounts(chain_id=4, name="mock-account")[0]
 
 
-def test_update_all_configs():
+def test_update_all_configs(mock_config):
     """test updating chain id, endpoint, and account"""
 
-    cfg = TelliotConfig()
+    cfg = mock_config
 
     # confirmations
+    update_settings = True
     update_chain_id = True
-    use_endpoint = True
+    use_endpoint = False
 
     # prompts
     new_chain_id = 4
@@ -39,17 +68,19 @@ def test_update_all_configs():
     mock_endpoint = RPCEndpoint(4, "rinkeby", "infura", "myinfuraurl...", "etherscan.com")
 
     with (
-        mock.patch("click.confirm", side_effect=[update_chain_id, use_endpoint]),
+        mock.patch("click.confirm", side_effect=[update_settings, update_chain_id, use_endpoint]),
         mock.patch("click.prompt", side_effect=[new_chain_id]),
         mock.patch("telliot_feeds.utils.cfg.setup_endpoint", side_effect=[mock_endpoint]),
         mock.patch("telliot_feeds.utils.cfg.setup_account", return_value=mock_account()),
     ):
-
-        cfg, account = setup_config(cfg=cfg)
-        print("account ", account)
+        file_before = cfg._ep_config_file.get_config()
+        cfg, account = setup_config(cfg=cfg, account_name="mock-account")
         assert cfg.main.chain_id == new_chain_id
         assert check_endpoint(cfg) == mock_endpoint
         assert "mock-account" in account.name
+        file_after = cfg._ep_config_file.get_config()
+
+        assert len(file_after.endpoints) > len(file_before.endpoints)
 
 
 def test_prompt_for_endpoint():
@@ -71,7 +102,7 @@ def test_prompt_for_endpoint():
         assert endpt.explorer == explorer_url
 
 
-def test_setup_account():
+def test_setup_account(mock_config):
     """Test accepting first account, then test adding an account"""
 
     first_index = 0
@@ -88,8 +119,58 @@ def test_setup_account():
         mock.patch.object(TerminalMenu, "show", side_effect=[last_index]),
         mock.patch("telliot_feeds.utils.cfg.prompt_for_account", side_effect=[mock_account]),
     ):
-        cfg = TelliotConfig()
+        cfg = mock_config
         cfg.main.chain_id = 4
         selected_acc = setup_account(cfg.main.chain_id)
 
-        assert "mock-account" in [a.name for a in check_accounts(cfg)]
+        assert "mock-account" in [a.name for a in check_accounts(cfg, "mock-account")]
+
+
+def test_not_updating_settings(mock_config):
+    """test declining to update settings on click.confirm prompt"""
+
+    cfg = mock_config
+
+    # confirmations
+    update_settings = False
+
+    # other mocks
+    mock_endpoint = RPCEndpoint(5, "goerli", "infura", "myinfuraurl...", "etherscan.com")
+
+    with (
+        mock.patch("click.confirm", side_effect=[update_settings]),
+        mock.patch("telliot_feeds.utils.cfg.setup_endpoint", side_effect=[mock_endpoint]),
+        mock.patch("telliot_feeds.utils.cfg.setup_account", return_value=mock_account()),
+    ):
+        file_before = cfg._ep_config_file.get_config()
+        cfg, account = setup_config(cfg=cfg, account_name="mock-account")
+        assert check_endpoint(cfg) != mock_endpoint
+        assert "mock-account" in account.name
+        file_after = cfg._ep_config_file.get_config()
+
+        assert len(file_after.endpoints) == len(file_before.endpoints)
+
+
+def test_continue_with_incomplete_settings(caplog, mock_config):
+    """test declining to update settings when account and endpoints are unset"""
+
+    cfg = mock_config
+
+    # confirmations
+    update_settings = False
+
+    # other mocks
+    mock_endpoint = RPCEndpoint(5, "goerli", "infura", "myinfuraurl...", "etherscan.com")
+
+    with (
+        mock.patch("click.confirm", side_effect=[update_settings]),
+        mock.patch("telliot_feeds.utils.cfg.setup_endpoint", side_effect=[mock_endpoint]),
+        mock.patch("telliot_feeds.utils.cfg.setup_account", return_value=mock_account()),
+    ):
+        file_before = cfg._ep_config_file.get_config()
+        cfg, account = setup_config(cfg=cfg, account_name="mock-account2")
+        assert check_endpoint(cfg) != mock_endpoint
+        assert not account
+        file_after = cfg._ep_config_file.get_config()
+
+        assert len(file_after.endpoints) == len(file_before.endpoints)

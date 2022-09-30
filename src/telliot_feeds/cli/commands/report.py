@@ -28,6 +28,7 @@ from telliot_feeds.reporters.flashbot import FlashbotsReporter
 from telliot_feeds.reporters.interval import IntervalReporter
 from telliot_feeds.reporters.rng_interval import RNGReporter
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
 
@@ -334,6 +335,7 @@ async def report(
 
     assert tx_type in (0, 2)
 
+    name = ctx.obj["ACCOUNT_NAME"]
     sig_acct_name = ctx.obj["SIGNATURE_ACCOUNT_NAME"]
 
     if sig_acct_name is not None:
@@ -346,7 +348,15 @@ async def report(
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
-        core._config, account = setup_config(core.config)
+        core._config, account = setup_config(core.config, account_name=name)
+
+        endpoint = check_endpoint(core._config)
+
+        if not endpoint or not account:
+            click.echo("Accounts and/or endpoint unset.")
+            click.echo(f"Account: {account}")
+            click.echo(f"Endpoint: {core._config.get_endpoint()}")
+            return
 
         # Make sure current account is unlocked
         if not account.is_unlocked:
@@ -366,7 +376,7 @@ async def report(
             try:
                 custom_contract_reporter = to_checksum_address(custom_contract_reporter)
             except ValueError:
-                click.echo(f"contract address must be a hex string. Got: {custom_contract_reporter}")
+                click.echo(f"Contract address must be a hex string. Got: {custom_contract_reporter}")
                 return
             if abi is None:
                 try:

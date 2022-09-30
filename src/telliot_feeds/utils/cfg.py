@@ -38,7 +38,7 @@ def mainnet_config() -> Optional[TelliotConfig]:
     return cfg
 
 
-def setup_config(cfg: TelliotConfig) -> Tuple[TelliotConfig, ChainedAccount]:
+def setup_config(cfg: TelliotConfig, account_name: str) -> Tuple[TelliotConfig, ChainedAccount]:
     """Setup TelliotConfig via CLI if not already configured
 
     Inputs:
@@ -52,27 +52,41 @@ def setup_config(cfg: TelliotConfig) -> Tuple[TelliotConfig, ChainedAccount]:
     if cfg is None:
         cfg = TelliotConfig()
 
-    want_to_update = click.confirm(f"Chain_id is {cfg.main.chain_id}. Do you want to update it?")
-
-    if want_to_update:  # noqa: F821
-        new_chain_id = click.prompt("Enter a new chain id", type=int)
-        cfg.main.chain_id = new_chain_id
-
-    accounts = check_accounts(cfg)
+    accounts = check_accounts(cfg, account_name)
     endpoint = check_endpoint(cfg)
+
+    click.echo(f"Your current settings...\nYour chain id: {cfg.main.chain_id}\n")
 
     if endpoint is not None:
         click.echo(
-            f"Your current configuration...\n"
-            f"Your chain id: {cfg.main.chain_id}\n"
             f"Your {endpoint.network} endpoint: \n"
             f" - provider: {endpoint.provider}\n"
             f" - RPC url: {endpoint.url}\n"
             f" - explorer url: {endpoint.explorer}"
         )
+    else:
+        click.echo("No endpoints set.")
+
+    if accounts:
+        click.echo(f"Your account: {accounts[0].name} at address {accounts[0].address}")
 
     else:
-        click.echo(f"Your current configuration...\nYour chain id: {cfg.main.chain_id}")
+        click.echo("No accounts set.")
+
+    want_to_update_settings = click.confirm(
+        "Would you like to update settings? If no accounts or endpoints are set, select yes"
+    )
+
+    if not want_to_update_settings:
+        if not accounts or not endpoint:
+            return cfg, None
+        return cfg, accounts[0]
+
+    want_to_update_chain_id = click.confirm(f"Chain_id is {cfg.main.chain_id}. Do you want to update it?")
+
+    if want_to_update_chain_id:  # noqa: F821
+        new_chain_id = click.prompt("Enter a new chain id", type=int)
+        cfg.main.chain_id = new_chain_id
 
     new_endpoint = setup_endpoint(cfg, cfg.main.chain_id)
     if new_endpoint is not None:
@@ -85,6 +99,9 @@ def setup_config(cfg: TelliotConfig) -> Tuple[TelliotConfig, ChainedAccount]:
     if new_account is not None:
         click.echo(f"{new_account.name} selected!")
 
+    # write new endpoints to file (note: accounts are automatically written to file)
+    cfg._ep_config_file.save_config(cfg.endpoints)
+
     return cfg, new_account
 
 
@@ -95,13 +112,9 @@ def setup_endpoint(cfg: TelliotConfig, chain_id: int) -> RPCEndpoint:
 
     if endpoint is not None:
         keep = click.confirm(f"Do you want to use this endpoint on chain_id {chain_id}?")
-
         if keep:
-
             return endpoint
-
         else:
-
             return prompt_for_endpoint(chain_id)
 
     else:
@@ -114,14 +127,15 @@ def check_endpoint(cfg: TelliotConfig) -> Optional[RPCEndpoint]:
 
     try:
         return cfg.get_endpoint()
-    except Exception:
+    except Exception as e:
+        logger.warning("No endpoints found: " + str(e))
         return None
 
 
-def check_accounts(cfg: TelliotConfig) -> List[ChainedAccount]:
+def check_accounts(cfg: TelliotConfig, account_name: str) -> List[ChainedAccount]:
     """Check if there is a pre-set account in the config"""
 
-    return find_accounts(chain_id=cfg.main.chain_id)  # type: ignore
+    return find_accounts(chain_id=cfg.main.chain_id, name=account_name)  # type: ignore
 
 
 def prompt_for_endpoint(chain_id: int) -> Optional[RPCEndpoint]:
@@ -133,8 +147,8 @@ def prompt_for_endpoint(chain_id: int) -> Optional[RPCEndpoint]:
 
     try:
         return RPCEndpoint(chain_id, network_name, provider, rpc_url, explorer_url)
-    except Exception:
-        click.echo("Cannot add endpoint: invalid endpoint properties")
+    except Exception as e:
+        click.echo("Cannot add endpoint: invalid endpoint properties" + str(e))
         return None
 
 
@@ -171,7 +185,7 @@ def prompt_for_account(chain_id: int) -> Optional[ChainedAccount]:
         return ChainedAccount.add(acc_name, chain_id, private_key, password=None)
     except Exception as e:
         if "already exists" in str(e):
-            click.echo(f"Cannot add account: Account {acc_name} already exists :)")
+            click.echo(f"Cannot add account: Account {acc_name} already exists :)" + str(e))
         else:
-            click.echo("Cannot add account: Invalid account properties")
+            click.echo("Cannot add account: Invalid account properties" + str(e))
         return None
