@@ -106,7 +106,7 @@ def test_setup_account(mock_config):
     """Test accepting first account, then test adding an account"""
 
     first_index = 0
-    last_index = -1
+    last_index = len(find_accounts(chain_id=chain_id))
 
     with (mock.patch.object(TerminalMenu, "show", side_effect=[first_index]),):
         chain_id = 4
