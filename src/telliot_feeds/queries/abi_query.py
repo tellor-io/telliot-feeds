@@ -46,6 +46,12 @@ class AbiQuery(OracleQuery):
             return encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
         # If the query has no real parameters, and only the default "phantom" parameter
         else:
+            # By default, the queries with no real parameters have a phantom parameter with
+            # a consistent value of empty bytes. The encoding of these empty bytese in 
+            # Python does not match the encoding in Solidity, so we need this hacky solution
+            # where the empty bytes are encoded, the almost-accurate query data is generated,
+            # converted to a string, a single character is replaced, then the hex string is
+            # converted back to bytes.
             encoded_params = encode_single("bytes", b"")
             q_data_hex_str = encode_abi(["string", "bytes"], [type(self).__name__, encoded_params]).hex()
             q_data_hex_lis = list(q_data_hex_str)
