@@ -105,11 +105,12 @@ def test_prompt_for_endpoint():
 def test_setup_account(mock_config):
     """Test accepting first account, then test adding an account"""
 
+    chain_id = 4
+
     first_index = 0
     last_index = len(find_accounts(chain_id=chain_id))
 
     with (mock.patch.object(TerminalMenu, "show", side_effect=[first_index]),):
-        chain_id = 4
         accounts = find_accounts(chain_id=chain_id)
         selected_acc = setup_account(chain_id)
 
