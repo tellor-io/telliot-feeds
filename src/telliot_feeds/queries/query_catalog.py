@@ -148,12 +148,12 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
-    tag="uspce",
+    tag="ampleforth-uspce",
     title="USPCE",
     q=AmpleforthUSPCE(),
 )
 query_catalog.add_entry(
-    tag="ampl-usd-vwap",
+    tag="ampleforth-custom-price",
     title="AMPL/USD VWAP",
     q=AmpleforthCustomSpotPrice(),
 )

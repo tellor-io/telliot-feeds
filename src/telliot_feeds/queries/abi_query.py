@@ -44,7 +44,7 @@ class AbiQuery(OracleQuery):
             encoded_params = encode_abi(param_types, param_values)
 
             return encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
-        # If the query has no parameters
+        # If the query has no real parameters, and only the default "phantom" parameter
         else:
             encoded_params = encode_single("bytes", b"")
             q_data_hex_str = encode_abi(["string", "bytes"], [type(self).__name__, encoded_params]).hex()

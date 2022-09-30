@@ -37,19 +37,10 @@ from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.feeds.vesq import vsq_usd_median_feed
 
-# Supported legacy feeds
-LEGACY_DATAFEEDS = {
-    "1": eth_usd_legacy_feed,
-    "2": btc_usd_legacy_feed,
-    "10": ampl_usd_vwap_feed,
-    "41": uspce_feed,
-    "50": trb_usd_median_feed,
-    "59": eth_jpy_median_feed,
-}
 
 CATALOG_FEEDS = {
-    "ampl-usd-vwap": ampl_usd_vwap_feed,
-    "uspce": uspce_feed,
+    "ampleforth-custom": ampl_usd_vwap_feed,
+    "ampleforth-uspce": uspce_feed,
     "eth-jpy-spot": eth_jpy_median_feed,
     "ohm-eth-spot": ohm_eth_median_feed,
     "vsq-usd-spot": vsq_usd_median_feed,
@@ -84,5 +75,5 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "TellorRNG": tellor_rng_feed,
     "TellorRNGManualResponse": tellor_rng_manual_feed,
     "AmpleforthCustomSpotPrice": ampl_usd_vwap_feed,
-    "USPCE": uspce_feed,
+    "AmpleforthUSPCE": uspce_feed,
 }
