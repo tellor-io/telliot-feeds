@@ -9,6 +9,8 @@ from telliot_core.directory import contract_directory
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import ResponseStatus
 
+from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
+
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +93,7 @@ class DivaOracleTellorContract(Contract):
         self,
         node: RPCEndpoint,
         account: Optional[ChainedAccount] = None,
-        diva_diamond: Optional[str] = "0x27D1BD739BD152CDaE38d4444E9aee3498166f01",
+        diva_diamond: Optional[str] = DIVA_DIAMOND_ADDRESS,
     ):
         self.diva_diamond = diva_diamond
         chain_id = node.chain_id

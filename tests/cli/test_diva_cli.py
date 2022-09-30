@@ -40,7 +40,7 @@ def test_default_values_available():
         result = runner.invoke(cli_main, ["report", "--build-feed", "-p", "YOLO"])
 
         assert result.exit_code == 0
-        assert "Diva diamond address [0x27d1bd739bd152cdae38d4444e9aee3498166f01]: " in result.stdout
+        assert "Diva diamond address [0x36a10DDa1d71fE161e8856dA1db271e75190c727]: " in result.stdout
 
 
 def test_integrations_help_cmd():
