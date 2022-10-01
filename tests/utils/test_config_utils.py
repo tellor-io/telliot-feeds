@@ -110,14 +110,14 @@ def test_setup_account(mock_config):
     first_index = 0
     last_index = len(find_accounts(chain_id=chain_id))
 
-    with (mock.patch.object(TerminalMenu, "show", side_effect=[first_index]),):
+    with (mock.patch("simple_term_menu.TerminalMenu.show", side_effect=[first_index]),):
         accounts = find_accounts(chain_id=chain_id)
         selected_acc = setup_account(chain_id)
 
         assert selected_acc.name == accounts[0].name
 
     with (
-        mock.patch.object(TerminalMenu, "show", side_effect=[last_index]),
+        mock.patch("simple_term_menu.TerminalMenu.show", side_effect=[last_index]),
         mock.patch("telliot_feeds.utils.cfg.prompt_for_account", side_effect=[mock_account]),
     ):
         cfg = mock_config
