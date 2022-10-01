@@ -6,7 +6,6 @@ from unittest import mock
 import pytest
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
-from simple_term_menu import TerminalMenu
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.model.endpoints import EndpointList
 from telliot_core.model.endpoints import RPCEndpoint
