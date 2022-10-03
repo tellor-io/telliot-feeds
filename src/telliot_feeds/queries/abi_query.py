@@ -5,7 +5,6 @@ from clamfig import deserialize
 from clamfig.base import Registry
 from eth_abi import decode_abi
 from eth_abi import encode_abi
-from eth_abi import encode_single
 
 from telliot_feeds.queries.query import OracleQuery
 from telliot_feeds.utils.log import get_logger
@@ -48,16 +47,12 @@ class AbiQuery(OracleQuery):
         else:
             # By default, the queries with no real parameters have a phantom parameter with
             # a consistent value of empty bytes. The encoding of these empty bytese in
-            # Python does not match the encoding in Solidity, so we need this hacky solution
-            # where the empty bytes are encoded, the almost-accurate query data is generated,
-            # converted to a string, a single character is replaced, then the hex string is
-            # converted back to bytes.
-            encoded_params = encode_single("bytes", b"")
-            q_data_hex_str = encode_abi(["string", "bytes"], [type(self).__name__, encoded_params]).hex()
-            q_data_hex_lis = list(q_data_hex_str)
-            q_data_hex_lis[-66] = "2"
-            q_data_hex_str = "".join(q_data_hex_lis)
-            return bytes.fromhex(q_data_hex_str)
+            # Python does not match the encoding in Solidity, so the bytes are generated
+            # manually like so:
+            left_side = b"\0 ".rjust(32, b"\0")
+            right_side = b"\0".rjust(32, b"\0")
+            empty_bytes = left_side + right_side
+            return encode_abi(["string", "bytes"], [type(self).__name__, empty_bytes])
 
     @staticmethod
     def get_query_from_data(query_data: bytes) -> Optional[OracleQuery]:
