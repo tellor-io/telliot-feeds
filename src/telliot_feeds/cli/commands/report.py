@@ -27,7 +27,10 @@ from telliot_feeds.reporters.custom_reporter import CustomXReporter
 from telliot_feeds.reporters.flashbot import FlashbotsReporter
 from telliot_feeds.reporters.interval import IntervalReporter
 from telliot_feeds.reporters.rng_interval import RNGReporter
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.utils.cfg import check_endpoint
+from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
 
 
@@ -279,6 +282,7 @@ def reporter() -> None:
     default=None,
     type=str,
 )
+@click.option("--flex-360/--old-flex", default=True, help="Choose between tellor360 reporter or old flex")
 @click.option("--binary-interface", "-abi", "abi", nargs=1, default=None, type=str)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
@@ -310,6 +314,7 @@ async def report(
     autopay_address: str,
     custom_contract_reporter: Optional[str],
     abi: Optional[str],
+    flex_360: bool,
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
@@ -336,12 +341,6 @@ async def report(
     name = ctx.obj["ACCOUNT_NAME"]
     sig_acct_name = ctx.obj["SIGNATURE_ACCOUNT_NAME"]
 
-    try:
-        if not password:
-            password = getpass.getpass(f"Enter password for {name} keyfile: ")
-    except ValueError:
-        click.echo("Invalid Password")
-
     if sig_acct_name is not None:
         try:
             if not signature_password:
@@ -352,8 +351,17 @@ async def report(
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
+        core._config, account = setup_config(core.config, account_name=name)
+
+        endpoint = check_endpoint(core._config)
+
+        if not endpoint or not account:
+            click.echo("Accounts and/or endpoint unset.")
+            click.echo(f"Account: {account}")
+            click.echo(f"Endpoint: {core._config.get_endpoint()}")
+            return
+
         # Make sure current account is unlocked
-        account = core.get_account()
         if not account.is_unlocked:
             account.unlock(password)
 
@@ -371,7 +379,7 @@ async def report(
             try:
                 custom_contract_reporter = to_checksum_address(custom_contract_reporter)
             except ValueError:
-                click.echo(f"contract address must be a hex string. Got: {custom_contract_reporter}")
+                click.echo(f"Contract address must be a hex string. Got: {custom_contract_reporter}")
                 return
             if abi is None:
                 try:
@@ -492,7 +500,18 @@ async def report(
                     wait_period=wait_period,
                     **common_reporter_kwargs,
                 )  # type: ignore
-            else:
+            elif flex_360:
+                tellor360 = core.get_tellor360_contracts()
+                reporter = Tellor360Reporter(
+                    oracle=tellor360.oracle,
+                    token=tellor360.token,
+                    autopay=tellor360.autopay,
+                    stake=stake,
+                    expected_profit=expected_profit,
+                    wait_period=wait_period,
+                    **common_reporter_kwargs,
+                )  # type: ignore
+            elif not flex_360:
                 reporter = TellorFlexReporter(
                     oracle=tellorflex.oracle,
                     token=tellorflex.token,
