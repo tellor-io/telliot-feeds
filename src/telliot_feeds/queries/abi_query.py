@@ -42,7 +42,6 @@ class AbiQuery(OracleQuery):
             param_types = [p["type"] for p in self.abi]
             encoded_params = encode_abi(param_types, param_values)
 
-            return encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
         # If the query has no real parameters, and only the default "phantom" parameter
         else:
             # By default, the queries with no real parameters have a phantom parameter with
@@ -51,8 +50,9 @@ class AbiQuery(OracleQuery):
             # manually like so:
             left_side = b"\0 ".rjust(32, b"\0")
             right_side = b"\0".rjust(32, b"\0")
-            empty_bytes = left_side + right_side
-            return encode_abi(["string", "bytes"], [type(self).__name__, empty_bytes])
+            encoded_params = left_side + right_side
+
+        return encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
 
     @staticmethod
     def get_query_from_data(query_data: bytes) -> Optional[OracleQuery]:
