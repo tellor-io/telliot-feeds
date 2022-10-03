@@ -37,8 +37,6 @@ Network.Mumbai = 80001
 MULTICALL2_ADDRESSES[Network.Mumbai] = "0x35583BDef43126cdE71FD273F5ebeffd3a92742A"
 Network.ArbitrumRinkeby = 421611
 MULTICALL2_ADDRESSES[Network.ArbitrumRinkeby] = "0xb84C5c81A9774722701d751bd3D2c0f19bfC25fa"
-Network.OptimismKovan = 69
-MULTICALL2_ADDRESSES[Network.OptimismKovan] = "0xf609687230a65E8bd14caceDEfCF2dea9c15b242"
 Network.PulsechainTestnet = 941
 MULTICALL2_ADDRESSES[Network.PulsechainTestnet] = "0x959a437F1444DaDaC8aF997E71EAF0479c810267"
 
