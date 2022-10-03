@@ -392,7 +392,7 @@ async def autopay_suggested_report(
     """
     chain = autopay.node.chain_id
     if chain in (137, 80001, 69, 1666600000, 1666700000, 421611, 42161):
-        assert isinstance(autopay, TellorFlexAutopayContract)
+
         # get query_ids with one time tips
         singletip_dict = await get_one_time_tips(autopay)
         # get query_ids with active feeds
