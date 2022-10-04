@@ -3,7 +3,7 @@ from telliot_feeds.queries.query_catalog import query_catalog
 
 
 def test_query_catalog():
-    qlst = query_catalog.find(tag="eth-usd-legacy")
+    qlst = query_catalog.find(tag="eth-usd-spot")
     assert len(qlst) == 1
     q = qlst[0]
     assert isinstance(q.query, OracleQuery)
