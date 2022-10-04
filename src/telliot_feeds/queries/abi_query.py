@@ -36,9 +36,21 @@ class AbiQuery(OracleQuery):
 
         This method uses ABI encoding to encode the query's parameter values.
         """
-        param_values = [getattr(self, p["name"]) for p in self.abi]
-        param_types = [p["type"] for p in self.abi]
-        encoded_params = encode_abi(param_types, param_values)
+        # If the query has parameters
+        if self.abi:
+            param_values = [getattr(self, p["name"]) for p in self.abi]
+            param_types = [p["type"] for p in self.abi]
+            encoded_params = encode_abi(param_types, param_values)
+
+        # If the query has no real parameters, and only the default "phantom" parameter
+        else:
+            # By default, the queries with no real parameters have a phantom parameter with
+            # a consistent value of empty bytes. The encoding of these empty bytese in
+            # Python does not match the encoding in Solidity, so the bytes are generated
+            # manually like so:
+            left_side = b"\0 ".rjust(32, b"\0")
+            right_side = b"\0".rjust(32, b"\0")
+            encoded_params = left_side + right_side
 
         return encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
 
