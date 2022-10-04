@@ -11,7 +11,6 @@ from web3 import Web3 as w3
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
-from telliot_feeds.feeds import LEGACY_DATAFEEDS
 from telliot_feeds.queries.query import OracleQuery
 from telliot_feeds.reporters.tips import CATALOG_QUERY_IDS
 
@@ -71,9 +70,6 @@ class TipListenerFilter:
         if qtag in CATALOG_FEEDS:
             datafeed = CATALOG_FEEDS[qtag]
             return datafeed  # type: ignore
-        elif qtag in LEGACY_DATAFEEDS:
-            datafeed = LEGACY_DATAFEEDS[qtag]
-            return datafeed
         else:
             return None
 

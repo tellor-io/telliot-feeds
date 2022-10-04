@@ -8,7 +8,6 @@ from telliot_core.utils.timestamp import TimeStamp
 from web3 import Web3 as w3
 
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.feeds import LEGACY_DATAFEEDS
 from telliot_feeds.reporters.tips import CATALOG_QUERY_IDS
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
 from telliot_feeds.utils.log import get_logger
@@ -84,8 +83,6 @@ class FundedFeedFilter:
 
         if query_tag in CATALOG_FEEDS:
             datafeed = CATALOG_FEEDS[query_tag]
-        elif query_tag in LEGACY_DATAFEEDS:
-            datafeed = LEGACY_DATAFEEDS[query_tag]
         else:
             logger.info(f"No Api source found for {query_tag} to check priceThreshold")
             return None
