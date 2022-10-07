@@ -59,6 +59,11 @@ class CoinMarketCapSpotPriceService(WebPriceService):
 
         try:
             response = session.get(request_url, params=parameters)
+
+            if response.status_code >= 400:
+                logger.warning(f"CoinMarketCap Error Status {response.status_code}")
+                return None, None
+
             data = json.loads(response.text)
 
         except (ConnectionError, Timeout, TooManyRedirects) as e:
