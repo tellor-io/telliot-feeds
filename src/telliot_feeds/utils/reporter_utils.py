@@ -22,15 +22,11 @@ async def tellor_suggested_report(
     `report_sync_schedule` to determine the suggested query.
 
     """
-    chain = oracle.node.chain_id
-
-    if chain in (1, 4):
-        assert isinstance(oracle, TellorxOracleContract)
+    try:
         timestamp, status = await oracle.getTimeOfLastNewValue()
-    elif chain in (137, 80001):
-
+    except AttributeError:
         timestamp, status = await oracle.get_time_of_last_new_value()
-    else:
+    except Exception:
         return None
 
     if status.ok:

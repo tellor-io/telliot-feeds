@@ -36,8 +36,7 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
-
-TELLOR_FLEX_CHAINS = (137, 122, 80001, 3, 5, 69, 1666600000, 1666700000, 421611, 941, 42161)
+TELLOR_X_CHAINS = (1, 4)
 
 
 def get_stake_amount() -> float:
@@ -53,8 +52,8 @@ def get_stake_amount() -> float:
 
     warn = (
         "\n\U00002757Telliot will automatically stake more TRB "
-        "if you don't have enough staked to report, "
-        "even if your stake amount is lower due to a dispute!"
+        "if your stake is below or falls below the stake amount required to report.\n"
+        "If you like to stake more than required enter the TOTAL stake amount you wish to be staked.\n"
     )
     click.echo(warn)
     msg = "Enter amount TRB to stake if unstaked"
@@ -90,7 +89,6 @@ def print_reporter_settings(
     legacy_gas_price: Optional[int],
     gas_price_speed: str,
     reporting_diva_protocol: bool,
-    rng_timestamp: Optional[int],
 ) -> None:
     """Print user settings to console."""
     click.echo("")
@@ -429,7 +427,6 @@ async def report(
             chain_id=cid,
             gas_price_speed=gas_price_speed,
             reporting_diva_protocol=reporting_diva_protocol,
-            rng_timestamp=rng_timestamp,
         )
 
         _ = input("Press [ENTER] to confirm settings.")
@@ -448,81 +445,8 @@ async def report(
         }
 
         # Report to Polygon TellorFlex
-        if core.config.main.chain_id in TELLOR_FLEX_CHAINS:
-            stake = get_stake_amount()
-
-            tellorflex = core.get_tellorflex_contracts()
-            if oracle_address:
-                tellorflex.oracle.address = oracle_address
-                tellorflex.oracle.connect()
-
-            if autopay_address:
-                tellorflex.autopay.address = autopay_address
-                tellorflex.autopay.connect()
-
-            # Type 2 transactions unsupported currently
-            common_reporter_kwargs["transaction_type"] = 0
-
-            if rng_auto:
-                reporter = RNGReporter(
-                    oracle=tellorflex.oracle,
-                    token=tellorflex.token,
-                    autopay=tellorflex.autopay,
-                    stake=stake,
-                    expected_profit=expected_profit,
-                    wait_period=120 if wait_period < 120 else wait_period,
-                    **common_reporter_kwargs,
-                )
-            elif reporting_diva_protocol:
-                diva_reporter_kwargs = {}
-                if diva_diamond_address is not None:
-                    diva_reporter_kwargs["diva_diamond_address"] = diva_diamond_address
-                if diva_middleware_address is not None:
-                    diva_reporter_kwargs["middleware_address"] = diva_middleware_address
-                reporter = DIVAProtocolReporter(
-                    oracle=tellorflex.oracle,
-                    token=tellorflex.token,
-                    autopay=tellorflex.autopay,
-                    stake=stake,
-                    expected_profit=expected_profit,
-                    wait_period=wait_period,
-                    **common_reporter_kwargs,
-                    **diva_reporter_kwargs,  # type: ignore
-                )
-            elif custom_contract_reporter:
-                reporter = CustomFlexReporter(
-                    custom_contract=custom_contract,
-                    oracle=tellorflex.oracle,
-                    token=tellorflex.token,
-                    autopay=tellorflex.autopay,
-                    stake=stake,
-                    expected_profit=expected_profit,
-                    wait_period=wait_period,
-                    **common_reporter_kwargs,
-                )  # type: ignore
-            elif flex_360:
-                tellor360 = core.get_tellor360_contracts()
-                reporter = Tellor360Reporter(
-                    oracle=tellor360.oracle,
-                    token=tellor360.token,
-                    autopay=tellor360.autopay,
-                    stake=stake,
-                    expected_profit=expected_profit,
-                    wait_period=wait_period,
-                    **common_reporter_kwargs,
-                )  # type: ignore
-            elif not flex_360:
-                reporter = TellorFlexReporter(
-                    oracle=tellorflex.oracle,
-                    token=tellorflex.token,
-                    autopay=tellorflex.autopay,
-                    stake=stake,
-                    expected_profit=expected_profit,
-                    wait_period=wait_period,
-                    **common_reporter_kwargs,
-                )  # type: ignore
-        # Report to TellorX
-        else:
+        if core.config.main.chain_id in TELLOR_X_CHAINS and not flex_360:
+            # Report to TellorX
             tellorx = core.get_tellorx_contracts()
             if oracle_address:
                 tellorx.oracle.address = oracle_address
@@ -537,9 +461,9 @@ async def report(
 
             if sig_acct_addr != "":
                 reporter = FlashbotsReporter(
-                    **tellorx_reporter_kwargs,
                     signature_account=sig_account,
-                )  # type: ignore
+                    **tellorx_reporter_kwargs,
+                )
             elif custom_contract_reporter:
                 reporter = CustomXReporter(
                     custom_contract=custom_contract,
@@ -547,6 +471,61 @@ async def report(
                 )  # type: ignore
             else:
                 reporter = IntervalReporter(**tellorx_reporter_kwargs)  # type: ignore
+
+        else:
+
+            stake = get_stake_amount()
+            contracts = core.get_tellor360_contracts() if flex_360 else core.get_tellorflex_contracts()
+
+            if oracle_address:
+                contracts.oracle.address = oracle_address
+                contracts.oracle.connect()
+
+            if autopay_address:
+                contracts.autopay.address = autopay_address
+                contracts.autopay.connect()
+
+            # Type 2 transactions unsupported currently
+            common_reporter_kwargs["transaction_type"] = 0
+            # set additional common kwargs to shorten code
+            common_reporter_kwargs["oracle"] = contracts.oracle
+            common_reporter_kwargs["autopay"] = contracts.autopay
+            common_reporter_kwargs["token"] = contracts.token
+            common_reporter_kwargs["stake"] = stake
+            common_reporter_kwargs["expected_profit"] = expected_profit
+            # selecting the right reporter will be changed after the switch
+            if rng_auto:
+                reporter = RNGReporter(  # type: ignore
+                    wait_period=120 if wait_period < 120 else wait_period,
+                    **common_reporter_kwargs,
+                )
+            elif reporting_diva_protocol:
+                diva_reporter_kwargs = {}
+                if diva_diamond_address is not None:
+                    diva_reporter_kwargs["diva_diamond_address"] = diva_diamond_address
+                if diva_middleware_address is not None:
+                    diva_reporter_kwargs["middleware_address"] = diva_middleware_address
+                reporter = DIVAProtocolReporter(
+                    wait_period=wait_period,
+                    **common_reporter_kwargs,
+                    **diva_reporter_kwargs,  # type: ignore
+                )
+            elif custom_contract_reporter:
+                reporter = CustomFlexReporter(
+                    custom_contract=custom_contract,
+                    wait_period=wait_period,
+                    **common_reporter_kwargs,
+                )  # type: ignore
+            elif not flex_360:
+                reporter = TellorFlexReporter(
+                    wait_period=wait_period,
+                    **common_reporter_kwargs,
+                )  # type: ignore
+            else:
+                reporter = Tellor360Reporter(
+                    wait_period=wait_period,
+                    **common_reporter_kwargs,
+                )  # type: ignore
 
         if submit_once:
             _, _ = await reporter.report_once()
