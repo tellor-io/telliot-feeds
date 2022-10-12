@@ -1,9 +1,9 @@
 import click
 
+from telliot_feeds.cli.utils import build_query
 from telliot_feeds.queries.utils import choose_query_type
 from telliot_feeds.utils.decode import decode_query_data
 from telliot_feeds.utils.decode import decode_submit_value_bytes
-from telliot_feeds.cli.utils import build_query
 
 # from telliot_core.cli.utils import async_run
 # from telliot_core.cli.utils import cli_core
@@ -40,6 +40,7 @@ def new() -> None:
     """Build a new custom query."""
     query = build_query()
     click.echo(query)
+
 
 # @query.command()
 # @click.pass_context
