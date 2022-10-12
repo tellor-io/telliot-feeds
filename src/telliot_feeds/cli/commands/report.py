@@ -260,7 +260,7 @@ def reporter() -> None:
     type=click.UNPROCESSED,
     callback=validate_address,
     default=DIVA_DIAMOND_ADDRESS,
-    prompt=True,
+    prompt=False,
 )
 @click.option(
     "--diva-middleware-address",
@@ -271,7 +271,7 @@ def reporter() -> None:
     type=click.UNPROCESSED,
     callback=validate_address,
     default=DIVA_TELLOR_MIDDLEWARE_ADDRESS,
-    prompt=True,
+    prompt=False,
 )
 @click.option(
     "--custom-contract",
