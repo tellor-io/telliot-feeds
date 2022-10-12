@@ -3,6 +3,7 @@ from typing import Any
 from typing import get_args
 from typing import get_type_hints
 from typing import Optional
+import typing
 
 import click
 from chained_accounts import ChainedAccount
@@ -11,6 +12,8 @@ from dotenv import load_dotenv
 from eth_utils import to_checksum_address
 from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import cli_core
+from simple_term_menu import TerminalMenu
+from telliot_feeds.queries.abi_query import AbiQuery
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
@@ -135,6 +138,44 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
             return None
 
     return feed
+
+
+def build_query():
+    """Build a query from CLI input"""
+    title = f"Select a query type:"
+    queries = [q for q in AbiQuery.__subclasses__() if q.__name__ not in ("LegacyRequest")]
+    options = [q.__name__ for q in queries]
+
+    menu = TerminalMenu(options, title=title)
+    selected_index = menu.show()
+    q = queries[selected_index]
+
+    if not q:
+        click.echo("No query selected")
+        return None
+
+    # Get query parameters
+    query_params = {}
+    for name, field in q.__dataclass_fields__.items():
+        try:
+            val = click.prompt(name, type=field.type)
+        except AttributeError:
+            val = click.prompt(name, type=get_args(field.type)[0])
+        
+        query_params[name] = val
+    
+    try:
+        query = q(**query_params)
+        click.echo("Query built successfully")
+    except Exception as e:
+        click.echo(f"Error building query: {e}")
+        return None
+    
+    click.echo(query)
+    click.echo(f"Query ID: {query.query_id}")
+    click.echo(f"Query data: {query.query_data}")
+
+    return query
 
 
 def validate_address(ctx: click.Context, param: Any, value: str) -> str:
