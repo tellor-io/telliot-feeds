@@ -1,5 +1,6 @@
 import os
 from typing import Any
+from typing import Callable
 from typing import get_args
 from typing import get_type_hints
 from typing import Optional
@@ -139,7 +140,7 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
     return feed
 
 
-def build_query():
+def build_query(log: Optional[Callable[[str], None]] = click.echo) -> Any:
     """Build a query from CLI input"""
     title = "Select a query type:"
     queries = [q for q in AbiQuery.__subclasses__() if q.__name__ not in ("LegacyRequest")]
@@ -150,7 +151,7 @@ def build_query():
     q = queries[selected_index]
 
     if not q:
-        click.echo("No query selected")
+        log("No query selected")
         return None
 
     # Get query parameters
@@ -165,14 +166,14 @@ def build_query():
 
     try:
         query = q(**query_params)
-        click.echo("Query built successfully")
+        log("Query built successfully")
     except Exception as e:
-        click.echo(f"Error building query: {e}")
+        log(f"Error building query: {e}")
         return None
 
-    click.echo(query)
-    click.echo(f"Query ID: {query.query_id}")
-    click.echo(f"Query data: {query.query_data}")
+    log(query)
+    log(f"Query ID: {query.query_id}")
+    log(f"Query data: {query.query_data}")
 
     return query
 
