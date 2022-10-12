@@ -145,6 +145,8 @@ def build_query(log: Optional[Callable[[str], None]] = click.echo) -> Any:
     title = "Select a query type:"
     queries = [q for q in AbiQuery.__subclasses__() if q.__name__ not in ("LegacyRequest")]
     options = [q.__name__ for q in queries]
+    # Sort options and queries by alphabetical order
+    options, queries = zip(*sorted(zip(options, queries)))
 
     menu = TerminalMenu(options, title=title)
     selected_index = menu.show()
@@ -172,8 +174,8 @@ def build_query(log: Optional[Callable[[str], None]] = click.echo) -> Any:
         return None
 
     log(query)
-    log(f"Query ID: {query.query_id}")
-    log(f"Query data: {query.query_data}")
+    log(f"Query ID: 0x{query.query_id.hex()}")
+    log(f"Query data: 0x{query.query_data.hex()}")
 
     return query
 
