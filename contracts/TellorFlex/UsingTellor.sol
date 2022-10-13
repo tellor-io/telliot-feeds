@@ -55,12 +55,21 @@ contract UsingTellor {
     function getDataBefore(bytes32 _queryId, uint256 _timestamp)
         public
         view
-        returns (bytes memory _value, uint256 _timestampRetrieved)
+        returns (
+            bytes memory _value,
+            uint256 _timestampRetrieved
+        )
     {
-        (, _value, _timestampRetrieved) = tellor.getDataBefore(
+        (bool _found, uint256 _index) = getIndexForDataBefore(
             _queryId,
             _timestamp
         );
+        if (!_found) return (bytes(""), 0);
+        uint256 _time = tellor.getTimestampbyQueryIdandIndex(_queryId, _index);
+        _value = tellor.retrieveData(_queryId, _time);
+        if (keccak256(_value) != keccak256(bytes("")))
+            return (_value, _time);
+        return (bytes(""), 0);
     }
 
     /**
@@ -228,5 +237,35 @@ contract UsingTellor {
         returns (bytes memory)
     {
         return tellor.retrieveData(_queryId, _timestamp);
+    }
+
+    /**
+     * @dev Allows the user to get the latest value for the queryId specified
+     * @param _queryId is the id to look up the value for
+     * @return _ifRetrieve bool true if non-zero value successfully retrieved
+     * @return _value the value retrieved
+     * @return _timestampRetrieved the retrieved value's timestamp
+     */
+    function getCurrentValue(bytes32 _queryId)
+        public
+        view
+        returns (
+            bool _ifRetrieve,
+            bytes memory _value,
+            uint256 _timestampRetrieved
+        )
+    {
+        uint256 _count = tellor.getNewValueCountbyQueryId(_queryId);
+        if (_count == 0) {
+          return (false, bytes(""), 0);
+        }
+        uint256 _time = tellor.getTimestampbyQueryIdandIndex(
+            _queryId,
+            _count - 1
+        );
+        _value = tellor.retrieveData(_queryId, _time);
+        if (keccak256(_value) != keccak256(bytes("")))
+            return (true, _value, _time);
+        return (false, bytes(""), _time);
     }
 }

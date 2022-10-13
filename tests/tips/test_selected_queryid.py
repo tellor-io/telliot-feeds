@@ -4,7 +4,7 @@ from eth_utils import to_bytes
 from telliot_core.apps.core import TelliotCore
 
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.reporters.tips import CATALOG_QUERY_DATA
 from telliot_feeds.reporters.tips import CATALOG_QUERY_IDS
 from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
@@ -223,7 +223,7 @@ async def test_rng(autopay_contract_setup, mumbai_test_cfg, caplog):
     flex = await autopay_contract_setup
     core = TelliotCore(config=mumbai_test_cfg)
     account = core.get_account()
-    reporter = TellorFlexReporter(
+    reporter = Tellor360Reporter(
         oracle=flex.oracle,
         token=flex.token,
         autopay=flex.autopay,

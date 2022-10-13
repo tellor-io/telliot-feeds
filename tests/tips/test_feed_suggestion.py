@@ -43,11 +43,11 @@ async def test_one_time_tips_only(setup_one_time_tips, caplog):
 
 
 @pytest.mark.asyncio
-async def test_fetching_tips(both_setup):
+async def test_fetching_tips(tip_feeds_and_one_time_tips):
     """Test fetching tips when there are both feed tips and single tips
     A one time tip of 24 TRB exists autopay and plus 1 TRB in a feed
     its the highest so it should be the suggested query"""
-    flex = await both_setup
+    flex = await tip_feeds_and_one_time_tips
     datafeed, tip = await get_feed_and_tip(flex.autopay)
     assert isinstance(datafeed, DataFeed)
     assert isinstance(tip, int)
@@ -82,5 +82,5 @@ async def test_fake_queryid_feed_setup(autopay_contract_setup, caplog):
     assert datafeed is None
     assert tip is None
     assert (
-        "No feeds to report, all funded feeds w/threshold gt zero and no API support to check if threshold is met"
+        "No feeds to report, all funded feeds had threshold gt zero and no API support in telliot to check if threshold is met"
     ) in caplog.text

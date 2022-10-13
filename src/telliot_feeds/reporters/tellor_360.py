@@ -15,8 +15,12 @@ from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.feeds import DataFeed
+from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
+from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.reporter_utils import tellor_suggested_report
 
 
 logger = get_logger(__name__)
@@ -227,3 +231,39 @@ class Tellor360Reporter(TellorFlexReporter):
             return error_status(msg, log=logger.info)
 
         return ResponseStatus()
+
+    async def rewards(self) -> int:
+        if self.datafeed is not None:
+            fetch_autopay_tip = await fetch_feed_tip(self.autopay, self.datafeed.query.query_id)
+
+        if fetch_autopay_tip is not None:
+            return fetch_autopay_tip
+
+        return 0
+
+    async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
+        """Fetches datafeed suggestion plus the reward amount from autopay if query tag isn't selected
+        if query tag is selected fetches the rewards, if any, for that query tag"""
+        if self.datafeed:
+            self.autopaytip = await self.rewards()
+            return self.datafeed
+        suggested_feed, tip_amount = await get_feed_and_tip(self.autopay)
+
+        if suggested_feed is not None:
+            self.autopaytip = tip_amount  # type: ignore
+            self.datafeed = suggested_feed
+            return self.datafeed
+
+        if suggested_feed is None:
+            suggested_qtag = await tellor_suggested_report(self.oracle)
+            if suggested_qtag is None:
+                logger.warning("Could not suggest query tag")
+                return None
+            elif suggested_qtag not in CATALOG_FEEDS:
+                logger.warning(f"Suggested query tag not in catalog: {suggested_qtag}")
+                return None
+            else:
+                self.datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
+                self.autopaytip = await self.rewards()
+                return self.datafeed
+        return None

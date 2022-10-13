@@ -135,11 +135,6 @@ contract Autopay is UsingTellor {
             )
         );
         token.approve(address(tellor), (_cumulativeReward * fee) / 1000);
-        // tellor.addStakingRewards((_cumulativeReward * fee) / 1000);
-        // require(
-        //     block.timestamp - _timestamps[0] > 12 weeks,
-        //     "buffer time has not passed"
-        // );
         if (getCurrentTip(_queryId) == 0) {
             if (queryIdsWithFundingIndex[_queryId] != 0) {
                 uint256 _idx = queryIdsWithFundingIndex[_queryId] - 1;
@@ -160,68 +155,83 @@ contract Autopay is UsingTellor {
      * @dev Allows Tellor reporters to claim their tips in batches
      * @param _feedId unique feed identifier
      * @param _queryId ID of reported data
-     * @param _timestamps batch of timestamps array of reported data eligible for reward
+     * @param _timestamps[] batch of timestamps array of reported data eligible for reward
      */
     function claimTip(
         bytes32 _feedId,
         bytes32 _queryId,
         uint256[] calldata _timestamps
     ) external {
-        Feed storage _feed = dataFeed[_queryId][_feedId];
-        uint256 _balance = _feed.details.balance;
-        require(_balance > 0, "no funds available for this feed");
+        uint256 _reward;
         uint256 _cumulativeReward;
         for (uint256 _i = 0; _i < _timestamps.length; _i++) {
-            require(
-                block.timestamp - _timestamps[_i] > 12 hours,
-                "buffer time has not passed"
-            );
-            require(
-                tellor.getReporterByTimestamp(_queryId, _timestamps[_i]) == msg.sender,
-                "message sender not reporter for given queryId and timestamp"
-            );
-            _cumulativeReward += _getRewardAmount(
-                _feedId,
-                _queryId,
-                _timestamps[_i]
-            );
-            if (_cumulativeReward >= _balance) {
-                // Balance runs out
-                require(
-                    _i == _timestamps.length - 1,
-                    "insufficient balance for all submitted timestamps"
-                );
-                _cumulativeReward = _balance;
-                // Adjust currently funded feeds
-                if (feedsWithFunding.length > 1) {
-                    uint256 _idx = _feed.details.feedsWithFundingIndex - 1;
-                    // Replace unfunded feed in array with last element
-                    feedsWithFunding[_idx] = feedsWithFunding[
-                        feedsWithFunding.length - 1
-                    ];
-                    bytes32 _feedIdLastFunded = feedsWithFunding[_idx];
-                    bytes32 _queryIdLastFunded = queryIdFromDataFeedId[
-                        _feedIdLastFunded
-                    ];
-                    dataFeed[_queryIdLastFunded][_feedIdLastFunded]
-                        .details
-                        .feedsWithFundingIndex = _idx + 1;
-                }
-                feedsWithFunding.pop();
-                _feed.details.feedsWithFundingIndex = 0;
-            }
-            _feed.rewardClaimed[_timestamps[_i]] = true;
+            _reward = _claimTip(_feedId, _queryId, _timestamps[_i]);
+            _cumulativeReward += _reward;
         }
-        _feed.details.balance -= _cumulativeReward;
-        require(
-            token.transfer(
-                msg.sender,
-                _cumulativeReward - ((_cumulativeReward * fee) / 1000)
-            )
-        );
-        token.approve(address(tellor), (_cumulativeReward * fee) / 1000);
-        // tellor.addStakingRewards((_cumulativeReward * fee) / 1000);
         emit TipClaimed(_feedId, _queryId, _cumulativeReward, msg.sender);
+    }
+    /**
+     * @dev Internal function which allows Tellor reporters to claim their autopay tips
+     * @param _feedId of dataFeed
+     * @param _queryId id of reported data
+     * @param _timestamp timestamp of reported data eligible for reward
+     * @return uint256 reward amount
+     */
+    function _claimTip(
+        bytes32 _feedId,
+        bytes32 _queryId,
+        uint256 _timestamp
+    ) internal returns (uint256) {
+        Feed storage _feed = dataFeed[_queryId][_feedId];
+        bytes memory _valueRetrieved = retrieveData(_queryId, _timestamp);
+        uint256 _n = (_timestamp - _feed.details.startTime) /
+            _feed.details.interval; // finds closest interval _n to timestamp
+        uint256 _c = _feed.details.startTime + _feed.details.interval * _n; // finds timestamp _c of interval _n
+        (
+            bytes memory _valueRetrievedBefore,
+            uint256 _timestampBefore
+        ) = getDataBefore(_queryId, _timestamp);
+        uint256 _priceChange = 0; //price change from last value to current value
+        if (_feed.details.priceThreshold != 0) {
+            uint256 _v1 = _bytesToUint(_valueRetrieved);
+            uint256 _v2 = _bytesToUint(_valueRetrievedBefore);
+            if (_v2 == 0) {
+                _priceChange = 10000;
+            } else if (_v1 >= _v2) {
+                _priceChange = (10000 * (_v1 - _v2)) / _v2;
+            } else {
+                _priceChange = (10000 * (_v2 - _v1)) / _v2;
+            }
+        }
+        if (_priceChange <= _feed.details.priceThreshold) {
+        }
+        uint256 _rewardAmount;
+        if (_feed.details.balance > _feed.details.reward) {
+            _rewardAmount = _feed.details.reward;
+            _feed.details.balance -= _feed.details.reward;
+        } else {
+            _rewardAmount = _feed.details.balance;
+            _feed.details.balance = 0;
+            // Adjust currently funded feeds
+            if (feedsWithFunding.length > 1) {
+                uint256 _idx = _feed.details.feedsWithFundingIndex - 1;
+                // Replace unfunded feed in array with last element
+                feedsWithFunding[_idx] = feedsWithFunding[
+                    feedsWithFunding.length - 1
+                ];
+                bytes32 _feedIdLastFunded = feedsWithFunding[_idx];
+                bytes32 _queryIdLastFunded = queryIdFromDataFeedId[
+                    _feedIdLastFunded
+                ];
+                dataFeed[_queryIdLastFunded][_feedIdLastFunded]
+                    .details
+                    .feedsWithFundingIndex = _idx + 1;
+            }
+            feedsWithFunding.pop();
+            _feed.details.feedsWithFundingIndex = 0;
+        }
+        _feed.rewardClaimed[_timestamp] = true;
+        return _rewardAmount;
     }
 
     /**

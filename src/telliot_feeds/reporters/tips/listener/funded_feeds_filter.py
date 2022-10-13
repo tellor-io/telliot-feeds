@@ -138,7 +138,7 @@ class FundedFeedFilter:
                         try:
                             previous_value = int(int(previous.value.hex(), 16) / 1e18)
                         except ValueError:
-                            error_status("Error decoding current query id value")
+                            _ = error_status("Error decoding current query id value")
                             continue
 
                         price_change = _get_price_change(previous_val=previous_value, current_val=current.value)
@@ -215,7 +215,7 @@ class FundedFeedFilter:
                 try:
                     value_before = int(int(feed.current_queryid_value.hex(), 16) / 10**18)
                 except ValueError:
-                    error_status("Error decoding current query id value")
+                    _ = error_status("Error decoding current query id value")
                     continue
                 price_change = await self.price_change(
                     query_id=feed.query_id,
@@ -243,11 +243,8 @@ def _get_price_change(previous_val: int, current_val: int) -> int:
     if previous_val == 0:
         # if no before value set price change to 100 percent
         price_change = 10000
-
     elif current_val >= previous_val:
-
         price_change = int((10000 * (current_val - previous_val)) / previous_val)
-
     else:
         price_change = int((10000 * (previous_val - current_val)) / previous_val)
 
