@@ -73,8 +73,8 @@ class FundedFeeds(FundedFeedFilter):
 
         if not catalog_supported_feeds:
             note = (
-                "No feeds to report, all funded feeds w/threshold gt zero and "
-                "no API support to check if threshold is met"
+                "No feeds to report, all funded feeds had threshold gt zero and "
+                "no API support in telliot to check if threshold is met"
             )
             return None, error_status(note=note)
         # make the first multicall and values and timestamps for the past month

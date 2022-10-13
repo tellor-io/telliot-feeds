@@ -81,6 +81,8 @@ async def test_fake_queryid_feed_setup(autopay_contract_setup, caplog):
     datafeed, tip = await get_feed_and_tip(flex.autopay)
     assert datafeed is None
     assert tip is None
-    assert (
-        "No feeds to report, all funded feeds had threshold gt zero and no API support in telliot to check if threshold is met"
-    ) in caplog.text
+    msg = (
+        "No feeds to report, all funded feeds had threshold gt zero and "
+        "no API support in telliot to check if threshold is met"
+    )
+    assert msg in caplog.text
