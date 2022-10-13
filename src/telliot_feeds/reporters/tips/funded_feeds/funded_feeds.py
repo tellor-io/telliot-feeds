@@ -41,6 +41,7 @@ class FundedFeeds(FundedFeedFilter):
         if not status.ok or not funded_feeds:
             return None, error_status(note="No funded feeds returned by autopay function call")
 
+        # List of feeds with telliot supported query types
         supported_funded_feeds = [
             (feed, query_data) for (feed, query_data) in funded_feeds if self.listener_filter(query_data)
         ]
@@ -66,49 +67,43 @@ class FundedFeeds(FundedFeedFilter):
 
         # assemble both feed id and query id
         for feed in telliot_supported_feeds:
-            feed.feed_id, feed.query_id = self.generate_ids(feed)
+            feed.feed_id, feed.query_id = self.generate_ids(feed=feed)
         # for feeds with price threshold gt zero check if api support
-        catalog_supported_feeds = self.api_support_check(telliot_supported_feeds)
+        catalog_supported_feeds = self.api_support_check(feeds=telliot_supported_feeds)
 
-        # make the first multicall and get current value, current index, and month old value index
-        feeds_with_timestamp_index, status = await self.multi_call.timestamp_index_and_current_values_call(
-            feeds=catalog_supported_feeds, month_old_timestamp=month_old_timestamp, now_timestamp=now_timestamp
+        if not catalog_supported_feeds:
+            note = (
+                "No feeds to report, all funded feeds had threshold gt zero and "
+                "no API support in telliot to check if threshold is met"
+            )
+            return None, error_status(note=note)
+        # make the first multicall and values and timestamps for the past month
+        feeds_timestsamps_and_values_lis, status = await self.multi_call.month_of_timestamps_and_values(
+            feeds=catalog_supported_feeds, now_timestamp=now_timestamp, max_age=month_old_timestamp, max_count=40_000
         )
 
         if not status.ok:
             return None, status
 
-        # filter out feeds where price threshold is zero but now timestamp not in window
-        filtered_feeds_with_timestamp_index = await self.window_and_priceThreshold_unmet_filter(
-            feeds_with_timestamp_index, now_timestamp
+        # filter out feeds that aren't eligible to submit for NOW
+        feeds_timestsamps_and_values_filtered = await self.window_and_priceThreshold_unmet_filter(
+            feeds=feeds_timestsamps_and_values_lis, now_timestamp=now_timestamp
         )
-
-        if not filtered_feeds_with_timestamp_index:
-            msg = "No feeds to report, current time outside of window or priceThreshold unmet"
-            return None, error_status(msg)
-
-        # multicall to get all timestamps for a query id in the past month
-        feeds_with_timestamps_lis, status = await self.multi_call.timestamps_list_call(
-            feeds=filtered_feeds_with_timestamp_index
+        # for list of previous values, filter out any that weren't eligible for a tip
+        historical_timestamps_list_filtered = self.filter_historical_submissions(
+            feeds=feeds_timestsamps_and_values_filtered
         )
-
-        # return list of feeds if all query ids never had an oracle report
-        if "No getTimestampbyQueryIdandIndex Calls to assemble" in status.error:
-            return feeds_with_timestamp_index, ResponseStatus()
-
-        # for each queryids timestamps list remove timestamp that wasn't eligible for tip
-        timestamps_list_filtered = self.timestamps_filter(feeds=feeds_with_timestamps_lis)
 
         # get claim status count for every query ids eligible timestamp
         reward_claimed_status, status = await self.multi_call.rewards_claimed_status_call(
-            feeds=timestamps_list_filtered
+            feeds=historical_timestamps_list_filtered
         )
 
         if reward_claimed_status is None:
-            return timestamps_list_filtered, ResponseStatus()
+            return historical_timestamps_list_filtered, ResponseStatus()
 
         funded_feeds = self.calculate_true_feed_balance(
-            feeds=timestamps_list_filtered, unclaimed_timestamps_count=reward_claimed_status
+            feeds=historical_timestamps_list_filtered, unclaimed_timestamps_count=reward_claimed_status
         )
 
         return funded_feeds, ResponseStatus()

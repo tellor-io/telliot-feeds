@@ -36,7 +36,7 @@ async def fetch_feed_tip(
         tip_amount += one_time_tip
 
     # make the first batch call of getCurrentFeeds, getDataBefore, getTimestampbyQueryIdandIndex
-    results, status = await call.currentfeeds_databefore_timestampindexnow_timestampindexold(
+    results, status = await call.currentfeeds_multiple_values_before(
         query_id=query_id, now_timestamp=timestamp, month_old_timestamp=month_old
     )
 
@@ -57,7 +57,7 @@ async def fetch_feed_tip(
         return tip_amount
 
     # filter out query id timestamps not eligible for tip
-    feeds_with_timestamps_filtered = filtr.timestamps_filter(eligible_feeds)
+    feeds_with_timestamps_filtered = filtr.filter_historical_submissions(eligible_feeds)
 
     unclaimed_count, status = await call.rewards_claimed_status_call(feeds_with_timestamps_filtered)
 

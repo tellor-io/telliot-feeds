@@ -1,13 +1,15 @@
 import pytest
 from multicall import Call
+from telliot_core.apps.core import TelliotCore
 
 from telliot_feeds.reporters.tips.multicall_functions.multicall_autopay import MulticallAutopay
 
 
-@pytest.fixture
-async def setattr_autopay(autopay_contract_setup):
+@pytest.fixture(scope="function")
+async def setattr_autopay():
     call = MulticallAutopay()
-    call.autopay, _ = await autopay_contract_setup
+    core = TelliotCore().get_tellor360_contracts()
+    call.autopay = core.autopay
     return call
 
 
@@ -22,50 +24,24 @@ async def test_assemble_call_object(setattr_autopay):
 
 
 @pytest.mark.asyncio
-async def test_get_data_before_calls(setattr_autopay):
+async def test_get_data_feed(setattr_autopay):
     call: MulticallAutopay = await setattr_autopay
 
-    assemble_get_data_before = call.get_data_before(query_id=b"", now_timestamp=1234)
-    assert isinstance(assemble_get_data_before, Call)
-    assert assemble_get_data_before.function == "getDataBefore(bytes32,uint256)(bytes,uint256)"
-    assert assemble_get_data_before.target == call.autopay.address
-    assert assemble_get_data_before.returns == [
-        [("current_value", b""), None],
-        [("current_value_timestamp", b""), None],
-    ]
+    assemble_call = call.get_data_feed(feed_id=b"")
+    assert isinstance(assemble_call, Call)
+    assert assemble_call.function == "getDataFeed(bytes32)((uint256,uint256,uint256,uint256,uint256,uint256,uint256))"
+    assert assemble_call.target == call.autopay.address
+    assert assemble_call.returns == [[b"", None]]
 
 
 @pytest.mark.asyncio
-async def test_get_index_for_data_before_now(setattr_autopay):
+async def test_get_multiple_values_before(setattr_autopay):
     call: MulticallAutopay = await setattr_autopay
-
-    assemble_call = call.get_index_for_data_before_now(query_id=b"", now_timestamp=1234)
+    assemble_call = call.get_multiple_values_before(query_id=b"", now_timestamp=1234, max_age=1)
     assert isinstance(assemble_call, Call)
-    assert assemble_call.function == "getIndexForDataBefore(bytes32,uint256)(bool,uint256)"
+    assert assemble_call.function == "getMultipleValuesBefore(bytes32,uint256,uint256,uint256)(bytes[],uint256[])"
     assert assemble_call.target == call.autopay.address
-    assert assemble_call.returns == [[("current_status", b""), None], [("current_value_index", b""), None]]
-
-
-@pytest.mark.asyncio
-async def test_get_index_for_data_before_month(setattr_autopay):
-    call: MulticallAutopay = await setattr_autopay
-
-    assemble_call = call.get_index_for_data_before_month(query_id=b"", month_old=1234)
-    assert isinstance(assemble_call, Call)
-    assert assemble_call.function == "getIndexForDataBefore(bytes32,uint256)(bool,uint256)"
-    assert assemble_call.target == call.autopay.address
-    assert assemble_call.returns == [[("month_old_status", b""), None], [("month_old_index", b""), None]]
-
-
-@pytest.mark.asyncio
-async def test_get_timestamp_by_query_id_and_index(setattr_autopay):
-    call: MulticallAutopay = await setattr_autopay
-    index = 0
-    assemble_call = call.get_timestamp_by_query_id_and_index(query_id=b"", index=index)
-    assert isinstance(assemble_call, Call)
-    assert assemble_call.function == "getTimestampbyQueryIdandIndex(bytes32,uint256)(uint256)"
-    assert assemble_call.target == call.autopay.address
-    assert assemble_call.returns == [[(index, b""), None]]
+    assert assemble_call.returns == [[("values_array", b""), None], [("timestamps_array", b""), None]]
 
 
 @pytest.mark.asyncio
@@ -75,3 +51,14 @@ async def test_get_reward_claimed_status(setattr_autopay):
     assert isinstance(assemble_call, Call)
     assert assemble_call.function == "getRewardClaimStatusList(bytes32,bytes32,uint256[])(bool[])"
     assert assemble_call.target == call.autopay.address
+    assert assemble_call.returns == [[(b"", b""), None]]
+
+
+@pytest.mark.asyncio
+async def test_get_current_feeds(setattr_autopay):
+    call: MulticallAutopay = await setattr_autopay
+    assemble_call = call.get_current_feeds(query_id=b"")
+    assert isinstance(assemble_call, Call)
+    assert assemble_call.function == "getCurrentFeeds(bytes32)(bytes32[])"
+    assert assemble_call.target == call.autopay.address
+    assert assemble_call.returns == [[b"", None]]

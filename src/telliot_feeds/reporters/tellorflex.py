@@ -20,8 +20,10 @@ from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.reporters.interval import IntervalReporter
-from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
-from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
+from telliot_feeds.reporters.reporter_autopay_utils import (
+    autopay_suggested_report,
+)
+from telliot_feeds.reporters.reporter_autopay_utils import get_feed_tip
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
 
@@ -223,13 +225,25 @@ class TellorFlexReporter(IntervalReporter):
         return count, read_status
 
     async def rewards(self) -> int:
-        if self.datafeed is not None:
-            fetch_autopay_tip = await fetch_feed_tip(self.autopay, self.datafeed.query.query_id)
+        tip = 0
+        datafeed: DataFeed[Any] = self.datafeed  # type: ignore
+        # Skip fetching datafeed & checking profitability
+        if self.expected_profit == "YOLO":
+            return tip
 
-        if fetch_autopay_tip is not None:
-            return fetch_autopay_tip
+        single_tip, status = await self.autopay.get_current_tip(datafeed.query.query_id)
+        if not status.ok:
+            logger.warning("Unable to fetch single tip")
+        else:
+            tip += single_tip
 
-        return 0
+        feed_tip = await get_feed_tip(datafeed.query.query_id, self.autopay)
+        if feed_tip is None:
+            logger.warning("Unable to fetch feed tip")
+        else:
+            tip += feed_tip
+
+        return tip
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         """Fetches datafeed suggestion plus the reward amount from autopay if query tag isn't selected
@@ -237,14 +251,14 @@ class TellorFlexReporter(IntervalReporter):
         if self.datafeed:
             self.autopaytip = await self.rewards()
             return self.datafeed
-        suggested_feed, tip_amount = await get_feed_and_tip(self.autopay)
 
-        if suggested_feed is not None:
-            self.autopaytip = tip_amount  # type: ignore
-            self.datafeed = suggested_feed
+        suggested_qtag, autopay_tip = await autopay_suggested_report(self.autopay)
+        if suggested_qtag:
+            self.autopaytip = autopay_tip
+            self.datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
             return self.datafeed
 
-        if suggested_feed is None:
+        if suggested_qtag is None:
             suggested_qtag = await tellor_suggested_report(self.oracle)
             if suggested_qtag is None:
                 logger.warning("Could not suggest query tag")
