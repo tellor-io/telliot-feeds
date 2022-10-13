@@ -67,7 +67,7 @@ class MulticallAutopay(CallFunctions):
         calls = []
         for feed in feeds:
             if feed.queryid_timestamps_values_list:
-                timestamps_lis = [timestamps for _, timestamps in feed.queryid_timestamps_values_list]
+                timestamps_lis = [values.timestamp for values in feed.queryid_timestamps_values_list]
                 calls.append(self.get_reward_claimed_status(feed.feed_id, feed.query_id, timestamps_lis, handler_func))
 
         if not len(calls):

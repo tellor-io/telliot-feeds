@@ -161,6 +161,8 @@ class FundedFeedFilter:
         """
         for feed in list(feeds):
             key = (feed.feed_id, feed.query_id)
+            if key not in unclaimed_timestamps_count:
+                continue
             unclaimed_count = unclaimed_timestamps_count[key]
             feed.params.balance -= feed.params.reward * unclaimed_count
             # if remaining balance is zero filter out the feed from the list
