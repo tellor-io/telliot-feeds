@@ -1,5 +1,6 @@
 import os
 from typing import Any
+from typing import Callable
 from typing import get_args
 from typing import get_type_hints
 from typing import Optional
@@ -9,11 +10,13 @@ from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from dotenv import load_dotenv
 from eth_utils import to_checksum_address
+from simple_term_menu import TerminalMenu
 from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import cli_core
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
+from telliot_feeds.queries.abi_query import AbiQuery
 
 
 DIVA_PROTOCOL_CHAINS = (137, 80001, 3, 5)
@@ -135,6 +138,46 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
             return None
 
     return feed
+
+
+def build_query(log: Optional[Callable[[str], None]] = click.echo) -> Any:
+    """Build a query from CLI input"""
+    title = "Select a query type:"
+    queries = [q for q in AbiQuery.__subclasses__() if q.__name__ not in ("LegacyRequest")]
+    options = [q.__name__ for q in queries]
+    # Sort options and queries by alphabetical order
+    options, queries = zip(*sorted(zip(options, queries)))
+
+    menu = TerminalMenu(options, title=title)
+    selected_index = menu.show()
+    q = queries[selected_index]
+
+    if not q:
+        log("No query selected")
+        return None
+
+    # Get query parameters
+    query_params = {}
+    for name, field in q.__dataclass_fields__.items():
+        try:
+            val = click.prompt(name, type=field.type)
+        except AttributeError:
+            val = click.prompt(name, type=get_args(field.type)[0])
+
+        query_params[name] = val
+
+    try:
+        query = q(**query_params)
+        log("Query built successfully")
+    except Exception as e:
+        log(f"Error building query: {e}")
+        return None
+
+    log(query)
+    log(f"Query ID: 0x{query.query_id.hex()}")
+    log(f"Query data: 0x{query.query_data.hex()}")
+
+    return query
 
 
 def validate_address(ctx: click.Context, param: Any, value: str) -> str:
