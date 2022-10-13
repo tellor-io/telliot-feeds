@@ -38,8 +38,7 @@ def decode(query_data: str, submit_value_bytes: str) -> None:
 @query.command()
 def new() -> None:
     """Build a new custom query."""
-    query = build_query()
-    click.echo(query)
+    _ = build_query()
 
 
 # @query.command()
