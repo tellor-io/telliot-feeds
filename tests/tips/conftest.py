@@ -53,12 +53,12 @@ async def autopay_contract_setup(
         # approve token to be spent by autopay contract
         mock_token_contract.approve(mock_autopay_contract.address, 100000e18, {"from": account.address})
 
-        return flex.autopay, flex.oracle
+        return flex
 
 
 @pytest.fixture(scope="function")
 async def setup_datafeed(autopay_contract_setup):
-    contract, _ = await autopay_contract_setup
+    flex = await autopay_contract_setup
     reward = 1 * 10**18
     start_time = TimeStamp.now().ts
     interval = 100
@@ -72,7 +72,7 @@ async def setup_datafeed(autopay_contract_setup):
             # so we just avoid it here
             count += 10
             # setup a feed on autopay
-            _, status = await contract.write(
+            await flex.autopay.write(
                 "setupDataFeed",
                 gas_limit=3500000,
                 legacy_gas_price=1,
@@ -86,18 +86,18 @@ async def setup_datafeed(autopay_contract_setup):
                 _queryData=query_data,
                 _amount=int(count * 10**18),
             )
-    return contract
+    return flex
 
 
 @pytest.fixture(scope="function")
 async def setup_one_time_tips(autopay_contract_setup):
-    contract, _ = await autopay_contract_setup
+    flex = await autopay_contract_setup
     count = 1  # tip must be greater than zero
     for query_id, query_data in zip(CATALOG_QUERY_IDS, CATALOG_QUERY_DATA):
         # legacy is query ids are not encoded the same way as the current query ids
         # so we just avoid it here
         if "legacy" not in CATALOG_QUERY_IDS[query_id]:
-            _, status = await contract.write(
+            _, status = await flex.autopay.write(
                 "tip",
                 gas_limit=3500000,
                 legacy_gas_price=1,
@@ -107,18 +107,18 @@ async def setup_one_time_tips(autopay_contract_setup):
             )
             assert status.ok
             count += 1
-    return contract
+    return flex
 
 
 @pytest.fixture(scope="function")
 async def both_setup(setup_datafeed):
-    contract = await setup_datafeed
+    flex = await setup_datafeed
     count = 1  # tip must be greater than zero
     for query_id, query_data in zip(CATALOG_QUERY_IDS, CATALOG_QUERY_DATA):
         if "legacy" not in CATALOG_QUERY_IDS[query_id]:
             # legacy is query ids are not encoded the same way as the current query ids
             # so we just avoid it here
-            _, status = await contract.write(
+            _, status = await flex.autopay.write(
                 "tip",
                 gas_limit=3500000,
                 legacy_gas_price=1,
@@ -128,4 +128,4 @@ async def both_setup(setup_datafeed):
             )
             assert status.ok
             count += 1
-    return contract
+    return flex

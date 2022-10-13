@@ -1,31 +1,5 @@
-from collections import defaultdict
 from typing import Any
 from typing import Optional
-
-
-def filter_batch_result(data: dict[Any, Any]) -> defaultdict[Any, list[Any]]:
-    """Filter data dictionary with tuple key
-
-    >>> example {(current_value, queryid): 0, (current_timestamp, queryid): 123}
-    to {queryid: [0, 123]}
-
-    Args:
-    - data: dictionary
-
-    Return:
-    - dictionary with value of list type
-    """
-    mapping = defaultdict(list)
-    results = defaultdict(list)
-
-    for k in data:
-        mapping[k[1]].append(k)
-    for query_id in mapping:
-        for val in mapping[query_id]:
-            value = data[val]
-            results[query_id].append(value)
-
-    return results
 
 
 def sum_values(x: Optional[int], y: Optional[int]) -> int:

@@ -1,22 +1,21 @@
 from typing import Optional
 
-from eth_utils.conversions import to_bytes
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.reporters.tips.funded_feeds.call_functions import CallFunctions
 from telliot_feeds.reporters.tips.listener.dtypes import FeedDetails
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
-from telliot_feeds.reporters.tips.listener.utils import filter_batch_result
+from telliot_feeds.reporters.tips.listener.dtypes import Values
 from telliot_feeds.reporters.tips.listener.utils import handler_func
 
 
 class MulticallAutopay(CallFunctions):
     # make the calls
-    async def timestamp_index_and_current_values_call(
-        self, feeds: list[QueryIdandFeedDetails], month_old_timestamp: int, now_timestamp: int
+    async def month_of_timestamps_and_values(
+        self, feeds: list[QueryIdandFeedDetails], now_timestamp: int, max_age: int, max_count: int
     ) -> tuple[Optional[list[QueryIdandFeedDetails]], ResponseStatus]:
-        """Batch call two functions (getDataBefore,getIndexForDataBefore)
+        """Getter for a month long of timestamps and values for every query id
 
         Args:
         - now_timestamp: current time in unix timestamps
@@ -25,67 +24,33 @@ class MulticallAutopay(CallFunctions):
         Return: a list of QueryIdandFeedDetails
         to be used in the next batch call that fetches a list of timestamps for each queryId
         """
-        calls = []
-        for feed in feeds:
-            calls += [
-                self.get_data_before(query_id=feed.query_id, now_timestamp=now_timestamp),
-                self.get_index_for_data_before_now(query_id=feed.query_id, now_timestamp=now_timestamp),
-                self.get_index_for_data_before_month(query_id=feed.query_id, month_old=month_old_timestamp),
-            ]
-
-        if not len(calls):
-            return None, error_status("Unable to assemble getDataBefore Call object")
-
-        databefore_resp, status = await self.multi_call(calls)
-
-        if not status.ok:
-            return None, status
-
-        if not databefore_resp:
-            return None, error_status("No response returned from getDataBefore batch multicall")
-
-        for feed in feeds:
-            # set QueryIdandFeedDetails attributes
-            feed.current_value_timestamp = databefore_resp[("current_value_timestamp", feed.query_id)]
-            feed.current_queryid_value = databefore_resp[("current_value", feed.query_id)]
-            feed.current_value_index = databefore_resp[("current_value_index", feed.query_id)]
-            feed.month_old_index = databefore_resp[("month_old_index", feed.query_id)]
-
-        return feeds, status
-
-    async def timestamps_list_call(
-        self, feeds: list[QueryIdandFeedDetails]
-    ) -> tuple[Optional[list[QueryIdandFeedDetails]], ResponseStatus]:
-        """Batch call getTimestampbyQueryIdandIndex to fetch a list of timestamps for each query id
-
-        Args:
-        - feeds: a list of QueryIdandFeedDetails object
-
-        Return: a list of QueryIdandFeedDetails object that carries query id and its month long timestamps list
-        """
         calls = [
-            self.get_timestamp_by_query_id_and_index(to_bytes(hexstr=feed.query_id), index=idx)
+            self.get_multiple_values_before(
+                query_id=feed.query_id, now_timestamp=now_timestamp, max_age=max_age, max_count=max_count
+            )
             for feed in feeds
-            for idx in range(feed.month_old_index, feed.current_value_index)
         ]
-
         if not len(calls):
-            return None, error_status("No getTimestampbyQueryIdandIndex Calls to assemble")
+            return None, error_status("Unable to assemble getMultipleValues Call object")
 
-        timestampby_queryid_index_resp, status = await self.multi_call(calls)
+        multiple_values_response, status = await self.multi_call(calls)
 
         if not status.ok:
             return None, status
 
-        if not timestampby_queryid_index_resp:
-            return None, error_status("No response returned from getTimestampbyQueryIdandIndex batch multicall")
-
-        # converts from: {(current_value, queryid): 0, (current_timestamp, queryid): 123}
-        # to: {queryid: [0, 123]}
-        clean_resp = filter_batch_result(timestampby_queryid_index_resp)
-
         for feed in feeds:
-            feed.queryId_timestamps_list = clean_resp[feed.query_id]
+            values = multiple_values_response[("values_array", feed.query_id)]
+            timestamps = multiple_values_response[("timestamps_array", feed.query_id)]
+            # short circuit the loop since None means failed response and can't calculate tip accurately
+            if values is None:
+                note = "getMultipleValuesBefore call failed"
+                return None, error_status(note)
+            feed.current_value_timestamp = timestamps[-1] if timestamps else 0
+            feed.current_queryid_value = values[-1] if values else b""
+
+            values_lis = values[:-1]
+            timestamps_lis = timestamps[:-1]
+            feed.queryid_timestamps_values_list = list(map(Values, values_lis, timestamps_lis))
 
         return feeds, status
 
@@ -99,11 +64,11 @@ class MulticallAutopay(CallFunctions):
 
         Return: dict with count of unclaimed timestamps
         """
-        calls = [
-            self.get_reward_claimed_status(feed.feed_id, feed.query_id, feed.queryid_timestamps_list, handler_func)
-            for feed in feeds
-            if feed.queryid_timestamps_list
-        ]
+        calls = []
+        for feed in feeds:
+            if feed.queryid_timestamps_values_list:
+                timestamps_lis = [timestamps for _, timestamps in feed.queryid_timestamps_values_list]
+                calls.append(self.get_reward_claimed_status(feed.feed_id, feed.query_id, timestamps_lis, handler_func))
 
         if not len(calls):
             return None, error_status("No getRewardClaimStatusList Calls to assemble")
@@ -118,7 +83,7 @@ class MulticallAutopay(CallFunctions):
 
         return reward_claimed_status_resp, status
 
-    async def currentfeeds_databefore_timestampindexnow_timestampindexold(
+    async def currentfeeds_multiple_values_before(
         self, query_id: bytes, month_old_timestamp: int, now_timestamp: int
     ) -> tuple[Optional[list[QueryIdandFeedDetails]], ResponseStatus]:
         """Batch call two functions (getDataBefore,getIndexForDataBefore)
@@ -136,16 +101,15 @@ class MulticallAutopay(CallFunctions):
         >>> example response from multicall looks like
         {
             b'query_id': [b'feed_id',],
-            ("current_value_timestamp", b'query_id'): 123, ("current_value", b'query_id'): b'',
-            ("current_status", b'query_id'): True, ("current_value_index", b'query_id'): 1,
-            ("month_old_status", b'query_id'): True, ("month_old_index", b'query_id'): 1
+            ('values_array, b'query_id'): (values in bytes),
+            ('timestamps_array', b'query_id'): (timestamps)
         }
         """
         calls = [
             self.get_current_feeds(query_id=query_id),
-            self.get_data_before(query_id=query_id, now_timestamp=now_timestamp),
-            self.get_index_for_data_before_now(query_id=query_id, now_timestamp=now_timestamp),
-            self.get_index_for_data_before_month(query_id=query_id, month_old=month_old_timestamp),
+            self.get_multiple_values_before(
+                query_id=query_id, now_timestamp=now_timestamp, max_age=month_old_timestamp
+            ),
         ]
 
         resp, status = await self.multi_call(calls)
@@ -160,13 +124,26 @@ class MulticallAutopay(CallFunctions):
         # create QueryIdFeedDetails type that holds attributes of all response data
         feeds = []
         for feed_id in resp[query_id]:
+            values = resp[("values_array", query_id)]
+            timestamps = resp[("timestamps_array", query_id)]
+
+            # short circuit the loop since None means failed response and can't calculate tip accurately
+            if values is None:
+                note = "getMultipleValuesBefore call failed"
+                return None, error_status(note)
+
+            current_value = values[-1] if values else b""
+            current_value_timestamp = timestamps[-1] if timestamps else 0
+            values_lis = values[:-1]
+            timestamps_lis = timestamps[:-1]
+            timestamps_values_list = list(map(Values, values_lis, timestamps_lis))
+
             feed = QueryIdandFeedDetails(
-                query_id=query_id,
                 feed_id=feed_id,
-                current_queryid_value=resp[("current_value", query_id)],
-                current_value_timestamp=resp[("current_value_timestamp", query_id)],
-                current_value_index=resp[("current_value_index", query_id)],
-                month_old_index=resp[("month_old_index", query_id)],
+                query_id=query_id,
+                current_queryid_value=current_value,
+                current_value_timestamp=current_value_timestamp,
+                queryid_timestamps_values_list=timestamps_values_list,
             )
             feeds.append(feed)
 
@@ -182,12 +159,7 @@ class MulticallAutopay(CallFunctions):
 
         Return: a list of QueryIdandFeedDetails object
         """
-        calls = []
-        for feed in feeds:
-            calls.append(self.get_data_feed(feed.feed_id))
-            if feed.current_value_index > 0:
-                for i in range(feed.month_old_index, feed.current_value_index + 1):
-                    calls.append(self.get_timestamp_by_query_id_and_index(feed.query_id, index=i))
+        calls = [self.get_data_feed(feed_id=feed.feed_id) for feed in feeds]
 
         resp, status = await self.multi_call(calls)
 
@@ -202,13 +174,5 @@ class MulticallAutopay(CallFunctions):
         for feed in feeds:
             # set feed_details attribute and delete from response dictionary
             feed.params = FeedDetails(*resp[feed.feed_id])
-            del resp[feed.feed_id]
-
-        # refactor response dictionary for easy access setting the queryid_timestamps attribute
-        clean_resp = filter_batch_result(resp)
-
-        for feed in feeds:
-            # set queryid_timestamps attr with list of timestamps of queryids months long report submission
-            feed.queryid_timestamps = clean_resp[feed.query_id]
 
         return feeds, status

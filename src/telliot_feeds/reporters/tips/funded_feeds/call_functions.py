@@ -4,7 +4,6 @@ from typing import Optional
 
 from multicall import Call
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
-from telliot_core.utils.timestamp import TimeStamp
 
 from telliot_feeds.reporters.tips.listener.assemble_call import AssembleCall
 
@@ -21,98 +20,6 @@ class CallFunctions(AssembleCall):
 
     def __init__(self) -> None:
         self.autopay: TellorFlexAutopayContract
-
-    def get_data_before(
-        self, query_id: bytes, now_timestamp: TimeStamp, handler_function: Optional[Callable[..., Any]] = None
-    ) -> Call:
-        """getDataBefore autopay Call object for a query_id
-
-        Args:
-        - query_id
-        - now_timestamp
-        - handler_function: function to interpret contract reponse (optional)
-
-        Return: Call object
-        example return from this call:
-        >>> {("current_value", query_id): b'value', ("current_value_timestamp", b'query_id'): 123456}
-        """
-        return self.assemble_call_object(
-            func_sig="getDataBefore(bytes32,uint256)(bytes,uint256)",
-            returns=[
-                [("current_value", query_id), handler_function],
-                [("current_value_timestamp", query_id), handler_function],
-            ],
-            query_id=query_id,
-            param1=now_timestamp,
-        )
-
-    def get_index_for_data_before_now(
-        self, query_id: bytes, now_timestamp: TimeStamp, handler_function: Optional[Callable[..., Any]] = None
-    ) -> Call:
-        """getIndexForDataBefore autopay Call object for current timestamp
-
-        Args:
-        - query_id
-        - now_timestamp
-        - handler_function: function to interpret contract reponse (optional)
-
-        Return: Call object
-        example return from this call:
-        >>> {("current_status", b'query_id'): True, ("current_value_index", b'query_id'): 1}
-        """
-        return self.assemble_call_object(
-            func_sig="getIndexForDataBefore(bytes32,uint256)(bool,uint256)",
-            returns=[
-                [("current_status", query_id), handler_function],
-                [("current_value_index", query_id), handler_function],
-            ],
-            query_id=query_id,
-            param2=now_timestamp,
-        )
-
-    def get_index_for_data_before_month(
-        self, query_id: bytes, month_old: TimeStamp, handler_function: Optional[Callable[..., Any]] = None
-    ) -> Call:
-        """getIndexForDataBefore autopay Call object for month old timestamp
-
-        Args:
-        - query_id
-        - one_month_old
-        - handler_function: function to interpret contract reponse (optional)
-
-        Return: Call object
-        example return from this call:
-        >>> {("month_old_status", b'query_id'): True, ("month_old_index", b'query_id'): 1}
-        """
-        return self.assemble_call_object(
-            func_sig="getIndexForDataBefore(bytes32,uint256)(bool,uint256)",
-            returns=[
-                [("month_old_status", query_id), handler_function],
-                [("month_old_index", query_id), handler_function],
-            ],
-            query_id=query_id,
-            param2=month_old,
-        )
-
-    def get_timestamp_by_query_id_and_index(
-        self, query_id: bytes, index: int, handler_function: Optional[Callable[..., Any]] = None
-    ) -> Call:
-        """getTimestampbyQueryIdandIndex autopay Call object
-
-        Args:
-        - query_id
-        - index
-        - handler_function: function to interpret contract reponse (optional)
-
-        Return: list of Call objects for batch call
-        """
-        # {(index, b'query_id): 1234}
-        return self.assemble_call_object(
-            func_sig="getTimestampbyQueryIdandIndex(bytes32,uint256)(uint256)",
-            returns=[[(index, query_id), handler_function]],
-            query_id=query_id,
-            param1=index,
-        )
 
     def get_reward_claimed_status(
         self,
@@ -178,4 +85,39 @@ class CallFunctions(AssembleCall):
                 [feed_id, handler_function],
             ],
             feed_id=feed_id,
+        )
+
+    def get_multiple_values_before(
+        self,
+        query_id: bytes,
+        now_timestamp: int,
+        max_age: int,
+        max_count: int = 40_000,
+        handler_function: Optional[Callable[..., Any]] = None,
+    ) -> Call:
+        """getMultipleValuesBefore autopay Call object for getting a month worth of values
+        for a query id
+
+        Args:
+        - query_id
+        - now_timestamp
+        - max_age: the maximum number of seconds before the now_timestamp to search for values
+        now_timestamp - 2_592_000 (one month)
+        - max_count: the maximum number of values to return
+        - handler_function: function to interpret contract reponse (optional)
+
+        Return: Call object
+        example return from this call:
+        >>> {(values_array, b'query_id'): ["values"] (timestamps_array, b'query_id'): [timestamps]}
+        """
+        return self.assemble_call_object(
+            func_sig="getMultipleValuesBefore(bytes32,uint256,uint256,uint256)(bytes[],uint256[])",
+            returns=[
+                [("values_array", query_id), handler_function],
+                [("timestamps_array", query_id), handler_function],
+            ],
+            query_id=query_id,
+            param1=now_timestamp,
+            param2=max_age,
+            param3=max_count,
         )

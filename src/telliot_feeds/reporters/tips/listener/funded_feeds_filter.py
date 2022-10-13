@@ -4,7 +4,6 @@ from typing import Optional
 from eth_abi import encode_single
 from eth_utils.conversions import to_bytes
 from telliot_core.utils.response import error_status
-from telliot_core.utils.timestamp import TimeStamp
 from web3 import Web3 as w3
 
 from telliot_feeds.feeds import CATALOG_FEEDS
@@ -68,7 +67,7 @@ class FundedFeedFilter:
         return all(eligible), time_diff
 
     async def price_change(self, query_id: bytes, value_before: int) -> Optional[float]:
-        """Check if priceThreshold is met
+        """Check if priceThreshold is met for submitting now
 
         Args:
         - query_id: used to get api source
@@ -96,20 +95,7 @@ class FundedFeedFilter:
 
         value_now = value_now[0]
 
-        # catch price change up to 0.01 percent granularity
-        # could be done differently but this way is consistent with autopay contract
-        if value_before == 0:
-            # if no before value set price change to 100 percent
-            price_change = 10000
-
-        elif value_now >= value_before:
-
-            price_change = (10000 * (value_now - value_before)) / value_before
-
-        else:
-            price_change = (10000 * (value_before - value_now)) / value_before
-
-        return price_change
+        return _get_price_change(previous_val=value_before, current_val=value_now)
 
     def api_support_check(self, feeds: list[QueryIdandFeedDetails]) -> list[QueryIdandFeedDetails]:
         """Filter funded feeds where threshold is gt zero and no telliot catalog feeds support"""
@@ -122,22 +108,44 @@ class FundedFeedFilter:
 
         return telliot_supported_with_api
 
-    def timestamps_filter(self, feeds: list[QueryIdandFeedDetails]) -> list[QueryIdandFeedDetails]:
-        """list of timestamps compared against itself"""
+    def filter_historical_submissions(self, feeds: list[QueryIdandFeedDetails]) -> list[QueryIdandFeedDetails]:
+        """Check list of values for older submission would've been eligible for a tip
+        if so the timestamps will be checked later to see if a tip for them has been claimed
+
+        Args:
+        - feeds
+
+        Returns: filtered feeds list
+        """
         for feed in feeds:
             # in case a query id has has none or too few to compare
-            if len(feed.queryid_timestamps_list) < 2:
+            if len(feed.queryid_timestamps_values_list) < 2:
                 continue
-            for i in range(len(feed.queryid_timestamps_list)):
+            for current, previous in zip(
+                feed.queryid_timestamps_values_list[::-1], feed.queryid_timestamps_values_list[-2::-1]
+            ):
                 in_eligibile_window = self.is_timestamp_first_in_window(
-                    timestamp_before=feed.queryid_timestamps_list[i - 2],
-                    timestamp_to_check=feed.queryid_timestamps_list[i - 1],
+                    timestamp_before=previous.timestamp,
+                    timestamp_to_check=current.timestamp,
                     feed_start_timestamp=feed.params.startTime,
                     feed_window=feed.params.window,
                     feed_interval=feed.params.interval,
                 )
                 if not in_eligibile_window:
-                    feed.queryid_timestamps_list.remove(feed.queryid_timestamps_list[i - 1])
+                    if feed.params.priceThreshold == 0:
+                        feed.queryid_timestamps_values_list.remove(current)
+                    else:
+                        try:
+                            previous_value = int(int(previous.value.hex(), 16) / 1e18)
+                        except ValueError:
+                            error_status("Error decoding current query id value")
+                            continue
+
+                        price_change = _get_price_change(previous_val=previous_value, current_val=current.value)
+
+                        if price_change < feed.params.priceThreshold:
+                            feed.queryid_timestamps_values_list.remove(current)
+
         return feeds
 
     def calculate_true_feed_balance(
@@ -161,7 +169,7 @@ class FundedFeedFilter:
         return feeds
 
     async def window_and_priceThreshold_unmet_filter(
-        self, feeds: list[QueryIdandFeedDetails], now_timestamp: TimeStamp
+        self, feeds: list[QueryIdandFeedDetails], now_timestamp: int
     ) -> list[QueryIdandFeedDetails]:
 
         """Remove feeds from list that either submitting now won't be first in window
@@ -219,3 +227,26 @@ class FundedFeedFilter:
                     continue
 
         return feeds
+
+
+def _get_price_change(previous_val: int, current_val: int) -> int:
+    """Get percentage change
+
+    Args:
+    - previous value
+    - current value
+
+    Returns: int
+    """
+    if previous_val == 0:
+        # if no before value set price change to 100 percent
+        price_change = 10000
+
+    elif current_val >= previous_val:
+
+        price_change = int((10000 * (current_val - previous_val)) / previous_val)
+
+    else:
+        price_change = int((10000 * (previous_val - current_val)) / previous_val)
+
+    return price_change
