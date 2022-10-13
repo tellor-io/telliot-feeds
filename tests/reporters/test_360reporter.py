@@ -1,33 +1,17 @@
 import pytest
 import pytest_asyncio
 from brownie import accounts
-from brownie import TellorFlex360
 from telliot_core.apps.core import TelliotCore
 
-from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 
-trb_id = query_catalog._entries["trb-usd-spot"].query.query_id
 txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
-account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
-
-
-@pytest.fixture(scope="function")
-def tellorflex_360_contract(mock_token_contract):
-    return account_fake.deploy(
-        TellorFlex360,
-        mock_token_contract.address,
-        1,
-        1,
-        1,
-        trb_id.hex(),
-    )
 
 
 @pytest_asyncio.fixture(scope="function")
 async def reporter_360(
-    mumbai_test_cfg, tellorflex_360_contract, mock_autopay_contract, mock_token_contract, multicall_contract
+    mumbai_test_cfg, tellorflex_360_contract, mock_autopay_contract, mock_token_contract
 ):
     async with TelliotCore(config=mumbai_test_cfg) as core:
 
