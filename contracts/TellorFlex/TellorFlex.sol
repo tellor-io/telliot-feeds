@@ -537,4 +537,58 @@ contract TellorFlex {
     {
         return reports[_queryId].valueByTimestamp[_timestamp];
     }
+
+     function getIndexForDataBefore(bytes32 _queryId, uint256 _timestamp)
+        public
+        view
+        returns (bool _found, uint256 _index)
+    {
+        uint256 _count = this.getNewValueCountbyQueryId(_queryId);
+        if (_count > 0) {
+            uint256 _middle;
+            uint256 _start = 0;
+            uint256 _end = _count - 1;
+            uint256 _time;
+            //Checking Boundaries to short-circuit the algorithm
+            _time = this.getTimestampbyQueryIdandIndex(_queryId, _start);
+            if (_time >= _timestamp) return (false, 0);
+            _time = this.getTimestampbyQueryIdandIndex(_queryId, _end);
+            if (_time < _timestamp) {
+                return (true, _end);
+            }
+            //Since the value is within our boundaries, do a binary search
+            while (true) {
+                _middle = (_end - _start) / 2 + 1 + _start;
+                _time = this.getTimestampbyQueryIdandIndex(_queryId, _middle);
+                if (_time < _timestamp) {
+                    //get immediate next value
+                    uint256 _nextTime = this.getTimestampbyQueryIdandIndex(
+                        _queryId,
+                        _middle + 1
+                    );
+                    if (_nextTime >= _timestamp) {
+                            return (true, _middle);
+
+                    } else {
+                        //look from middle + 1(next value) to end
+                        _start = _middle + 1;
+                    }
+                } else {
+                    uint256 _prevTime = this.getTimestampbyQueryIdandIndex(
+                        _queryId,
+                        _middle - 1
+                    );
+                    if (_prevTime < _timestamp) {
+                            // _prevtime is correct
+                            return (true, _middle);
+
+                    } else {
+                        //look from start to middle -1(prev value)
+                        _end = _middle - 1;
+                    }
+                }
+            }
+        }
+        return (false, 0);
+    }
 }
