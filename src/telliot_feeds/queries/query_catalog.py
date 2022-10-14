@@ -153,7 +153,7 @@ query_catalog.add_entry(
     q=AmpleforthUSPCE(),
 )
 query_catalog.add_entry(
-    tag="ampleforth-custom-price",
+    tag="ampleforth-custom",
     title="AMPL/USD VWAP",
     q=AmpleforthCustomSpotPrice(),
 )
