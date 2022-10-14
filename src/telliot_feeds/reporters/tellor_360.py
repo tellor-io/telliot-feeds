@@ -93,6 +93,7 @@ class Tellor360Reporter(TellorFlexReporter):
         self.stake_amount: Optional[int] = None
         self.staker_info: Optional[StakerInfo] = None
         self.allowed_stake_amount = 0
+        self.qtag_selected = False if self.datafeed is None else True
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 

@@ -20,9 +20,8 @@ from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.reporters.interval import IntervalReporter
-from telliot_feeds.reporters.reporter_autopay_utils import (
-    autopay_suggested_report,
-)
+from telliot_feeds.reporters.reporter_autopay_utils import autopay_suggested_report
+from telliot_feeds.reporters.reporter_autopay_utils import CATALOG_QUERY_IDS
 from telliot_feeds.reporters.reporter_autopay_utils import get_feed_tip
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
@@ -73,6 +72,7 @@ class TellorFlexReporter(IntervalReporter):
         self.gas_price_speed = gas_price_speed
         self.autopaytip = 0
         self.staked_amount: Optional[float] = None
+        self.qtag_selected = False if self.datafeed is None else True
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
@@ -249,6 +249,9 @@ class TellorFlexReporter(IntervalReporter):
         """Fetches datafeed suggestion plus the reward amount from autopay if query tag isn't selected
         if query tag is selected fetches the rewards, if any, for that query tag"""
         if self.datafeed:
+            # add query id to catalog to fetch tip for legacy autopay
+            if self.datafeed.query.query_id not in CATALOG_QUERY_IDS:
+                CATALOG_QUERY_IDS[self.datafeed.query.query_id] = self.datafeed.query.descriptor
             self.autopaytip = await self.rewards()
             return self.datafeed
 
@@ -353,9 +356,15 @@ class TellorFlexReporter(IntervalReporter):
             status.ok = False
             status.error = "Estimated profitability below threshold."
             logger.info(status.error)
+            # reset datafeed for a new suggestion if qtag wasn't selected in cli
+            if self.qtag_selected is False:
+                self.datafeed = None
             return status
+        # reset autopay tip to check for tips again
         self.autopaytip = 0
-        self.datafeed = None
+        # reset datafeed for a new suggestion if qtag wasn't selected in cli
+        if self.qtag_selected is False:
+            self.datafeed = None
 
         return status
 
