@@ -36,7 +36,7 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
-TELLOR_X_CHAINS = (1, 4)
+TELLOR_X_CHAINS = (1, 4, 5)
 
 
 def get_stake_amount() -> float:
@@ -53,7 +53,7 @@ def get_stake_amount() -> float:
     warn = (
         "\n\U00002757Telliot will automatically stake more TRB "
         "if your stake is below or falls below the stake amount required to report.\n"
-        "If you like to stake more than required enter the TOTAL stake amount you wish to be staked.\n"
+        "If you would like to stake more than required enter the TOTAL stake amount you wish to be staked.\n"
     )
     click.echo(warn)
     msg = "Enter amount TRB to stake if unstaked"
@@ -494,35 +494,36 @@ async def report(
             common_reporter_kwargs["stake"] = stake
             common_reporter_kwargs["expected_profit"] = expected_profit
             # selecting the right reporter will be changed after the switch
-            if rng_auto:
-                reporter = RNGReporter(  # type: ignore
-                    wait_period=120 if wait_period < 120 else wait_period,
-                    **common_reporter_kwargs,
-                )
-            elif reporting_diva_protocol:
-                diva_reporter_kwargs = {}
-                if diva_diamond_address is not None:
-                    diva_reporter_kwargs["diva_diamond_address"] = diva_diamond_address
-                if diva_middleware_address is not None:
-                    diva_reporter_kwargs["middleware_address"] = diva_middleware_address
-                reporter = DIVAProtocolReporter(
-                    wait_period=wait_period,
-                    **common_reporter_kwargs,
-                    **diva_reporter_kwargs,  # type: ignore
-                )
-            elif custom_contract_reporter:
-                reporter = CustomFlexReporter(
-                    custom_contract=custom_contract,
-                    wait_period=wait_period,
-                    **common_reporter_kwargs,
-                )  # type: ignore
-            elif not flex_360:
-                reporter = TellorFlexReporter(
-                    wait_period=wait_period,
-                    **common_reporter_kwargs,
-                )  # type: ignore
+            if flex_360:
+                if rng_auto:
+                    reporter = RNGReporter(  # type: ignore
+                        wait_period=120 if wait_period < 120 else wait_period,
+                        **common_reporter_kwargs,
+                    )
+                elif reporting_diva_protocol:
+                    diva_reporter_kwargs = {}
+                    if diva_diamond_address is not None:
+                        diva_reporter_kwargs["diva_diamond_address"] = diva_diamond_address
+                    if diva_middleware_address is not None:
+                        diva_reporter_kwargs["middleware_address"] = diva_middleware_address
+                    reporter = DIVAProtocolReporter(
+                        wait_period=wait_period,
+                        **common_reporter_kwargs,
+                        **diva_reporter_kwargs,  # type: ignore
+                    )
+                elif custom_contract_reporter:
+                    reporter = CustomFlexReporter(
+                        custom_contract=custom_contract,
+                        wait_period=wait_period,
+                        **common_reporter_kwargs,
+                    )  # type: ignore
+                else:
+                    reporter = Tellor360Reporter(
+                        wait_period=wait_period,
+                        **common_reporter_kwargs,
+                    )  # type: ignore
             else:
-                reporter = Tellor360Reporter(
+                reporter = TellorFlexReporter(
                     wait_period=wait_period,
                     **common_reporter_kwargs,
                 )  # type: ignore
