@@ -8,9 +8,7 @@ from telliot_feeds.reporters.rng_interval import RNGReporter
 
 
 @pytest_asyncio.fixture(scope="function")
-async def rng_reporter(
-    mumbai_test_cfg, tellorflex_360_contract, mock_autopay_contract, mock_token_contract
-):
+async def rng_reporter(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_contract, mock_token_contract):
     async with TelliotCore(config=mumbai_test_cfg) as core:
 
         account = core.get_account()

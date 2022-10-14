@@ -10,9 +10,7 @@ txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
 
 
 @pytest_asyncio.fixture(scope="function")
-async def reporter_360(
-    mumbai_test_cfg, tellorflex_360_contract, mock_autopay_contract, mock_token_contract
-):
+async def reporter_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_contract, mock_token_contract):
     async with TelliotCore(config=mumbai_test_cfg) as core:
 
         account = core.get_account()
