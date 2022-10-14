@@ -4,6 +4,7 @@ from typing import Optional
 from typing import Tuple
 
 from eth_utils import to_checksum_address
+from telliot_core.contract.contract import Contract
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
@@ -20,7 +21,7 @@ logger = get_logger(__name__)
 class CustomFlexReporter(Tellor360Reporter):
     """Use custom contract to report through to tellorflex."""
 
-    def __init__(self, custom_contract, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, custom_contract: Contract, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.custom_contract = custom_contract
 
