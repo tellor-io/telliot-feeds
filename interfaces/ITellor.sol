@@ -93,7 +93,9 @@ interface ITellor{
     function getTimestampIndexByTimestamp(bytes32 _queryId, uint256 _timestamp) external view returns(uint256);
     function getCurrentReward(bytes32 _queryId) external view returns(uint256, uint256);
     function getCurrentValue(bytes32 _queryId) external view returns(bytes memory);
+    function getDataBefore(bytes32 _queryId, uint256 _timestamp) external view returns(bool _ifRetrieve, bytes memory _value, uint256 _timestampRetrieved);
     function getTimeOfLastNewValue() external view returns(uint256);
+    function getIndexForDataBefore(bytes32 _queryId, uint256 _timestamp) external view returns (bool _found, uint256 _index);
     //Treasury
     function issueTreasury(uint256 _maxAmount, uint256 _rate, uint256 _duration) external;
     function payTreasury(address _investor,uint256 _id) external;
