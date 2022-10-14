@@ -13,6 +13,10 @@ from telliot_feeds.sources.price.historical.poloniex import (
 )
 
 
+ONE_DAY_AGO_TIMESTAMP = int(datetime.now().timestamp()) - 86400
+SIX_HOURS_SECONDS = 21600
+
+
 def isfloat(num: str) -> bool:
     """Check if string is numeric."""
     try:
@@ -39,24 +43,37 @@ def validate_price(v, t):
 
 
 @pytest.mark.asyncio
-async def test_kraken_get_price():
+async def test_kraken_get_price(caplog):
     """Retrieve singular price close to given timestamp."""
-    v, t = await KrakenHistoricalPriceService().get_price("eth", "usd", ts=1616663420)
+    v, t = await KrakenHistoricalPriceService(timeout=3).get_price("eth", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
     validate_price(v, t)
 
-    v, t = await KrakenHistoricalPriceService().get_price("xbt", "usd", ts=1616663420)
+    v, t = await KrakenHistoricalPriceService(timeout=3).get_price("xbt", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
     validate_price(v, t)
+
+    # Test invalid asset
+    v, t = await KrakenHistoricalPriceService().get_price("invalid", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
+    assert v is None
+    assert t is None
+    assert "Asset not supported" in caplog.text
 
 
 @pytest.mark.asyncio
-async def test_kraken_get_trades():
+async def test_kraken_get_trades(caplog):
     """Retrieve all price data given a timestamp and surrounding time period."""
-    six_hours = 60 * 60 * 6  # seconds
+    # Test invalid currency
+    trades, t = await KrakenHistoricalPriceService().get_trades(
+        asset="eth", currency="invalid", period=SIX_HOURS_SECONDS, ts=ONE_DAY_AGO_TIMESTAMP
+    )
+    assert trades is None
+    assert t is None
+    assert "Currency not supported" in caplog.text
+
     trades, t = await KrakenHistoricalPriceService().get_trades(
         "eth",
         "usd",
-        period=six_hours,
-        ts=1647782323,
+        period=SIX_HOURS_SECONDS,
+        ts=ONE_DAY_AGO_TIMESTAMP,
     )
 
     assert isinstance(t, datetime)
@@ -68,8 +85,8 @@ async def test_kraken_get_trades():
     trades, t = await KrakenHistoricalPriceService().get_trades(
         "xbt",
         "usd",
-        period=six_hours,
-        ts=1647782323,
+        period=SIX_HOURS_SECONDS,
+        ts=ONE_DAY_AGO_TIMESTAMP,
     )
 
     assert isinstance(t, datetime)
@@ -82,8 +99,9 @@ async def test_kraken_get_trades():
 @pytest.mark.asyncio
 async def test_poloniex_get_price():
     """Retrieve single historical price close to given timestamp."""
-    six_hours = 60 * 60 * 6  # seconds
-    v, t = await PoloniexHistoricalPriceService().get_price("eth", "tusd", period=six_hours, ts=1647782323)
+    v, t = await PoloniexHistoricalPriceService().get_price(
+        "eth", "tusd", period=SIX_HOURS_SECONDS, ts=ONE_DAY_AGO_TIMESTAMP
+    )
     validate_price(v, t)
 
     # Returns {"code": 500, "message": "System error"} for dai...
@@ -93,19 +111,18 @@ async def test_poloniex_get_price():
     # v, t = await PoloniexHistoricalPriceService().get_price("btc", "dai", ts=1645813159)
     # validate_price(v, t)
 
-    v, t = await PoloniexHistoricalPriceService().get_price("btc", "tusd", ts=1645822159)
+    v, t = await PoloniexHistoricalPriceService().get_price("btc", "tusd", ts=ONE_DAY_AGO_TIMESTAMP)
     validate_price(v, t)
 
 
 @pytest.mark.asyncio
 async def test_poloniex_get_trades():
     """Retrieve all price data given a timestamp and surrounding time period."""
-    six_hours = 60 * 60 * 6  # seconds
     trades, t = await PoloniexHistoricalPriceService().get_trades(
         "eth",
         "tusd",
-        period=six_hours,
-        ts=1647782323,
+        period=SIX_HOURS_SECONDS,
+        ts=ONE_DAY_AGO_TIMESTAMP,
     )
 
     assert isinstance(t, datetime)
@@ -117,8 +134,8 @@ async def test_poloniex_get_trades():
     trades, t = await PoloniexHistoricalPriceService().get_trades(
         "btc",
         "tusd",
-        period=six_hours,
-        ts=1647782323,
+        period=SIX_HOURS_SECONDS,
+        ts=ONE_DAY_AGO_TIMESTAMP,
     )
 
     assert isinstance(t, datetime)
@@ -128,27 +145,24 @@ async def test_poloniex_get_trades():
     print("# trades in six hour window:", len(trades))
 
 
-@pytest.mark.skip("TODO: handle candle data for certain timestamps")
 @pytest.mark.asyncio
 async def test_cryptowatch_get_price():
     """Retrieve single historical price close to given timestamp."""
-    v, t = await CryptowatchHistoricalPriceService().get_price("eth", "usd", ts=1648567107)
+    v, t = await CryptowatchHistoricalPriceService().get_price("eth", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
     validate_price(v, t)
 
-    v, t = await CryptowatchHistoricalPriceService().get_price("btc", "usd", ts=1648567107)
+    v, t = await CryptowatchHistoricalPriceService().get_price("btc", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
     validate_price(v, t)
 
 
-@pytest.mark.skip("TODO: handle candle data for certain timestamps")
 @pytest.mark.asyncio
 async def test_cryptowatch_get_candles():
     """Retrieve all price data given a timestamp and surrounding time period."""
-    six_hours = 60 * 60 * 6  # seconds
     candles, t = await CryptowatchHistoricalPriceService().get_candles(
         "eth",
         "usd",
-        period=six_hours,
-        ts=1649252172,
+        period=SIX_HOURS_SECONDS,
+        ts=ONE_DAY_AGO_TIMESTAMP,
     )
 
     assert isinstance(t, datetime)
@@ -160,8 +174,8 @@ async def test_cryptowatch_get_candles():
     candles, t = await CryptowatchHistoricalPriceService().get_candles(
         "btc",
         "usd",
-        period=six_hours,
-        ts=1648567107,
+        period=SIX_HOURS_SECONDS,
+        ts=ONE_DAY_AGO_TIMESTAMP,
     )
 
     assert isinstance(t, datetime)

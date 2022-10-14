@@ -30,6 +30,7 @@ SPOT_PRICE_PAIRS = [
     "USDC/USD",
     "EUR/USD",
     "PLS/USD",
+    "ETH/JPY",
 ]
 
 

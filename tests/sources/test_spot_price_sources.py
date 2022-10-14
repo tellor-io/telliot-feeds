@@ -3,15 +3,18 @@
 """
 import os
 from datetime import datetime
+from unittest import mock
 
 import pytest
-from requests import JSONDecodeError
+from requests import Response
+from requests.exceptions import JSONDecodeError
 from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.sources.price.spot import coingecko
 from telliot_feeds.sources.price.spot.bittrex import BittrexSpotPriceService
 from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceService
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceService
+from telliot_feeds.sources.price.spot.coinmarketcap import CoinMarketCapSpotPriceService
 from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceService
 from telliot_feeds.sources.price.spot.kraken import KrakenSpotPriceService
 from telliot_feeds.sources.price.spot.nomics import NomicsSpotPriceService
@@ -32,6 +35,7 @@ service = {
     "uniswapV3": UniswapV3PriceService(),
     "pulsechain-subgraph": PulsechainSupgraphService(),
     "kraken": KrakenSpotPriceService(),
+    "coinmarketcap": CoinMarketCapSpotPriceService(),
 }
 
 
@@ -108,11 +112,24 @@ async def test_nomics(nomics_key):
 
 
 @pytest.mark.asyncio
-async def test_coinmarketcap(coinmarketcap_key):
+async def test_coinmarketcap(caplog, coinmarketcap_key):
     """Test retrieving from CoinMarketCap price source."""
     if coinmarketcap_key:
         v, t = await get_price("bct", "usd", service["coinmarketcap"])
         validate_price(v, t)
+
+        def bad_status(*args, **kwargs):
+            r = Response()
+            r.status_code = 404
+            return r
+
+        with mock.patch("requests.Session.get", side_effect=bad_status):
+
+            v, t = await get_price("bct", "usd", service["coinmarketcap"])
+            assert v is None
+            assert t is None
+            assert "404" in caplog.text
+
     else:
         print("No CoinMarketCap API key ")
 
@@ -130,7 +147,7 @@ async def test_bittrex(caplog):
 
 
 @pytest.mark.asyncio
-async def test_gemini(caplog):
+async def test_gemini(caplog, monkeypatch):
     """Test retrieving from Gemini price source."""
     v, t = await get_price("btc", "usd", service["gemini"])
 
@@ -139,6 +156,15 @@ async def test_gemini(caplog):
         assert t is None
     else:
         validate_price(v, t)
+
+    # mock GeminiSpotPriceService.get_url() to return None
+    def mock_get_url(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(GeminiSpotPriceService, "get_url", mock_get_url)
+    v, t = await get_price("btc", "usd", service["gemini"])
+    assert v is None
+    assert t is None
 
 
 @pytest.mark.asyncio

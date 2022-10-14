@@ -1,5 +1,6 @@
 import os
 from typing import Any
+from typing import Callable
 from typing import get_args
 from typing import get_type_hints
 from typing import Optional
@@ -8,11 +9,14 @@ import click
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from dotenv import load_dotenv
+from eth_utils import to_checksum_address
+from simple_term_menu import TerminalMenu
 from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import cli_core
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
+from telliot_feeds.queries.abi_query import AbiQuery
 
 
 DIVA_PROTOCOL_CHAINS = (137, 80001, 3, 5)
@@ -83,13 +87,27 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
 
     """
     try:
-        msg = (
-            "Enter a valid QueryType from the options listed below:"
-            + "\n"
-            + "\n".join([i for i in DATAFEED_BUILDER_MAPPING.keys()])
-            + "\n"
-        )
-        query_type = input(msg)
+        num_feeds = len(DATAFEED_BUILDER_MAPPING)
+        # list choices
+        click.echo("Choose query type:")
+        for i, q_type in enumerate(sorted(DATAFEED_BUILDER_MAPPING.keys())):
+            choice_num = f"{i + 1}".zfill(len(str(num_feeds)))
+            click.echo(f"{choice_num} -- {q_type}")
+
+        # get user choice
+        choice = None
+        query_type = None
+        while not choice or not query_type:
+            try:
+                choice = int(input(f"Enter number from 1-{num_feeds}: "))
+                query_type = sorted(DATAFEED_BUILDER_MAPPING.keys())[choice - 1]
+            except (ValueError, IndexError):
+                choice = None
+                query_type = None
+                click.echo("Invalid choice.")
+                continue
+
+        click.echo("Your choice: " + query_type)
         feed: DataFeed[Any] = DATAFEED_BUILDER_MAPPING[query_type]
     except KeyError:
         click.echo(f"No corresponding datafeed found for QueryType: {query_type}\n")
@@ -120,3 +138,55 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
             return None
 
     return feed
+
+
+def build_query(log: Optional[Callable[[str], None]] = click.echo) -> Any:
+    """Build a query from CLI input"""
+    title = "Select a query type:"
+    queries = [q for q in AbiQuery.__subclasses__() if q.__name__ not in ("LegacyRequest")]
+    options = [q.__name__ for q in queries]
+    # Sort options and queries by alphabetical order
+    options, queries = zip(*sorted(zip(options, queries)))
+
+    menu = TerminalMenu(options, title=title)
+    selected_index = menu.show()
+    q = queries[selected_index]
+
+    if not q:
+        log("No query selected")
+        return None
+
+    # Get query parameters
+    query_params = {}
+    for name, field in q.__dataclass_fields__.items():
+        try:
+            val = click.prompt(name, type=field.type)
+        except AttributeError:
+            val = click.prompt(name, type=get_args(field.type)[0])
+
+        query_params[name] = val
+
+    try:
+        query = q(**query_params)
+        log("Query built successfully")
+    except Exception as e:
+        log(f"Error building query: {e}")
+        return None
+
+    log(query)
+    log(f"Query ID: 0x{query.query_id.hex()}")
+    log(f"Query data: 0x{query.query_data.hex()}")
+
+    return query
+
+
+def validate_address(ctx: click.Context, param: Any, value: str) -> str:
+    """Ensure input is a valid checksum address"""
+    # Sets default to None if no value is provided
+    if not value:
+        return value
+
+    try:
+        return str(to_checksum_address(value))
+    except Exception as e:
+        raise click.BadParameter(f"Address must be a valid hex string. Error: {e}")

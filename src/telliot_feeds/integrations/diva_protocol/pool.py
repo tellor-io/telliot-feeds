@@ -87,7 +87,7 @@ async def fetch_from_subgraph(query: str, network: str) -> Optional[list[dict[st
         s.mount("https://", adapter)
         try:
             rsp = s.post(
-                f"https://api.thegraph.com/subgraphs/name/divaprotocol/diva-{network}",
+                f"https://api.thegraph.com/subgraphs/name/divaprotocol/diva-{network}-new",
                 json={"query": query},
             )
         except requests.exceptions.ConnectTimeout:

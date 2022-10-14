@@ -25,7 +25,7 @@ def test_decode_query_data():
     runner = CliRunner()
     result = runner.invoke(cli_main, ["query", "decode", "-qd", query_data])
 
-    assert "Query: TellorRNG(timestamp=1659618000)" in result.output
+    assert "TellorRNG(timestamp=1659618000)" in result.output
 
 
 def test_decode_query_data_fail():
@@ -51,3 +51,11 @@ def test_decode_submit_val_bytes_fail():
     result = runner.invoke(cli_main, ["query", "decode", "-svb", submitted_val_bytes], input="5")
 
     assert "Unable to decode value using query type: Snapshot" in result.output
+
+
+def test_new_query():
+    """Test building a new query instance from the CLI"""
+    runner = CliRunner()
+    result = runner.invoke(cli_main, ["query", "--help"])
+
+    assert "new" in result.output

@@ -2,8 +2,6 @@
 pragma solidity ^0.8.10;
 
 contract DIVAProtocolMock {
-    // Settlement status
-    mapping(address => mapping(address => uint256)) public feeClaims; // mapping token address to claimant address to amount
     mapping(uint256 => Pool) private pools;
 
     enum Status {
@@ -65,34 +63,16 @@ contract DIVAProtocolMock {
 
         pools[3] = fakePool;
 
-        Pool memory fakePool2;
 
-        fakePool2.referenceAsset = "BTC/USD";
-        fakePool2.expiryTime = 1654700353;
-        fakePool2.floor = 2000000000000000000000;
-        fakePool2.inflection = 2000000000000000000000;
-        fakePool2.cap = 4500000000000000000000;
-        fakePool2.supplyInitial = 100000000000000000000;
-        fakePool2.collateralToken = 0xc778417E063141139Fce010982780140Aa0cD5Ab;
-        fakePool2.collateralBalanceShortInitial = 50000000000000000000;
-        fakePool2.collateralBalanceLongInitial = 50000000000000000000;
-        fakePool2.collateralBalance = 214199598796389167516;
-        fakePool2.shortToken = 0x91E75Aebda86a6B02d5510438f2981AC4Af1A44d;
-        fakePool2.longToken = 0x945b1fA4DB6Fb1f8d3C7501968F6549C8c147D4e;
-        fakePool2.finalReferenceValue = 0;
-        fakePool2.statusFinalReferenceValue = Status.Open;
-        fakePool2.redemptionAmountLongToken = 0;
-        fakePool2.redemptionAmountShortToken = 0;
-        fakePool2.statusTimestamp = 1647349398;
-        fakePool2.dataProvider = 0xED6D661645a11C45F4B82274db677867a7D32675;
-        fakePool2.redemptionFee = 2500000000000000;
-        fakePool2.settlementFee = 500000000000000;
-        fakePool2.capacity = 0;
-
-        pools[10] = fakePool2;
     }
 
-    /**
+    function addPool(uint256 _poolId, Pool calldata _poolParams
+        ) public returns (Pool memory) {
+        pools[_poolId] = _poolParams;
+        return pools[_poolId];
+    }
+
+    /*
      * @notice Returns the pool parameters for a given pool Id
      * @param _poolId Id of the pool
      * @return Pool struct
@@ -102,15 +82,11 @@ contract DIVAProtocolMock {
         view
         returns (Pool memory)
     {
-        Pool storage _pool = pools[_poolId];
-        return _pool;
+
+        return pools[_poolId];
     }
 
-    function changePoolExpiry(uint256 _poolId, uint256 _timestamp)
-        external
-        returns (uint256)
-    {
-        pools[_poolId].expiryTime = _timestamp;
-        return pools[_poolId].expiryTime;
+    function changePoolExpiry(uint256 _poolId, uint256 _expiryTime) public {
+        pools[_poolId].expiryTime = _expiryTime;
     }
 }

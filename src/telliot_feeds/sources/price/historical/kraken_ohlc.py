@@ -25,9 +25,9 @@ class KrakenHistoricalPriceServiceOHLC(KrakenHistoricalPriceService):
         currency = currency.upper()
 
         if asset not in kraken_assets:
-            raise Exception(f"Asset not supported: {asset}")
+            logger.warning(f"Asset not supported: {asset}")
         if currency not in kraken_currencies:
-            raise Exception(f"Currency not supported: {currency}")
+            logger.warning(f"Currency not supported: {currency}")
 
         url_params = urlencode({"pair": f"{asset}{currency}", "since": period_start, "interval": 1440})
         # Source: https://docs.kraken.com/rest/#operation/getRecentTrades

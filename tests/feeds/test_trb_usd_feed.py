@@ -6,7 +6,7 @@ from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_AssetPriceFeed():
+async def test_trb_asset_price_feed():
     """Retrieve median TRB/USD price."""
     v, _ = await trb_usd_median_feed.source.fetch_new_datapoint()
 

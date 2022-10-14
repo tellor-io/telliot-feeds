@@ -1,8 +1,9 @@
+from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AmpleforthCustomSpotPrice
+from telliot_feeds.queries.ampleforth.uspce import AmpleforthUSPCE
 from telliot_feeds.queries.catalog import Catalog
 from telliot_feeds.queries.daily_volatility import DailyVolatility
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
-from telliot_feeds.queries.legacy_query import LegacyRequest
 from telliot_feeds.queries.morphware import Morphware
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feeds.queries.price.spot_price import SpotPrice
@@ -18,37 +19,7 @@ query_catalog = Catalog()
 # Query Catalog Entries
 # --------------------------------------------------------------------------------------
 
-query_catalog.add_entry(
-    tag="eth-usd-legacy",
-    title="Legacy ETH/USD spot price",
-    q=LegacyRequest(legacy_id=1),
-)
-
-query_catalog.add_entry(
-    tag="btc-usd-legacy",
-    title="Legacy BTC/USD spot price",
-    q=LegacyRequest(legacy_id=2),
-)
-
-query_catalog.add_entry(
-    tag="ampl-legacy",
-    title="Legacy AMPL/USD custom price",
-    q=LegacyRequest(legacy_id=10),
-)
-
-query_catalog.add_entry(tag="uspce-legacy", title="Legacy USPCE value", q=LegacyRequest(legacy_id=41))
-
-query_catalog.add_entry(
-    tag="trb-usd-legacy",
-    title="Legacy TRB/USD spot price",
-    q=LegacyRequest(legacy_id=50),
-)
-
-query_catalog.add_entry(
-    tag="eth-jpy-legacy",
-    title="Legacy ETH/JPY spot price",
-    q=LegacyRequest(legacy_id=59),
-)
+query_catalog.add_entry(tag="trb-usd-spot", title="TRB/USD spot price", q=SpotPrice(asset="trb", currency="usd"))
 
 query_catalog.add_entry(
     tag="ohm-eth-spot",
@@ -174,4 +145,15 @@ query_catalog.add_entry(
 query_catalog.add_entry(tag="tellor-rng-example", title="Tellor RNG", q=TellorRNG(timestamp=1660567612))
 query_catalog.add_entry(
     tag="twap-eth-usd-example", title="Time Weighted Average Price", q=TWAP(asset="eth", currency="usd", timespan=86400)
+)
+
+query_catalog.add_entry(
+    tag="ampleforth-uspce",
+    title="USPCE",
+    q=AmpleforthUSPCE(),
+)
+query_catalog.add_entry(
+    tag="ampleforth-custom-price",
+    title="AMPL/USD VWAP",
+    q=AmpleforthCustomSpotPrice(),
 )

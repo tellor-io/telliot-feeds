@@ -1,5 +1,7 @@
 # Legacy Query Example
 
+** This query type is deprecated! Do not use it! **
+
 This example demonstrates how to create a
 [`LegacyRequest`][telliot_feeds.queries.legacy_query.LegacyRequest]
 requesting the ETH/USD price. The legacy request ID for ETH/USD is `1`,

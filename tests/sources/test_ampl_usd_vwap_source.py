@@ -4,7 +4,7 @@ from datetime import datetime
 import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feeds.sources.ampl_usd_vwap import AMPLUSDVWAPSource
+from telliot_feeds.sources.ampl_usd_vwap import AmpleforthCustomSpotPriceSource
 from telliot_feeds.sources.ampl_usd_vwap import AnyBlockSource
 from telliot_feeds.sources.ampl_usd_vwap import BraveNewCoinSource
 
@@ -66,7 +66,7 @@ async def test_ampl_usd_vwap_source(keys_dict):
     if not all(keys_dict.values()):
         print("No api keys found")
     else:
-        ampl_source = AMPLUSDVWAPSource()
+        ampl_source = AmpleforthCustomSpotPriceSource()
         ampl_source.sources[0].api_key = keys_dict["anyblock"]
         ampl_source.sources[1].api_key = keys_dict["bravenewcoin"]
 
@@ -81,7 +81,7 @@ async def test_ampl_usd_vwap_source(keys_dict):
 async def test_no_updated_value(bad_datasource):
     """Test no AMPL/USD/VWAP value retrieved."""
 
-    ampl_source = AMPLUSDVWAPSource()
+    ampl_source = AmpleforthCustomSpotPriceSource()
 
     # Switch source to test one that doesn't return an updated value
     ampl_source.sources = [bad_datasource]
