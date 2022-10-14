@@ -5,16 +5,11 @@ from datetime import timedelta
 from typing import Any
 from typing import Optional
 from typing import Tuple
-from typing import Union
 
-from chained_accounts import ChainedAccount
 from eth_utils import to_checksum_address
-from telliot_core.contract.contract import Contract
-from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
-from telliot_feeds.feeds import DataFeed
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 from telliot_feeds.utils.log import get_logger
 
@@ -48,51 +43,15 @@ class StakerInfo:
 
 
 class Tellor360Reporter(TellorFlexReporter):
-    def __init__(
-        self,
-        endpoint: RPCEndpoint,
-        account: ChainedAccount,
-        chain_id: int,
-        oracle: Contract,
-        token: Contract,
-        autopay: Contract,
-        stake: float = 0,
-        datafeed: Optional[DataFeed[Any]] = None,
-        expected_profit: Union[str, float] = "YOLO",
-        transaction_type: int = 2,
-        gas_limit: int = 350000,
-        max_fee: Optional[int] = None,
-        priority_fee: int = 100,
-        legacy_gas_price: Optional[int] = None,
-        gas_price_speed: str = "safeLow",
-        wait_period: int = 7,
-    ) -> None:
-
-        self.endpoint = endpoint
-        self.oracle = oracle
-        self.token = token
-        self.autopay = autopay
-        self.stake = stake
-        self.datafeed = datafeed
-        self.chain_id = chain_id
-        self.acct_addr = to_checksum_address(account.address)
-        self.last_submission_timestamp = 0
-        self.expected_profit = expected_profit
-        self.transaction_type = transaction_type
-        self.gas_limit = gas_limit
-        self.max_fee = max_fee
-        self.wait_period = wait_period
-        self.priority_fee = priority_fee
-        self.legacy_gas_price = legacy_gas_price
-        self.gas_price_speed = gas_price_speed
-        self.autopaytip = 0
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        kwargs["stake"]: float = 0
         self.stake_amount: Optional[int] = None
         self.staker_info: Optional[StakerInfo] = None
         self.allowed_stake_amount = 0
+        super().__init__(*args, **kwargs)
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
-        self.account: ChainedAccount = account
         assert self.acct_addr == to_checksum_address(self.account.address)
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
