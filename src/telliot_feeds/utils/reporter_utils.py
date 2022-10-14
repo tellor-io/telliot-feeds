@@ -7,6 +7,9 @@ from telliot_core.tellor.tellorflex.oracle import TellorFlexOracleContract
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
 
 from telliot_feeds.queries.query_catalog import query_catalog
+from telliot_feeds.utils.log import get_logger
+
+logger = get_logger(__name__)
 
 # List of currently active reporters
 reporter_sync_schedule: List[str] = [qt for qt in query_catalog._entries.keys() if "spot" in qt]
@@ -22,15 +25,13 @@ async def tellor_suggested_report(
     `report_sync_schedule` to determine the suggested query.
 
     """
-    chain = oracle.node.chain_id
-
-    if chain in (1, 4):
-        assert isinstance(oracle, TellorxOracleContract)
+    try:
         timestamp, status = await oracle.getTimeOfLastNewValue()
-    elif chain in (137, 80001):
-
+    except AttributeError:
         timestamp, status = await oracle.get_time_of_last_new_value()
-    else:
+    except Exception as e:
+        msg = f"Unable to fetch timestamp of last new value: {e}"
+        logger.warning(msg)
         return None
 
     if status.ok:

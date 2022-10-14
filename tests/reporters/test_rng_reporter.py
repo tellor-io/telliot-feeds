@@ -8,22 +8,19 @@ from telliot_feeds.reporters.rng_interval import RNGReporter
 
 
 @pytest_asyncio.fixture(scope="function")
-async def rng_reporter(
-    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract, multicall_contract
-):
+async def rng_reporter(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_contract, mock_token_contract):
     async with TelliotCore(config=mumbai_test_cfg) as core:
 
         account = core.get_account()
 
-        flex = core.get_tellorflex_contracts()
-        flex.oracle.address = mock_flex_contract.address
+        flex = core.get_tellor360_contracts()
+        flex.oracle.address = tellorflex_360_contract.address
         flex.autopay.address = mock_autopay_contract.address
         flex.token.address = mock_token_contract.address
 
         flex.oracle.connect()
         flex.token.connect()
         flex.autopay.connect()
-        flex = core.get_tellorflex_contracts()
 
         r = RNGReporter(
             oracle=flex.oracle,
@@ -32,12 +29,15 @@ async def rng_reporter(
             endpoint=core.endpoint,
             account=account,
             chain_id=80001,
+            transaction_type=0,
         )
         # mint token and send to reporter address
         mock_token_contract.mint(account.address, 1000e18)
 
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
+        # init governance address
+        await flex.oracle.write("init", _governanceAddress=accounts[0].address, gas_limit=3500000, legacy_gas_price=1)
 
         return r
 

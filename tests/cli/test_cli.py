@@ -24,7 +24,7 @@ def stop():
 def test_build_feed_from_input(capsys):
     """Test building feed from user input"""
 
-    num_choice = 6  # NumericApiResponse is the 6th option
+    num_choice = 7  # NumericApiResponse is the 6th option
     url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"  # noqa: E501
     parse_str = "uniswap, usd"
 
@@ -132,9 +132,8 @@ def test_get_stake_amount(monkeypatch, capsys):
     captured = capsys.readouterr()
     expected = captured.out
     warning_msg = (
-        "\n\U00002757Telliot will automatically stake more TRB "
-        "if you don't have enough staked to report, "
-        "even if your stake amount is lower due to a dispute!"
+        "Telliot will automatically stake more TRB if your stake is below "
+        "or falls below the stake amount required to report"
     )
     assert warning_msg in expected
     assert isinstance(stake, float)
