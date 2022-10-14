@@ -2,141 +2,135 @@
 from typing import Any
 from typing import Optional
 from typing import Tuple
-from typing import Union
 
-from chained_accounts import ChainedAccount
 from eth_utils import to_checksum_address
-from telliot_core.contract.contract import Contract
-from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
-from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.reporters.tellor_360 import StakerInfo
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
 
-class CustomFlexReporter(TellorFlexReporter):
+class CustomFlexReporter(Tellor360Reporter):
     """Use custom contract to report through to tellorflex."""
 
-    def __init__(
-        self,
-        endpoint: RPCEndpoint,
-        account: ChainedAccount,
-        chain_id: int,
-        oracle: Contract,
-        token: Contract,
-        autopay: Contract,
-        custom_contract: Contract,
-        stake: float = 10.0,
-        datafeed: Optional[DataFeed[Any]] = None,
-        expected_profit: Union[str, float] = "YOLO",
-        transaction_type: int = 2,
-        gas_limit: int = 350000,
-        max_fee: Optional[int] = None,
-        priority_fee: int = 100,
-        legacy_gas_price: Optional[int] = None,
-        gas_price_speed: str = "safeLow",
-        wait_period: int = 7,
-    ) -> None:
-
-        self.endpoint = endpoint
-        self.oracle = oracle
-        self.token = token
-        self.autopay = autopay
+    def __init__(self, custom_contract, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
         self.custom_contract = custom_contract
-        self.stake = stake
-        self.datafeed = datafeed
-        self.chain_id = chain_id
-        self.acct_addr = custom_contract.address
-        self.last_submission_timestamp = 0
-        self.expected_profit = expected_profit
-        self.transaction_type = transaction_type
-        self.gas_limit = gas_limit
-        self.max_fee = max_fee
-        self.wait_period = wait_period
-        self.priority_fee = priority_fee
-        self.legacy_gas_price = legacy_gas_price
-        self.gas_price_speed = gas_price_speed
-        self.autopaytip = 0
-        logger.info(f"Reporting with account: {self.acct_addr}")
-
-        self.account: ChainedAccount = account
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
-        """Make sure the current user is staked.
+        """Compares stakeAmount and stakerInfo every loop to monitor changes to the stakeAmount or stakerInfo
+        and deposits stake if needed for continuous reporting
 
-        Returns a bool signifying whether the current address is
-        staked. If the address is not initially, it attempts to deposit
-        the given stake amount."""
-        staker_info, read_status = await self.oracle.read(func_name="getStakerInfo", _staker=self.acct_addr)
+        Return:
+        - (bool, ResponseStatus)
+        """
+        # get oracle required stake amount
+        stake_amount: int
+        stake_amount, status = await self.oracle.read("getStakeAmount")
+        logger.info(f"Current Oracle stakeAmount: {stake_amount / 1e18!r}")
 
-        if (not read_status.ok) or (staker_info is None):
-            msg = "Unable to read reporters staker info " + self.oracle.address
+        if (not status.ok) or (stake_amount is None):
+            msg = "Unable to read current stake amount"
             return False, error_status(msg, log=logger.info)
 
-        (
-            staker_startdate,
-            staker_balance,
-            locked_balance,
-            last_report,
-            num_reports,
-        ) = staker_info
+        # get accounts current stake total
+        staker_info, status = await self.oracle.read(
+            "getStakerInfo",
+            _stakerAddress=self.acct_addr,
+        )
+        if (not status.ok) or (staker_info is None):
+            msg = "Unable to read reporters staker info"
+            return False, error_status(msg, log=logger.info)
+
+        # first when reporter start set stakerInfo
+        if self.staker_info is None:
+            self.staker_info = StakerInfo(*staker_info)
+
+        # on subsequent loops keeps checking if staked balance in oracle contract decreased
+        # if it decreased account is probably dispute barring withdrawal
+        if self.staker_info.stake_balance > staker_info[1]:
+            # update balance in script
+            self.staker_info.stake_balance = staker_info[1]
+            logger.info("your staked balance has decreased and account might be in dispute")
+
+        # after the first loop keep track of the last report's timestamp to calculate reporter lock
+        self.staker_info.last_report = staker_info[4]
+        self.staker_info.reports_count = staker_info[5]
 
         logger.info(
             f"""
             STAKER INFO
-            start date:     {staker_startdate}
-            desired stake:  {self.stake}
-            amount staked:  {staker_balance / 1e18}
-            locked balance: {locked_balance / 1e18}
-            last report:    {last_report}
-            total reports:  {num_reports}
+            start date: {staker_info[0]}
+            stake_balance: {staker_info[1] / 1e18!r}
+            locked_balance: {staker_info[2]}
+            last report: {staker_info[4]}
+            reports count: {staker_info[5]}
             """
         )
 
-        self.last_submission_timestamp = last_report
+        account_staked_bal = self.staker_info.stake_balance
 
-        # Attempt to stake
-        if staker_balance / 1e18 < self.stake:
-            logger.info("Current stake too low. Approving & depositing stake.")
+        # after the first loop, logs if stakeAmount has increased or decreased
+        if self.stake_amount is not None:
+            if self.stake_amount < stake_amount:
+                logger.info("Stake amount has increased possibly due to TRB price change.")
+            elif self.stake_amount > stake_amount:
+                logger.info("Stake amount has decreased possibly due to TRB price change.")
+
+        self.stake_amount = stake_amount
+
+        # deposit stake if stakeAmount in oracle is greater than account stake or
+        # a stake in cli is selected thats greater than account stake
+        if self.stake_amount > account_staked_bal or (self.stake * 1e18) > account_staked_bal:
+            logger.info("Approving and depositing stake...")
 
             gas_price_gwei = await self.fetch_gas_price()
             if gas_price_gwei is None:
-                return False, error_status("Unable to fetch matic gas price for staking", log=logger.info)
-            amount = int(self.stake * 1e18) - staker_balance
+                return False, error_status("Unable to fetch gas price for staking", log=logger.info)
 
-            _, write_status = await self.custom_contract.write(
-                func_name="approve",
-                gas_limit=100000,
-                legacy_gas_price=gas_price_gwei,
-                _amount=amount,
-            )
-            if not write_status.ok:
+            # amount to deposit whichever largest difference either chosen stake or stakeAmount to keep reporting
+            stake_diff = max(int(self.stake_amount - account_staked_bal), int((self.stake * 1e18) - account_staked_bal))
+
+            # check TRB wallet balance!
+            wallet_balance, wallet_balance_status = await self.token.read("balanceOf", account=self.acct_addr)
+
+            if not wallet_balance_status.ok:
+                msg = "unable to read account TRB balance"
+                return False, error_status(msg, log=logger.info)
+
+            logger.info(f"Current wallet TRB balance: {wallet_balance / 1e18!r}")
+
+            if stake_diff > wallet_balance:
+                msg = "Not enough TRB in the account to cover the stake"
+                return False, error_status(msg, log=logger.warning)
+
+            txn_kwargs = {"gas_limit": 350000, "legacy_gas_price": gas_price_gwei}
+
+            # approve token spending
+            _, approve_status = await self.custom_contract.write(func_name="approve", _amount=stake_diff, **txn_kwargs)
+            if not approve_status.ok:
                 msg = "Unable to approve staking"
                 return False, error_status(msg, log=logger.error)
+            # deposit stake
+            _, deposit_status = await self.custom_contract.write("depositStake", _amount=stake_diff, **txn_kwargs)
 
-            _, write_status = await self.custom_contract.write(
-                func_name="depositStake",
-                gas_limit=300000,
-                legacy_gas_price=gas_price_gwei,
-                _amount=amount,
-            )
-            if not write_status.ok:
+            if not deposit_status.ok:
                 msg = (
                     "Unable to stake deposit: "
-                    + write_status.error
+                    + deposit_status.error
                     + f"Make sure {self.acct_addr} has enough of the current chain's "
                     + "currency and the oracle's currency (TRB)"
-                )  # error won't be none # noqa: E501
+                )
                 return False, error_status(msg, log=logger.error)
-
-            logger.info(f"Staked {amount / 1e18} TRB")
+            # add staked balance after successful stake deposit
+            self.staker_info.stake_balance += stake_diff
 
         return True, ResponseStatus()
 
