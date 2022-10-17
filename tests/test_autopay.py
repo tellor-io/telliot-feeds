@@ -25,6 +25,7 @@ async def test_main(
         flex = core.get_tellorflex_contracts()
         flex.oracle.address = mock_flex_contract.address
         flex.autopay.address = mock_autopay_contract.address
+        flex.autopay.abi = mock_autopay_contract.abi
         flex.token.address = mock_token_contract.address
 
         flex.oracle.connect()
@@ -68,15 +69,15 @@ async def test_main(
         assert tip is None
 
         # mkr query id and query data
-        mkr_query_id = query_catalog._entries["mkr-usd-spot"].query_id
+        mkr_query_id = query_catalog._entries["mkr-usd-spot"].query.query_id
         mkr_query_data = "0x" + query_catalog._entries["mkr-usd-spot"].query.query_data.hex()
         # approve token to be spent by autopay contract
         mock_token_contract.approve(mock_autopay_contract.address, 500e18, {"from": account.address})
         _, status = await flex.autopay.write(
             "tip",
-            gas_limit=350000,
+            gas_limit=3500000,
             legacy_gas_price=1,
-            _queryId=mkr_query_id,
+            _queryId="0x" + mkr_query_id.hex(),
             _amount=int(10e18),
             _queryData=mkr_query_data,
         )
@@ -101,7 +102,7 @@ async def test_main(
 
         _, status = await flex.autopay.write(
             "tip",
-            gas_limit=350000,
+            gas_limit=3500000,
             legacy_gas_price=1,
             _queryId=ric_query_id,
             _amount=int(20e18),
@@ -120,18 +121,17 @@ async def test_main(
         assert tip == 20e18
 
         # variables for feed setup and to get feedId
-        trb_query_id = query_catalog._entries["trb-usd-legacy"].query_id
+        trb_query_id = query_catalog._entries["trb-usd-spot"].query_id
         reward = 30 * 10**18
-        start_time = timestamp
         interval = 100
         window = 99
         price_threshold = 0
-        trb_query_data = "0x" + query_catalog._entries["trb-usd-legacy"].query.query_data.hex()
+        trb_query_data = "0x" + query_catalog._entries["trb-usd-spot"].query.query_data.hex()
 
         # setup a feed on autopay
-        _, status = await flex.autopay.write(
+        response, status = await flex.autopay.write(
             "setupDataFeed",
-            gas_limit=350000,
+            gas_limit=3500000,
             legacy_gas_price=1,
             _queryId=trb_query_id,
             _reward=reward,
@@ -139,41 +139,20 @@ async def test_main(
             _interval=interval,
             _window=window,
             _priceThreshold=price_threshold,
+            _rewardIncreasePerSecond=0,
             _queryData=trb_query_data,
-        )
-        assert status.ok
-
-        # encode feed variables, then hash to get feed id
-        feed_data = encode_single(
-            "(bytes32,uint256,uint256,uint256,uint256,uint256)",
-            [
-                bytes.fromhex(trb_query_id[2:]),
-                reward,
-                start_time,
-                interval,
-                window,
-                price_threshold,
-            ],
-        )
-        feed_id = Web3.keccak(feed_data).hex()
-
-        # fund trb-usd-legacy feed on autopay
-        _, status = await flex.autopay.write(
-            "fundFeed",
-            gas_limit=350000,
-            legacy_gas_price=1,
-            _feedId=feed_id,
-            _queryId=trb_query_id,
             _amount=50 * 10**18,
         )
         assert status.ok
 
+        feed_id = response.logs[1].topics[2].hex()
+
         # get suggestion from telliot on query with highest tip
         suggested_qtag, tip = await autopay_suggested_report(flex.autopay)
-        assert suggested_qtag == "trb-usd-legacy"
+        assert suggested_qtag == "trb-usd-spot"
         assert tip == 30e18
 
-        tips = await get_feed_tip(query_catalog._entries["trb-usd-legacy"].query.query_id, flex.autopay)
+        tips = await get_feed_tip(query_catalog._entries["trb-usd-spot"].query.query_id, flex.autopay)
         assert tips == 30e18
 
         # submit report to oracle to get tip

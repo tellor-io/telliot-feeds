@@ -7,8 +7,10 @@ from brownie import accounts
 from brownie import Autopay
 from brownie import chain
 from brownie import multicall as brownie_multicall
+from brownie import QueryDataStorage
 from brownie import StakingToken
 from brownie import TellorFlex
+from brownie import TellorFlex360
 from brownie import TellorXMasterMock
 from brownie import TellorXOracleMock
 from chained_accounts import ChainedAccount
@@ -214,27 +216,35 @@ def goerli_test_cfg(scope="function", autouse=True):
     return local_node_cfg(chain_id=5)
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def mock_token_contract():
     """mock token to use for staking"""
     return accounts[0].deploy(StakingToken)
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def mock_flex_contract(mock_token_contract):
     """mock oracle(TellorFlex) contract to stake in"""
     return accounts[0].deploy(TellorFlex, mock_token_contract.address, accounts[0], 10e18, 60)
 
 
-@pytest.fixture(scope="module", autouse=True)
-def mock_autopay_contract(mock_flex_contract, mock_token_contract):
+@pytest.fixture(scope="function", autouse=True)
+def mock_autopay_contract(mock_flex_contract, mock_token_contract, query_data_storage_contract):
     """mock payments(Autopay) contract for tipping and claiming tips"""
     return accounts[0].deploy(
         Autopay,
         mock_flex_contract.address,
         mock_token_contract.address,
-        accounts[0],
+        query_data_storage_contract.address,
+        # accounts[0],
         20,
+    )
+
+
+@pytest.fixture(scope="function", autouse=True)
+def query_data_storage_contract():
+    return accounts[0].deploy(
+        QueryDataStorage,
     )
 
 
@@ -248,7 +258,7 @@ def tellorx_master_mock_contract():
     return accounts[0].deploy(TellorXMasterMock)
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def multicall_contract():
     #  deploy multicall contract to brownie chain and add chain id to multicall module
     addy = brownie_multicall.deploy({"from": accounts[0]})
@@ -256,3 +266,16 @@ def multicall_contract():
     # add multicall contract address to multicall module
     MULTICALL2_ADDRESSES[Network.Brownie] = addy.address
     multicall.state_override_supported = lambda _: False
+
+
+@pytest.fixture(scope="function")
+def tellorflex_360_contract(mock_token_contract):
+    account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
+    return account_fake.deploy(
+        TellorFlex360,
+        mock_token_contract.address,
+        1,
+        1,
+        1,
+        "0x5c13cd9c97dbb98f2429c101a2a8150e6c7a0ddaff6124ee176a3a411067ded0",
+    )

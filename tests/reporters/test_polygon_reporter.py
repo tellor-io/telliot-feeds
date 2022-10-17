@@ -3,10 +3,12 @@ from unittest.mock import patch
 import pytest
 import pytest_asyncio
 from brownie import accounts
+from brownie import chain
 from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
@@ -128,12 +130,14 @@ async def test_fetch_gas_price_error(polygon_reporter, caplog):
 
 @pytest.mark.asyncio
 async def test_reporting_without_internet(polygon_reporter, caplog):
+    async def offline():
+        return False
 
     with patch("asyncio.sleep", side_effect=InterruptedError):
 
         r = polygon_reporter
 
-        r.is_online = lambda: False
+        r.is_online = lambda: offline()
 
         with pytest.raises(InterruptedError):
             await r.report()
@@ -154,3 +158,51 @@ async def test_dispute(polygon_reporter: TellorFlexReporter):
     assert (
         "Staked balance has decreased, account might be in dispute; restart telliot to keep reporting" in status.error
     )
+
+
+@pytest.mark.asyncio
+async def test_reset_datafeed(polygon_reporter):
+    # Test when reporter selects qtag vs not
+    # datafeed should persist if qtag selected
+    r: TellorFlexReporter = polygon_reporter
+
+    reporter1 = TellorFlexReporter(
+        oracle=r.oracle,
+        token=r.token,
+        autopay=r.autopay,
+        endpoint=r.endpoint,
+        account=r.account,
+        chain_id=80001,
+        transaction_type=0,
+        datafeed=CATALOG_FEEDS["trb-usd-spot"],
+    )
+    reporter2 = TellorFlexReporter(
+        oracle=r.oracle,
+        token=r.token,
+        autopay=r.autopay,
+        endpoint=r.endpoint,
+        account=r.account,
+        chain_id=80001,
+        transaction_type=0,
+    )
+
+    # Unlocker reporter lock checker
+    async def reporter_lock():
+        return ResponseStatus()
+
+    reporter1.check_reporter_lock = lambda: reporter_lock()
+    reporter2.check_reporter_lock = lambda: reporter_lock()
+
+    async def reprt():
+        for _ in range(3):
+            await reporter1.report_once()
+            assert reporter1.qtag_selected is True
+            assert reporter1.datafeed.query.asset == "trb"
+            chain.sleep(43201)
+
+        for _ in range(3):
+            await reporter2.report_once()
+            assert reporter2.qtag_selected is False
+            chain.sleep(43201)
+
+    _ = await reprt()

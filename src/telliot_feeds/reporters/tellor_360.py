@@ -5,18 +5,18 @@ from datetime import timedelta
 from typing import Any
 from typing import Optional
 from typing import Tuple
-from typing import Union
 
-from chained_accounts import ChainedAccount
 from eth_utils import to_checksum_address
-from telliot_core.contract.contract import Contract
-from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
+from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
+from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.reporter_utils import tellor_suggested_report
 
 
 logger = get_logger(__name__)
@@ -48,51 +48,15 @@ class StakerInfo:
 
 
 class Tellor360Reporter(TellorFlexReporter):
-    def __init__(
-        self,
-        endpoint: RPCEndpoint,
-        account: ChainedAccount,
-        chain_id: int,
-        oracle: Contract,
-        token: Contract,
-        autopay: Contract,
-        stake: float = 0,
-        datafeed: Optional[DataFeed[Any]] = None,
-        expected_profit: Union[str, float] = "YOLO",
-        transaction_type: int = 2,
-        gas_limit: int = 350000,
-        max_fee: Optional[int] = None,
-        priority_fee: int = 100,
-        legacy_gas_price: Optional[int] = None,
-        gas_price_speed: str = "safeLow",
-        wait_period: int = 7,
-    ) -> None:
-
-        self.endpoint = endpoint
-        self.oracle = oracle
-        self.token = token
-        self.autopay = autopay
-        self.stake = stake
-        self.datafeed = datafeed
-        self.chain_id = chain_id
-        self.acct_addr = to_checksum_address(account.address)
-        self.last_submission_timestamp = 0
-        self.expected_profit = expected_profit
-        self.transaction_type = transaction_type
-        self.gas_limit = gas_limit
-        self.max_fee = max_fee
-        self.wait_period = wait_period
-        self.priority_fee = priority_fee
-        self.legacy_gas_price = legacy_gas_price
-        self.gas_price_speed = gas_price_speed
-        self.autopaytip = 0
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        kwargs["stake"]: float = 0
         self.stake_amount: Optional[int] = None
         self.staker_info: Optional[StakerInfo] = None
         self.allowed_stake_amount = 0
+        super().__init__(*args, **kwargs)
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
-        self.account: ChainedAccount = account
         assert self.acct_addr == to_checksum_address(self.account.address)
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
@@ -227,3 +191,39 @@ class Tellor360Reporter(TellorFlexReporter):
             return error_status(msg, log=logger.info)
 
         return ResponseStatus()
+
+    async def rewards(self) -> int:
+        if self.datafeed is not None:
+            fetch_autopay_tip = await fetch_feed_tip(self.autopay, self.datafeed.query.query_id)
+
+        if fetch_autopay_tip is not None:
+            return fetch_autopay_tip
+
+        return 0
+
+    async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
+        """Fetches datafeed suggestion plus the reward amount from autopay if query tag isn't selected
+        if query tag is selected fetches the rewards, if any, for that query tag"""
+        if self.datafeed:
+            self.autopaytip = await self.rewards()
+            return self.datafeed
+        suggested_feed, tip_amount = await get_feed_and_tip(self.autopay)
+
+        if suggested_feed is not None:
+            self.autopaytip = tip_amount  # type: ignore
+            self.datafeed = suggested_feed
+            return self.datafeed
+
+        if suggested_feed is None:
+            suggested_qtag = await tellor_suggested_report(self.oracle)
+            if suggested_qtag is None:
+                logger.warning("Could not suggest query tag")
+                return None
+            elif suggested_qtag not in CATALOG_FEEDS:
+                logger.warning(f"Suggested query tag not in catalog: {suggested_qtag}")
+                return None
+            else:
+                self.datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
+                self.autopaytip = await self.rewards()
+                return self.datafeed
+        return None

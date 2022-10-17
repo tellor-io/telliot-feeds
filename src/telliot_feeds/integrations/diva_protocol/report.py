@@ -26,14 +26,14 @@ from telliot_feeds.integrations.diva_protocol.utils import filter_valid_pools
 from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
 from telliot_feeds.integrations.diva_protocol.utils import update_reported_pools
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
-from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
 
 
-class DIVAProtocolReporter(TellorFlexReporter):
+class DIVAProtocolReporter(Tellor360Reporter):
     """
     DIVA Protocol Reporter
     """

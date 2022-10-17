@@ -29,39 +29,38 @@ except IndexError:
     )
 
 
-@pytest.fixture(scope="module", autouse=True)
-def mock_reporter_contract(mock_flex_contract, mock_token_contract, mock_autopay_contract):
+@pytest.fixture(scope="function")
+def mock_reporter_contract(tellorflex_360_contract, mock_token_contract, mock_autopay_contract):
     """mock custom reporter contract"""
     return account_fake.deploy(
         SampleFlexReporter,
-        mock_flex_contract.address,
+        tellorflex_360_contract.address,
         mock_autopay_contract.address,
         mock_token_contract.address,
-        0,
+        1,
     )
 
 
 @pytest_asyncio.fixture(scope="function")
 async def custom_reporter(
     mumbai_test_cfg,
-    mock_flex_contract,
+    tellorflex_360_contract,
     mock_autopay_contract,
     mock_token_contract,
-    multicall_contract,
     mock_reporter_contract,
 ):
     async with TelliotCore(config=mumbai_test_cfg) as core:
         custom_contract = Contract(mock_reporter_contract.address, mock_reporter_contract.abi, core.endpoint, account)
         custom_contract.connect()
-        flex = core.get_tellorflex_contracts()
-        flex.oracle.address = mock_flex_contract.address
+        flex = core.get_tellor360_contracts()
+        flex.oracle.address = tellorflex_360_contract.address
         flex.autopay.address = mock_autopay_contract.address
+        flex.autopay.abi = mock_autopay_contract.abi
         flex.token.address = mock_token_contract.address
 
         flex.oracle.connect()
         flex.token.connect()
         flex.autopay.connect()
-        flex = core.get_tellorflex_contracts()
 
         r = CustomFlexReporter(
             transaction_type=0,
@@ -72,6 +71,7 @@ async def custom_reporter(
             endpoint=core.endpoint,
             account=account,
             chain_id=80001,
+            gas_limit=3500000,
         )
         # mint token and send to reporter address
         mock_token_contract.mint(account.address, 1000e18)
@@ -80,13 +80,14 @@ async def custom_reporter(
         mock_token_contract.approve(mock_autopay_contract.address, 10e18)
 
         mock_autopay_contract.tip(
-            "0x000000000000000000000000000000000000000000000000000000000000003b",
+            "0xd913406746edf7891a09ffb9b26a12553bbf4d25ecf8e530ec359969fe6a7a9c",
             int(10e18),
-            "0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000d4c656761637952657175657374000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000003b",  # noqa: E501
+            "0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000953706f745072696365000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000003646169000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000037573640000000000000000000000000000000000000000000000000000000000",  # noqa: E501
         )
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
-        accounts[1].transfer()
+        # init governance address
+        await flex.oracle.write("init", _governanceAddress=accounts[0].address, gas_limit=3500000, legacy_gas_price=1)
 
         return r
 
@@ -110,10 +111,9 @@ async def test_ensure_profitable(custom_reporter):
 
 @pytest.mark.asyncio
 async def test_submit_once(custom_reporter):
-    r = custom_reporter
+    r: CustomFlexReporter = custom_reporter
     receipt, status = await r.report_once()
-    if status.ok:
-        assert receipt["status"] == 1
+    assert status.ok
 
 
 @pytest.mark.asyncio
@@ -166,4 +166,4 @@ async def test_fetch_gas_price_error(custom_reporter, caplog):
     staked, status = await r.ensure_staked()
     assert not staked
     assert not status.ok
-    assert "Unable to fetch matic gas price for staking" in status.error
+    assert "Unable to fetch gas price for staking" in status.error
