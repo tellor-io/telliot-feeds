@@ -24,8 +24,8 @@ def fake_call(calls: AutopayCalls):
     ]
 
 
-@pytest.fixture
-async def setup_autopay_call(mumbai_test_cfg, mock_autopay_contract, multicall_contract) -> AutopayCalls:
+@pytest.fixture(scope="function")
+async def setup_autopay_call(mumbai_test_cfg, mock_autopay_contract) -> AutopayCalls:
     async with TelliotCore(config=mumbai_test_cfg) as core:
 
         flex = core.get_tellorflex_contracts()
@@ -37,13 +37,10 @@ async def setup_autopay_call(mumbai_test_cfg, mock_autopay_contract, multicall_c
 
 @pytest.mark.asyncio
 async def test_get_current_tips(setup_autopay_call):
-    """Test Multicall by calling getCurrentTip in autopay
-
-    note: getCurrentTip reverts if there are no tips for a given queryid
-    """
+    """Test Multicall by calling getCurrentTip in autopay"""
     calls: AutopayCalls = await setup_autopay_call
     tips = await calls.get_current_tip(require_success=False)
-    assert tips["eth-usd-spot"] is None
+    assert tips["eth-usd-spot"] == 0
 
 
 @pytest.mark.asyncio
