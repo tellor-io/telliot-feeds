@@ -39,7 +39,7 @@ def test_decode_submit_val_bytes():
     submitted_val_bytes = "0x00000000000000000000000000000000000000000000000180b1392215d3fb8f"
     runner = CliRunner()
     result = runner.invoke(
-        cli_main, ["query", "decode", "-svb", submitted_val_bytes], input="2"  # User chooses SpotPrice
+        cli_main, ["query", "decode", "-svb", submitted_val_bytes], input="1"  # User chooses SpotPrice
     )
 
     assert "Decoded value: 27.72" in result.output
@@ -48,7 +48,7 @@ def test_decode_submit_val_bytes():
 def test_decode_submit_val_bytes_fail():
     submitted_val_bytes = "0x00000000000000000000000000000000000000000000000180b1392215d3fb8f"
     runner = CliRunner()
-    result = runner.invoke(cli_main, ["query", "decode", "-svb", submitted_val_bytes], input="5")
+    result = runner.invoke(cli_main, ["query", "decode", "-svb", submitted_val_bytes], input="3")
 
     assert "Unable to decode value using query type: Snapshot" in result.output
 
