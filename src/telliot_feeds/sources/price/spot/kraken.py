@@ -55,7 +55,7 @@ class KrakenSpotPriceService(WebPriceService):
             try:
                 price = (
                     float(response["result"][f"X{asset}Z{currency}"]["c"][0])
-                    if asset == "XBT"
+                    if asset in ("XBT", "ETH")
                     else float(response["result"][f"{asset}{currency}"]["c"][0])
                 )
             except KeyError as e:
