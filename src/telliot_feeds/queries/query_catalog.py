@@ -4,7 +4,6 @@ from telliot_feeds.queries.catalog import Catalog
 from telliot_feeds.queries.daily_volatility import DailyVolatility
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
-from telliot_feeds.queries.morphware import Morphware
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.queries.price.twap import TWAP
@@ -82,11 +81,6 @@ query_catalog.add_entry(
     q=SpotPrice(asset="usdc", currency="usd"),
 )
 
-query_catalog.add_entry(
-    tag="morphware-v1",
-    title="Morphware version 1",
-    q=Morphware(version=1),
-)
 
 query_catalog.add_entry(
     tag="gas-price-oracle-example",
