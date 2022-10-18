@@ -27,7 +27,7 @@ async def test_etherscan_gas_error(caplog):
         assert "Connection timeout" in caplog.text
 
     def json_decode_error(*args, **kwargs):
-        raise requests.exceptions.JSONDecodeError()
+        raise requests.exceptions.JSONDecodeError("JSON decode error", "", 0)
 
     with mock.patch("json.loads", side_effect=json_decode_error):
         c = EtherscanGasPriceSource()
