@@ -63,7 +63,7 @@ async def get_feed_and_tip(
 
         if datafeed is not None:
             query = listener_filter.get_query_from_qtyp_name(query_data)
-            datafeed.query = query
+            datafeed.query = query  # type: ignore
             for param in datafeed.query.__dict__.keys():
                 val = getattr(query, param)
                 setattr(datafeed.source, param, val)

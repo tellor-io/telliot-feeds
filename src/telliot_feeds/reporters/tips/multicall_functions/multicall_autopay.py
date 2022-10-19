@@ -38,6 +38,9 @@ class MulticallAutopay(CallFunctions):
         if not status.ok:
             return None, status
 
+        if not multiple_values_response:
+            return None, error_status("No response returned from getMultipleValuesBefore batch multicall")
+
         for feed in feeds:
             values = multiple_values_response[("values_array", feed.query_id)]
             timestamps = multiple_values_response[("timestamps_array", feed.query_id)]
@@ -56,7 +59,7 @@ class MulticallAutopay(CallFunctions):
 
     async def rewards_claimed_status_call(
         self, feeds: list[QueryIdandFeedDetails]
-    ) -> tuple[Optional[dict[tuple[Optional[bytes], Optional[bytes]], int]], ResponseStatus]:
+    ) -> tuple[Optional[dict[tuple[bytes, bytes], int]], ResponseStatus]:
         """Batch call getRewardClaimStatusList
 
         Args:
