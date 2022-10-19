@@ -6,11 +6,11 @@ from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.utils.timestamp import TimeStamp
 
 from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.reporters.tips.funded_feeds.funded_feeds import FundedFeeds
+from telliot_feeds.reporters.tips.listener.funded_feeds import FundedFeeds
 from telliot_feeds.reporters.tips.listener.tip_listener_filter import TipListenerFilter
 from telliot_feeds.reporters.tips.listener.utils import get_sorted_tips
 from telliot_feeds.reporters.tips.multicall_functions.multicall_autopay import MulticallAutopay
-from telliot_feeds.reporters.tips.onetime.one_time_tips import get_funded_one_time_tips
+from telliot_feeds.reporters.tips.listener.one_time_tips import get_funded_one_time_tips
 from telliot_feeds.utils.log import get_logger
 
 
