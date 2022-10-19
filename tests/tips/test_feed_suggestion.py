@@ -28,8 +28,6 @@ async def test_funded_feeds_only(setup_datafeed, caplog):
     assert isinstance(tip, int)
     assert tip == int(1e18)
     assert "No one time tip funded queries available" in caplog.text
-    # tests are failing when ran together
-    yield
 
 
 @pytest.mark.asyncio
@@ -51,9 +49,7 @@ async def test_fetching_tips(tip_feeds_and_one_time_tips):
     datafeed, tip = await get_feed_and_tip(flex.autopay)
     assert isinstance(datafeed, DataFeed)
     assert isinstance(tip, int)
-    assert tip == 27e18
-    # tests are failing when ran together
-    yield
+    assert tip == 25e18
 
 
 @pytest.mark.asyncio
