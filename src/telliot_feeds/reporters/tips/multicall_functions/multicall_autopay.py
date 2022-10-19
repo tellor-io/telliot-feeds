@@ -3,11 +3,11 @@ from typing import Optional
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
-from telliot_feeds.reporters.tips.funded_feeds.call_functions import CallFunctions
 from telliot_feeds.reporters.tips.listener.dtypes import FeedDetails
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
 from telliot_feeds.reporters.tips.listener.dtypes import Values
 from telliot_feeds.reporters.tips.listener.utils import handler_func
+from telliot_feeds.reporters.tips.multicall_functions.call_functions import CallFunctions
 
 
 class MulticallAutopay(CallFunctions):
@@ -38,6 +38,9 @@ class MulticallAutopay(CallFunctions):
         if not status.ok:
             return None, status
 
+        if not multiple_values_response:
+            return None, error_status("No response returned from getMultipleValuesBefore batch multicall")
+
         for feed in feeds:
             values = multiple_values_response[("values_array", feed.query_id)]
             timestamps = multiple_values_response[("timestamps_array", feed.query_id)]
@@ -56,7 +59,7 @@ class MulticallAutopay(CallFunctions):
 
     async def rewards_claimed_status_call(
         self, feeds: list[QueryIdandFeedDetails]
-    ) -> tuple[Optional[dict[tuple[Optional[bytes], Optional[bytes]], int]], ResponseStatus]:
+    ) -> tuple[Optional[dict[tuple[bytes, bytes], int]], ResponseStatus]:
         """Batch call getRewardClaimStatusList
 
         Args:
