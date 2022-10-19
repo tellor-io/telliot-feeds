@@ -140,7 +140,7 @@ async def test_bittrex(caplog):
     """Test retrieving from Bittrex price source."""
     v, t = await get_price("btc", "usd", service["bittrex"])
 
-    if "Bittrex API rate limit exceeded" in caplog.text:
+    if "Unable to decode Bittrex JSON" in caplog.text:
         assert v is None
         assert t is None
     else:
