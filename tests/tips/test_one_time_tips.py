@@ -5,8 +5,8 @@ from eth_abi import decode_single
 from eth_abi import encode_abi
 from web3 import Web3
 
-from telliot_feeds.reporters.tips.listener.tip_listener_filter import TipListenerFilter
 from telliot_feeds.reporters.tips.listener.one_time_tips import get_funded_one_time_tips
+from telliot_feeds.reporters.tips.listener.tip_listener_filter import TipListenerFilter
 
 
 filtr = TipListenerFilter()

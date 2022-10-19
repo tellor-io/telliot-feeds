@@ -3,11 +3,11 @@ from typing import Optional
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
-from telliot_feeds.reporters.tips.multicall_functions.call_functions import CallFunctions
 from telliot_feeds.reporters.tips.listener.dtypes import FeedDetails
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
 from telliot_feeds.reporters.tips.listener.dtypes import Values
 from telliot_feeds.reporters.tips.listener.utils import handler_func
+from telliot_feeds.reporters.tips.multicall_functions.call_functions import CallFunctions
 
 
 class MulticallAutopay(CallFunctions):
