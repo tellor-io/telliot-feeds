@@ -138,5 +138,4 @@ async def setup_one_time_tips(autopay_contract_setup):
 @pytest.fixture(scope="function")
 async def tip_feeds_and_one_time_tips(setup_datafeed, setup_one_time_tips):
     """Initialize both fixtures for datafeeds and one time tips"""
-    _ = await setup_datafeed
     return await setup_one_time_tips
