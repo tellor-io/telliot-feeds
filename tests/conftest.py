@@ -31,9 +31,11 @@ def shared_setup(module_isolation):
     pass
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session")
 def event_loop():
-    return asyncio.get_event_loop()
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(scope="module", autouse=True)
