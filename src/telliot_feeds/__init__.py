@@ -6,4 +6,4 @@ registry = PluginRegistry()
 # registry.register_feed(btc_usd_legacy_feed)
 
 
-__version__ = "0.1.2"
+__version__ = "0.1.3dev0"
