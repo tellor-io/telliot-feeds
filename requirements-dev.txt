@@ -11,4 +11,3 @@ mypy-extensions
 types-requests
 types-PyYAML
 tox
-simple-term-menu

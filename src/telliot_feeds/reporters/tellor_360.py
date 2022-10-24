@@ -12,6 +12,7 @@ from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds import DataFeed
+from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
@@ -196,10 +197,13 @@ class Tellor360Reporter(TellorFlexReporter):
         if self.datafeed is not None:
             fetch_autopay_tip = await fetch_feed_tip(self.autopay, self.datafeed.query.query_id)
 
-        if fetch_autopay_tip is not None:
-            return fetch_autopay_tip
+        if self.chain_id == 1 or self.chain_id == 5:
+            time_based_rewards = await get_time_based_rewards(self.oracle)
 
-        return 0
+        if fetch_autopay_tip is not None:
+            return fetch_autopay_tip + time_based_rewards
+
+        return time_based_rewards
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         """Fetches datafeed suggestion plus the reward amount from autopay if query tag isn't selected
