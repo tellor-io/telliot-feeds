@@ -81,14 +81,13 @@ async def test_report(tellor_360, caplog):
     assert "Currently in reporter lock. Time left: 5:59" in caplog.text  # 6hr
 
 @pytest.mark.asyncio
-async def test_get_time_based_rewards(reporter_360, caplog):
+async def test_get_time_based_rewards(tellor_360, caplog):
 
-    r: Tellor360Reporter = reporter_360
-    r.chain_id = 1
+    contracts, _ = tellor_360
 
-    tbr = await get_time_based_rewards(r.oracle)
+    tbr = await get_time_based_rewards(contracts.oracle)
 
-    assert tbr > 0
+    assert tbr >= 0
     assert isinstance(tbr, int)
 
     

@@ -1,6 +1,5 @@
 """Utilities for calculating time-based rewards (TBR)"""
 
-from typing import Optional
 from telliot_feeds.utils.contract import Contract
 
 from telliot_feeds.utils.log import get_logger
@@ -21,5 +20,5 @@ async def get_time_based_rewards(oracle: Contract) -> int:
         return tbr
 
     else:
-        logger.warning("Unable to calculate time-based rewards for reporter")
-        return 0, status
+        logger.warning("Unable to calculate time-based rewards for reporter: " + status.error)
+        return 0
