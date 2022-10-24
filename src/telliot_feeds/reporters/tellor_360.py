@@ -49,12 +49,12 @@ class StakerInfo:
 
 
 class Tellor360Reporter(TellorFlexReporter):
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        kwargs["stake"]: float = 0
+    def __init__(self, stake: float = 0, *args: Any, **kwargs: Any) -> None:
         self.stake_amount: Optional[int] = None
         self.staker_info: Optional[StakerInfo] = None
         self.allowed_stake_amount = 0
         super().__init__(*args, **kwargs)
+        self.stake: float = stake
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 

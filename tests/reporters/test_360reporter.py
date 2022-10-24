@@ -11,7 +11,7 @@ txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
 
 
 @pytest_asyncio.fixture(scope="function")
-async def reporter_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_contract, mock_token_contract):
+async def tellor_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_contract, mock_token_contract):
     async with TelliotCore(config=mumbai_test_cfg) as core:
 
         account = core.get_account()
@@ -26,33 +26,31 @@ async def reporter_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_co
         tellor360.oracle.connect()
         tellor360.token.connect()
         tellor360.autopay.connect()
-        tellor360 = core.get_tellor360_contracts()
-
-        r = Tellor360Reporter(
-            oracle=tellor360.oracle,
-            token=tellor360.token,
-            autopay=tellor360.autopay,
-            endpoint=core.endpoint,
-            account=account,
-            chain_id=80001,
-            transaction_type=0,
-        )
 
         # mint token and send to reporter address
-        mock_token_contract.mint(account.address, 1000e18)
+        mock_token_contract.mint(account.address, 100000e18)
 
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
         # init governance address
         await tellor360.oracle.write("init", _governanceAddress=accounts[0].address, **txn_kwargs)
 
-        return r
+        return tellor360, account
 
 
 @pytest.mark.asyncio
-async def test_report(reporter_360, caplog):
+async def test_report(tellor_360, caplog):
     """Test 360 reporter deposit and balance changes when stakeAmount changes"""
-    r: Tellor360Reporter = reporter_360
+    contracts, account = tellor_360
+    r = Tellor360Reporter(
+        oracle=contracts.oracle,
+        token=contracts.token,
+        autopay=contracts.autopay,
+        endpoint=contracts.oracle.node,
+        account=account,
+        chain_id=80001,
+        transaction_type=0,
+    )
 
     await r.report_once()
     assert r.staker_info.stake_balance == int(1e18)
@@ -94,3 +92,38 @@ async def test_get_time_based_rewards(reporter_360, caplog):
     assert isinstance(tbr, int)
 
     
+
+@pytest.mark.asyncio
+async def test_adding_stake(tellor_360):
+    """Test 360 reporter depositing more stake"""
+    contracts, account = tellor_360
+    reporter_kwargs = {
+        "oracle": contracts.oracle,
+        "token": contracts.token,
+        "autopay": contracts.autopay,
+        "endpoint": contracts.oracle.node,
+        "account": account,
+        "chain_id": 80001,
+        "transaction_type": 0,
+    }
+    reporter = Tellor360Reporter(**reporter_kwargs)
+
+    # check stake amount
+    stake_amount, status = await reporter.oracle.read("getStakeAmount")
+    assert status.ok
+    assert stake_amount == int(1e18), "Should be 1e18"
+
+    # check default stake value
+    assert reporter.stake == 0
+
+    # first should deposits default stake
+    _, status = await reporter.report_once()
+    assert status.ok
+    assert reporter.staker_info.stake_balance == int(1e18), "Staker balance should be 1e18"
+
+    # stake more by by changing stake from default similar to how a stake amount chosen in cli
+    # high stake to bypass reporter lock
+    reporter = Tellor360Reporter(**reporter_kwargs, stake=90000)
+    _, status = await reporter.report_once()
+    assert status.ok
+    assert reporter.staker_info.stake_balance == pytest.approx(90000e18), "Staker balance should be 90000e18"
