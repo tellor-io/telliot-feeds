@@ -89,7 +89,7 @@ async def test_get_time_based_rewards(tellor_360, caplog):
 
     assert tbr >= 0
     assert isinstance(tbr, int)
-
+    assert "not found in contract abi" not in caplog.text
     
 
 @pytest.mark.asyncio
