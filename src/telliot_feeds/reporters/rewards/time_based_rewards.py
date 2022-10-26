@@ -1,10 +1,10 @@
 """Utilities for calculating time-based rewards (TBR)"""
-
 from telliot_core.tellor.tellor360.oracle import Tellor360OracleContract
 
 from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
+
 
 async def get_time_based_rewards(oracle: Tellor360OracleContract) -> int:
     """
@@ -13,7 +13,9 @@ async def get_time_based_rewards(oracle: Tellor360OracleContract) -> int:
     minus the TRB staking rewards and
     the totalStakeAmount
     """
-    
+
+    tbr: int
+
     tbr, status = await oracle.read("getTotalTimeBasedRewardsBalance")
 
     if status.ok:

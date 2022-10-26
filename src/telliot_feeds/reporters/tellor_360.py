@@ -195,10 +195,10 @@ class Tellor360Reporter(TellorFlexReporter):
 
     async def rewards(self) -> int:
         if self.datafeed is not None:
-            fetch_autopay_tip = await fetch_feed_tip(self.autopay, self.datafeed.query.query_id)
+            fetch_autopay_tip: int = await fetch_feed_tip(self.autopay, self.datafeed.query.query_id)
 
         if self.chain_id == 1 or self.chain_id == 5:
-            time_based_rewards = await get_time_based_rewards(self.oracle)
+            time_based_rewards: int = await get_time_based_rewards(self.oracle)
 
         if fetch_autopay_tip is not None:
             return fetch_autopay_tip + time_based_rewards
