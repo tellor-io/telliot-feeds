@@ -18,7 +18,7 @@ async def test_webpriceservice_errors(caplog):
 
     def json_decode_error(*args, **kwargs):
         """Override get method and raise JSONDecodeError"""
-        raise requests.exceptions.JSONDecodeError()
+        raise requests.exceptions.JSONDecodeError("JSON Decode Error", "", 0)
 
     with mock.patch("requests.Session.get", side_effect=json_decode_error):
         wsp = FakePriceService(name="FakePriceService", url="https://fakeurl.xyz")

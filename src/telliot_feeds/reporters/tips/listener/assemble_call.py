@@ -1,6 +1,4 @@
 from typing import Any
-from typing import Callable
-from typing import Iterable
 from typing import Optional
 
 from multicall import Call
@@ -39,9 +37,7 @@ class AssembleCall:
             msg = "multicall failed to fetch data"
             return None, error_status(note=msg, e=e)
 
-    def assemble_call_object(
-        self, func_sig: str, returns: Iterable[tuple[str, Callable[..., Any]]], **kwargs: dict[Any, Any]
-    ) -> Call:
+    def assemble_call_object(self, func_sig: str, returns: list[Any], **kwargs: Any) -> Call:
         """Assemble a single Call object to use in a batch call through multicall
 
         Args:

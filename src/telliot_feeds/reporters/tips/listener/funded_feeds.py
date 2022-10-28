@@ -82,7 +82,7 @@ class FundedFeeds(FundedFeedFilter):
             feeds=catalog_supported_feeds, now_timestamp=now_timestamp, max_age=month_old_timestamp, max_count=40_000
         )
 
-        if not status.ok:
+        if not status.ok or not feeds_timestsamps_and_values_lis:
             return None, status
 
         # filter out feeds that aren't eligible to submit for NOW

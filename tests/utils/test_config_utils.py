@@ -73,13 +73,14 @@ def test_update_all_configs(mock_config):
         mock.patch("telliot_feeds.utils.cfg.setup_account", return_value=mock_account()),
     ):
         file_before = cfg._ep_config_file.get_config()
+        assert mock_endpoint not in file_before.endpoints
         cfg, account = setup_config(cfg=cfg, account_name="mock-account")
         assert cfg.main.chain_id == new_chain_id
         assert check_endpoint(cfg) == mock_endpoint
         assert "mock-account" in account.name
         file_after = cfg._ep_config_file.get_config()
-
-        assert len(file_after.endpoints) > len(file_before.endpoints)
+        assert mock_endpoint in file_after.endpoints
+        # assert len(file_after.endpoints) > len(file_before.endpoints)
 
 
 def test_prompt_for_endpoint():

@@ -40,13 +40,13 @@ async def fetch_feed_tip(
         query_id=query_id, now_timestamp=timestamp, month_old_timestamp=month_old
     )
 
-    if not status.ok:
+    if not status.ok or not results:
         return tip_amount
 
     # get query id timestamps list and feed ids datafeed
     timestamps_list_and_datafeed, status = await call.timestamp_datafeed(results)
 
-    if not status.ok:
+    if not status.ok or not timestamps_list_and_datafeed:
         return tip_amount
 
     # filter out uneligible feeds
