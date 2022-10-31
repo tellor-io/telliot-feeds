@@ -85,9 +85,6 @@ async def test_report(tellor_360, caplog):
 async def test_get_time_based_rewards(tellor_360, caplog):
 
     contracts, _ = tellor_360
-
-    print(contracts.oracle.abi)
-
     tbr = await get_time_based_rewards(contracts.oracle)
 
     assert tbr >= 0
