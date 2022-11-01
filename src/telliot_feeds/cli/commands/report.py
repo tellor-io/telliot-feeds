@@ -250,17 +250,6 @@ def reporter() -> None:
     default=False,
 )
 @click.option(
-    "--diva-diamond-address",
-    "-dda",
-    "diva_diamond_address",
-    help="DIVA Protocol contract address",
-    nargs=1,
-    type=click.UNPROCESSED,
-    callback=validate_address,
-    default=DIVA_DIAMOND_ADDRESS,
-    prompt=False,
-)
-@click.option(
     "--diva-middleware-address",
     "-dma",
     "diva_middleware_address",
