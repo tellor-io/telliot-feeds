@@ -494,6 +494,14 @@ contract TellorFlex360 {
     }
 
     /**
+     * @dev Returns total balance of time based rewards in contract
+     * @return uint256 amount of trb
+     */
+    function getTotalTimeBasedRewardsBalance() external view returns (uint256) {
+        return token.balanceOf(address(this)) - (totalStakeAmount + stakingRewardsBalance);
+    }
+
+    /**
      * @dev Returns whether a given value is disputed
      * @param _queryId unique ID of the data feed
      * @param _timestamp timestamp of the value
