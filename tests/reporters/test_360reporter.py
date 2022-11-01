@@ -93,6 +93,23 @@ async def test_get_time_based_rewards(tellor_360, caplog):
 
 
 @pytest.mark.asyncio
+async def test_360_reporter_rewards(tellor_360, caplog):
+
+    contracts, account = tellor_360
+    r = Tellor360Reporter(
+        oracle=contracts.oracle,
+        token=contracts.token,
+        autopay=contracts.autopay,
+        endpoint=contracts.oracle.node,
+        account=account,
+        chain_id=80001,
+        transaction_type=0,
+    )
+
+    assert isinstance(await r.rewards(), int)
+
+
+@pytest.mark.asyncio
 async def test_adding_stake(tellor_360):
     """Test 360 reporter depositing more stake"""
     contracts, account = tellor_360
