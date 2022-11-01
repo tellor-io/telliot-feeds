@@ -91,6 +91,22 @@ async def test_get_time_based_rewards(tellor_360, caplog):
     assert isinstance(tbr, int)
     assert "not found in contract abi" not in caplog.text
 
+@pytest.mark.asyncio
+async def test_360_reporter_rewards(tellor_360, caplog):
+
+    contracts, account = tellor_360
+    r = Tellor360Reporter(
+        oracle=contracts.oracle,
+        token=contracts.token,
+        autopay=contracts.autopay,
+        endpoint=contracts.oracle.node,
+        account=account,
+        chain_id=80001,
+        transaction_type=0,
+    )
+
+    assert isinstance(await r.rewards(), int)
+
 
 @pytest.mark.asyncio
 async def test_adding_stake(tellor_360):
