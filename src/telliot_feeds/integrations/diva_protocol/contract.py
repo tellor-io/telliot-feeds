@@ -93,7 +93,10 @@ class DivaOracleTellorContract(Contract):
         account: Optional[ChainedAccount] = None,
     ):
         chain_id = node.chain_id
-        contract_info = contract_directory.find(chain_id=chain_id, name="diva-oracle-tellor")[0]
+        try:
+            contract_info = contract_directory.find(chain_id=chain_id, name="diva-oracle-tellor")[0]
+        except IndexError:
+            raise Exception(f"DIVA Tellor middleware contract not found on chain_id {chain_id}")
         if not contract_info:
             raise Exception(f"diva-oracle-tellor contract info not found on chain_id {chain_id}")
 
