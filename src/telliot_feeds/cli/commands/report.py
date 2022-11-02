@@ -384,8 +384,12 @@ async def report(
                     abi = ContractInfo(
                         name=None, org=None, address={int(core.config.main.chain_id): custom_contract_reporter}
                     ).get_abi(chain_id=core.config.main.chain_id)
-                except Exception:
-                    print("Unable to fetch contract abi, consider adding abi using -abi flag!")
+                except ValueError:
+                    click.echo(f"No URL to fetch ABI for chain ID {core.config.main.chain_id}")
+                    return
+                except Exception as e:
+                    click.echo(f"Error fetching custom contract ABI: {e}")
+                    click.echo("Consider adding the ABI using -abi flag!")
                     return
             custom_contract = Contract(custom_contract_reporter, abi, core.endpoint, account)
             custom_contract.connect()
