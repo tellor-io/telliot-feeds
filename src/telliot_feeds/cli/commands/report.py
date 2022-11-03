@@ -280,7 +280,7 @@ def reporter() -> None:
     default=None,
     type=str,
 )
-@click.option("--flex-360/--old-flex", default=True, help="Choose between tellor360 reporter or old flex")
+@click.option("--tellor-360/--tellor-flex", "-360/-flex", "tellor_360", default=True, help="Choose between Tellor 360 or Flex contracts")
 @click.option("--binary-interface", "-abi", "abi", nargs=1, default=None, type=str)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
@@ -312,7 +312,7 @@ async def report(
     autopay_address: str,
     custom_contract_reporter: Optional[str],
     abi: Optional[str],
-    flex_360: bool,
+    tellor_360: bool,
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
@@ -449,7 +449,7 @@ async def report(
         }
 
         # Report to Polygon TellorFlex
-        if core.config.main.chain_id in TELLOR_X_CHAINS and not flex_360:
+        if core.config.main.chain_id in TELLOR_X_CHAINS and not tellor_360:
             # Report to TellorX
             tellorx = core.get_tellorx_contracts()
             if oracle_address:
@@ -479,7 +479,7 @@ async def report(
         else:
 
             stake = get_stake_amount()
-            contracts = core.get_tellor360_contracts() if flex_360 else core.get_tellorflex_contracts()
+            contracts = core.get_tellor360_contracts() if tellor_360 else core.get_tellorflex_contracts()
 
             if oracle_address:
                 contracts.oracle.address = oracle_address
@@ -498,7 +498,7 @@ async def report(
             common_reporter_kwargs["stake"] = stake
             common_reporter_kwargs["expected_profit"] = expected_profit
             # selecting the right reporter will be changed after the switch
-            if flex_360:
+            if tellor_360:
                 if rng_auto:
                     reporter = RNGReporter(  # type: ignore
                         wait_period=120 if wait_period < 120 else wait_period,
