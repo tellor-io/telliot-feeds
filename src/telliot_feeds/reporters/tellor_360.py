@@ -6,7 +6,9 @@ from typing import Any
 from typing import Optional
 from typing import Tuple
 
+import requests
 from eth_utils import to_checksum_address
+from telliot_core.gas.legacy_gas import ethgasstation
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
@@ -18,7 +20,6 @@ from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
-
 
 logger = get_logger(__name__)
 
@@ -235,3 +236,32 @@ class Tellor360Reporter(TellorFlexReporter):
                 self.autopaytip = await self.rewards()
                 return self.datafeed
         return None
+
+    async def fetch_gas_price(self, speed: Optional[str] = None) -> Optional[int]:
+        mainnet = (1, 5)
+        if speed is None:
+            speed = "fast" if self.chain_id in mainnet else "safeLow"
+
+        if self.chain_id in mainnet:
+            return await ethgasstation(speed)  # type: ignore
+
+        else:
+            """Fetch estimated gas prices for Polygon mainnet."""
+            try:
+                prices = requests.get("https://gasstation-mainnet.matic.network").json()
+            except requests.JSONDecodeError:
+                logger.error("Error decoding JSON response from matic gas station")
+                return None
+            except Exception as e:
+                logger.error(f"Error fetching matic gas prices: {e}")
+                return None
+
+            if speed not in prices:
+                logger.error(f"Invalid gas price speed for matic gasstation: {speed}")
+                return None
+
+            if prices[speed] is None:
+                logger.error("Unable to fetch gas price from matic gasstation")
+                return None
+
+            return int(prices[speed])
