@@ -4,6 +4,7 @@ from typing import Callable
 from typing import get_args
 from typing import get_type_hints
 from typing import Optional
+from typing import Union
 
 import click
 from chained_accounts import ChainedAccount
@@ -22,6 +23,86 @@ from telliot_feeds.queries.abi_query import AbiQuery
 DIVA_PROTOCOL_CHAINS = (137, 80001, 3, 5)
 
 load_dotenv()
+
+
+def get_stake_amount() -> float:
+    """Retrieve desired stake amount from user
+
+    Each stake is 10 TRB on TellorFlex Polygon. If an address
+    is not staked for any reason, the TellorFlexReporter will attempt
+    to stake. Number of stakes determines the reporter lock:
+
+    reporter_lock = 12hrs / N * stakes
+
+    Retrieves desidred stake amount from user input."""
+
+    warn = (
+        "\n\U00002757Telliot will automatically stake more TRB "
+        "if your stake is below or falls below the stake amount required to report.\n"
+        "If you would like to stake more than required enter the TOTAL stake amount you wish to be staked.\n"
+    )
+    click.echo(warn)
+    msg = "Enter amount TRB to stake if unstaked"
+    stake = click.prompt(msg, type=float, default=10.0, show_default=True)
+    assert isinstance(stake, float)
+    assert stake >= 10.0
+
+    return stake
+
+
+def print_reporter_settings(
+    signature_address: str,
+    query_tag: str,
+    gas_limit: int,
+    priority_fee: Optional[int],
+    expected_profit: str,
+    chain_id: int,
+    max_fee: Optional[int],
+    transaction_type: int,
+    legacy_gas_price: Optional[int],
+    gas_price_speed: str,
+    reporting_diva_protocol: bool,
+) -> None:
+    """Print user settings to console."""
+    click.echo("")
+
+    if signature_address != "":
+        click.echo("⚡🤖⚡ Reporting through Flashbots relay ⚡🤖⚡")
+        click.echo(f"Signature account: {signature_address}")
+
+    if query_tag:
+        click.echo(f"Reporting query tag: {query_tag}")
+    elif reporting_diva_protocol:
+        click.echo("Reporting & settling DIVA Protocol pools")
+    else:
+        click.echo("Reporting with synchronized queries")
+
+    click.echo(f"Current chain ID: {chain_id}")
+
+    if expected_profit == "YOLO":
+        click.echo("🍜🍜🍜 Reporter not enforcing profit threshold! 🍜🍜🍜")
+    else:
+        click.echo(f"Expected percent profit: {expected_profit}%")
+
+    click.echo(f"Transaction type: {transaction_type}")
+    click.echo(f"Gas Limit: {gas_limit}")
+    click.echo(f"Legacy gas price (gwei): {legacy_gas_price}")
+    click.echo(f"Max fee (gwei): {max_fee}")
+    click.echo(f"Priority fee (gwei): {priority_fee}")
+    click.echo(f"Gas price speed: {gas_price_speed}\n")
+
+
+def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
+    """Parses user input expected profit and ensures
+    the input is either a float or the string 'YOLO'."""
+    if expected_profit == "YOLO":
+        return expected_profit
+    else:
+        try:
+            return float(expected_profit)
+        except ValueError:
+            click.echo("Not a valid profit input. Enter float or the string, 'YOLO'")
+            return None
 
 
 def reporter_cli_core(ctx: click.Context) -> TelliotCore:
