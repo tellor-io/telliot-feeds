@@ -3,6 +3,7 @@ import pytest_asyncio
 from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 
+from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 
@@ -78,6 +79,34 @@ async def test_report(tellor_360, caplog):
 
     await r.report_once()
     assert "Currently in reporter lock. Time left: 5:59" in caplog.text  # 6hr
+
+
+@pytest.mark.asyncio
+async def test_get_time_based_rewards(tellor_360, caplog):
+
+    contracts, _ = tellor_360
+    tbr = await get_time_based_rewards(contracts.oracle)
+
+    assert tbr >= 0
+    assert isinstance(tbr, int)
+    assert "not found in contract abi" not in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_360_reporter_rewards(tellor_360, caplog):
+
+    contracts, account = tellor_360
+    r = Tellor360Reporter(
+        oracle=contracts.oracle,
+        token=contracts.token,
+        autopay=contracts.autopay,
+        endpoint=contracts.oracle.node,
+        account=account,
+        chain_id=80001,
+        transaction_type=0,
+    )
+
+    assert isinstance(await r.rewards(), int)
 
 
 @pytest.mark.asyncio
