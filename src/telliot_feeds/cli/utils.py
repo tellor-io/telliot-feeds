@@ -101,8 +101,7 @@ def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
         try:
             return float(expected_profit)
         except ValueError:
-            click.echo("Not a valid profit input. Enter float or the string, 'YOLO'")
-            return None
+            raise click.BadParameter("Not a valid profit input. Enter float or the string, 'YOLO'")
 
 
 def reporter_cli_core(ctx: click.Context) -> TelliotCore:
@@ -271,3 +270,14 @@ def validate_address(ctx: click.Context, param: Any, value: str) -> str:
         return str(to_checksum_address(value))
     except Exception as e:
         raise click.BadParameter(f"Address must be a valid hex string. Error: {e}")
+
+
+def valid_transaction_type(ctx: click.Context, param: Any, value: str) -> int:
+    """Ensure input is a valid transaction type"""
+    supported = (0, 2)
+    try:
+        if int(value) in supported:
+            return int(value)
+        raise click.BadParameter(f"Transaction type given ({value}) is not supported ({supported}).")
+    except ValueError:
+        raise click.BadParameter("Transaction type must be an integer.")

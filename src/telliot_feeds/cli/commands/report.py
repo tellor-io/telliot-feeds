@@ -18,6 +18,7 @@ from telliot_feeds.cli.utils import validate_address
 from telliot_feeds.cli.utils import get_stake_amount
 from telliot_feeds.cli.utils import print_reporter_settings
 from telliot_feeds.cli.utils import parse_profit_input
+from telliot_feeds.cli.utils import valid_transaction_type
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.tellor_rng_feed import assemble_rng_datafeed
@@ -102,7 +103,9 @@ def reporter() -> None:
     help="lower threshold (inclusive) for expected percent profit",
     nargs=1,
     # User can omit profitability checks by specifying "YOLO"
-    type=Union[click.Choice(["YOLO"]), float],
+    type=click.UNPROCESSED,
+    required=False,
+    callback=parse_profit_input,
     default="100.0",
 )
 @click.option(
@@ -110,7 +113,9 @@ def reporter() -> None:
     "-tx",
     "tx_type",
     help="choose transaction type (0 for legacy txs, 2 for EIP-1559)",
-    type=int,
+    type=click.UNPROCESSED,
+    required=False,
+    callback=valid_transaction_type,
     default=0,
 )
 @click.option(
@@ -258,13 +263,6 @@ async def report(
     tellor_360: bool,
 ) -> None:
     """Report values to Tellor oracle"""
-    # Ensure valid user input for expected profit
-    expected_profit = parse_profit_input(expected_profit)  # type: ignore
-    if expected_profit is None:
-        return
-
-    assert tx_type in (0, 2)
-
     name = ctx.obj["ACCOUNT_NAME"]
     sig_acct_name = ctx.obj["SIGNATURE_ACCOUNT_NAME"]
 
