@@ -485,8 +485,6 @@ async def report(
                 contracts.autopay.address = autopay_address
                 contracts.autopay.connect()
 
-            # Type 2 transactions unsupported currently
-            common_reporter_kwargs["transaction_type"] = 0
             # set additional common kwargs to shorten code
             common_reporter_kwargs["oracle"] = contracts.oracle
             common_reporter_kwargs["autopay"] = contracts.autopay
