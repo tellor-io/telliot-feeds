@@ -5,74 +5,40 @@ Example of a subclassed Reporter.
 from typing import Any
 from typing import Optional
 from typing import Tuple
-from typing import Union
 
 from chained_accounts import ChainedAccount
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
 from eth_utils import to_checksum_address
-from telliot_core.contract.contract import Contract
-from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
 from web3.datastructures import AttributeDict
 from web3.exceptions import TransactionNotFound
 
-from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.flashbots import flashbot  # type: ignore
 from telliot_feeds.flashbots.provider import get_default_endpoint  # type: ignore
-from telliot_feeds.reporters.interval import IntervalReporter
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
 
 
-class FlashbotsReporter(IntervalReporter):
+class FlashbotsReporter(Tellor360Reporter):
     """Reports values from given datafeeds to a TellorX Oracle
     every 10 seconds."""
 
-    def __init__(
-        self,
-        endpoint: RPCEndpoint,
-        account: ChainedAccount,
-        signature_account: ChainedAccount,
-        chain_id: int,
-        master: Contract,
-        oracle: Contract,
-        datafeed: Optional[DataFeed[Any]] = None,
-        expected_profit: Union[str, float] = 100.0,
-        transaction_type: int = 0,
-        gas_limit: int = 350000,
-        max_fee: Optional[int] = None,
-        priority_fee: int = 5,
-        legacy_gas_price: Optional[int] = None,
-        gas_price_speed: str = "fast",
-    ) -> None:
-
-        self.endpoint = endpoint
-        self.account: LocalAccount = Account.from_key(account.key)
+    def __init__(self, signature_account: ChainedAccount, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.account: LocalAccount = Account.from_key(self.account.key)
         self.signature_account: LocalAccount = Account.from_key(signature_account.key)
-        self.master = master
-        self.oracle = oracle
-        self.datafeed = datafeed
-        self.chain_id = chain_id
-        self.acct_addr = to_checksum_address(account.address)
         self.sig_acct_addr = to_checksum_address(signature_account.address)
-        self.last_submission_timestamp = 0
-        self.expected_profit = expected_profit
-        self.transaction_type = transaction_type
-        self.gas_limit = gas_limit
-        self.max_fee = max_fee
-        self.priority_fee = priority_fee
-        self.legacy_gas_price = legacy_gas_price
-        self.gas_price_speed = gas_price_speed
 
         logger.info(f"Reporting with account: {self.acct_addr}")
         logger.info(f"Signature address: {self.sig_acct_addr}")
 
-        flashbots_uri = get_default_endpoint()
+        flashbots_uri = get_default_endpoint(self.chain_id)
         logger.info(f"Flashbots provider endpoint: {flashbots_uri}")
         flashbot(self.endpoint._web3, self.signature_account, flashbots_uri)
 
@@ -123,9 +89,9 @@ class FlashbotsReporter(IntervalReporter):
             return None, error_status(msg, e=e, log=logger.error)
 
         # Get nonce
-        timestamp_count, read_status = await self.oracle.read(func_name="getTimestampCountById", _queryId=query_id)
+        timestamp_count, read_status = await self.oracle.read(func_name="getNewValueCountbyQueryId", _queryId=query_id)
         if not read_status.ok:
-            status.error = "Unable to retrieve timestampCount: " + read_status.error  # error won't be none # noqa: E501
+            status.error = "Unable to retrieve newValueCount: " + read_status.error  # error won't be none # noqa: E501
             logger.error(status.error)
             status.e = read_status.e
             return None, status
