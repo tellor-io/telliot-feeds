@@ -21,11 +21,12 @@ from web3.types import RPCEndpoint
 from web3.types import RPCResponse
 
 
-def get_default_endpoint() -> URI:
-    return URI(
-        os.environ.get("FLASHBOTS_HTTP_PROVIDER_URI", "https://relay.flashbots.net")
-        # os.environ.get("FLASHBOTS_HTTP_PROVIDER_URI", "https://bundle.miningdao.io/")
-    )
+def get_default_endpoint(chain_id: int = 1) -> URI:
+    uri = {
+        1: URI(os.environ.get("FLASHBOTS_HTTP_PROVIDER_URI", "https://relay.flashbots.net")),
+        5: URI(os.environ.get("FLASHBOTS_HTTP_PROVIDER_URI_GOERLI", "https://relay-goerli.flashbots.net")),
+    }
+    return uri[chain_id]
 
 
 class FlashbotProvider(HTTPProvider):

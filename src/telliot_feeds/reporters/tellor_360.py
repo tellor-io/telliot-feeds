@@ -56,8 +56,6 @@ class Tellor360Reporter(TellorFlexReporter):
         super().__init__(*args, **kwargs)
         self.stake: float = stake
 
-        logger.info(f"Reporting with account: {self.acct_addr}")
-
         assert self.acct_addr == to_checksum_address(self.account.address)
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
