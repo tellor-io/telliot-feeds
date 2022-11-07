@@ -57,8 +57,8 @@ def test_parse_profit_input():
     assert isinstance(result, float)
     assert result == 1234.1234
 
-    result = parse_profit_input("asdf")
-    assert result is None
+    with pytest.raises(click.BadParameter):
+        _ = parse_profit_input("asdf")
 
 
 @pytest.mark.skip
@@ -124,7 +124,7 @@ def test_cmd_tip():
     assert expected in result.output
 
 
-def test_stake_flag(capsys):
+def test_stake_flag():
     """Test using the stake flag."""
     runner = CliRunner()
     result = runner.invoke(cli_main, ["report", "--stake", "asdf"])
@@ -138,8 +138,9 @@ def test_stake_flag(capsys):
     # check stake option description in help message
     result = runner.invoke(cli_main, ["report", "--help"])
 
+    print("HERE", result.stdout)
     assert result.exit_code == 0
-    assert STAKE_MESSAGE in result.stdout
+    assert "".join([s.strip() for s in STAKE_MESSAGE.split()]) in "".join([s.strip() for s in result.stdout.split()])
 
 
 def test_cmd_settle():

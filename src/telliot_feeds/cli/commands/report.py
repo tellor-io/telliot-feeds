@@ -36,7 +36,7 @@ logger = get_logger(__name__)
 TELLOR_X_CHAINS = (1, 4, 5)
 
 STAKE_MESSAGE = (
-    "\n\U00002757Telliot will automatically stake more TRB "
+    "\U00002757Telliot will automatically stake more TRB "
     "if your stake is below or falls below the stake amount required to report.\n"
     "If you would like to stake more than required, enter the TOTAL stake amount you wish to be staked.\n"
     "For example, if you wish to stake 1000 TRB, enter 1000.\n"
