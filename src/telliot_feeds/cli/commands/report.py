@@ -451,16 +451,11 @@ async def report(
                 **common_reporter_kwargs,
             }
 
-            if sig_acct_addr != "":
-                reporter = FlashbotsReporter(
-                    signature_account=sig_account,
-                    **tellorx_reporter_kwargs,
-                )
-            elif custom_contract_reporter:
+            if custom_contract_reporter:
                 reporter = CustomXReporter(
                     custom_contract=custom_contract,
                     **tellorx_reporter_kwargs,
-                )  # type: ignore
+                )
             else:
                 reporter = IntervalReporter(**tellorx_reporter_kwargs)  # type: ignore
 
@@ -483,7 +478,12 @@ async def report(
             common_reporter_kwargs["expected_profit"] = expected_profit
             # selecting the right reporter will be changed after the switch
             if flex_360:
-                if rng_auto:
+                if sig_acct_addr != "":
+                    reporter = FlashbotsReporter(  # type: ignore
+                        signature_account=sig_account,
+                        **common_reporter_kwargs,
+                    )
+                elif rng_auto:
                     reporter = RNGReporter(  # type: ignore
                         wait_period=120 if wait_period < 120 else wait_period,
                         **common_reporter_kwargs,
