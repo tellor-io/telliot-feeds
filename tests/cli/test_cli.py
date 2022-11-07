@@ -1,16 +1,14 @@
 """
 Unit tests covering telliot-feeds CLI commands.
 """
-from io import StringIO
 from unittest import mock
 
 import click
 import pytest
-from click.exceptions import Abort
 from click.testing import CliRunner
 
-from telliot_feeds.cli.commands.report import get_stake_amount
 from telliot_feeds.cli.commands.report import parse_profit_input
+from telliot_feeds.cli.commands.report import STAKE_MESSAGE
 from telliot_feeds.cli.commands.report import valid_diva_chain
 from telliot_feeds.cli.main import main as cli_main
 from telliot_feeds.cli.utils import build_feed_from_input
@@ -126,22 +124,22 @@ def test_cmd_tip():
     assert expected in result.output
 
 
-def test_get_stake_amount(monkeypatch, capsys):
-    monkeypatch.setattr("sys.stdin", StringIO("60\n"))
-    stake = get_stake_amount()
-    captured = capsys.readouterr()
-    expected = captured.out
-    warning_msg = (
-        "Telliot will automatically stake more TRB if your stake is below "
-        "or falls below the stake amount required to report"
-    )
-    assert warning_msg in expected
-    assert isinstance(stake, float)
-    assert stake == 60.0
+def test_stake_flag(capsys):
+    """Test using the stake flag."""
+    runner = CliRunner()
+    result = runner.invoke(cli_main, ["report", "--stake", "asdf"])
 
-    with pytest.raises(Abort):
-        monkeypatch.setattr("sys.stdin", StringIO("asdf\n"))
-        _ = get_stake_amount()
+    assert result.exception
+    assert result.exit_code == 2
+
+    expected = "Error: Invalid value for '--stake' / '-s': 'asdf' is not a valid float."
+    assert expected in result.stdout
+
+    # check stake option description in help message
+    result = runner.invoke(cli_main, ["report", "--help"])
+
+    assert result.exit_code == 0
+    assert STAKE_MESSAGE in result.stdout
 
 
 def test_cmd_settle():

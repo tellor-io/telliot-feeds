@@ -36,6 +36,72 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
+TELLOR_X_CHAINS = (1, 4, 5)
+
+STAKE_MESSAGE = (
+    "\n\U00002757Telliot will automatically stake more TRB "
+    "if your stake is below or falls below the stake amount required to report.\n"
+    "If you would like to stake more than required, enter the TOTAL stake amount you wish to be staked.\n"
+    "For example, if you wish to stake 1000 TRB, enter 1000.\n"
+)
+
+
+def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
+    """Parses user input expected profit and ensures
+    the input is either a float or the string 'YOLO'."""
+    if expected_profit == "YOLO":
+        return expected_profit
+    else:
+        try:
+            return float(expected_profit)
+        except ValueError:
+            click.echo("Not a valid profit input. Enter float or the string, 'YOLO'")
+            return None
+
+
+def print_reporter_settings(
+    signature_address: str,
+    query_tag: str,
+    gas_limit: int,
+    priority_fee: Optional[int],
+    expected_profit: str,
+    chain_id: int,
+    max_fee: Optional[int],
+    transaction_type: int,
+    legacy_gas_price: Optional[int],
+    gas_price_speed: str,
+    reporting_diva_protocol: bool,
+    stake_amount: float,
+) -> None:
+    """Print user settings to console."""
+    click.echo("")
+
+    if signature_address != "":
+        click.echo("⚡🤖⚡ Reporting through Flashbots relay ⚡🤖⚡")
+        click.echo(f"Signature account: {signature_address}")
+
+    if query_tag:
+        click.echo(f"Reporting query tag: {query_tag}")
+    elif reporting_diva_protocol:
+        click.echo("Reporting & settling DIVA Protocol pools")
+    else:
+        click.echo("Reporting with synchronized queries")
+
+    click.echo(f"Current chain ID: {chain_id}")
+
+    if expected_profit == "YOLO":
+        click.echo("🍜🍜🍜 Reporter not enforcing profit threshold! 🍜🍜🍜")
+    else:
+        click.echo(f"Expected percent profit: {expected_profit}%")
+
+    click.echo(f"Transaction type: {transaction_type}")
+    click.echo(f"Gas Limit: {gas_limit}")
+    click.echo(f"Legacy gas price (gwei): {legacy_gas_price}")
+    click.echo(f"Max fee (gwei): {max_fee}")
+    click.echo(f"Priority fee (gwei): {priority_fee}")
+    click.echo(f"Gas price speed: {gas_price_speed}\n")
+    click.echo(f"Desired stake amount: {stake_amount}")
+
 
 @click.group()
 def reporter() -> None:
@@ -227,6 +293,15 @@ def reporter() -> None:
     prompt=False,
 )
 @click.option("--tellor-360/--tellor-flex", "-360/-flex", "tellor_360", default=True, help="Choose between Tellor 360 or Flex contracts")
+@click.option(    
+    "--stake",
+    "-s",
+    "stake",
+    help=STAKE_MESSAGE,
+    nargs=1,
+    type=float,
+    default=10.0,
+)
 @click.option("--binary-interface", "-abi", "abi", nargs=1, default=None, type=str)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
@@ -254,13 +329,11 @@ async def report(
     password: str,
     signature_password: str,
     rng_auto: bool,
-    oracle_address: str,
-    autopay_address: str,
     custom_token_contract: Optional[str],
     custom_oracle_contract: Optional[str],
     custom_autopay_contract: Optional[str],
-    abi: Optional[str],
     tellor_360: bool,
+    stake: float,
 ) -> None:
     """Report values to Tellor oracle"""
     name = ctx.obj["ACCOUNT_NAME"]
@@ -335,6 +408,7 @@ async def report(
             chain_id=core.config.main.chain_id,
             gas_price_speed=gas_price_speed,
             reporting_diva_protocol=reporting_diva_protocol,
+            stake_amount=stake,
         )
 
         _ = input("Press [ENTER] to confirm settings.")
