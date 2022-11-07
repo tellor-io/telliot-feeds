@@ -1,24 +1,20 @@
 import getpass
 from typing import Any
 from typing import Optional
-from typing import Union
 
 import click
 from chained_accounts import find_accounts
 from click.core import Context
 from eth_utils import to_checksum_address
 from telliot_core.cli.utils import async_run
-from telliot_core.contract.contract import Contract
-from telliot_core.directory import ContractInfo
 
 from telliot_feeds.cli.utils import build_feed_from_input
+from telliot_feeds.cli.utils import parse_profit_input
+from telliot_feeds.cli.utils import print_reporter_settings
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.cli.utils import valid_diva_chain
-from telliot_feeds.cli.utils import validate_address
-from telliot_feeds.cli.utils import get_stake_amount
-from telliot_feeds.cli.utils import print_reporter_settings
-from telliot_feeds.cli.utils import parse_profit_input
 from telliot_feeds.cli.utils import valid_transaction_type
+from telliot_feeds.cli.utils import validate_address
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.tellor_rng_feed import assemble_rng_datafeed
@@ -26,6 +22,7 @@ from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
 from telliot_feeds.integrations.diva_protocol import DIVA_TELLOR_MIDDLEWARE_ADDRESS
 from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
 from telliot_feeds.queries.query_catalog import query_catalog
+from telliot_feeds.reporters.flashbot import FlashbotsReporter
 from telliot_feeds.reporters.rng_interval import RNGReporter
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.reporters.tellorflex import TellorFlexReporter
@@ -44,63 +41,6 @@ STAKE_MESSAGE = (
     "If you would like to stake more than required, enter the TOTAL stake amount you wish to be staked.\n"
     "For example, if you wish to stake 1000 TRB, enter 1000.\n"
 )
-
-
-def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
-    """Parses user input expected profit and ensures
-    the input is either a float or the string 'YOLO'."""
-    if expected_profit == "YOLO":
-        return expected_profit
-    else:
-        try:
-            return float(expected_profit)
-        except ValueError:
-            click.echo("Not a valid profit input. Enter float or the string, 'YOLO'")
-            return None
-
-
-def print_reporter_settings(
-    signature_address: str,
-    query_tag: str,
-    gas_limit: int,
-    priority_fee: Optional[int],
-    expected_profit: str,
-    chain_id: int,
-    max_fee: Optional[int],
-    transaction_type: int,
-    legacy_gas_price: Optional[int],
-    gas_price_speed: str,
-    reporting_diva_protocol: bool,
-    stake_amount: float,
-) -> None:
-    """Print user settings to console."""
-    click.echo("")
-
-    if signature_address != "":
-        click.echo("⚡🤖⚡ Reporting through Flashbots relay ⚡🤖⚡")
-        click.echo(f"Signature account: {signature_address}")
-
-    if query_tag:
-        click.echo(f"Reporting query tag: {query_tag}")
-    elif reporting_diva_protocol:
-        click.echo("Reporting & settling DIVA Protocol pools")
-    else:
-        click.echo("Reporting with synchronized queries")
-
-    click.echo(f"Current chain ID: {chain_id}")
-
-    if expected_profit == "YOLO":
-        click.echo("🍜🍜🍜 Reporter not enforcing profit threshold! 🍜🍜🍜")
-    else:
-        click.echo(f"Expected percent profit: {expected_profit}%")
-
-    click.echo(f"Transaction type: {transaction_type}")
-    click.echo(f"Gas Limit: {gas_limit}")
-    click.echo(f"Legacy gas price (gwei): {legacy_gas_price}")
-    click.echo(f"Max fee (gwei): {max_fee}")
-    click.echo(f"Priority fee (gwei): {priority_fee}")
-    click.echo(f"Gas price speed: {gas_price_speed}\n")
-    click.echo(f"Desired stake amount: {stake_amount}")
 
 
 @click.group()
@@ -297,9 +237,9 @@ def reporter() -> None:
     "-360/-flex",
     "tellor_360",
     default=True,
-    help="Choose between Tellor 360 or Flex contracts"
-    )
-@click.option(    
+    help="Choose between Tellor 360 or Flex contracts",
+)
+@click.option(
     "--stake",
     "-s",
     "stake",
@@ -419,8 +359,6 @@ async def report(
 
         _ = input("Press [ENTER] to confirm settings.")
 
-        stake = get_stake_amount()
-
         contracts = core.get_tellor360_contracts() if tellor_360 else core.get_tellorflex_contracts()
 
         if custom_oracle_contract:
@@ -430,7 +368,7 @@ async def report(
         if custom_autopay_contract:
             contracts.autopay.address = custom_autopay_contract
             contracts.autopay.connect()
-        
+
         if custom_token_contract:
             contracts.token.address = custom_token_contract
             contracts.token.connect()
@@ -439,7 +377,6 @@ async def report(
             "endpoint": core.endpoint,
             "account": account,
             "datafeed": chosen_feed,
-            "transaction_type": tx_type,
             "gas_limit": gas_limit,
             "max_fee": max_fee,
             "priority_fee": priority_fee,
@@ -452,27 +389,33 @@ async def report(
             "token": contracts.token,
             "expected_profit": expected_profit,
             "stake": stake,
-            "transaction_type": 0, # TODO: Remove this, type 2 transactions are not supported currently
+            "transaction_type": 0,  # TODO: Remove this, type 2 transactions are not supported currently
         }
-            if rng_auto:
-                reporter = RNGReporter(  # type: ignore
-                    wait_period=120 if wait_period < 120 else wait_period,
-                    **common_reporter_kwargs,
-                )
-            elif reporting_diva_protocol:
-                diva_reporter_kwargs = {}
-                if diva_diamond_address is not None:
-                    diva_reporter_kwargs["diva_diamond_address"] = diva_diamond_address
-                if diva_middleware_address is not None:
-                    diva_reporter_kwargs["middleware_address"] = diva_middleware_address
-                reporter = DIVAProtocolReporter(
-                    **common_reporter_kwargs,
-                    **diva_reporter_kwargs,  # type: ignore
-                )
-            else:
-                reporter = Tellor360Reporter(
-                    **common_reporter_kwargs,
-                )  # type: ignore
+
+        if sig_acct_addr:
+            reporter = FlashbotsReporter(
+                signature_account=sig_account,
+                **common_reporter_kwargs,
+            )
+        elif rng_auto:
+            reporter = RNGReporter(  # type: ignore
+                wait_period=120 if wait_period < 120 else wait_period,
+                **common_reporter_kwargs,
+            )
+        elif reporting_diva_protocol:
+            diva_reporter_kwargs = {}
+            if diva_diamond_address is not None:
+                diva_reporter_kwargs["diva_diamond_address"] = diva_diamond_address
+            if diva_middleware_address is not None:
+                diva_reporter_kwargs["middleware_address"] = diva_middleware_address
+            reporter = DIVAProtocolReporter(
+                **common_reporter_kwargs,
+                **diva_reporter_kwargs,  # type: ignore
+            )
+        elif tellor_360:
+            reporter = Tellor360Reporter(
+                **common_reporter_kwargs,
+            )  # type: ignore
         else:
             reporter = TellorFlexReporter(
                 **common_reporter_kwargs,
