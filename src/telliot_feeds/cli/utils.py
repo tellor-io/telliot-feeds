@@ -62,6 +62,7 @@ def print_reporter_settings(
     legacy_gas_price: Optional[int],
     gas_price_speed: str,
     reporting_diva_protocol: bool,
+    stake_amount: float,
 ) -> None:
     """Print user settings to console."""
     click.echo("")
@@ -90,6 +91,7 @@ def print_reporter_settings(
     click.echo(f"Max fee (gwei): {max_fee}")
     click.echo(f"Priority fee (gwei): {priority_fee}")
     click.echo(f"Gas price speed: {gas_price_speed}\n")
+    click.echo(f"Desired stake amount: {stake_amount}")
 
 
 def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:

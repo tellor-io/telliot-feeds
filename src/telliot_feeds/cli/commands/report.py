@@ -292,7 +292,13 @@ def reporter() -> None:
     callback=validate_address,
     prompt=False,
 )
-@click.option("--tellor-360/--tellor-flex", "-360/-flex", "tellor_360", default=True, help="Choose between Tellor 360 or Flex contracts")
+@click.option(
+    "--tellor-360/--tellor-flex",
+    "-360/-flex",
+    "tellor_360",
+    default=True,
+    help="Choose between Tellor 360 or Flex contracts"
+    )
 @click.option(    
     "--stake",
     "-s",
