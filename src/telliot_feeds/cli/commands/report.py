@@ -71,6 +71,7 @@ def print_reporter_settings(
     legacy_gas_price: Optional[int],
     gas_price_speed: str,
     reporting_diva_protocol: bool,
+    stake_amount: float,
 ) -> None:
     """Print user settings to console."""
     click.echo("")
@@ -99,6 +100,7 @@ def print_reporter_settings(
     click.echo(f"Max fee (gwei): {max_fee}")
     click.echo(f"Priority fee (gwei): {priority_fee}")
     click.echo(f"Gas price speed: {gas_price_speed}\n")
+    click.echo(f"Desired stake amount: {stake_amount}")
 
 
 @click.group()
@@ -419,6 +421,7 @@ async def report(
             chain_id=cid,
             gas_price_speed=gas_price_speed,
             reporting_diva_protocol=reporting_diva_protocol,
+            stake_amount=stake,
         )
 
         _ = input("Press [ENTER] to confirm settings.")
