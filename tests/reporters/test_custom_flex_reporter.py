@@ -11,7 +11,7 @@ from telliot_core.utils.response import ResponseStatus
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
-from telliot_feeds.reporters.custom_flex_reporter import CustomFlexReporter
+from telliot_feeds.reporters.custom_flex_reporter import Custom360Reporter
 from telliot_feeds.utils.log import get_logger
 
 
@@ -62,7 +62,7 @@ async def custom_reporter(
         flex.token.connect()
         flex.autopay.connect()
 
-        r = CustomFlexReporter(
+        r = Custom360Reporter(
             transaction_type=0,
             custom_contract=custom_contract,
             oracle=flex.oracle,
@@ -111,7 +111,7 @@ async def test_ensure_profitable(custom_reporter):
 
 @pytest.mark.asyncio
 async def test_submit_once(custom_reporter):
-    r: CustomFlexReporter = custom_reporter
+    r: Custom360Reporter = custom_reporter
     receipt, status = await r.report_once()
     assert status.ok
 
