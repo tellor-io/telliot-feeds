@@ -38,30 +38,12 @@ logger = get_logger(__name__)
 
 TELLOR_X_CHAINS = (1, 4, 5)
 
-
-def get_stake_amount() -> float:
-    """Retrieve desired stake amount from user
-
-    Each stake is 10 TRB on TellorFlex Polygon. If an address
-    is not staked for any reason, the TellorFlexReporter will attempt
-    to stake. Number of stakes determines the reporter lock:
-
-    reporter_lock = 12hrs / N * stakes
-
-    Retrieves desidred stake amount from user input."""
-
-    warn = (
-        "\n\U00002757Telliot will automatically stake more TRB "
-        "if your stake is below or falls below the stake amount required to report.\n"
-        "If you would like to stake more than required enter the TOTAL stake amount you wish to be staked.\n"
-    )
-    click.echo(warn)
-    msg = "Enter amount TRB to stake if unstaked"
-    stake = click.prompt(msg, type=float, default=10.0, show_default=True)
-    assert isinstance(stake, float)
-    assert stake >= 10.0
-
-    return stake
+STAKE_MESSAGE = (
+    "\n\U00002757Telliot will automatically stake more TRB "
+    "if your stake is below or falls below the stake amount required to report.\n"
+    "If you would like to stake more than required, enter the TOTAL stake amount you wish to be staked.\n"
+    "For example, if you wish to stake 1000 TRB, enter 1000.\n"
+)
 
 
 def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
@@ -280,6 +262,15 @@ def reporter() -> None:
     default=None,
     type=str,
 )
+@click.option(
+    "--stake",
+    "-s",
+    "stake",
+    help=STAKE_MESSAGE,
+    nargs=1,
+    type=float,
+    default=10.0,
+)
 @click.option("--flex-360/--old-flex", default=True, help="Choose between tellor360 reporter or old flex")
 @click.option("--binary-interface", "-abi", "abi", nargs=1, default=None, type=str)
 @click.option("--rng-auto/--rng-auto-off", default=False)
@@ -313,6 +304,7 @@ async def report(
     custom_contract_reporter: Optional[str],
     abi: Optional[str],
     flex_360: bool,
+    stake: float,
 ) -> None:
     """Report values to Tellor oracle"""
     # Ensure valid user input for expected profit
@@ -473,8 +465,6 @@ async def report(
                 reporter = IntervalReporter(**tellorx_reporter_kwargs)  # type: ignore
 
         else:
-
-            stake = get_stake_amount()
             contracts = core.get_tellor360_contracts() if flex_360 else core.get_tellorflex_contracts()
 
             if oracle_address:
