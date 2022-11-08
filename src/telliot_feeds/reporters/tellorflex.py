@@ -7,10 +7,10 @@ from typing import Optional
 from typing import Tuple
 from typing import Union
 
-import requests
 from chained_accounts import ChainedAccount
 from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
+from telliot_core.gas.legacy_gas import legacy_gas_station
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
@@ -79,25 +79,9 @@ class TellorFlexReporter(IntervalReporter):
         self.account: ChainedAccount = account
         assert self.acct_addr == to_checksum_address(self.account.address)
 
-    async def fetch_gas_price(self, speed: str = "safeLow") -> Optional[int]:
+    async def fetch_gas_price(self, speed: Optional[str] = None) -> Optional[int]:
         """Fetch estimated gas prices for Polygon mainnet."""
-        try:
-            prices = requests.get("https://gasstation-mainnet.matic.network").json()
-        except requests.JSONDecodeError:
-            logger.error("Error decoding JSON response from matic gas station")
-            return None
-        except Exception as e:
-            logger.error(f"Error fetching matic gas prices: {e}")
-            return None
-
-        if speed not in prices:
-            logger.error(f"Invalid gas price speed for matic gasstation: {speed}")
-            return None
-
-        if prices[speed] is None:
-            logger.error("Unable to fetch gas price from matic gasstation")
-            return None
-        return int(prices[speed])
+        return await legacy_gas_station(chain_id=self.chain_id, speed=speed)  # type: ignore
 
     async def in_dispute(self, new_stake_amount: Any) -> bool:
         """Check if staker balance decreased"""

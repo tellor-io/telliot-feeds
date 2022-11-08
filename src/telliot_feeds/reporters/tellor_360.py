@@ -19,7 +19,6 @@ from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
 
-
 logger = get_logger(__name__)
 
 
