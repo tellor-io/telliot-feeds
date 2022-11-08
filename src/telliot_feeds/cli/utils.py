@@ -90,18 +90,19 @@ def print_reporter_settings(
     click.echo(f"Legacy gas price (gwei): {legacy_gas_price}")
     click.echo(f"Max fee (gwei): {max_fee}")
     click.echo(f"Priority fee (gwei): {priority_fee}")
-    click.echo(f"Gas price speed: {gas_price_speed}\n")
+    click.echo(f"Gas price speed: {gas_price_speed}")
     click.echo(f"Desired stake amount: {stake_amount}")
+    click.echo("\n")
 
 
-def parse_profit_input(expected_profit: str) -> Optional[Union[str, float]]:
+def parse_profit_input(ctx: click.Context, param: Any, value: str) -> Optional[Union[str, float]]:
     """Parses user input expected profit and ensures
     the input is either a float or the string 'YOLO'."""
-    if expected_profit == "YOLO":
-        return expected_profit
+    if value == "YOLO":
+        return value
     else:
         try:
-            return float(expected_profit)
+            return float(value)
         except ValueError:
             raise click.BadParameter("Not a valid profit input. Enter float or the string, 'YOLO'")
 
