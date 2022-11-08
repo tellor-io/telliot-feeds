@@ -153,24 +153,6 @@ def reporter() -> None:
     type=int,
 )
 @click.option(
-    "--oracle-address",
-    "-oracle",
-    "oracle_address",
-    help="oracle contract address to interact with",
-    nargs=1,
-    type=str,
-    default=None,
-)
-@click.option(
-    "--autopay-address",
-    "-autopay",
-    "autopay_address",
-    help="autopay contract address to interact with",
-    nargs=1,
-    type=str,
-    default=None,
-)
-@click.option(
     "--diva-protocol",
     "-dpt",
     "reporting_diva_protocol",
@@ -248,7 +230,6 @@ def reporter() -> None:
     type=float,
     default=10.0,
 )
-@click.option("--binary-interface", "-abi", "abi", nargs=1, default=None, type=str)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pwd", "--password", type=str)
