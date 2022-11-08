@@ -80,7 +80,7 @@ def find_most_profitable_pool(pools: list[DivaPool]) -> DivaPool:
     Returns:
         Pool with the highest profit.
     """
-    pass
+    pass  # type: ignore
 
 
 def get_reported_pools() -> Any:
