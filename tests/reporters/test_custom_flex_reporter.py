@@ -11,6 +11,7 @@ from telliot_core.utils.response import ResponseStatus
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
 
 
@@ -43,7 +44,6 @@ def mock_reporter_contract(tellorflex_360_contract, mock_token_contract, mock_au
 @pytest_asyncio.fixture(scope="function")
 async def custom_reporter(
     mumbai_test_cfg,
-    tellorflex_360_contract,
     mock_autopay_contract,
     mock_token_contract,
     mock_reporter_contract,
@@ -61,16 +61,15 @@ async def custom_reporter(
         contracts.token.connect()
         contracts.autopay.connect()
 
-        r = Custom360Reporter(
+        r = Tellor360Reporter(
             transaction_type=0,
-            custom_contract=custom_contract,
             oracle=contracts.oracle,
             token=contracts.token,
             autopay=contracts.autopay,
             endpoint=core.endpoint,
             account=account,
             chain_id=80001,
-            gas_limit=3500000,
+            gas_limit=350000,
         )
         # mint token and send to reporter address
         mock_token_contract.mint(account.address, 1000e18)
@@ -86,7 +85,9 @@ async def custom_reporter(
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
         # init governance address
-        await contracts.oracle.write("init", _governanceAddress=accounts[0].address, gas_limit=3500000, legacy_gas_price=1)
+        await contracts.oracle.write(
+            "init", _governanceAddress=accounts[0].address, gas_limit=350000, legacy_gas_price=1
+        )
 
         return r
 
@@ -110,8 +111,7 @@ async def test_ensure_profitable(custom_reporter):
 
 @pytest.mark.asyncio
 async def test_submit_once(custom_reporter):
-    r: Custom360Reporter = custom_reporter
-    receipt, status = await r.report_once()
+    _, status = await custom_reporter.report_once()
     assert status.ok
 
 
@@ -146,23 +146,3 @@ async def test_get_num_reports_by_id(custom_reporter):
         assert isinstance(count, int)
     else:
         assert count is None
-
-
-@pytest.mark.asyncio
-async def test_fetch_gas_price_error(custom_reporter, caplog):
-    # Test invalid gas price speed
-    r = custom_reporter
-    gp = await r.fetch_gas_price("blah")
-    assert gp is None
-    assert "Invalid gas price speed for matic gasstation: blah" in caplog.text
-
-    # Test fetch gas price failure
-    async def _fetch_gas_price():
-        return None
-
-    r.fetch_gas_price = lambda: _fetch_gas_price()
-    r.stake = 1e100
-    staked, status = await r.ensure_staked()
-    assert not staked
-    assert not status.ok
-    assert "Unable to fetch gas price for staking" in status.error
