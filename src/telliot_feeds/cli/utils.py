@@ -25,31 +25,6 @@ DIVA_PROTOCOL_CHAINS = (137, 80001, 3, 5)
 load_dotenv()
 
 
-def get_stake_amount() -> float:
-    """Retrieve desired stake amount from user
-
-    Each stake is 10 TRB on TellorFlex Polygon. If an address
-    is not staked for any reason, the TellorFlexReporter will attempt
-    to stake. Number of stakes determines the reporter lock:
-
-    reporter_lock = 12hrs / N * stakes
-
-    Retrieves desidred stake amount from user input."""
-
-    warn = (
-        "\n\U00002757Telliot will automatically stake more TRB "
-        "if your stake is below or falls below the stake amount required to report.\n"
-        "If you would like to stake more than required enter the TOTAL stake amount you wish to be staked.\n"
-    )
-    click.echo(warn)
-    msg = "Enter amount TRB to stake if unstaked"
-    stake = click.prompt(msg, type=float, default=10.0, show_default=True)
-    assert isinstance(stake, float)
-    assert stake >= 10.0
-
-    return stake
-
-
 def print_reporter_settings(
     signature_address: str,
     query_tag: str,
