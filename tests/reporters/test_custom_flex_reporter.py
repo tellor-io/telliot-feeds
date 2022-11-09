@@ -6,11 +6,7 @@ from telliot_core.apps.core import ChainedAccount
 from telliot_core.apps.core import Contract
 from telliot_core.apps.core import find_accounts
 from telliot_core.apps.core import TelliotCore
-from telliot_core.utils.response import ResponseStatus
 
-from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
-from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
 
@@ -90,6 +86,7 @@ async def custom_reporter(
         )
 
         return r
+
 
 @pytest.mark.asyncio
 async def test_submit_once(custom_reporter):

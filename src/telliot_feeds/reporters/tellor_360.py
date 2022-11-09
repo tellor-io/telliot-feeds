@@ -71,7 +71,7 @@ class Tellor360Reporter(TellorFlexReporter):
         if (not status.ok) or (stake_amount is None):
             msg = "Unable to read current stake amount"
             return False, error_status(msg, log=logger.info)
-        
+
         logger.info(f"Current Oracle stakeAmount: {stake_amount / 1e18!r}")
 
         # get accounts current stake total
