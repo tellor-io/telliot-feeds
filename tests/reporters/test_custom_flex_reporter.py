@@ -11,7 +11,6 @@ from telliot_core.utils.response import ResponseStatus
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
-from telliot_feeds.reporters.custom_flex_reporter import Custom360Reporter
 from telliot_feeds.utils.log import get_logger
 
 
@@ -52,22 +51,22 @@ async def custom_reporter(
     async with TelliotCore(config=mumbai_test_cfg) as core:
         custom_contract = Contract(mock_reporter_contract.address, mock_reporter_contract.abi, core.endpoint, account)
         custom_contract.connect()
-        flex = core.get_tellor360_contracts()
-        flex.oracle.address = tellorflex_360_contract.address
-        flex.autopay.address = mock_autopay_contract.address
-        flex.autopay.abi = mock_autopay_contract.abi
-        flex.token.address = mock_token_contract.address
+        contracts = core.get_tellor360_contracts()
+        contracts.oracle.address = custom_contract.address
+        contracts.autopay.address = mock_autopay_contract.address
+        contracts.autopay.abi = mock_autopay_contract.abi
+        contracts.token.address = mock_token_contract.address
 
-        flex.oracle.connect()
-        flex.token.connect()
-        flex.autopay.connect()
+        contracts.oracle.connect()
+        contracts.token.connect()
+        contracts.autopay.connect()
 
         r = Custom360Reporter(
             transaction_type=0,
             custom_contract=custom_contract,
-            oracle=flex.oracle,
-            token=flex.token,
-            autopay=flex.autopay,
+            oracle=contracts.oracle,
+            token=contracts.token,
+            autopay=contracts.autopay,
             endpoint=core.endpoint,
             account=account,
             chain_id=80001,
@@ -87,7 +86,7 @@ async def custom_reporter(
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
         # init governance address
-        await flex.oracle.write("init", _governanceAddress=accounts[0].address, gas_limit=3500000, legacy_gas_price=1)
+        await contracts.oracle.write("init", _governanceAddress=accounts[0].address, gas_limit=3500000, legacy_gas_price=1)
 
         return r
 
