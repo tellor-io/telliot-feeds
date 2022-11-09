@@ -67,11 +67,12 @@ class Tellor360Reporter(TellorFlexReporter):
         # get oracle required stake amount
         stake_amount: int
         stake_amount, status = await self.oracle.read("getStakeAmount")
-        logger.info(f"Current Oracle stakeAmount: {stake_amount / 1e18!r}")
 
         if (not status.ok) or (stake_amount is None):
             msg = "Unable to read current stake amount"
             return False, error_status(msg, log=logger.info)
+        
+        logger.info(f"Current Oracle stakeAmount: {stake_amount / 1e18!r}")
 
         # get accounts current stake total
         staker_info, status = await self.oracle.read(
