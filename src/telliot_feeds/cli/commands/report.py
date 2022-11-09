@@ -370,7 +370,7 @@ async def report(
             "token": contracts.token,
             "expected_profit": expected_profit,
             "stake": stake,
-            "transaction_type": 0,  # TODO: Remove this, type 2 transactions are not supported currently
+            "transaction_type": tx_type,
         }
 
         if sig_acct_addr:
