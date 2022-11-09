@@ -23,7 +23,7 @@ class MimicryCollectionStat(AbiQuery):
     """
 
     chainId: Optional[int]
-    collectionAddress: Optional[int]
+    collectionAddress: Optional[str]
     metric: Optional[int]
 
     #: ABI used for encoding/decoding parameters
@@ -33,7 +33,7 @@ class MimicryCollectionStat(AbiQuery):
             "name": "chainId",
         },
         {
-            "type": "uint256",
+            "type": "address",
             "name": "collectionAddress",
         },
         {
