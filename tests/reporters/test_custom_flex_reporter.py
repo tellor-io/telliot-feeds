@@ -91,58 +91,7 @@ async def custom_reporter(
 
         return r
 
-
-@pytest.mark.asyncio
-async def test_YOLO_feed_suggestion(custom_reporter):
-    custom_reporter.expected_profit = "YOLO"
-    feed = await custom_reporter.fetch_datafeed()
-
-    assert feed is not None
-    assert isinstance(feed, DataFeed)
-
-
-@pytest.mark.asyncio
-async def test_ensure_profitable(custom_reporter):
-    status = await custom_reporter.ensure_profitable(matic_usd_median_feed)
-
-    assert isinstance(status, ResponseStatus)
-    assert status.ok
-
-
 @pytest.mark.asyncio
 async def test_submit_once(custom_reporter):
     _, status = await custom_reporter.report_once()
     assert status.ok
-
-
-@pytest.mark.asyncio
-async def test_ensure_staked(custom_reporter):
-    staked, status = await custom_reporter.ensure_staked()
-
-    assert isinstance(status, ResponseStatus)
-    assert isinstance(staked, bool)
-    if status.ok:
-        assert staked
-    else:
-        assert "Unable to approve staking" in status.error
-
-
-@pytest.mark.asyncio
-async def test_check_reporter_lock(custom_reporter):
-    status = await custom_reporter.check_reporter_lock()
-
-    assert isinstance(status, ResponseStatus)
-    if not status.ok:
-        assert ("reporter lock" in status.error) or ("Staker balance too low" in status.error)
-
-
-@pytest.mark.asyncio
-async def test_get_num_reports_by_id(custom_reporter):
-    qid = eth_usd_median_feed.query.query_id
-    count, status = await custom_reporter.get_num_reports_by_id(qid)
-
-    assert isinstance(status, ResponseStatus)
-    if status.ok:
-        assert isinstance(count, int)
-    else:
-        assert count is None
