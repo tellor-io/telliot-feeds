@@ -42,9 +42,26 @@ def test_default_values_available():
         assert result.exit_code == 0
 
 
-def test_integrations_help_cmd():
-    # ensure diva cmd is available
-    pass
+def test_available_cmds():
+    """Test help command for integrations."""
+    runner = CliRunner()
+    result = runner.invoke(cli_main, ["integrations", "--help"])
+
+    assert result.exit_code == 0
+    assert "diva  Commands for Diva Protocol integration." in result.stdout
+
+    result = runner.invoke(cli_main, ["integrations", "diva", "--help"])
+
+    assert result.exit_code == 0
+    assert "Commands for interacting with reported/settled pools cache" in result.stdout
+
+    result = runner.invoke(cli_main, ["integrations", "diva", "cache", "--help"])
+    view_msg = "view   View reported/settled pools cache."
+    clear_msg = "clear  Clear reported/settled pools cache."
+
+    assert result.exit_code == 0
+    assert view_msg in result.stdout
+    assert clear_msg in result.stdout
 
 
 def test_diva_help_cmd():
