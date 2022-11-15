@@ -11,9 +11,6 @@ from telliot_feeds.sources.price.historical.cryptowatch import (
 from telliot_feeds.sources.price.historical.kraken import (
     KrakenHistoricalPriceSource,
 )
-from telliot_feeds.sources.price.historical.poloniex import (
-    PoloniexHistoricalPriceSource,
-)
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 from telliot_feeds.utils.log import get_logger
 
@@ -83,10 +80,9 @@ def get_historical_price_source(asset: str, currency: str, timestamp: int) -> Pr
         sources=[
             CryptowatchHistoricalPriceSource(asset=asset, currency=currency, ts=timestamp),
             KrakenHistoricalPriceSource(asset="xbt" if asset == "btc" else asset, currency=currency, ts=timestamp),
-            PoloniexHistoricalPriceSource(asset=asset, currency="dai" if currency == "usd" else currency, ts=timestamp),
-            PoloniexHistoricalPriceSource(
-                asset=asset, currency="tusd" if currency == "usd" else currency, ts=timestamp
-            ),
+            # PoloniexHistoricalPriceSource(
+            #     asset=asset, currency="tusd" if currency == "usd" else currency, ts=timestamp
+            # ),
         ],
     )
     return source
