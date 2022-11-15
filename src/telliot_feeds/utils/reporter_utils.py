@@ -4,11 +4,10 @@ from typing import Optional
 from typing import Union
 
 import requests
-from web3 import Web3
 from eth_typing import ChecksumAddress
-from telliot_core.contract.contract import Contract
 from telliot_core.tellor.tellorflex.oracle import TellorFlexOracleContract
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
+from web3 import Web3
 
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.utils.log import get_logger
@@ -63,7 +62,10 @@ def alert_placeholder(msg: str) -> None:
 
 
 def has_native_token_funds(
-    account: ChecksumAddress, web3: Web3, alert: Callable[[str], None] = alert_placeholder, min_balance: int = 1e18
+    account: ChecksumAddress,
+    web3: Web3,
+    alert: Callable[[str], None] = alert_placeholder,
+    min_balance: int = 1 * 10**18,
 ) -> bool:
     """Check if an account has native token funds."""
     try:
@@ -71,7 +73,7 @@ def has_native_token_funds(
     except Exception as e:
         logger.warning(f"Error fetching native token balance for {account}: {e}")
         return False
-    
+
     if balance < min_balance:
         logger.warning(f"Account {account} has insufficient native token funds")
         alert(f"Account {account} has insufficient native token funds")

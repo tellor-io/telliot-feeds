@@ -1,3 +1,5 @@
+from unittest import mock
+
 import pytest
 from brownie import accounts
 from brownie import TellorXOracleMock
@@ -5,7 +7,6 @@ from click.testing import CliRunner
 from telliot_core.apps.core import TelliotCore
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
 from web3 import Web3
-from unittest import mock
 
 from telliot_feeds.cli.main import main as cli_main
 from telliot_feeds.queries.query import OracleQuery
@@ -70,9 +71,7 @@ async def test_has_native_token_funds(mumbai_test_cfg, caplog, monkeypatch):
         endpoint.connect()
 
         # Test insufficient funds
-        has_funds = has_native_token_funds(
-            account=addr, web3=endpoint.web3, alert=fake_alert, min_balance=1e18
-        )
+        has_funds = has_native_token_funds(account=addr, web3=endpoint.web3, alert=fake_alert, min_balance=1e18)
         assert has_funds is False
         assert "bingo" in caplog.text
         assert f"Account {addr} has insufficient native token funds" in caplog.text
@@ -86,9 +85,7 @@ async def test_has_native_token_funds(mumbai_test_cfg, caplog, monkeypatch):
 
         # Test fail contract read
         with mock.patch("web3.eth.Eth.get_balance", side_effect=fail_balance_read):
-            has_funds = has_native_token_funds(
-                account=addr, web3=endpoint.web3, alert=fake_alert
-            )
+            has_funds = has_native_token_funds(account=addr, web3=endpoint.web3, alert=fake_alert)
             assert has_funds is False
             assert "bango" in caplog.text
             assert f"Error fetching native token balance for {addr}" in caplog.text
