@@ -1,6 +1,7 @@
 import click
 
-from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools, update_reported_pools
+from telliot_feeds.integrations.diva_protocol.utils import get_reported_pools
+from telliot_feeds.integrations.diva_protocol.utils import update_reported_pools
 
 
 @click.group()
