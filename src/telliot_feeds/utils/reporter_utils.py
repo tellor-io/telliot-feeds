@@ -1,8 +1,10 @@
+from typing import Callable
 from typing import List
 from typing import Optional
 from typing import Union
 
 import requests
+from telliot_core.contract.contract import Contract
 from telliot_core.tellor.tellorflex.oracle import TellorFlexOracleContract
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
 
@@ -51,3 +53,29 @@ async def is_online() -> bool:
         return True
     except requests.exceptions.ConnectionError:
         return False
+
+
+def alert_placeholder(msg: str) -> None:
+    """Dummy alert function"""
+    pass
+
+
+def has_native_token_funds(
+    account: str, token_contract: Contract, alert: Callable[str] = alert_placeholder, min_balance: int = 10**18
+) -> bool:
+    """Check if an account has native token funds."""
+    balance, status = token_contract.read(
+        func_name="balanceOf",
+        _address=account,
+    )
+    if status.ok:
+        if balance < min_balance:
+            logger.warning(f"Account {account} has insufficient native token funds")
+            alert(f"Account {account} has insufficient native token funds")
+            return False
+
+        return True
+
+    logger.warning(f"Unable to fetch native token balance for {account}")
+    alert(f"Unable to fetch native token balance for account {account}")
+    return False
