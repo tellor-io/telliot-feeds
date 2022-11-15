@@ -60,7 +60,7 @@ def alert_placeholder(msg: str) -> None:
     pass
 
 
-def has_native_token_funds(
+async def has_native_token_funds(
     account: str, token_contract: Contract, alert: Callable[str] = alert_placeholder, min_balance: int = 10**18
 ) -> bool:
     """Check if an account has native token funds."""
