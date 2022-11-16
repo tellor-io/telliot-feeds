@@ -351,15 +351,3 @@ class TellorFlexReporter(IntervalReporter):
             self.datafeed = None
 
         return status
-
-    async def report(self) -> None:
-        """Submit latest values to the TellorFlex oracle."""
-
-        while True:
-            online = await self.is_online()
-            if online:
-                _, _ = await self.report_once()
-            else:
-                logger.warning("Unable to connect to the internet!")
-
-            await asyncio.sleep(self.wait_period)
