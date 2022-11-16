@@ -446,10 +446,8 @@ class IntervalReporter:
         while report_count is None or report_count > 0:
             online = await self.is_online()
             if online:
-                if not has_native_token_funds(self.acct_addr, self.endpoint._web3):
-                    continue
-
-                _, _ = await self.report_once()
+                if has_native_token_funds(self.acct_addr, self.endpoint._web3):
+                    _, _ = await self.report_once()
             else:
                 logger.warning("Unable to connect to the internet!")
 
