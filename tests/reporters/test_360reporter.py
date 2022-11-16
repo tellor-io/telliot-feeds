@@ -1,3 +1,5 @@
+import random
+
 import pytest
 import pytest_asyncio
 from brownie import accounts
@@ -8,6 +10,12 @@ from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 
 txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
+CHAIN_ID = 80001
+
+
+def random_name() -> str:
+    """Generate a random account name."""
+    return "temp" + str(random.randint(100000, 999999))
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -31,7 +39,8 @@ async def tellor_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_cont
         mock_token_contract.mint(account.address, 100000e18)
 
         # send eth from brownie address to reporter address for txn fees
-        accounts[1].transfer(account.address, "1 ether")
+        accounts[1].transfer(account.address, 3500000000000000)
+
         # init governance address
         await tellor360.oracle.write("init", _governanceAddress=accounts[0].address, **txn_kwargs)
 
@@ -42,13 +51,15 @@ async def tellor_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_cont
 async def test_report(tellor_360, caplog):
     """Test 360 reporter deposit and balance changes when stakeAmount changes"""
     contracts, account = tellor_360
+    # send eth from brownie address to reporter address for txn fees
+    accounts[1].transfer(account.address, "1 ether")
     r = Tellor360Reporter(
         oracle=contracts.oracle,
         token=contracts.token,
         autopay=contracts.autopay,
         endpoint=contracts.oracle.node,
         account=account,
-        chain_id=80001,
+        chain_id=CHAIN_ID,
         transaction_type=0,
     )
 
@@ -96,13 +107,17 @@ async def test_get_time_based_rewards(tellor_360, caplog):
 async def test_360_reporter_rewards(tellor_360, caplog):
 
     contracts, account = tellor_360
+
+    # send eth from brownie address to reporter address for txn fees
+    accounts[1].transfer(account.address, "1 ether")
+
     r = Tellor360Reporter(
         oracle=contracts.oracle,
         token=contracts.token,
         autopay=contracts.autopay,
         endpoint=contracts.oracle.node,
         account=account,
-        chain_id=80001,
+        chain_id=CHAIN_ID,
         transaction_type=0,
     )
 
@@ -113,16 +128,23 @@ async def test_360_reporter_rewards(tellor_360, caplog):
 async def test_adding_stake(tellor_360):
     """Test 360 reporter depositing more stake"""
     contracts, account = tellor_360
+
+    # send eth from brownie address to reporter address for txn fees
+    accounts[1].transfer(account.address, "1 ether")
+
     reporter_kwargs = {
         "oracle": contracts.oracle,
         "token": contracts.token,
         "autopay": contracts.autopay,
         "endpoint": contracts.oracle.node,
         "account": account,
-        "chain_id": 80001,
+        "chain_id": CHAIN_ID,
         "transaction_type": 0,
     }
     reporter = Tellor360Reporter(**reporter_kwargs)
+
+    # transfer all native token to another account
+    reporter.account.transfer(account.address, "1 ether")
 
     # check stake amount
     stake_amount, status = await reporter.oracle.read("getStakeAmount")
@@ -143,3 +165,26 @@ async def test_adding_stake(tellor_360):
     _, status = await reporter.report_once()
     assert status.ok
     assert reporter.staker_info.stake_balance == pytest.approx(90000e18), "Staker balance should be 90000e18"
+
+
+@pytest.mark.asyncio
+async def test_no_native_token(tellor_360, caplog):
+    """Test reporter quits if no native token"""
+    contracts, account = tellor_360
+
+    reporter_kwargs = {
+        "oracle": contracts.oracle,
+        "token": contracts.token,
+        "autopay": contracts.autopay,
+        "endpoint": contracts.oracle.node,
+        "account": account,
+        "chain_id": CHAIN_ID,
+        "transaction_type": 0,
+        "wait_period": 0,
+    }
+    reporter = Tellor360Reporter(**reporter_kwargs)
+
+    await reporter.report(report_count=1)
+
+    expected = f"Account {account.address} has insufficient native token funds".lower()
+    assert expected in caplog.text.lower()
