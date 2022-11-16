@@ -39,7 +39,7 @@ async def tellor_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_cont
         mock_token_contract.mint(account.address, 100000e18)
 
         # send eth from brownie address to reporter address for txn fees
-        accounts[1].transfer(account.address, 3500000000000000)
+        accounts[1].transfer(account.address, "1 ether")
 
         # init governance address
         await tellor360.oracle.write("init", _governanceAddress=accounts[0].address, **txn_kwargs)
@@ -51,8 +51,7 @@ async def tellor_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_cont
 async def test_report(tellor_360, caplog):
     """Test 360 reporter deposit and balance changes when stakeAmount changes"""
     contracts, account = tellor_360
-    # send eth from brownie address to reporter address for txn fees
-    accounts[1].transfer(account.address, "1 ether")
+
     r = Tellor360Reporter(
         oracle=contracts.oracle,
         token=contracts.token,
@@ -108,9 +107,6 @@ async def test_360_reporter_rewards(tellor_360, caplog):
 
     contracts, account = tellor_360
 
-    # send eth from brownie address to reporter address for txn fees
-    accounts[1].transfer(account.address, "1 ether")
-
     r = Tellor360Reporter(
         oracle=contracts.oracle,
         token=contracts.token,
@@ -128,9 +124,6 @@ async def test_360_reporter_rewards(tellor_360, caplog):
 async def test_adding_stake(tellor_360):
     """Test 360 reporter depositing more stake"""
     contracts, account = tellor_360
-
-    # send eth from brownie address to reporter address for txn fees
-    accounts[1].transfer(account.address, "1 ether")
 
     reporter_kwargs = {
         "oracle": contracts.oracle,
@@ -181,6 +174,7 @@ async def test_no_native_token(tellor_360, caplog):
         "chain_id": CHAIN_ID,
         "transaction_type": 0,
         "wait_period": 0,
+        "min_native_token_balance": 2 * 10 ** 18,
     }
     reporter = Tellor360Reporter(**reporter_kwargs)
 
