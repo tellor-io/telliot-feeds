@@ -53,6 +53,7 @@ class IntervalReporter:
         legacy_gas_price: Optional[int] = None,
         gas_price_speed: str = "fast",
         wait_period: int = 10,
+        min_native_token_balance: int = 10**18,
     ) -> None:
 
         self.endpoint = endpoint
@@ -73,6 +74,7 @@ class IntervalReporter:
         self.trb_usd_median_feed = trb_usd_median_feed
         self.eth_usd_median_feed = eth_usd_median_feed
         self.wait_period = wait_period
+        self.min_native_token_balance = min_native_token_balance
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
@@ -446,7 +448,7 @@ class IntervalReporter:
         while report_count is None or report_count > 0:
             online = await self.is_online()
             if online:
-                if has_native_token_funds(self.acct_addr, self.endpoint._web3):
+                if has_native_token_funds(self.acct_addr, self.endpoint._web3, min_balance=self.min_native_token_balance):
                     _, _ = await self.report_once()
             else:
                 logger.warning("Unable to connect to the internet!")
