@@ -1,5 +1,3 @@
-import random
-
 import pytest
 import pytest_asyncio
 from brownie import accounts
@@ -11,11 +9,6 @@ from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
 CHAIN_ID = 80001
-
-
-def random_name() -> str:
-    """Generate a random account name."""
-    return "temp" + str(random.randint(100000, 999999))
 
 
 @pytest_asyncio.fixture(scope="function")
