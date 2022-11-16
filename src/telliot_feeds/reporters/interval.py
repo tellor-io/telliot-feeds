@@ -25,6 +25,7 @@ from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPriceSource
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.reporter_utils import has_native_token_funds
 from telliot_feeds.utils.reporter_utils import is_online
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
 
@@ -51,6 +52,7 @@ class IntervalReporter:
         priority_fee: int = 5,
         legacy_gas_price: Optional[int] = None,
         gas_price_speed: str = "fast",
+        wait_period: int = 10,
     ) -> None:
 
         self.endpoint = endpoint
@@ -70,6 +72,7 @@ class IntervalReporter:
         self.gas_price_speed = gas_price_speed
         self.trb_usd_median_feed = trb_usd_median_feed
         self.eth_usd_median_feed = eth_usd_median_feed
+        self.wait_period = wait_period
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
@@ -437,14 +440,21 @@ class IntervalReporter:
 
         return tx_receipt, status
 
-    async def report(self) -> None:
-        """Submit latest values to the TellorX oracle every 12 hours."""
+    async def report(self, report_count: Optional[int] = None) -> None:
+        """Submit values to Tellor oracles on an interval."""
 
-        while True:
+        while report_count is None or report_count > 0:
             online = await self.is_online()
             if online:
+                if not has_native_token_funds(self.acct_addr, self.endpoint._web3):
+                    continue
+
                 _, _ = await self.report_once()
             else:
                 logger.warning("Unable to connect to the internet!")
 
-            await asyncio.sleep(7)
+            logger.info(f"Sleeping for {self.wait_period} seconds")
+            await asyncio.sleep(self.wait_period)
+
+            if report_count is not None:
+                report_count -= 1
