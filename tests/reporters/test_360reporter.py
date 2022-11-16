@@ -129,9 +129,6 @@ async def test_adding_stake(tellor_360):
     }
     reporter = Tellor360Reporter(**reporter_kwargs)
 
-    # transfer all native token to another account
-    reporter.account.transfer(account.address, "1 ether")
-
     # check stake amount
     stake_amount, status = await reporter.oracle.read("getStakeAmount")
     assert status.ok
