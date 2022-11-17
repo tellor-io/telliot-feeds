@@ -10,6 +10,7 @@ import click
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from dotenv import load_dotenv
+from eth_typing import ChecksumAddress
 from eth_utils import to_checksum_address
 from simple_term_menu import TerminalMenu
 from telliot_core.apps.core import TelliotCore
@@ -238,14 +239,14 @@ def build_query(log: Optional[Callable[[str], None]] = click.echo) -> Any:
     return query
 
 
-def validate_address(ctx: click.Context, param: Any, value: str) -> str:
+def validate_address(ctx: click.Context, param: Any, value: str) -> Optional[ChecksumAddress]:
     """Ensure input is a valid checksum address"""
     # Sets default to None if no value is provided
     if not value:
-        return value
+        return None
 
     try:
-        return str(to_checksum_address(value))
+        return to_checksum_address(value)
     except Exception as e:
         raise click.BadParameter(f"Address must be a valid hex string. Error: {e}")
 
