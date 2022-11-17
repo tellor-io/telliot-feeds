@@ -5,6 +5,7 @@ from typing import Optional
 import click
 from chained_accounts import find_accounts
 from click.core import Context
+from eth_typing import ChecksumAddress
 from eth_utils import to_checksum_address
 from telliot_core.cli.utils import async_run
 
@@ -29,6 +30,8 @@ from telliot_feeds.reporters.tellorflex import TellorFlexReporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.reporter_utils import create_custom_contract
+from telliot_feeds.utils.reporter_utils import prompt_for_abi
 
 
 logger = get_logger(__name__)
@@ -256,9 +259,9 @@ async def report(
     password: str,
     signature_password: str,
     rng_auto: bool,
-    custom_token_contract: Optional[str],
-    custom_oracle_contract: Optional[str],
-    custom_autopay_contract: Optional[str],
+    custom_token_contract: Optional[ChecksumAddress],
+    custom_oracle_contract: Optional[ChecksumAddress],
+    custom_autopay_contract: Optional[ChecksumAddress],
     tellor_360: bool,
     stake: float,
 ) -> None:
@@ -343,15 +346,36 @@ async def report(
         contracts = core.get_tellor360_contracts() if tellor_360 else core.get_tellorflex_contracts()
 
         if custom_oracle_contract:
-            contracts.oracle.address = custom_oracle_contract
+            custom_oracle_abi = prompt_for_abi()
+            contracts.oracle = create_custom_contract(
+                original_contract=contracts.oracle,
+                custom_contract_addr=custom_oracle_contract,
+                custom_abi=custom_oracle_abi,
+                endpoint=core.endpoint,
+                account=account,
+            )
             contracts.oracle.connect()
 
         if custom_autopay_contract:
-            contracts.autopay.address = custom_autopay_contract
+            custom_autopay_abi = prompt_for_abi()
+            contracts.autopay = create_custom_contract(
+                original_contract=contracts.autopay,
+                custom_contract_addr=custom_autopay_contract,
+                custom_abi=custom_autopay_abi,
+                endpoint=core.endpoint,
+                account=account,
+            )
             contracts.autopay.connect()
 
         if custom_token_contract:
-            contracts.token.address = custom_token_contract
+            custom_token_abi = prompt_for_abi()
+            contracts.token = create_custom_contract(
+                original_contract=contracts.token,
+                custom_contract_addr=custom_token_contract,
+                custom_abi=custom_token_abi,
+                endpoint=core.endpoint,
+                account=account,
+            )
             contracts.token.connect()
 
         common_reporter_kwargs = {
