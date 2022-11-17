@@ -1,10 +1,17 @@
+import json
+from typing import Any
 from typing import Callable
 from typing import List
 from typing import Optional
 from typing import Union
 
+import click
 import requests
+from chained_accounts import ChainedAccount
 from eth_typing import ChecksumAddress
+from telliot_core.contract.contract import Contract
+from telliot_core.directory import ContractInfo
+from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.tellor.tellorflex.oracle import TellorFlexOracleContract
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
 from web3 import Web3
@@ -80,3 +87,44 @@ def has_native_token_funds(
         return False
 
     return True
+
+
+def create_custom_contract(
+    original_contract: Contract,
+    custom_contract_addr: ChecksumAddress,
+    endpoint: RPCEndpoint,
+    account: ChainedAccount,
+    custom_abi: Any = None,
+) -> Contract:
+    """Verify custom contract ABI is compatible with the original contract ABI. Return custom contract instance.
+
+    Custom contract ABI must have the same functions as the original contract ABI.
+    Custom contract must be deployed and verified, so that the ABI can be retrieved. Otherwise,
+    the user will need to provide the ABI as a JSON file."""
+    original_functions = original_contract.all_functions()
+
+    if not custom_abi:
+        # fetch ABI from block explorer
+        custom_abi = ContractInfo(name=None, org=None, address={endpoint.chain_id: custom_contract_addr}).get_abi(
+            chain_id=endpoint.chain_id
+        )
+
+    custom_contract = Contract(custom_contract_addr, custom_abi, endpoint, account)
+    custom_functions = custom_contract.all_functions()
+
+    err_msg = "Custom contract ABI must have the same functions as the original contract ABI."
+    for func in original_functions:
+        if func not in custom_functions:
+            raise ValueError(err_msg)
+
+    return custom_contract
+
+
+def prompt_for_abi() -> Any:
+    """Prompt user to provide custom contract ABI as a JSON file."""
+    file_path = click.prompt(
+        "Please provide the path to the custom contract ABI as a JSON file", type=click.Path(exists=True)
+    )
+    with open(file_path, "r") as f:
+        abi = json.load(f)
+    return abi
