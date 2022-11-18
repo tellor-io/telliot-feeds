@@ -192,7 +192,7 @@ class MimicryCollectionStatSource(DataSource[str]):
     ) -> Optional[float]:
         pass
 
-    async def request_historical_sales_data(self, contract:str, all=True) -> List[Transaction]:
+    async def request_historical_sales_data(self, contract:str, all=True) -> TransactionList:
         """Requests historical sales
          data of the selected collection.
          Data retrieved from Reservoir.
@@ -214,16 +214,18 @@ class MimicryCollectionStatSource(DataSource[str]):
             if not all:
                 one_year_ago = datetime.now() - timedelta(years = 1)
                 url += f"&startTimestamp={one_year_ago}"
-                pass
             try:
-                return s.get(url, timeout=0.5, headers=headers)     
+                request = s.get(url, timeout=0.5, headers=headers)   
             except requests.exceptions.RequestException as e:
-                logger.error(f"GasPriceOracle API error: {e}")
+                logger.error(f"Reservoir API error: {e}")
                 return None
 
             except requests.exceptions.Timeout as e:
-                logger.error(f"GasPriceOracle API timed out: {e}")
-                return None    
+                logger.error(f"Reservoir API timed out: {e}")
+                return None
+            
+            for sale in request["sales"]:
+
 
     async def fetch_new_datapoint(
         self,
