@@ -28,6 +28,7 @@ from telliot_feeds.integrations.diva_protocol.utils import update_reported_pools
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.reporter_utils import has_native_token_funds
 
 
 logger = get_logger(__name__)
@@ -351,9 +352,10 @@ class DIVAProtocolReporter(Tellor360Reporter):
             if not online:
                 logger.warning("Unable to connect to the internet!")
             else:
-                _, _ = await self.report_once()
-                await asyncio.sleep(self.wait_before_settle)
-                _ = await self.settle_pools()
+                if has_native_token_funds(self.acct_addr, self.endpoint._web3):
+                    _, _ = await self.report_once()
+                    await asyncio.sleep(self.wait_before_settle)
+                    _ = await self.settle_pools()
 
             logger.info(f"Sleeping for {self.wait_period} seconds")
             await asyncio.sleep(self.wait_period)

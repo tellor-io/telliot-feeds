@@ -72,7 +72,7 @@ def has_native_token_funds(
     account: ChecksumAddress,
     web3: Web3,
     alert: Callable[[str], None] = alert_placeholder,
-    min_balance: int = 1 * 10**18,
+    min_balance: int = 10**18,
 ) -> bool:
     """Check if an account has native token funds."""
     try:
