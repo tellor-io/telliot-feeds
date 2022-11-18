@@ -104,9 +104,12 @@ def create_custom_contract(
 
     if not custom_abi:
         # fetch ABI from block explorer
-        custom_abi = ContractInfo(name=None, org=None, address={endpoint.chain_id: custom_contract_addr}).get_abi(
-            chain_id=endpoint.chain_id
-        )
+        try:
+            custom_abi = ContractInfo(name=None, org=None, address={endpoint.chain_id: custom_contract_addr}).get_abi(
+                chain_id=endpoint.chain_id
+            )
+        except Exception as e:
+            raise click.ClickException(f"Error fetching custom contract ABI from block explorer: {e}")
 
     custom_contract = Contract(custom_contract_addr, custom_abi, endpoint, account)
     custom_contract.connect()

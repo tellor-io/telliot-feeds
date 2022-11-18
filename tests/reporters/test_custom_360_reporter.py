@@ -1,3 +1,13 @@
+"""
+Test using custom contracts for telliot reporter.
+
+There are two cases where the custom contract CLI flags would be used. First,
+if there's an newer deployment of the oracle, autopay, or token contracts that
+we want to test. Second, if the user wants to use a custom reporter contract.
+In the second case, the user would still use the --custom-oracle-contract flag.
+Their custom reporter contract would only require the functions that the reporter
+uses.
+"""
 import pytest
 import pytest_asyncio
 from brownie import accounts
@@ -9,6 +19,7 @@ from telliot_core.apps.core import TelliotCore
 
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.reporter_utils import create_custom_contract
 
 
 logger = get_logger(__name__)
@@ -43,12 +54,10 @@ async def custom_reporter(
     mock_autopay_contract,
     mock_token_contract,
     mock_reporter_contract,
+    monkeypatch,
 ):
     async with TelliotCore(config=mumbai_test_cfg) as core:
-        custom_contract = Contract(mock_reporter_contract.address, mock_reporter_contract.abi, core.endpoint, account)
-        custom_contract.connect()
         contracts = core.get_tellor360_contracts()
-        contracts.oracle.address = custom_contract.address
         contracts.autopay.address = mock_autopay_contract.address
         contracts.autopay.abi = mock_autopay_contract.abi
         contracts.token.address = mock_token_contract.address
@@ -57,9 +66,21 @@ async def custom_reporter(
         contracts.token.connect()
         contracts.autopay.connect()
 
+        # Mock confirm ok missing functions
+        def mock_confirm(*args, **kwargs): return [True]
+        monkeypatch.setattr("click.confirm", mock_confirm)
+
+        custom_contract = create_custom_contract(
+                original_contract=contracts.oracle,
+                custom_contract_addr=mock_reporter_contract.address,
+                endpoint=core.endpoint,
+                account=account,
+                custom_abi=mock_reporter_contract.abi,
+            )
+
         r = Tellor360Reporter(
             transaction_type=0,
-            oracle=contracts.oracle,
+            oracle=custom_contract,
             token=contracts.token,
             autopay=contracts.autopay,
             endpoint=core.endpoint,
