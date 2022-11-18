@@ -225,7 +225,9 @@ class MimicryCollectionStatSource(DataSource[str]):
                 return None
             
             for sale in request["sales"]:
+                #price, item id, timestamp
 
+                
 
     async def fetch_new_datapoint(
         self,
