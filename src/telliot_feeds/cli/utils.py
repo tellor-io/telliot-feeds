@@ -4,11 +4,13 @@ from typing import Callable
 from typing import get_args
 from typing import get_type_hints
 from typing import Optional
+from typing import Union
 
 import click
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from dotenv import load_dotenv
+from eth_typing import ChecksumAddress
 from eth_utils import to_checksum_address
 from simple_term_menu import TerminalMenu
 from telliot_core.apps.core import TelliotCore
@@ -22,6 +24,63 @@ from telliot_feeds.queries.abi_query import AbiQuery
 DIVA_PROTOCOL_CHAINS = (137, 80001, 3, 5)
 
 load_dotenv()
+
+
+def print_reporter_settings(
+    signature_address: str,
+    query_tag: str,
+    gas_limit: int,
+    priority_fee: Optional[int],
+    expected_profit: str,
+    chain_id: int,
+    max_fee: Optional[int],
+    transaction_type: int,
+    legacy_gas_price: Optional[int],
+    gas_price_speed: str,
+    reporting_diva_protocol: bool,
+    stake_amount: float,
+) -> None:
+    """Print user settings to console."""
+    click.echo("")
+
+    if signature_address != "":
+        click.echo("⚡🤖⚡ Reporting through Flashbots relay ⚡🤖⚡")
+        click.echo(f"Signature account: {signature_address}")
+
+    if query_tag:
+        click.echo(f"Reporting query tag: {query_tag}")
+    elif reporting_diva_protocol:
+        click.echo("Reporting & settling DIVA Protocol pools")
+    else:
+        click.echo("Reporting with synchronized queries")
+
+    click.echo(f"Current chain ID: {chain_id}")
+
+    if expected_profit == "YOLO":
+        click.echo("🍜🍜🍜 Reporter not enforcing profit threshold! 🍜🍜🍜")
+    else:
+        click.echo(f"Expected percent profit: {expected_profit}%")
+
+    click.echo(f"Transaction type: {transaction_type}")
+    click.echo(f"Gas Limit: {gas_limit}")
+    click.echo(f"Legacy gas price (gwei): {legacy_gas_price}")
+    click.echo(f"Max fee (gwei): {max_fee}")
+    click.echo(f"Priority fee (gwei): {priority_fee}")
+    click.echo(f"Gas price speed: {gas_price_speed}")
+    click.echo(f"Desired stake amount: {stake_amount}")
+    click.echo("\n")
+
+
+def parse_profit_input(ctx: click.Context, param: Any, value: str) -> Optional[Union[str, float]]:
+    """Parses user input expected profit and ensures
+    the input is either a float or the string 'YOLO'."""
+    if value == "YOLO":
+        return value
+    else:
+        try:
+            return float(value)
+        except ValueError:
+            raise click.BadParameter("Not a valid profit input. Enter float or the string, 'YOLO'")
 
 
 def reporter_cli_core(ctx: click.Context) -> TelliotCore:
@@ -180,13 +239,24 @@ def build_query(log: Optional[Callable[[str], None]] = click.echo) -> Any:
     return query
 
 
-def validate_address(ctx: click.Context, param: Any, value: str) -> str:
+def validate_address(ctx: click.Context, param: Any, value: str) -> Optional[ChecksumAddress]:
     """Ensure input is a valid checksum address"""
     # Sets default to None if no value is provided
     if not value:
-        return value
+        return None
 
     try:
-        return str(to_checksum_address(value))
+        return to_checksum_address(value)
     except Exception as e:
         raise click.BadParameter(f"Address must be a valid hex string. Error: {e}")
+
+
+def valid_transaction_type(ctx: click.Context, param: Any, value: str) -> int:
+    """Ensure input is a valid transaction type"""
+    supported = (0, 2)
+    try:
+        if int(value) in supported:
+            return int(value)
+        raise click.BadParameter(f"Transaction type given ({value}) is not supported ({supported}).")
+    except ValueError:
+        raise click.BadParameter("Transaction type must be an integer.")

@@ -58,7 +58,6 @@ class DIVAProtocolReporter(Tellor360Reporter):
         self.middleware_contract = DivaOracleTellorContract(
             node=self.endpoint,
             account=self.account,
-            diva_diamond=diva_diamond_address,
         )
         self.middleware_contract.address = middleware_address
         self.middleware_contract.connect()
