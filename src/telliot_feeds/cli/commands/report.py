@@ -346,7 +346,7 @@ async def report(
         contracts = core.get_tellor360_contracts() if tellor_360 else core.get_tellorflex_contracts()
 
         if custom_oracle_contract:
-            contracts.oracle.connect() # set telliot_core.contract.Contract.contract attribute
+            contracts.oracle.connect()  # set telliot_core.contract.Contract.contract attribute
             custom_oracle_abi = prompt_for_abi()
             contracts.oracle = create_custom_contract(
                 original_contract=contracts.oracle,
@@ -358,7 +358,7 @@ async def report(
             contracts.oracle.connect()
 
         if custom_autopay_contract:
-            contracts.autopay.connect() # set telliot_core.contract.Contract.contract attribute
+            contracts.autopay.connect()  # set telliot_core.contract.Contract.contract attribute
             custom_autopay_abi = prompt_for_abi()
             contracts.autopay = create_custom_contract(
                 original_contract=contracts.autopay,
@@ -370,7 +370,7 @@ async def report(
             contracts.autopay.connect()
 
         if custom_token_contract:
-            contracts.token.connect() # set telliot_core.contract.Contract.contract attribute
+            contracts.token.connect()  # set telliot_core.contract.Contract.contract attribute
             custom_token_abi = prompt_for_abi()
             contracts.token = create_custom_contract(
                 original_contract=contracts.token,

@@ -126,7 +126,8 @@ def create_custom_contract(
 def prompt_for_abi() -> Any:
     """Prompt user to provide custom contract ABI as a JSON file."""
     file_path = click.prompt(
-        "Provide path to custom contract ABI JSON file (e.g. /Users/foo/custom_reporter_abi.json)", type=click.Path(exists=True)
+        "Provide path to custom contract ABI JSON file (e.g. /Users/foo/custom_reporter_abi.json)",
+        type=click.Path(exists=True),
     )
     with open(file_path, "r") as f:
         abi = json.load(f)
