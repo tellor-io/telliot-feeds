@@ -55,7 +55,7 @@ def test_reporter_sync_schedule_list():
 
 
 @pytest.mark.asyncio
-async def test_has_native_token_funds(mumbai_test_cfg, caplog, monkeypatch):
+async def test_has_native_token_funds(mumbai_test_cfg, caplog):
     """Test has_native_token_funds"""
 
     def fake_alert(msg):
