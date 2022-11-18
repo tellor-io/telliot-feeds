@@ -116,7 +116,7 @@ def create_custom_contract(
     if missing_functions:
         warning_msg = f"WARNING: Custom contract ABI is missing {len(missing_functions)} functions:"
         click.echo(warning_msg)
-        numbered_missing_functions = "\n".join([f"{i:03d}. {f}" for i, f in enumerate(missing_functions)])
+        numbered_missing_functions = "\n".join([f"{i+1:03d}. {f}" for i, f in enumerate(missing_functions)])
         click.echo(numbered_missing_functions)
         click.confirm("Continue?", abort=True)
 
