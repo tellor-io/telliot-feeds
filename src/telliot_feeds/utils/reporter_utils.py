@@ -118,17 +118,21 @@ def create_custom_contract(
         click.echo(warning_msg)
         numbered_missing_functions = "\n".join([f"{i+1:03d}. {f}" for i, f in enumerate(missing_functions)])
         click.echo(numbered_missing_functions)
-        click.confirm("Continue?", abort=True)
+        click.confirm("Continue?", default=True, abort=True)
 
     return custom_contract
 
 
 def prompt_for_abi() -> Any:
     """Prompt user to provide custom contract ABI as a JSON file."""
-    file_path = click.prompt(
-        "Provide path to custom contract ABI JSON file (e.g. /Users/foo/custom_reporter_abi.json)",
-        type=click.Path(exists=True),
-    )
-    with open(file_path, "r") as f:
-        abi = json.load(f)
-    return abi
+    if click.confirm(
+        "Do you want to provide a custom contract ABI? If no, will attempt to fetch from block explorer.", default=False
+    ):
+        file_path = click.prompt(
+            "Provide path to custom contract ABI JSON file (e.g. /Users/foo/custom_reporter_abi.json)",
+            type=click.Path(exists=True),
+        )
+        with open(file_path, "r") as f:
+            abi = json.load(f)
+        return abi
+    return None
