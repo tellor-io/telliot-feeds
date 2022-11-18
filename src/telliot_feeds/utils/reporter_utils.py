@@ -98,10 +98,9 @@ def create_custom_contract(
 ) -> Contract:
     """Verify custom contract ABI is compatible with the original contract ABI. Return custom contract instance.
 
-    Custom contract ABI must have the same functions as the original contract ABI.
-    Custom contract must be deployed and verified, so that the ABI can be retrieved. Otherwise,
-    the user will need to provide the ABI as a JSON file."""
-    original_functions = original_contract.all_functions()
+    Reports to user if custom contract ABI differs from original contract ABI.
+    Confirms if user wants to continue with custom contract ABI."""
+    original_functions = sorted(list(original_contract.contract.functions))
 
     if not custom_abi:
         # fetch ABI from block explorer
@@ -110,12 +109,16 @@ def create_custom_contract(
         )
 
     custom_contract = Contract(custom_contract_addr, custom_abi, endpoint, account)
-    custom_functions = custom_contract.all_functions()
+    custom_contract.connect()
+    custom_functions = sorted(list(custom_contract.contract.functions))
 
-    err_msg = "Custom contract ABI must have the same functions as the original contract ABI."
-    for func in original_functions:
-        if func not in custom_functions:
-            raise ValueError(err_msg)
+    missing_functions = [f for f in original_functions if f not in custom_functions]
+    if missing_functions:
+        warning_msg = f"WARNING: Custom contract ABI is missing {len(missing_functions)} functions:"
+        click.echo(warning_msg)
+        numbered_missing_functions = "\n".join([f"{i:03d}. {f}" for i, f in enumerate(missing_functions)])
+        click.echo(numbered_missing_functions)
+        click.confirm("Continue?", abort=True)
 
     return custom_contract
 
@@ -123,7 +126,7 @@ def create_custom_contract(
 def prompt_for_abi() -> Any:
     """Prompt user to provide custom contract ABI as a JSON file."""
     file_path = click.prompt(
-        "Please provide the path to the custom contract ABI as a JSON file", type=click.Path(exists=True)
+        "Provide path to custom contract ABI JSON file (e.g. /Users/foo/custom_reporter_abi.json)", type=click.Path(exists=True)
     )
     with open(file_path, "r") as f:
         abi = json.load(f)
