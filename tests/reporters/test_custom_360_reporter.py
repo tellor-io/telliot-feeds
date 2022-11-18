@@ -13,7 +13,6 @@ import pytest_asyncio
 from brownie import accounts
 from brownie import SampleFlexReporter
 from telliot_core.apps.core import ChainedAccount
-from telliot_core.apps.core import Contract
 from telliot_core.apps.core import find_accounts
 from telliot_core.apps.core import TelliotCore
 
@@ -67,16 +66,18 @@ async def custom_reporter(
         contracts.autopay.connect()
 
         # Mock confirm ok missing functions
-        def mock_confirm(*args, **kwargs): return [True]
+        def mock_confirm(*args, **kwargs):
+            return [True]
+
         monkeypatch.setattr("click.confirm", mock_confirm)
 
         custom_contract = create_custom_contract(
-                original_contract=contracts.oracle,
-                custom_contract_addr=mock_reporter_contract.address,
-                endpoint=core.endpoint,
-                account=account,
-                custom_abi=mock_reporter_contract.abi,
-            )
+            original_contract=contracts.oracle,
+            custom_contract_addr=mock_reporter_contract.address,
+            endpoint=core.endpoint,
+            account=account,
+            custom_abi=mock_reporter_contract.abi,
+        )
 
         r = Tellor360Reporter(
             transaction_type=0,
