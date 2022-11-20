@@ -1,6 +1,3 @@
-import sys
-from unittest import mock
-
 from click.testing import CliRunner
 
 from telliot_feeds.cli.main import main as cli_main
@@ -28,23 +25,26 @@ def test_invalid_diva_middleware_address():
     assert "Address must be a valid hex string" in result.stdout
 
 
-def test_default_values_available():
-    """Make sure default contract addresses are available."""
+def test_available_cmds():
+    """Test help command for integrations."""
     runner = CliRunner()
+    result = runner.invoke(cli_main, ["integrations", "--help"])
 
-    # mock expected_profit() call so cli quits early
-    def mock_parse_profit(*args, **kwargs):
-        sys.exit(0)
+    assert result.exit_code == 0
+    assert "diva  Commands for Diva Protocol integration." in result.stdout
 
-    with mock.patch("telliot_feeds.cli.commands.report.parse_profit_input", side_effect=mock_parse_profit):
-        result = runner.invoke(cli_main, ["report", "--build-feed", "-p", "YOLO"])
+    result = runner.invoke(cli_main, ["integrations", "diva", "--help"])
 
-        assert result.exit_code == 0
+    assert result.exit_code == 0
+    assert "Commands for interacting with reported/settled pools cache" in result.stdout
 
+    result = runner.invoke(cli_main, ["integrations", "diva", "cache", "--help"])
+    view_msg = "view   View reported/settled pools cache."
+    clear_msg = "clear  Clear reported/settled pools cache."
 
-def test_integrations_help_cmd():
-    # ensure diva cmd is available
-    pass
+    assert result.exit_code == 0
+    assert view_msg in result.stdout
+    assert clear_msg in result.stdout
 
 
 def test_diva_help_cmd():

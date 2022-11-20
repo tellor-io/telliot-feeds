@@ -51,7 +51,6 @@ def assemble_diva_datafeed(
     source.collat_token_source = collat_token_source
 
     feed = DataFeed(
-        # query=DIVAProtocol(pool.pool_id, divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211", chainId=3),
         query=DIVAProtocol(pool.pool_id, divaDiamond=diva_diamond, chainId=chain_id),
         source=source,
     )

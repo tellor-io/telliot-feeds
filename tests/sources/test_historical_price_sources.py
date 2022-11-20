@@ -51,6 +51,8 @@ async def test_kraken_get_price(caplog):
     v, t = await KrakenHistoricalPriceService(timeout=3).get_price("xbt", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
     validate_price(v, t)
 
+    print("Kraken XBT/USD price:", v)
+
     # Test invalid asset
     v, t = await KrakenHistoricalPriceService().get_price("invalid", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
     assert v is None
@@ -80,7 +82,7 @@ async def test_kraken_get_trades(caplog):
     assert isinstance(trades, list)
     assert len(trades) > 0
     assert isfloat(trades[0][0])
-    print("# trades in six hour window:", len(trades))
+    # print("# trades in six hour window:", len(trades))
 
     trades, t = await KrakenHistoricalPriceService().get_trades(
         "xbt",
@@ -93,7 +95,7 @@ async def test_kraken_get_trades(caplog):
     assert isinstance(trades, list)
     assert len(trades) > 0
     assert isfloat(trades[0][0])
-    print("# trades in six hour window:", len(trades))
+    # print("# trades in six hour window:", len(trades))
 
 
 @pytest.mark.asyncio
@@ -111,8 +113,12 @@ async def test_poloniex_get_price():
     # v, t = await PoloniexHistoricalPriceService().get_price("btc", "dai", ts=1645813159)
     # validate_price(v, t)
 
+    # print("Poloniex BTC/DAI price:", v)
+
     v, t = await PoloniexHistoricalPriceService().get_price("btc", "tusd", ts=ONE_DAY_AGO_TIMESTAMP)
     validate_price(v, t)
+
+    print("Poloniex BTC/TUSD price:", v)
 
 
 @pytest.mark.asyncio
@@ -129,7 +135,7 @@ async def test_poloniex_get_trades():
     assert isinstance(trades, list)
     assert len(trades) > 0
     assert isfloat(trades[0]["rate"])
-    print("# trades in six hour window:", len(trades))
+    # print("# trades in six hour window:", len(trades))
 
     trades, t = await PoloniexHistoricalPriceService().get_trades(
         "btc",
@@ -142,7 +148,7 @@ async def test_poloniex_get_trades():
     assert isinstance(trades, list)
     assert len(trades) > 0
     assert isfloat(trades[0]["rate"])
-    print("# trades in six hour window:", len(trades))
+    # print("# trades in six hour window:", len(trades))
 
 
 @pytest.mark.asyncio
@@ -153,6 +159,8 @@ async def test_cryptowatch_get_price():
 
     v, t = await CryptowatchHistoricalPriceService().get_price("btc", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
     validate_price(v, t)
+
+    print("CryptoWatch BTC/USD last candle price:", v)
 
 
 @pytest.mark.asyncio
@@ -169,7 +177,7 @@ async def test_cryptowatch_get_candles():
     assert isinstance(candles, list)
     assert len(candles) > 0
     assert isfloat(candles[-1][4])
-    print("# eth/usd candles in six hour window:", len(candles))
+    # print("# eth/usd candles in six hour window:", len(candles))
 
     candles, t = await CryptowatchHistoricalPriceService().get_candles(
         "btc",
@@ -182,4 +190,4 @@ async def test_cryptowatch_get_candles():
     assert isinstance(candles, list)
     assert len(candles) > 0
     assert isfloat(candles[-1][4])
-    print("# btc/usd candles in six hour window:", len(candles))
+    # print("# btc/usd candles in six hour window:", len(candles))

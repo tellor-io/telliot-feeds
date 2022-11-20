@@ -306,15 +306,3 @@ class RNGReporter(Tellor360Reporter):
             logger.error(status)
 
         return tx_receipt, status
-
-    async def report(self) -> None:
-        """Submit latest values to the TellorFlex oracle."""
-        logger.info(f"RNG reporting interval: {INTERVAL} seconds")
-        while True:
-            online = await self.is_online()
-            if online:
-                _, _ = await self.report_once()
-            else:
-                logger.warning("Unable to connect to the internet!")
-
-            await asyncio.sleep(self.wait_period)

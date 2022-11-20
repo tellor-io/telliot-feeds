@@ -9,8 +9,6 @@ from telliot_core.directory import contract_directory
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import ResponseStatus
 
-from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
-
 
 logger = logging.getLogger(__name__)
 
@@ -93,11 +91,12 @@ class DivaOracleTellorContract(Contract):
         self,
         node: RPCEndpoint,
         account: Optional[ChainedAccount] = None,
-        diva_diamond: Optional[str] = DIVA_DIAMOND_ADDRESS,
     ):
-        self.diva_diamond = diva_diamond
         chain_id = node.chain_id
-        contract_info = contract_directory.find(chain_id=chain_id, name="diva-oracle-tellor")[0]
+        try:
+            contract_info = contract_directory.find(chain_id=chain_id, name="diva-oracle-tellor")[0]
+        except IndexError:
+            raise Exception(f"DIVA Tellor middleware contract not found on chain_id {chain_id}")
         if not contract_info:
             raise Exception(f"diva-oracle-tellor contract info not found on chain_id {chain_id}")
 
@@ -135,15 +134,10 @@ class DivaOracleTellorContract(Contract):
         """Settle a pool.
 
         Must be called after the the minimum period undisputed has elapsed."""
-        if self.diva_diamond is None:
-            diva_protocol_info = contract_directory.find(chain_id=self.node.chain_id, name="diva-protocol")[0]
-            diva_protocol_addr = diva_protocol_info.address[self.node.chain_id]
-            self.diva_diamond = diva_protocol_addr
 
         print(f"setfinalref middleware address: {self.address}")
         _, status = await self.write(
             "setFinalReferenceValue",
-            _divaDiamond=self.diva_diamond,
             _poolId=pool_id,
             gas_limit=gas_limit,
             legacy_gas_price=legacy_gas_price,

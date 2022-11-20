@@ -19,7 +19,6 @@ logger = get_logger(__name__)
 def mainnet_config() -> Optional[TelliotConfig]:
     cfg = TelliotConfig()
     cfg.main.chain_id = 1
-    logger.info("Using Mainnet Config for RNG Reporter")
     endpoint = cfg.get_endpoint()
 
     if "INFURA_API_KEY" in endpoint.url:
@@ -73,11 +72,9 @@ def setup_config(cfg: TelliotConfig, account_name: str) -> Tuple[TelliotConfig, 
     else:
         click.echo("No accounts set.")
 
-    want_to_update_settings = click.confirm(
-        "Would you like to update settings? If no accounts or endpoints are set, select yes"
-    )
+    no_update = click.confirm("Proceed with current settings (y) or update (n)?", default=True)
 
-    if not want_to_update_settings:
+    if no_update:
         if not accounts or not endpoint:
             return cfg, None
         return cfg, accounts[0]

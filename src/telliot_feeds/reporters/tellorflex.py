@@ -51,6 +51,7 @@ class TellorFlexReporter(IntervalReporter):
         legacy_gas_price: Optional[int] = None,
         gas_price_speed: str = "safeLow",
         wait_period: int = 7,
+        min_native_token_balance: int = 10**18,
     ) -> None:
 
         self.endpoint = endpoint
@@ -73,6 +74,7 @@ class TellorFlexReporter(IntervalReporter):
         self.autopaytip = 0
         self.staked_amount: Optional[float] = None
         self.qtag_selected = False if self.datafeed is None else True
+        self.min_native_token_balance = min_native_token_balance
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
@@ -351,15 +353,3 @@ class TellorFlexReporter(IntervalReporter):
             self.datafeed = None
 
         return status
-
-    async def report(self) -> None:
-        """Submit latest values to the TellorFlex oracle."""
-
-        while True:
-            online = await self.is_online()
-            if online:
-                _, _ = await self.report_once()
-            else:
-                logger.warning("Unable to connect to the internet!")
-
-            await asyncio.sleep(self.wait_period)

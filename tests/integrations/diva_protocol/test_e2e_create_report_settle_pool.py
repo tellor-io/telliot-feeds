@@ -70,7 +70,7 @@ async def test_create_report_settle_pool(
     it's reference asset and collateral token.
     """
     async with TelliotCore(config=goerli_test_cfg) as core:
-        past_expired = int(time.time()) - 1
+        past_expired = int(time.time()) - 86400  # 1 day ago
         assert (
             mock_middleware_contract.updateMinPeriodUndisputed.call(1, {"from": accounts[0]}) == 1
         ), "updateMinPeriodUndisputed failed"
