@@ -1,6 +1,5 @@
 import pytest
 import pytest_asyncio
-from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
@@ -8,36 +7,18 @@ from telliot_feeds.reporters.rng_interval import RNGReporter
 
 
 @pytest_asyncio.fixture(scope="function")
-async def rng_reporter(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_contract, mock_token_contract):
+async def rng_reporter(mumbai_test_cfg, tellor_360):
     async with TelliotCore(config=mumbai_test_cfg) as core:
-
-        account = core.get_account()
-
-        flex = core.get_tellor360_contracts()
-        flex.oracle.address = tellorflex_360_contract.address
-        flex.autopay.address = mock_autopay_contract.address
-        flex.token.address = mock_token_contract.address
-
-        flex.oracle.connect()
-        flex.token.connect()
-        flex.autopay.connect()
-
+        contracts, account = tellor_360
         r = RNGReporter(
-            oracle=flex.oracle,
-            token=flex.token,
-            autopay=flex.autopay,
+            oracle=contracts.oracle,
+            token=contracts.token,
+            autopay=contracts.autopay,
             endpoint=core.endpoint,
             account=account,
             chain_id=80001,
             transaction_type=0,
         )
-        # mint token and send to reporter address
-        mock_token_contract.mint(account.address, 1000e18)
-
-        # send eth from brownie address to reporter address for txn fees
-        accounts[1].transfer(account.address, "1 ether")
-        # init governance address
-        await flex.oracle.write("init", _governanceAddress=accounts[0].address, gas_limit=3500000, legacy_gas_price=1)
 
         return r
 
@@ -47,9 +28,6 @@ async def test_rng_reporter_submit_once(rng_reporter):
     """Test reporting once to the Tellor playground on Rinkeby
     with three retries."""
     r = rng_reporter
-
-    # Sync reporter
-    # r.datafeed = None
 
     EXPECTED_ERRORS = {
         "Current addess disputed. Switch address to continue reporting.",

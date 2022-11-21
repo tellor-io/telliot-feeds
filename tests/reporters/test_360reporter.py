@@ -1,7 +1,4 @@
 import pytest
-import pytest_asyncio
-from brownie import accounts
-from telliot_core.apps.core import TelliotCore
 
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
@@ -9,35 +6,6 @@ from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
 CHAIN_ID = 80001
-
-
-@pytest_asyncio.fixture(scope="function")
-async def tellor_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_contract, mock_token_contract):
-    async with TelliotCore(config=mumbai_test_cfg) as core:
-
-        account = core.get_account()
-
-        tellor360 = core.get_tellor360_contracts()
-        tellor360.oracle.address = tellorflex_360_contract.address
-        tellor360.oracle.abi = tellorflex_360_contract.abi
-        tellor360.autopay.address = mock_autopay_contract.address
-        tellor360.autopay.abi = mock_autopay_contract.abi
-        tellor360.token.address = mock_token_contract.address
-
-        tellor360.oracle.connect()
-        tellor360.token.connect()
-        tellor360.autopay.connect()
-
-        # mint token and send to reporter address
-        mock_token_contract.mint(account.address, 100000e18)
-
-        # send eth from brownie address to reporter address for txn fees
-        accounts[1].transfer(account.address, "1 ether")
-
-        # init governance address
-        await tellor360.oracle.write("init", _governanceAddress=accounts[0].address, **txn_kwargs)
-
-        return tellor360, account
 
 
 @pytest.mark.asyncio
