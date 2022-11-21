@@ -1,9 +1,9 @@
-from dataclasses import dataclass
+from __future__ import annotations
+from dataclasses import dataclass, field
 import operator
-from typing import Any, List, Union
+from typing import Any, List, Tuple, Union
 from typing import Optional
 
-from __future__ import annotations
 
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -67,11 +67,12 @@ class IndexValueHistoryList:
 class TransactionList:
     """Wrapper for List of Transaction objects with sort, filter, and convert methods"""
 
-    transactions: List[Transaction]
+    transactions: List[Transaction] = field(default_factory=list)
+    floor_price: float = 0.0
 
-    async def sort_transactions(self) -> TransactionList:
+    async def sort_transactions(self, by: str):
         """sort of shallow copy of the tx list"""
-        self.transactions.copy().sort(ascending=True, key=operator.attrgetter("timestamp"))
+        self.transactions.copy().sort(key=operator.attrgetter(by))
 
     async def filter_valid_transactions(self) -> TransactionList:
         """filter for valid transactions, removing invalid txs from the list"""
@@ -81,7 +82,7 @@ class TransactionList:
         inclusion_dict = {}
 
         for transaction in self.transactions:
-            if not inclusion_dict[transaction.item_id]:
+            if not transaction.item_id in inclusion_dict:
                 inclusion_dict[transaction.item_id]["past_year_sale_count"] = 0
                 inclusion_dict[transaction.item_id]["has_sale_in_last_six_months"] = False
                 inclusion_dict[transaction.item_id]["is_valid"] = False
@@ -89,13 +90,13 @@ class TransactionList:
             if inclusion_dict[transaction.item_id]["is_valid"]:
                 continue
 
-            if not is_after(transaction.timestamp, one_year_ago):
+            if datetime.now() - transaction.timestamp > one_year_ago:
                 continue
 
             past_year_sale_count = inclusion_dict[transaction.item_id]["past_year_sale_count"]
             inclusion_dict[transaction.item_id]["past_year_sale_count"] += 1
 
-            if not is_after(transaction.timestamp, six_months_ago):
+            if datetime.now() - transaction.timestamp > six_months_ago:
                 continue
 
             inclusion_dict[transaction.item_id]["has_sale_in_last_six_months"] = True
@@ -169,7 +170,7 @@ class MimicryCollectionStatSource(DataSource[str]):
         see https://github.com/Mimicry-Protocol/TAMI
         """
 
-        await transaction_history.sort_transactions()
+        await transaction_history.sort_transactions("timestamp")
         await transaction_history.filter_valid_transactions()
         index_value_history = await transaction_history.create_index_value_history()
 
@@ -188,11 +189,31 @@ class MimicryCollectionStatSource(DataSource[str]):
 
     async def get_collection_market_cap(
         self,
-        transaction_history: List[Transaction]
+        transaction_history: TransactionList
     ) -> Optional[float]:
-        pass
 
-    async def request_historical_sales_data(self, contract:str, all=True) -> TransactionList:
+        values = []
+        transaction_history.sort_transactions("timestamp")
+
+        transaction_history.transactions.reverse()
+
+        for sale in transaction_history.transactions:
+            # For each token in the collection
+            # calculate its value by taking the greater value between the collection's floor price and last sale price of that NFT
+            if transaction_history.floor_price < sale.price:
+                values.append(sale.price)
+            else:
+                values.append(transaction_history.floor_price)
+
+            for other_sale in transaction_history.transactions:
+                if other_sale.item_id == sale.item_id:
+                    transaction_history.transactions.remove(other_sale)
+
+        # return(sum(values))
+        return sum(values)
+
+
+    async def request_historical_sales_data(self, contract:str, all=True) -> Optional[TransactionList]:
         """Requests historical sales
          data of the selected collection.
          Data retrieved from Reservoir.
@@ -201,7 +222,7 @@ class MimicryCollectionStatSource(DataSource[str]):
             all (bool): if True, see all data for the selected collection (if False, only 12 months)
 
         Returns:
-            List[Dict]: historical sales data of a collection retrieved from Reservoir
+            TransactionList: formatted historical sales data of a collection retrieved from Reservoir
 
         """
         url = f"https://api.reservoir.tools/sales/v4?contract={contract}"
@@ -224,10 +245,43 @@ class MimicryCollectionStatSource(DataSource[str]):
                 logger.error(f"Reservoir API timed out: {e}")
                 return None
             
-            for sale in request["sales"]:
-                #price, item id, timestamp
+            tx_list = TransactionList()
 
-                
+            for sale in request.json()["sales"]:
+
+                try:
+                    price = sale["price"]["amount"]["usd"]
+                    item_id = sale["token"]["tokenId"]
+                    timestamp = sale["timestamp"]
+
+                    tx = Transaction(price=price, item_id=item_id, timestamp=timestamp)
+
+                    tx_list.transactions.append(tx)
+                except KeyError as e:
+                    logger.warn("Mimicry: Reservoir Sales API KeyError: " + e)
+
+            if all:
+                url = f"https://api.reservoir.tools/oracle/collections/floor-ask/v4?kind=spot&currency=0x0000000000000000000000000000000000000000&twapSeconds=0&collection={contract}"
+                headers = {
+                    "accept": "*/*",
+                    "x-api-key": "demo-api-key"
+                }
+
+                try:
+                    request = s.get(url, timeout=0.5, headers=headers)
+                except requests.exceptions.RequestException as e:
+                    logger.error(f"Reservoir API error: {e}")
+                    return None
+
+                except requests.exceptions.Timeout as e:
+                    logger.error(f"Reservoir API timed out: {e}")
+                    return None
+
+                tx_list.floor_price = request.json()["price"]
+
+
+            return tx_list
+
 
     async def fetch_new_datapoint(
         self,
