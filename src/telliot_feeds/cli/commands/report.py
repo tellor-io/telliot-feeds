@@ -406,8 +406,8 @@ async def report(
                 **common_reporter_kwargs,
             )
         elif rng_auto:
+            common_reporter_kwargs["wait_period"] = 120 if wait_period < 120 else wait_period
             reporter = RNGReporter(  # type: ignore
-                wait_period=120 if wait_period < 120 else wait_period,
                 **common_reporter_kwargs,
             )
         elif reporting_diva_protocol:
