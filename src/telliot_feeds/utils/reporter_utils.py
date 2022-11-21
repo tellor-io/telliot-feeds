@@ -82,8 +82,12 @@ def has_native_token_funds(
         return False
 
     if balance < min_balance:
-        logger.warning(f"Account {account} has insufficient native token funds")
-        alert(f"Account {account} has insufficient native token funds")
+        # convert balance to 2 decimal places
+        balance = f"{balance / 10**18:.2f}"
+        expected = f"{min_balance / 10**18:.2f}"
+        msg = f"Insufficient native token funds for {account}. Balance: {balance}. Expected: {expected}"
+        logger.warning(msg)
+        alert(msg)
         return False
 
     return True

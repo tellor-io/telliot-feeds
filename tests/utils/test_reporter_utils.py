@@ -74,7 +74,7 @@ async def test_has_native_token_funds(mumbai_test_cfg, caplog):
         has_funds = has_native_token_funds(account=addr, web3=endpoint.web3, alert=fake_alert, min_balance=1e18)
         assert has_funds is False
         assert "bingo" in caplog.text
-        assert f"Account {addr} has insufficient native token funds" in caplog.text
+        assert "insufficient native token funds" in caplog.text
 
         # Fund account
         accounts[0].transfer(addr, "2 ether")

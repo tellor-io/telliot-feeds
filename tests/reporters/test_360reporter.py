@@ -138,5 +138,4 @@ async def test_no_native_token(tellor_360, caplog):
 
     await reporter.report(report_count=1)
 
-    expected = f"Account {account.address} has insufficient native token funds".lower()
-    assert expected in caplog.text.lower()
+    assert "insufficient native token funds" in caplog.text.lower()
