@@ -233,6 +233,15 @@ def reporter() -> None:
     type=float,
     default=10.0,
 )
+@click.option(
+    "--min-native-token-balance",
+    "-mnb",
+    "min_native_token_balance",
+    help="Minimum native token balance required to report. Denominated in ether.",
+    nargs=1,
+    type=float,
+    default=0.25,
+)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pwd", "--password", type=str)
@@ -259,6 +268,7 @@ async def report(
     password: str,
     signature_password: str,
     rng_auto: bool,
+    min_native_token_balance: float,
     custom_token_contract: Optional[ChecksumAddress],
     custom_oracle_contract: Optional[ChecksumAddress],
     custom_autopay_contract: Optional[ChecksumAddress],
@@ -339,6 +349,7 @@ async def report(
             gas_price_speed=gas_price_speed,
             reporting_diva_protocol=reporting_diva_protocol,
             stake_amount=stake,
+            min_native_token_balance=min_native_token_balance,
         )
 
         _ = input("Press [ENTER] to confirm settings.")
@@ -398,6 +409,7 @@ async def report(
             "expected_profit": expected_profit,
             "stake": stake,
             "transaction_type": tx_type,
+            "min_native_token_balance": int(min_native_token_balance * 10**18),
         }
 
         if sig_acct_addr:

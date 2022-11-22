@@ -39,6 +39,7 @@ def print_reporter_settings(
     gas_price_speed: str,
     reporting_diva_protocol: bool,
     stake_amount: float,
+    min_native_token_balance: float,
 ) -> None:
     """Print user settings to console."""
     click.echo("")
@@ -68,6 +69,7 @@ def print_reporter_settings(
     click.echo(f"Priority fee (gwei): {priority_fee}")
     click.echo(f"Gas price speed: {gas_price_speed}")
     click.echo(f"Desired stake amount: {stake_amount}")
+    click.echo(f"Minimum native token balance: {min_native_token_balance} ETH")
     click.echo("\n")
 
 
