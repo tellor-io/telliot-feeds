@@ -21,6 +21,7 @@ async def test_report(tellor_360, caplog):
         account=account,
         chain_id=CHAIN_ID,
         transaction_type=0,
+        min_native_token_balance=0,
     )
 
     await r.report_once()
@@ -76,6 +77,7 @@ async def test_360_reporter_rewards(tellor_360, caplog):
         account=account,
         chain_id=CHAIN_ID,
         transaction_type=0,
+        min_native_token_balance=0,
     )
 
     assert isinstance(await r.rewards(), int)
@@ -94,6 +96,7 @@ async def test_adding_stake(tellor_360):
         "account": account,
         "chain_id": CHAIN_ID,
         "transaction_type": 0,
+        "min_native_token_balance": 0,
     }
     reporter = Tellor360Reporter(**reporter_kwargs)
 

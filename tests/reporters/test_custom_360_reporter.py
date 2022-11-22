@@ -88,6 +88,7 @@ async def custom_reporter(
             account=account,
             chain_id=80001,
             gas_limit=350000,
+            min_native_token_balance=0,
         )
         # mint token and send to reporter address
         mock_token_contract.mint(account.address, 1000e18)

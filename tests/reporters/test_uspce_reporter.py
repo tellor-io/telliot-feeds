@@ -38,6 +38,7 @@ async def test_uspce_interval_reporter_submit_once(
             legacy_gas_price=None,
             gas_price_speed="safeLow",
             chain_id=core.config.main.chain_id,
+            min_native_token_balance=0,
         )
 
         # send eth from brownie address to reporter address for txn fees

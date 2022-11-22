@@ -20,6 +20,7 @@ async def rng_reporter(mumbai_test_cfg, tellor_360):
             account=account,
             chain_id=80001,
             transaction_type=0,
+            min_native_token_balance=0,
         )
 
         return r
