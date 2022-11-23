@@ -36,7 +36,6 @@ from telliot_feeds.utils.reporter_utils import prompt_for_abi
 
 logger = get_logger(__name__)
 
-TELLOR_X_CHAINS = (1, 4, 5)
 
 STAKE_MESSAGE = (
     "\U00002757Telliot will automatically stake more TRB "
