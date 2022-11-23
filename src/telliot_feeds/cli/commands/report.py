@@ -26,7 +26,7 @@ from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.reporters.flashbot import FlashbotsReporter
 from telliot_feeds.reporters.rng_interval import RNGReporter
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
-from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
