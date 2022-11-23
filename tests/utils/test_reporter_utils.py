@@ -16,6 +16,7 @@ from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import get_native_token_feed
 from telliot_feeds.utils.reporter_utils import has_native_token_funds
+from telliot_feeds.utils.reporter_utils import is_online
 from telliot_feeds.utils.reporter_utils import reporter_sync_schedule
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
 
@@ -104,3 +105,11 @@ def test_get_native_token_feed():
 
     with pytest.raises(ValueError):
         _ = get_native_token_feed(0)
+
+
+@pytest.mark.asyncio
+async def test_checking_if_online():
+    """test telliot check for internet connection"""
+
+    online = await is_online()
+    assert isinstance(online, bool)
