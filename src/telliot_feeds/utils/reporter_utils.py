@@ -16,6 +16,11 @@ from telliot_core.tellor.tellorflex.oracle import TellorFlexOracleContract
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
 from web3 import Web3
 
+from telliot_feeds.constants import ETHEREUM_CHAINS
+from telliot_feeds.constants import POLYGON_CHAINS
+from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.utils.log import get_logger
 
@@ -142,3 +147,13 @@ def prompt_for_abi() -> Any:
             abi = json.load(f)
         return abi
     return None
+
+
+def get_native_token_feed(chain_id: int) -> DataFeed[float]:
+    """Return native token feed for a given chain ID."""
+    if chain_id in ETHEREUM_CHAINS:
+        return eth_usd_median_feed
+    elif chain_id in POLYGON_CHAINS:
+        return matic_usd_median_feed
+    else:
+        raise ValueError(f"Cannot fetch native token feed. Invalid chain ID: {chain_id}")
