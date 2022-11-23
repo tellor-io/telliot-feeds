@@ -118,23 +118,20 @@ class KrakenHistoricalPriceService(WebPriceService):
         if ts is None:
             ts = self.ts
 
-        req_url = self.get_request_url(asset, currency, ts)
+        # fetch trades data for a minute before expiry,
+        # if no trades found, then fetch trades for 2 minutes before expiry, etc.
+        # break after checking fifteen minutes before expiry
+        for i in range(15):
+            period = 60 * (i + 1)
+            trades, dt = await self.get_trades(asset, currency, period, ts)
+            if not trades:
+                continue
+            price = float(trades[-1][0])
+            logger.info(f"Price found up to {i+1} min before expiry: {price}")
+            return price, dt
 
-        d = self.get_url(req_url)
-
-        if "error" in d:
-            logger.error(d)
-            return None, None
-
-        elif "response" in d:
-            response = d["response"]
-            price = self.resp_price_parse(resp=response, asset=asset, currency=currency)
-            if price is None:
-                return None, None
-        else:
-            raise Exception("Invalid response from get_url")
-
-        return price, datetime_now_utc()
+        logger.info("No trades found up to 15 minutes before expiry.")
+        return None, None
 
     async def get_trades(
         self,
@@ -175,9 +172,7 @@ class KrakenHistoricalPriceService(WebPriceService):
         elif "response" in d:
             response = d["response"]
             trades = self.resp_all_trades_parse(resp=response, asset=asset, currency=currency)
-            if trades is None:
-                return None, None
-
+            return trades, datetime_now_utc()
         else:
             raise Exception("Invalid response from get_url")
 
