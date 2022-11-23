@@ -40,6 +40,7 @@ async def polygon_reporter(
             account=account,
             chain_id=80001,
             transaction_type=0,
+            min_native_token_balance=0,
         )
         # mint token and send to reporter address
         mock_token_contract.mint(account.address, 1000e18)
@@ -175,6 +176,7 @@ async def test_reset_datafeed(polygon_reporter):
         chain_id=80001,
         transaction_type=0,
         datafeed=CATALOG_FEEDS["trb-usd-spot"],
+        min_native_token_balance=0,
     )
     reporter2 = TellorFlexReporter(
         oracle=r.oracle,
@@ -184,6 +186,7 @@ async def test_reset_datafeed(polygon_reporter):
         account=r.account,
         chain_id=80001,
         transaction_type=0,
+        min_native_token_balance=0,
     )
 
     # Unlocker reporter lock checker
