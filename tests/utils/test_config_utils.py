@@ -61,10 +61,10 @@ def test_update_all_configs(mock_config):
     use_endpoint = False
 
     # prompts
-    new_chain_id = 4
+    new_chain_id = 5
 
     # other mocks
-    mock_endpoint = RPCEndpoint(4, "rinkeby", "infura", "myinfuraurl...", "etherscan.com")
+    mock_endpoint = RPCEndpoint(5, "goerli", "infura", "myinfuraurl...", "etherscan.com")
 
     with (
         mock.patch("click.confirm", side_effect=[update_settings, update_chain_id, use_endpoint]),
