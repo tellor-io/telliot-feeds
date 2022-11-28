@@ -5,7 +5,7 @@ from web3.datastructures import AttributeDict
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
-from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 from telliot_feeds.sources.numeric_api_response import NumericApiResponseSource
 
 url = "https://taylorswiftapi.herokuapp.com/get"

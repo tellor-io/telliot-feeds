@@ -13,7 +13,7 @@ from telliot_core.utils.response import ResponseStatus
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
-from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
 from telliot_feeds.utils.log import get_logger

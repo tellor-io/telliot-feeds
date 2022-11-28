@@ -16,12 +16,11 @@ from simple_term_menu import TerminalMenu
 from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import cli_core
 
+from telliot_feeds.constants import DIVA_PROTOCOL_CHAINS
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
 from telliot_feeds.queries.abi_query import AbiQuery
 
-
-DIVA_PROTOCOL_CHAINS = (137, 80001, 3, 5)
 
 load_dotenv()
 

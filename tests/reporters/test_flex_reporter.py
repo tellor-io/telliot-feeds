@@ -11,7 +11,7 @@ from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
-from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -62,10 +62,19 @@ async def test_YOLO_feed_suggestion(tellor_flex_reporter):
 
 @pytest.mark.asyncio
 async def test_ensure_profitable(tellor_flex_reporter):
-    status = await tellor_flex_reporter.ensure_profitable(matic_usd_median_feed)
+    r = tellor_flex_reporter
+    r.expected_profit = "YOLO"
+    unused_feed = matic_usd_median_feed
+    status = await r.ensure_profitable(unused_feed)
 
     assert isinstance(status, ResponseStatus)
     assert status.ok
+
+    r.chain_id = 1
+    r.expected_profit = 100.0
+    status = await r.ensure_profitable(unused_feed)
+
+    assert not status.ok
 
 
 @pytest.mark.asyncio

@@ -17,13 +17,13 @@ from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.reporters.interval import IntervalReporter
 from telliot_feeds.reporters.reporter_autopay_utils import autopay_suggested_report
 from telliot_feeds.reporters.reporter_autopay_utils import CATALOG_QUERY_IDS
 from telliot_feeds.reporters.reporter_autopay_utils import get_feed_tip
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.reporter_utils import get_native_token_feed
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
 
 
@@ -82,7 +82,9 @@ class TellorFlexReporter(IntervalReporter):
         assert self.acct_addr == to_checksum_address(self.account.address)
 
     async def fetch_gas_price(self, speed: Optional[str] = None) -> Optional[int]:
-        """Fetch estimated gas prices for Polygon mainnet."""
+        """Fetch estimated gas prices.
+
+        Expected to return gas price in gwei."""
         return await legacy_gas_station(chain_id=self.chain_id, speed=speed)  # type: ignore
 
     async def in_dispute(self, new_stake_amount: Any) -> bool:
@@ -268,11 +270,12 @@ class TellorFlexReporter(IntervalReporter):
         status = ResponseStatus()
         tip = self.autopaytip
         # Fetch token prices in USD
-        price_feeds = [matic_usd_median_feed, trb_usd_median_feed]
+        native_token_feed = get_native_token_feed(self.chain_id)
+        price_feeds = [native_token_feed, trb_usd_median_feed]
         _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
-        price_matic_usd = matic_usd_median_feed.source.latest[0]
+        price_native_token = native_token_feed.source.latest[0]
         price_trb_usd = trb_usd_median_feed.source.latest[0]
-        if price_matic_usd is None or price_trb_usd is None:
+        if price_native_token is None or price_trb_usd is None:
             logger.warning("Unable to fetch token price")
             return None
 
@@ -305,7 +308,7 @@ class TellorFlexReporter(IntervalReporter):
                 """
             )
 
-            costs = self.gas_limit * self.max_fee
+            costs = self.gas_limit * self.max_fee  # in gwei
 
         # Using transaction type 0 (legacy)
         else:
@@ -329,7 +332,7 @@ class TellorFlexReporter(IntervalReporter):
 
         # Calculate profit
         rev_usd = tip / 1e18 * price_trb_usd
-        costs_usd = costs / 1e9 * price_matic_usd
+        costs_usd = costs / 1e9 * price_native_token  # convert gwei costs to eth, then to usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
         logger.info(f"tip price: {round(rev_usd, 2)}, gas costs: {costs_usd}")

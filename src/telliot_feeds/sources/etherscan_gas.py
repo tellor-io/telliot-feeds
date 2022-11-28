@@ -40,7 +40,9 @@ class EtherscanGasPriceSource(DataSource[EtherscanGasPrice]):
     api_key: str = ""
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[EtherscanGasPrice]:
-        """Fetch new value and store it for later retrieval"""
+        """Fetch new value and store it for later retrieval
+
+        Gase prices are returned in gwei."""
 
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:77.0) Gecko/20190101 Firefox/77.0"}
         msg = "https://api.etherscan.io/api?module=gastracker&action=gasoracle"
