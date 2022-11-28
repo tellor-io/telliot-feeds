@@ -141,7 +141,7 @@ Both transaction types (0 & 2) are supported for reporting.
 
 ## Regular Usage
 
-It's not advised to report without Flashbots, unless on a testnet like Rinkeby, because transactions sent to the public mempool on Ethereum mainnet will most likely be [front-run](https://www.paradigm.xyz/2020/08/ethereum-is-a-dark-forest/), so you'll lose money.
+It's not advised to report without Flashbots, unless on a testnet like Goerli, because transactions sent to the public mempool on Ethereum mainnet will most likely be [front-run](https://www.paradigm.xyz/2020/08/ethereum-is-a-dark-forest/), so you'll lose money.
 
 If you want to report without flashbots on Ethereum mainnet, use the `--no-flashbots/-nfb` flag.
 
