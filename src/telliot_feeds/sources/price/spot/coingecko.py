@@ -12,7 +12,8 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
-# Coinbase API uses the 'id' field from /coins/list.
+# Coingecko API uses an id for each token
+# Source: see "API token list" https://www.coingecko.com/en/api/documentation
 # Using a manual mapping for now.
 coingecko_coin_id = {
     "bct": "toucan-protocol-base-carbon-tonne",
@@ -28,6 +29,7 @@ coingecko_coin_id = {
     "ohm": "olympus",
     "usdc": "usd-coin",
     "vsq": "vesq",
+    "albt": "allianceblock",
 }
 
 
