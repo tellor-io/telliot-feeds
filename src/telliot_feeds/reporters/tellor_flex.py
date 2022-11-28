@@ -82,7 +82,9 @@ class TellorFlexReporter(IntervalReporter):
         assert self.acct_addr == to_checksum_address(self.account.address)
 
     async def fetch_gas_price(self, speed: Optional[str] = None) -> Optional[int]:
-        """Fetch estimated gas prices for Polygon mainnet."""
+        """Fetch estimated gas prices.
+
+        Expected to return gas price in gwei."""
         return await legacy_gas_station(chain_id=self.chain_id, speed=speed)  # type: ignore
 
     async def in_dispute(self, new_stake_amount: Any) -> bool:
@@ -306,7 +308,7 @@ class TellorFlexReporter(IntervalReporter):
                 """
             )
 
-            costs = self.gas_limit * self.max_fee
+            costs = self.gas_limit * self.max_fee  # in gwei
 
         # Using transaction type 0 (legacy)
         else:
@@ -330,7 +332,7 @@ class TellorFlexReporter(IntervalReporter):
 
         # Calculate profit
         rev_usd = tip / 1e18 * price_trb_usd
-        costs_usd = costs / 1e9 * price_native_token
+        costs_usd = costs / 1e9 * price_native_token  # convert gwei costs to eth, then to usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
         logger.info(f"tip price: {round(rev_usd, 2)}, gas costs: {costs_usd}")
