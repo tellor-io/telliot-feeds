@@ -2,8 +2,11 @@ import asyncio
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries import SpotPrice
-
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
+from telliot_feeds.sources.price.spot.coinmarketcap import (
+    CoinMarketCapSpotPriceSource,
+)
+from telliot_feeds.sources.price.spot.nomics import NomicsSpotPriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 
 albt_usd_median_feed = DataFeed(
@@ -14,7 +17,8 @@ albt_usd_median_feed = DataFeed(
         algorithm="median",
         sources=[
             CoinGeckoSpotPriceSource(asset="albt", currency="usd"),
-            # CoinMarketCapSpotPriceSource(asset="albt", currency="usd"), # paid API
+            NomicsSpotPriceSource(asset="albt", currency="usd"),
+            CoinMarketCapSpotPriceSource(asset="albt", currency="usd"),  # paid API?
         ],
     ),
 )

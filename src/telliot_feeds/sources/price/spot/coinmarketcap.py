@@ -17,7 +17,7 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
-coinmarketcap_assets = {"BCT"}
+coinmarketcap_assets = {"BCT", "ALBT"}
 coinmarketcap_currencies = {"USD"}
 
 API_KEY = TelliotConfig().api_keys.find(name="coinmarketcap")[0].key
