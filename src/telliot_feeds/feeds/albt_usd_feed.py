@@ -6,7 +6,7 @@ from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.coinmarketcap import (
     CoinMarketCapSpotPriceSource,
 )
-from telliot_feeds.sources.price.spot.nomics import NomicsSpotPriceSource
+from telliot_feeds.sources.price.spot.bitfinex import BitfinexSpotPriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 
 albt_usd_median_feed = DataFeed(
@@ -17,8 +17,8 @@ albt_usd_median_feed = DataFeed(
         algorithm="median",
         sources=[
             CoinGeckoSpotPriceSource(asset="albt", currency="usd"),
-            NomicsSpotPriceSource(asset="albt", currency="usd"),
-            CoinMarketCapSpotPriceSource(asset="albt", currency="usd"),  # paid API?
+            CoinMarketCapSpotPriceSource(asset="albt", currency="usd"),
+            BitfinexSpotPriceSource(asset="eth", currency="jpy"),
         ],
     ),
 )
