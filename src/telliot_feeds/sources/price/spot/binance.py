@@ -47,6 +47,7 @@ class BinanceSpotPriceService(WebPriceService):
             except KeyError as e:
                 msg = f"Error parsing Binance API response: KeyError: {e}"
                 logger.warning(msg)
+                return None, None
 
         else:
             raise Exception("Invalid response from get_url")

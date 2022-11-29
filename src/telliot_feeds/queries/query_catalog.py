@@ -151,3 +151,8 @@ query_catalog.add_entry(
     title="AMPL/USD VWAP",
     q=AmpleforthCustomSpotPrice(),
 )
+query_catalog.add_entry(
+    tag="albt-usd-spot",
+    title="ALBT/USD spot price",
+    q=SpotPrice(asset="albt", currency="usd"),
+)
