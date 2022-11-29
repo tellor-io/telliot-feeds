@@ -13,8 +13,8 @@ logger = get_logger(__name__)
 
 
 # Hardcoded supported assets & currencies
-bitfinex_assets = {"ETH"}
-bitfinex_currencies = {"JPY"}
+bitfinex_assets = {"ETH", "ALBT"}
+bitfinex_currencies = {"JPY", "USD"}
 
 
 class BitfinexSpotPriceService(WebPriceService):
