@@ -12,25 +12,6 @@ $ telliot-feeds --account fakename report
 
 **Be sure to always confirm the correct settings when prompted and read chain-specific usage sections before setting up your reporter!**
 
-```
-$ telliot-feeds -a fakename report
-telliot-core 0.0.10.dev1
-telliot_feeds (plugin): Version 0.0.12dev0
-Using: eth-rinkeby [staker: dev-acct-4]
-
-Reporting with synchronized queries
-Current chain ID: 4
-Expected percent profit: 100.0%
-Transaction type: 0
-Gas Limit: 350000
-Legacy gas price (gwei): None
-Max fee (gwei): None
-Priority fee (gwei): None
-Gas price speed: fast
-
-Press [ENTER] to confirm settings.
-```
-
 # Table of Contents
 
 - [Reporting Basics](#reporting-basics)
@@ -66,25 +47,6 @@ The help flag shows subcommand options as well:
 
 ```
 $ telliot-feeds report --help
-Usage: telliot-feeds report [OPTIONS]
-
-  Report values to Tellor oracle
-
-Options:
-  -qt, --query-tag [eth-usd-legacy|btc-usd-legacy|ampl-legacy|uspce-legacy|trb-usd-legacy|eth-jpy-legacy|ohm-eth-spot]
-                                  select datafeed using query tag
-  -gl, --gas-limit INTEGER        use custom gas limit
-  -mf, --max-fee INTEGER          use custom maxFeePerGas (gwei)
-  -pf, --priority-fee INTEGER     use custom maxPriorityFeePerGas (gwei)
-  -gp, --gas-price INTEGER        use custom legacy gasPrice (gwei)
-  -p, --profit TEXT               lower threshold (inclusive) for expected
-                                  percent profit
-  -tx, --tx-type INTEGER          choose transaction type (0 for legacy txs, 2
-                                  for EIP-1559)
-  -gps, --gas-price-speed [safeLow|average|fast|fastest]
-                                  gas price speed for eth gas station API
-  --submit-once / --submit-continuous
-  --help                          Show this message and exit.
 ```
 
 ## Account Flag
@@ -160,7 +122,7 @@ Both transaction types (0 & 2) are supported for reporting.
 
 ## Regular Usage
 
-It's not advised to report without Flashbots, unless on a testnet like Rinkeby, because transactions sent to the public mempool on Ethereum mainnet will most likely be [front-run](https://www.paradigm.xyz/2020/08/ethereum-is-a-dark-forest/), so you'll lose money.
+It's not advised to report without Flashbots, unless on a testnet like Goerli, because transactions sent to the public mempool on Ethereum mainnet will most likely be [front-run](https://www.paradigm.xyz/2020/08/ethereum-is-a-dark-forest/), so you'll lose money.
 
 If you want to report without flashbots on Ethereum mainnet, use the `--no-flashbots/-nfb` flag.
 

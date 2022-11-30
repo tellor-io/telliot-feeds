@@ -1,9 +1,7 @@
 from dataclasses import dataclass
 
-from telliot_feeds.queries import LegacyRequest
-from telliot_feeds.queries import SpotPrice
+from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.queries.query import OracleQuery
-from telliot_feeds.queries.query import query_from_descriptor
 from telliot_feeds.queries.query import query_from_state
 
 
@@ -17,14 +15,6 @@ def test_main():
     state = q.get_state()
     print(state)
     assert state == {"type": "MyQuery", "text": "asdf", "val": 3}
-
-
-def test_query_from_descriptor():
-    d = '{"type":"LegacyRequest","legacy_id":1}'
-    q = query_from_descriptor(d)
-    print(q)
-    assert isinstance(q, LegacyRequest)
-    assert q.legacy_id == 1
 
 
 def test_query_from_state():

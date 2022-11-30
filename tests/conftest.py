@@ -25,6 +25,7 @@ from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 from telliot_feeds.utils.cfg import mainnet_config
 
 
@@ -38,35 +39,6 @@ def event_loop():
     loop = asyncio.get_event_loop()
     yield loop
     loop.close()
-
-
-@pytest.fixture(scope="module", autouse=True)
-def rinkeby_cfg():
-    """Get rinkeby endpoint from config
-
-    If environment variables are defined, they will override the values in config files
-    """
-    cfg = TelliotConfig()
-
-    # Override configuration for rinkeby testnet
-    cfg.main.chain_id = 4
-
-    rinkeby_endpoint = cfg.get_endpoint()
-    # assert rinkeby_endpoint.network == "rinkeby"
-
-    if os.getenv("NODE_URL", None):
-        rinkeby_endpoint.url = os.environ["NODE_URL"]
-
-    rinkeby_accounts = find_accounts(chain_id=4)
-    if not rinkeby_accounts:
-        # Create a test account using PRIVATE_KEY defined on github.
-        key = os.getenv("PRIVATE_KEY", None)
-        if key:
-            ChainedAccount.add("git-rinkeby-key", chains=4, key=os.environ["PRIVATE_KEY"], password="")
-        else:
-            raise Exception("Need a rinkeby account")
-
-    return cfg
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -312,3 +284,38 @@ async def tellor_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_cont
         await tellor360.oracle.write("init", _governanceAddress=accounts[0].address, **txn_kwargs)
 
         return tellor360, account
+
+
+@pytest_asyncio.fixture(scope="function")
+async def tellor_flex_reporter(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
+    async with TelliotCore(config=mumbai_test_cfg) as core:
+
+        account = core.get_account()
+
+        flex = core.get_tellorflex_contracts()
+        flex.oracle.address = mock_flex_contract.address
+        flex.autopay.address = mock_autopay_contract.address
+        flex.token.address = mock_token_contract.address
+
+        flex.oracle.connect()
+        flex.token.connect()
+        flex.autopay.connect()
+        flex = core.get_tellorflex_contracts()
+
+        r = TellorFlexReporter(
+            oracle=flex.oracle,
+            token=flex.token,
+            autopay=flex.autopay,
+            endpoint=core.endpoint,
+            account=account,
+            chain_id=80001,
+            transaction_type=0,
+            min_native_token_balance=0,
+        )
+        # mint token and send to reporter address
+        mock_token_contract.mint(account.address, 1000e18)
+
+        # send eth from brownie address to reporter address for txn fees
+        accounts[1].transfer(account.address, "1 ether")
+
+        return r

@@ -45,9 +45,9 @@ def mock_account():
     # we will add an account if the account does not exist in our keyfile
     try:
         fake_private_key = "ff27eb0c5059fc99f9d7b48931d135b20f1293db8d0f4fec4ecf5131fb40f1f5"  # https://vanity-eth.tk/
-        return ChainedAccount.add("mock-account", 4, fake_private_key, "password")
+        return ChainedAccount.add("mock-account", 5, fake_private_key, "password")
     except Exception:
-        return find_accounts(chain_id=4, name="mock-account")[0]
+        return find_accounts(chain_id=5, name="mock-account")[0]
 
 
 def test_update_all_configs(mock_config):
@@ -61,10 +61,10 @@ def test_update_all_configs(mock_config):
     use_endpoint = False
 
     # prompts
-    new_chain_id = 4
+    new_chain_id = 5
 
     # other mocks
-    mock_endpoint = RPCEndpoint(4, "rinkeby", "infura", "myinfuraurl...", "etherscan.com")
+    mock_endpoint = RPCEndpoint(5, "goerli", "infura", "myinfuraurl...", "etherscan.com")
 
     with (
         mock.patch("click.confirm", side_effect=[update_settings, update_chain_id, use_endpoint]),
@@ -106,7 +106,7 @@ def test_prompt_for_endpoint():
 def test_setup_account(mock_config):
     """Test accepting first account, then test adding an account"""
 
-    chain_id = 4
+    chain_id = 5
 
     first_index = 0
     last_index = len(find_accounts(chain_id=chain_id))
@@ -122,7 +122,7 @@ def test_setup_account(mock_config):
         mock.patch("telliot_feeds.utils.cfg.prompt_for_account", side_effect=[mock_account]),
     ):
         cfg = mock_config
-        cfg.main.chain_id = 4
+        cfg.main.chain_id = 5
         selected_acc = setup_account(cfg.main.chain_id)
 
         assert "mock-account" in [a.name for a in check_accounts(cfg, "mock-account")]

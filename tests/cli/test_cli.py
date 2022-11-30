@@ -49,16 +49,16 @@ def test_build_feed_from_input(capsys):
 
 def test_parse_profit_input():
     """Test reading in custom expected profit from user."""
-    result = parse_profit_input("YOLO")
+    result = parse_profit_input({}, None, "YOLO")
     assert isinstance(result, str)
     assert result == "YOLO"
 
-    result = parse_profit_input("1234.1234")
+    result = parse_profit_input({}, None, "1234.1234")
     assert isinstance(result, float)
     assert result == 1234.1234
 
     with pytest.raises(click.BadParameter):
-        _ = parse_profit_input("asdf")
+        _ = parse_profit_input({}, None, "asdf")
 
 
 @pytest.mark.skip
@@ -77,7 +77,7 @@ def test_flag_staker_tag():
 def test_invalid_report_option_query_tag():
     """Test selecting datafeed using wrong query tag."""
     runner = CliRunner()
-    result = runner.invoke(cli_main, ["report", "-qt", "monero-usd-legacy"])
+    result = runner.invoke(cli_main, ["report", "-qt", "monero-usd-blah"])
 
     assert result.exception
     assert result.exit_code == 2
@@ -157,6 +157,6 @@ def test_cmd_settle():
 def test_query_info():
     """Test getting query info"""
     runner = CliRunner()
-    result = runner.invoke(cli_main, ["--test_config", "query", "status", "uspce-legacy"])
+    result = runner.invoke(cli_main, ["--test_config", "query", "status", "-qt", "eth-usd-spot"])
     assert not result.exception
     assert "Current value" in result.stdout
