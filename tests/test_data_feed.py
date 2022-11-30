@@ -3,12 +3,12 @@
 """
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.datasource import RandomSource
-from telliot_feeds.queries.legacy_query import LegacyRequest
+from telliot_feeds.queries.price.spot_price import SpotPrice
 
 
 def test_data_feed():
     """Test a new feed"""
-    myfeed = DataFeed(source=RandomSource(), query=LegacyRequest(legacy_id=4))
+    myfeed = DataFeed(source=RandomSource(), query=SpotPrice(asset="ETH", currency="USD"))
 
     import yaml
 

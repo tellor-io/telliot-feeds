@@ -47,25 +47,6 @@ The help flag shows subcommand options as well:
 
 ```
 $ telliot-feeds report --help
-Usage: telliot-feeds report [OPTIONS]
-
-  Report values to Tellor oracle
-
-Options:
-  -qt, --query-tag [eth-usd-legacy|btc-usd-legacy|ampl-legacy|uspce-legacy|trb-usd-legacy|eth-jpy-legacy|ohm-eth-spot]
-                                  select datafeed using query tag
-  -gl, --gas-limit INTEGER        use custom gas limit
-  -mf, --max-fee INTEGER          use custom maxFeePerGas (gwei)
-  -pf, --priority-fee INTEGER     use custom maxPriorityFeePerGas (gwei)
-  -gp, --gas-price INTEGER        use custom legacy gasPrice (gwei)
-  -p, --profit TEXT               lower threshold (inclusive) for expected
-                                  percent profit
-  -tx, --tx-type INTEGER          choose transaction type (0 for legacy txs, 2
-                                  for EIP-1559)
-  -gps, --gas-price-speed [safeLow|average|fast|fastest]
-                                  gas price speed for eth gas station API
-  --submit-once / --submit-continuous
-  --help                          Show this message and exit.
 ```
 
 ## Account Flag
