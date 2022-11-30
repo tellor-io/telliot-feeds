@@ -26,6 +26,7 @@ from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.utils.cfg import mainnet_config
+from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -283,3 +284,40 @@ async def tellor_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_cont
         await tellor360.oracle.write("init", _governanceAddress=accounts[0].address, **txn_kwargs)
 
         return tellor360, account
+
+
+@pytest_asyncio.fixture(scope="function")
+async def tellor_flex_reporter(
+    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract
+):
+    async with TelliotCore(config=mumbai_test_cfg) as core:
+
+        account = core.get_account()
+
+        flex = core.get_tellorflex_contracts()
+        flex.oracle.address = mock_flex_contract.address
+        flex.autopay.address = mock_autopay_contract.address
+        flex.token.address = mock_token_contract.address
+
+        flex.oracle.connect()
+        flex.token.connect()
+        flex.autopay.connect()
+        flex = core.get_tellorflex_contracts()
+
+        r = TellorFlexReporter(
+            oracle=flex.oracle,
+            token=flex.token,
+            autopay=flex.autopay,
+            endpoint=core.endpoint,
+            account=account,
+            chain_id=80001,
+            transaction_type=0,
+            min_native_token_balance=0,
+        )
+        # mint token and send to reporter address
+        mock_token_contract.mint(account.address, 1000e18)
+
+        # send eth from brownie address to reporter address for txn fees
+        accounts[1].transfer(account.address, "1 ether")
+
+        return r

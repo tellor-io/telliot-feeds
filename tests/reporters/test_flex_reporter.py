@@ -14,43 +14,6 @@ from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 
 
-@pytest_asyncio.fixture(scope="function")
-async def tellor_flex_reporter(
-    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract, multicall_contract
-):
-    async with TelliotCore(config=mumbai_test_cfg) as core:
-
-        account = core.get_account()
-
-        flex = core.get_tellorflex_contracts()
-        flex.oracle.address = mock_flex_contract.address
-        flex.autopay.address = mock_autopay_contract.address
-        flex.token.address = mock_token_contract.address
-
-        flex.oracle.connect()
-        flex.token.connect()
-        flex.autopay.connect()
-        flex = core.get_tellorflex_contracts()
-
-        r = TellorFlexReporter(
-            oracle=flex.oracle,
-            token=flex.token,
-            autopay=flex.autopay,
-            endpoint=core.endpoint,
-            account=account,
-            chain_id=80001,
-            transaction_type=0,
-            min_native_token_balance=0,
-        )
-        # mint token and send to reporter address
-        mock_token_contract.mint(account.address, 1000e18)
-
-        # send eth from brownie address to reporter address for txn fees
-        accounts[1].transfer(account.address, "1 ether")
-
-        return r
-
-
 @pytest.mark.asyncio
 async def test_YOLO_feed_suggestion(tellor_flex_reporter):
     tellor_flex_reporter.expected_profit = "YOLO"
