@@ -14,14 +14,14 @@ logger = get_logger(__name__)
 
 
 @dataclass
-class BittrexQuote():
+class BittrexQuote:
     Bid: float
     Ask: float
     Last: float
 
 
 @dataclass
-class PriceResponse():
+class PriceResponse:
     success: bool
     message: str
     result: Optional[BittrexQuote]

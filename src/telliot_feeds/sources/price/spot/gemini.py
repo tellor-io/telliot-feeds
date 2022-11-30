@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 
 
 @dataclass
-class GeminiPriceResponse():
+class GeminiPriceResponse:
     bid: float
     ask: float
     last: float
