@@ -206,6 +206,7 @@ async def test_uniswap_eth_usd(caplog):
         assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
 
 
+@pytest.mark.skip("Not needed currently")
 @pytest.mark.asyncio
 async def test_pancakeswap_usd():
     """Test retrieving from Pancakeswap price source in USD."""
@@ -213,6 +214,7 @@ async def test_pancakeswap_usd():
     validate_price(v, t)
 
 
+@pytest.mark.skip("Not needed currently")
 @pytest.mark.asyncio
 async def test_pancakeswap_bnb():
     """Test retrieving from Pancakeswap price source in BNB."""
