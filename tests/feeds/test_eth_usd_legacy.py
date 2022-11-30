@@ -5,6 +5,7 @@ import pytest
 from telliot_feeds.feeds.eth_usd_legacy_feed import eth_usd_legacy_feed
 
 
+@pytest.mark.skip("No longer usning legacy feeds")
 @pytest.mark.asyncio
 async def test_AssetPriceFeed():
     """Retrieve median ETH/USD price."""
