@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 
 
 # Hardcoded supported assets & currencies
-bitfinex_assets = {"ETH", "ALBT"}
+bitfinex_assets = {"ETH", "ALBT:"}
 bitfinex_currencies = {"JPY", "USD"}
 
 

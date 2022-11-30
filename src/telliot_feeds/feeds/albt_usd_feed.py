@@ -18,7 +18,7 @@ albt_usd_median_feed = DataFeed(
         sources=[
             CoinGeckoSpotPriceSource(asset="albt", currency="usd"),
             CoinMarketCapSpotPriceSource(asset="albt", currency="usd"),
-            BitfinexSpotPriceSource(asset="eth", currency="jpy"),
+            BitfinexSpotPriceSource(asset="albt:", currency="usd"),
         ],
     ),
 )
