@@ -7,9 +7,6 @@ from datetime import datetime
 from unittest import mock
 
 import pytest
-import pytest_asyncio
-from brownie import accounts
-from telliot_core.apps.core import TelliotCore
 from telliot_core.gas.legacy_gas import ethgasstation
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
@@ -17,7 +14,6 @@ from web3.datastructures import AttributeDict
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.reporters import interval
-from telliot_feeds.reporters.interval import IntervalReporter
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPrice
 from tests.utils.utils import gas_price
 from tests.utils.utils import passing_bool_w_status

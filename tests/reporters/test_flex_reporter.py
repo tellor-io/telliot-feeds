@@ -1,10 +1,7 @@
 from unittest.mock import patch
 
 import pytest
-import pytest_asyncio
-from brownie import accounts
 from brownie import chain
-from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.datafeed import DataFeed

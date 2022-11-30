@@ -25,8 +25,8 @@ from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
-from telliot_feeds.utils.cfg import mainnet_config
 from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
+from telliot_feeds.utils.cfg import mainnet_config
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -287,9 +287,7 @@ async def tellor_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_cont
 
 
 @pytest_asyncio.fixture(scope="function")
-async def tellor_flex_reporter(
-    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract
-):
+async def tellor_flex_reporter(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
     async with TelliotCore(config=mumbai_test_cfg) as core:
 
         account = core.get_account()
