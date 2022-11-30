@@ -77,7 +77,7 @@ def test_flag_staker_tag():
 def test_invalid_report_option_query_tag():
     """Test selecting datafeed using wrong query tag."""
     runner = CliRunner()
-    result = runner.invoke(cli_main, ["report", "-qt", "monero-usd-legacy"])
+    result = runner.invoke(cli_main, ["report", "-qt", "monero-usd-blah"])
 
     assert result.exception
     assert result.exit_code == 2
@@ -157,6 +157,6 @@ def test_cmd_settle():
 def test_query_info():
     """Test getting query info"""
     runner = CliRunner()
-    result = runner.invoke(cli_main, ["--test_config", "query", "status", "uspce-legacy"])
+    result = runner.invoke(cli_main, ["--test_config", "query", "status", "-qt", "eth-usd-spot"])
     assert not result.exception
     assert "Current value" in result.stdout

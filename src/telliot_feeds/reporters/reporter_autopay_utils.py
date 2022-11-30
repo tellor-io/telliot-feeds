@@ -127,9 +127,9 @@ class AutopayCalls:
 
         # separate items from current feeds
         # multicall for multiple different functions returns different types of data at once
-        # ie the response is {"tag": (feedids, ), ('trb-usd-legacy', 'current_time'): 0,
-        # ('trb-usd-legacy', 'three_mos_ago'): 0,eth-jpy-legacy: (),'eth-jpy-legacy', 'current_time'): 0,
-        # ('eth-jpy-legacy', 'three_mos_ago'): 0}
+        # ie the response is {"tag": (feedids, ), ('trb-usd-spot', 'current_time'): 0,
+        # ('trb-usd-spot', 'three_mos_ago'): 0,eth-jpy-spot: (),'eth-jpy-spot', 'current_time'): 0,
+        # ('eth-jpy-spot', 'three_mos_ago'): 0}
         # here we filter out the tag key if it is string and its value is of length > 0
 
         tags_with_feed_ids = {
