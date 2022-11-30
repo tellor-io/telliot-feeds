@@ -28,8 +28,7 @@ async def rng_reporter(mumbai_test_cfg, tellor_360):
 
 @pytest.mark.asyncio
 async def test_report(rng_reporter):
-    """Test reporting once to the Tellor playground on Rinkeby
-    with three retries."""
+    """Test reporting Tellor RNG value."""
     r = rng_reporter
     r.wait_period = 0
 

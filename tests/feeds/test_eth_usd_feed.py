@@ -15,7 +15,7 @@ async def test_AssetPriceFeed():
     print(f"ETH/USD Price: {v}")
 
     # Get list of data sources from sources dict
-    source_prices = [source.latest[0] for source in eth_usd_median_feed.source.sources]
+    source_prices = [source.latest[0] for source in eth_usd_median_feed.source.sources if source.latest[0]]
 
     # Make sure error is less than decimal tolerance
     assert (v - statistics.median(source_prices)) < 10**-6

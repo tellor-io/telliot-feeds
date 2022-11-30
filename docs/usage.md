@@ -12,25 +12,6 @@ $ telliot-feeds --account fakename report
 
 **Be sure to always confirm the correct settings when prompted and read chain-specific usage sections before setting up your reporter!**
 
-```
-$ telliot-feeds -a fakename report
-telliot-core 0.0.10.dev1
-telliot_feeds (plugin): Version 0.0.12dev0
-Using: eth-rinkeby [staker: dev-acct-4]
-
-Reporting with synchronized queries
-Current chain ID: 4
-Expected percent profit: 100.0%
-Transaction type: 0
-Gas Limit: 350000
-Legacy gas price (gwei): None
-Max fee (gwei): None
-Priority fee (gwei): None
-Gas price speed: fast
-
-Press [ENTER] to confirm settings.
-```
-
 # Table of Contents
 
 - [Reporting Basics](#reporting-basics)
@@ -160,7 +141,7 @@ Both transaction types (0 & 2) are supported for reporting.
 
 ## Regular Usage
 
-It's not advised to report without Flashbots, unless on a testnet like Rinkeby, because transactions sent to the public mempool on Ethereum mainnet will most likely be [front-run](https://www.paradigm.xyz/2020/08/ethereum-is-a-dark-forest/), so you'll lose money.
+It's not advised to report without Flashbots, unless on a testnet like Goerli, because transactions sent to the public mempool on Ethereum mainnet will most likely be [front-run](https://www.paradigm.xyz/2020/08/ethereum-is-a-dark-forest/), so you'll lose money.
 
 If you want to report without flashbots on Ethereum mainnet, use the `--no-flashbots/-nfb` flag.
 

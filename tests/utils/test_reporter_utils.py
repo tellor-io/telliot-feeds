@@ -25,8 +25,8 @@ logger = get_logger(__name__)
 
 
 @pytest.mark.asyncio
-async def test_suggested_report(rinkeby_test_cfg):
-    async with TelliotCore(config=rinkeby_test_cfg) as core:
+async def test_suggested_report(mumbai_test_cfg):
+    async with TelliotCore(config=mumbai_test_cfg) as core:
         account = core.get_account()
         contract_instance = accounts[0].deploy(TellorXOracleMock)
         oracle = TellorxOracleContract(core.endpoint, account)
@@ -54,7 +54,6 @@ def test_reporter_sync_schedule_list():
     lis = reporter_sync_schedule
     assert len(lis) > 4
     assert "eth-usd-spot" in lis
-    assert "morphware-v1" not in lis
     assert "uspce-legacy" not in lis
 
 

@@ -7,9 +7,6 @@ from datetime import datetime
 from unittest import mock
 
 import pytest
-import pytest_asyncio
-from brownie import accounts
-from telliot_core.apps.core import TelliotCore
 from telliot_core.gas.legacy_gas import ethgasstation
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
@@ -17,52 +14,15 @@ from web3.datastructures import AttributeDict
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.reporters import interval
-from telliot_feeds.reporters.interval import IntervalReporter
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPrice
 from tests.utils.utils import gas_price
 from tests.utils.utils import passing_bool_w_status
 from tests.utils.utils import passing_status
 
 
-@pytest_asyncio.fixture(scope="function")
-async def eth_usd_reporter(
-    rinkeby_test_cfg,
-    tellorx_master_mock_contract,
-    tellorx_oracle_mock_contract,
-):
-    """Returns an instance of an IntervalReporter using
-    the ETH/USD median datafeed."""
-    async with TelliotCore(config=rinkeby_test_cfg) as core:
-        account = core.get_account()
-        tellorx = core.get_tellorx_contracts()
-        tellorx.master.address = tellorx_master_mock_contract.address
-        tellorx.oracle.address = tellorx_oracle_mock_contract.address
-        tellorx.master.connect()
-        tellorx.oracle.connect()
-        r = IntervalReporter(
-            endpoint=core.config.get_endpoint(),
-            account=account,
-            master=tellorx.master,
-            oracle=tellorx.oracle,
-            datafeed=eth_usd_median_feed,
-            expected_profit="YOLO",
-            transaction_type=0,
-            gas_limit=400000,
-            max_fee=None,
-            priority_fee=None,
-            legacy_gas_price=None,
-            gas_price_speed="safeLow",
-            chain_id=core.config.main.chain_id,
-            min_native_token_balance=0,
-        )
-        # send eth from brownie address to reporter address for txn fees
-        accounts[1].transfer(account.address, "1 ether")
-        return r
-
-
 @pytest.mark.asyncio
-async def test_fetch_datafeed(eth_usd_reporter):
-    r = eth_usd_reporter
+async def test_fetch_datafeed(tellor_flex_reporter):
+    r = tellor_flex_reporter
     feed = await r.fetch_datafeed()
     assert isinstance(feed, DataFeed)
 
@@ -73,8 +33,8 @@ async def test_fetch_datafeed(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_get_fee_info(eth_usd_reporter):
-    info, time = await eth_usd_reporter.get_fee_info()
+async def test_get_fee_info(tellor_flex_reporter):
+    info, time = await tellor_flex_reporter.get_fee_info()
 
     assert isinstance(time, datetime)
     assert isinstance(info, EtherscanGasPrice)
@@ -84,8 +44,8 @@ async def test_get_fee_info(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_get_num_reports_by_id(eth_usd_reporter):
-    r = eth_usd_reporter
+async def test_get_num_reports_by_id(tellor_flex_reporter):
+    r = tellor_flex_reporter
     num, status = await r.get_num_reports_by_id(r.datafeed.query.query_id)
 
     assert isinstance(status, ResponseStatus)
@@ -97,18 +57,18 @@ async def test_get_num_reports_by_id(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_ensure_staked(eth_usd_reporter):
+async def test_ensure_staked(tellor_flex_reporter):
     """Test staking status of reporter."""
-    staked, status = await eth_usd_reporter.ensure_staked()
+    staked, status = await tellor_flex_reporter.ensure_staked()
 
     assert staked
     assert status.ok
 
 
 @pytest.mark.asyncio
-async def test_check_reporter_lock(eth_usd_reporter):
+async def test_check_reporter_lock(tellor_flex_reporter):
     """Test checking if in reporter lock."""
-    r = eth_usd_reporter
+    r = tellor_flex_reporter
     r.last_submission_timestamp = 0
 
     status = await r.check_reporter_lock()
@@ -120,9 +80,9 @@ async def test_check_reporter_lock(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_ensure_profitable(eth_usd_reporter):
+async def test_ensure_profitable(tellor_flex_reporter):
     """Test profitability check."""
-    r = eth_usd_reporter
+    r = tellor_flex_reporter
 
     assert r.expected_profit == "YOLO"
 
@@ -138,9 +98,9 @@ async def test_ensure_profitable(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_fetch_gas_price(eth_usd_reporter):
+async def test_fetch_gas_price(tellor_flex_reporter):
     """Test retrieving custom gas price from eth gas station."""
-    r = eth_usd_reporter
+    r = tellor_flex_reporter
 
     assert r.gas_price_speed == "safeLow"
 
@@ -155,11 +115,11 @@ async def test_fetch_gas_price(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_ethgasstation_error(eth_usd_reporter):
+async def test_ethgasstation_error(tellor_flex_reporter):
     async def no_gas_price(speed):
         return None
 
-    r = eth_usd_reporter
+    r = tellor_flex_reporter
     interval.ethgasstation = no_gas_price
 
     staked, status = await r.ensure_staked()
@@ -176,10 +136,10 @@ async def test_ethgasstation_error(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_interval_reporter_submit_once(eth_usd_reporter):
+async def test_interval_reporter_submit_once(tellor_flex_reporter):
     """Test reporting once to the TellorX playground on Rinkeby
     with three retries."""
-    r = eth_usd_reporter
+    r = tellor_flex_reporter
 
     # Sync reporter
     r.datafeed = None
@@ -209,9 +169,9 @@ async def test_interval_reporter_submit_once(eth_usd_reporter):
 
 
 @pytest.mark.asyncio
-async def test_no_updated_value(eth_usd_reporter, bad_datasource):
+async def test_no_updated_value(tellor_flex_reporter, bad_datasource):
     """Test handling for no updated value returned from datasource."""
-    r = eth_usd_reporter
+    r = tellor_flex_reporter
 
     # Clear latest datapoint
     r.datafeed.source._history.clear()
@@ -233,9 +193,9 @@ async def test_no_updated_value(eth_usd_reporter, bad_datasource):
 
 
 @pytest.mark.asyncio
-async def test_no_token_prices_for_profit_calc(eth_usd_reporter, bad_datasource, guaranteed_price_source):
+async def test_no_token_prices_for_profit_calc(tellor_flex_reporter, bad_datasource, guaranteed_price_source):
     """Test handling for no token prices for profit calculation."""
-    r = eth_usd_reporter
+    r = tellor_flex_reporter
 
     r.fetch_gas_price = gas_price
     r.check_reporter_lock = passing_status
@@ -261,14 +221,14 @@ async def test_no_token_prices_for_profit_calc(eth_usd_reporter, bad_datasource,
 
 
 @pytest.mark.asyncio
-async def test_handle_contract_master_read_timeout(eth_usd_reporter):
+async def test_handle_contract_master_read_timeout(tellor_flex_reporter):
     """Test handling for contract master read timeout."""
 
     def conn_timeout(url, *args, **kwargs):
         raise asyncio.exceptions.TimeoutError()
 
     with mock.patch("web3.contract.ContractFunction.call", side_effect=conn_timeout):
-        r = eth_usd_reporter
+        r = tellor_flex_reporter
         r.fetch_gas_price = gas_price
         staked, status = await r.ensure_staked()
 
@@ -279,9 +239,9 @@ async def test_handle_contract_master_read_timeout(eth_usd_reporter):
 
 @pytest.mark.asyncio
 async def test_ensure_reporter_lock_check_after_submitval_attempt(
-    monkeypatch, eth_usd_reporter, guaranteed_price_source
+    monkeypatch, tellor_flex_reporter, guaranteed_price_source
 ):
-    r = eth_usd_reporter
+    r = tellor_flex_reporter
     r.last_submission_timestamp = 1234
     r.fetch_gas_price = gas_price
     r.ensure_staked = passing_bool_w_status
