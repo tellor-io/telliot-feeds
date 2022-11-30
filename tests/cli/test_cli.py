@@ -49,16 +49,16 @@ def test_build_feed_from_input(capsys):
 
 def test_parse_profit_input():
     """Test reading in custom expected profit from user."""
-    result = parse_profit_input("YOLO")
+    result = parse_profit_input({}, None, "YOLO")
     assert isinstance(result, str)
     assert result == "YOLO"
 
-    result = parse_profit_input("1234.1234")
+    result = parse_profit_input({}, None, "1234.1234")
     assert isinstance(result, float)
     assert result == 1234.1234
 
     with pytest.raises(click.BadParameter):
-        _ = parse_profit_input("asdf")
+        _ = parse_profit_input({}, None, "asdf")
 
 
 @pytest.mark.skip
