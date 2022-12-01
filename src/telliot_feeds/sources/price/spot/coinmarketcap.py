@@ -69,9 +69,14 @@ class CoinMarketCapSpotPriceService(WebPriceService):
         except (ConnectionError, Timeout, TooManyRedirects) as e:
             logger.warning(e)
             return None, None
-
-        price = data["data"][asset]["quote"][currency]["price"]
-        return price, datetime_now_utc()
+        
+        try:
+            price = data["data"][asset]["quote"][currency]["price"]
+            return price, datetime_now_utc()
+        except Exception as e:
+            msg = f"Error parsing CoinMarketCap API response: Exception: {e}"
+            logger.critical(msg)
+            return None, None
 
 
 @dataclass

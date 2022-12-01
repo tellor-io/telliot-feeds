@@ -23,6 +23,7 @@ from telliot_feeds.sources.price.spot.pancakeswap import (
 )
 from telliot_feeds.sources.price.spot.pulsechain_subgraph import PulsechainSupgraphService
 from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceService
+from telliot_feeds.sources.price.spot.bitfinex import BitfinexSpotPriceService
 
 
 service = {
@@ -36,6 +37,7 @@ service = {
     "pulsechain-subgraph": PulsechainSupgraphService(),
     "kraken": KrakenSpotPriceService(),
     "coinmarketcap": CoinMarketCapSpotPriceService(),
+    "bitfinex": BitfinexSpotPriceService(),
 }
 
 
@@ -83,6 +85,16 @@ async def test_coinbase():
     validate_price(v, t)
 
     v, t = await get_price("trb", "usd", service["coinbase"])
+    validate_price(v, t)
+
+
+@pytest.mark.asyncio
+async def test_bitfinex():
+    """Test retrieving from Bitfinex price source."""
+    v, t = await get_price("eth", "usd", service["bitfinex"])
+    validate_price(v, t)
+
+    v, t = await get_price("albt:", "usd", service["bitfinex"])
     validate_price(v, t)
 
 

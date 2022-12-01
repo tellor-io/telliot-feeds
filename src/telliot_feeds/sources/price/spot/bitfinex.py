@@ -41,6 +41,7 @@ class BitfinexSpotPriceService(WebPriceService):
         request_url = f"/v2/ticker/t{asset}{currency}"
 
         d = self.get_url(request_url)
+        print(d)
 
         if "error" in d:
             logger.error(d)
@@ -51,15 +52,15 @@ class BitfinexSpotPriceService(WebPriceService):
 
             try:
                 price = float(response[6])
-            except KeyError as e:
-                msg = f"Error parsing Coingecko API response: KeyError: {e}"
+                return price, datetime_now_utc()
+            except Exception as e:
+                msg = f"Error parsing Bitfinex API response: Exception: {e}"
                 logger.critical(msg)
+                return None, None
 
         else:
-            raise Exception("Invalid response from get_url")
-
-        return price, datetime_now_utc()
-
+            logger.critical("Invalid response from get_url")
+            return None, None
 
 @dataclass
 class BitfinexSpotPriceSource(PriceSource):
