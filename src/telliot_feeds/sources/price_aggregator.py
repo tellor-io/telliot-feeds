@@ -80,7 +80,7 @@ class PriceAggregator(DataSource[float]):
         for datapoint in datapoints:
             v, _ = datapoint  # Ignore input timestamps
             # Check for valid answers
-            if v is not None:
+            if v is not None and isinstance(v, float):
                 prices.append(v)
 
         if not prices:
