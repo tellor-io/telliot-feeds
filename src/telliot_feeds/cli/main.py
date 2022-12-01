@@ -9,11 +9,11 @@ from chained_accounts import find_accounts
 from click.core import Context
 
 from telliot_feeds.cli.commands.catalog import catalog
+from telliot_feeds.cli.commands.config import config
 from telliot_feeds.cli.commands.integrations import integrations
 from telliot_feeds.cli.commands.query import query
 from telliot_feeds.cli.commands.report import report
 from telliot_feeds.cli.commands.settle import settle
-from telliot_feeds.cli.commands.config import config
 
 # from telliot_feeds.cli.commands.tip import tip
 

@@ -1,8 +1,5 @@
-from typing import Optional
-
 import click
 import yaml
-
 from telliot_core.apps.telliot_config import TelliotConfig
 
 
