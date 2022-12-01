@@ -13,6 +13,7 @@ from telliot_feeds.cli.commands.integrations import integrations
 from telliot_feeds.cli.commands.query import query
 from telliot_feeds.cli.commands.report import report
 from telliot_feeds.cli.commands.settle import settle
+from telliot_feeds.cli.commands.config import config
 
 # from telliot_feeds.cli.commands.tip import tip
 
@@ -67,6 +68,7 @@ main.add_command(query)
 main.add_command(catalog)
 main.add_command(settle)
 main.add_command(integrations)
+main.add_command(config)
 
 if __name__ == "__main__":
     main()
