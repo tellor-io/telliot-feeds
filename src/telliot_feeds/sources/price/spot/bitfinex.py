@@ -41,7 +41,6 @@ class BitfinexSpotPriceService(WebPriceService):
         request_url = f"/v2/ticker/t{asset}{currency}"
 
         d = self.get_url(request_url)
-        print(d)
 
         if "error" in d:
             logger.error(d)
@@ -61,6 +60,7 @@ class BitfinexSpotPriceService(WebPriceService):
         else:
             logger.critical("Invalid response from get_url")
             return None, None
+
 
 @dataclass
 class BitfinexSpotPriceSource(PriceSource):

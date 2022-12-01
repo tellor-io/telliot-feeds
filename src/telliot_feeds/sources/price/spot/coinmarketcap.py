@@ -69,7 +69,7 @@ class CoinMarketCapSpotPriceService(WebPriceService):
         except (ConnectionError, Timeout, TooManyRedirects) as e:
             logger.warning(e)
             return None, None
-        
+
         try:
             price = data["data"][asset]["quote"][currency]["price"]
             return price, datetime_now_utc()
