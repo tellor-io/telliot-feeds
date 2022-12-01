@@ -160,3 +160,18 @@ def test_query_info():
     result = runner.invoke(cli_main, ["--test_config", "query", "status", "-qt", "eth-usd-spot"])
     assert not result.exception
     assert "Current value" in result.stdout
+
+
+def test_config_show():
+    """Make sure config is running"""
+    runner = CliRunner()
+    result = runner.invoke(cli_main, ["--test-config", "config", "show"])
+    assert not result.exception
+
+
+def test_config_cmd():
+    """Test telliot_core CLI command: report."""
+    runner = CliRunner()
+    result = runner.invoke(cli_main, ["config", "init"])
+    assert not result.exception
+    print(result.stdout)
