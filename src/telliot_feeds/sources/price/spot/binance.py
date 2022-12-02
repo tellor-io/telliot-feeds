@@ -43,7 +43,7 @@ class BinanceSpotPriceService(WebPriceService):
             response = d["response"]
 
             if isinstance(response, dict) and "msg" in response:
-                logger.warning(response['msg'])
+                logger.warning(response["msg"])
                 return None, None
 
             if isinstance(response, list) and len(response) == 0:
