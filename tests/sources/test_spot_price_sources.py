@@ -11,6 +11,7 @@ from requests.exceptions import JSONDecodeError
 from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.sources.price.spot import coingecko
+from telliot_feeds.sources.price.spot.bitfinex import BitfinexSpotPriceService
 from telliot_feeds.sources.price.spot.bittrex import BittrexSpotPriceService
 from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceService
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceService
@@ -36,6 +37,7 @@ service = {
     "pulsechain-subgraph": PulsechainSupgraphService(),
     "kraken": KrakenSpotPriceService(),
     "coinmarketcap": CoinMarketCapSpotPriceService(),
+    "bitfinex": BitfinexSpotPriceService(),
 }
 
 
@@ -83,6 +85,16 @@ async def test_coinbase():
     validate_price(v, t)
 
     v, t = await get_price("trb", "usd", service["coinbase"])
+    validate_price(v, t)
+
+
+@pytest.mark.asyncio
+async def test_bitfinex():
+    """Test retrieving from Bitfinex price source."""
+    v, t = await get_price("eth", "usd", service["bitfinex"])
+    validate_price(v, t)
+
+    v, t = await get_price("albt:", "usd", service["bitfinex"])
     validate_price(v, t)
 
 
@@ -206,6 +218,7 @@ async def test_uniswap_eth_usd(caplog):
         assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
 
 
+@pytest.mark.skip("Not needed currently")
 @pytest.mark.asyncio
 async def test_pancakeswap_usd():
     """Test retrieving from Pancakeswap price source in USD."""
@@ -213,6 +226,7 @@ async def test_pancakeswap_usd():
     validate_price(v, t)
 
 
+@pytest.mark.skip("Not needed currently")
 @pytest.mark.asyncio
 async def test_pancakeswap_bnb():
     """Test retrieving from Pancakeswap price source in BNB."""

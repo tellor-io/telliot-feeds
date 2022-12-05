@@ -1,5 +1,5 @@
-from telliot_feeds.queries import SpotPrice
 from telliot_feeds.queries.json_query import JsonQuery
+from telliot_feeds.queries.price.spot_price import SpotPrice
 
 
 def test_data_interface():

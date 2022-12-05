@@ -3,9 +3,6 @@ from dataclasses import field
 from typing import Any
 from typing import Dict
 
-from pydantic import BaseModel
-from pydantic import ValidationError
-
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService
@@ -16,7 +13,8 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-class GeminiPriceResponse(BaseModel):
+@dataclass
+class GeminiPriceResponse:
     bid: float
     ask: float
     last: float
@@ -64,9 +62,9 @@ class GeminiSpotPriceService(WebPriceService):
 
         else:
             try:
-                r = GeminiPriceResponse.parse_obj(d["response"])
-            except ValidationError:
-                logger.error("Error parsing response from Gemini API")
+                r = GeminiPriceResponse(**d["response"])
+            except Exception as e:
+                logger.error("Error parsing response from Gemini API:", e)
                 return None, None
 
             if r.last is not None:

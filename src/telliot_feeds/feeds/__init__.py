@@ -2,6 +2,7 @@ from typing import Any
 from typing import Dict
 
 from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.feeds.albt_usd_feed import albt_usd_median_feed
 from telliot_feeds.feeds.ampl_usd_vwap_feed import ampl_usd_vwap_feed
 from telliot_feeds.feeds.bct_usd_feed import bct_usd_median_feed
 from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
@@ -63,6 +64,7 @@ CATALOG_FEEDS = {
     "eth-usd-spot": eth_usd_median_feed,
     "btc-usd-spot": btc_usd_median_feed,
     "trb-usd-spot": trb_usd_median_feed,
+    "albt-usd-spot": albt_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

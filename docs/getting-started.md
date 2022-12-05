@@ -60,7 +60,7 @@ Edit `~/telliot/endpoints.yaml` to configure Telliot to use your own endpoints.
 
 If you don't have an endpoint, a free one is available at [Infura.io](http://www.infura.io).  Simply replace `INFURA_API_KEY` with the one provided by Infura.
 
-Endpoints should be configured for both Ethereum mainnet and Rinkeby testnet.
+Endpoints should be configured for both Ethereum mainnet and Goerli testnet.
 
 **Warning! All telliot software and reporter feeds should be validated on testnets prior to deploying on mainnet.**
 
@@ -76,12 +76,6 @@ endpoints:
   provider: Infura
   url: wss://mainnet.infura.io/ws/v3/{INFURA_API_KEY}
   explorer: https://etherscan.io
-- type: RPCEndpoint
-  chain_id: 4
-  network: rinkeby
-  provider: Infura
-  url: wss://rinkeby.infura.io/ws/v3{INFURA_API_KEY}
-  explorer: https://rinkeby.etherscan.io
 - type: RPCEndpoint
   chain_id: 137
   network: mainnet
@@ -109,9 +103,6 @@ For example, to add an account called `my-matic-acct` for reporting on polygon m
     Enter encryption password for my-matic-acct: 
     Confirm password: 
     Added new account my-matic-acct (address= 0xcd19cf65af3a3aea1f44a7cb0257fc7455f245f0) for use on chains (137,)
-
-Note that reporting accounts can be used for ETH mainnet (chain_id=1), Rinkeby testnet (chain_id=4), or Polygon testnet
-(chain_id=80001).  Also note that a single account/private key can be associated with multiple chains.
 
 Detailed instructions for managing EVM accounts can be found in the
 [`chained_accounts` package documentation](https://github.com/pydefi/chained-accounts). 

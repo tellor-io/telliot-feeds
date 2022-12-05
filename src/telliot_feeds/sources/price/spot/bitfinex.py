@@ -13,8 +13,8 @@ logger = get_logger(__name__)
 
 
 # Hardcoded supported assets & currencies
-bitfinex_assets = {"ETH"}
-bitfinex_currencies = {"JPY"}
+bitfinex_assets = {"ETH", "ALBT:"}
+bitfinex_currencies = {"JPY", "USD"}
 
 
 class BitfinexSpotPriceService(WebPriceService):
@@ -51,14 +51,15 @@ class BitfinexSpotPriceService(WebPriceService):
 
             try:
                 price = float(response[6])
-            except KeyError as e:
-                msg = f"Error parsing Coingecko API response: KeyError: {e}"
+                return price, datetime_now_utc()
+            except Exception as e:
+                msg = f"Error parsing Bitfinex API response: Exception: {e}"
                 logger.critical(msg)
+                return None, None
 
         else:
-            raise Exception("Invalid response from get_url")
-
-        return price, datetime_now_utc()
+            logger.critical("Invalid response from get_url")
+            return None, None
 
 
 @dataclass

@@ -53,13 +53,8 @@ async def test_kraken_get_price(caplog):
 
     print("Kraken XBT/USD price:", v)
 
-    # Test invalid asset
-    v, t = await KrakenHistoricalPriceService().get_price("invalid", "usd", ts=ONE_DAY_AGO_TIMESTAMP)
-    assert v is None
-    assert t is None
-    assert "Asset not supported" in caplog.text
 
-
+@pytest.mark.skip(reason="get trades tested in get price")
 @pytest.mark.asyncio
 async def test_kraken_get_trades(caplog):
     """Retrieve all price data given a timestamp and surrounding time period."""

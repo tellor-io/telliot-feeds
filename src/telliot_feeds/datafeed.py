@@ -27,15 +27,3 @@ class DataFeed(Generic[T], Base):
     query: OracleQuery
 
     source: DataSource[T]
-
-
-if __name__ == "__main__":
-    # Example:
-    from telliot_feeds.datasource import RandomSource
-    from telliot_feeds.queries.legacy_query import LegacyRequest
-
-    feed = DataFeed(source=RandomSource(), query=LegacyRequest(legacy_id=99))
-
-    import yaml
-
-    print(yaml.dump(feed.get_state(), sort_keys=False))

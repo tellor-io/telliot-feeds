@@ -300,6 +300,9 @@ class IntervalReporter:
     async def is_online(self) -> bool:
         return await is_online()
 
+    def has_native_token(self) -> bool:
+        return has_native_token_funds(self.acct_addr, self.endpoint._web3, min_balance=self.min_native_token_balance)
+
     async def report_once(
         self,
     ) -> Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]:
@@ -448,9 +451,7 @@ class IntervalReporter:
         while report_count is None or report_count > 0:
             online = await self.is_online()
             if online:
-                if has_native_token_funds(
-                    self.acct_addr, self.endpoint._web3, min_balance=self.min_native_token_balance
-                ):
+                if self.has_native_token():
                     _, _ = await self.report_once()
             else:
                 logger.warning("Unable to connect to the internet!")

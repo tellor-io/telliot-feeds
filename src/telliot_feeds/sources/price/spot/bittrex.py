@@ -3,8 +3,6 @@ from dataclasses import field
 from typing import Any
 from typing import Optional
 
-from pydantic import BaseModel
-
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService
@@ -15,13 +13,15 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-class BittrexQuote(BaseModel):
+@dataclass
+class BittrexQuote:
     Bid: float
     Ask: float
     Last: float
 
 
-class PriceResponse(BaseModel):
+@dataclass
+class PriceResponse:
     success: bool
     message: str
     result: Optional[BittrexQuote]
@@ -60,7 +60,7 @@ class BittrexSpotPriceService(WebPriceService):
             return None, None
 
         else:
-            r = PriceResponse.parse_obj(d["response"])
+            r = PriceResponse(**d["response"])
             if r.success:
                 if r.result is not None:
                     return r.result.Last, datetime_now_utc()

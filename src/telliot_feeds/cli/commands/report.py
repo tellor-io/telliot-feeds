@@ -26,7 +26,7 @@ from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.reporters.flashbot import FlashbotsReporter
 from telliot_feeds.reporters.rng_interval import RNGReporter
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
-from telliot_feeds.reporters.tellorflex import TellorFlexReporter
+from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
@@ -36,7 +36,6 @@ from telliot_feeds.utils.reporter_utils import prompt_for_abi
 
 logger = get_logger(__name__)
 
-TELLOR_X_CHAINS = (1, 4, 5)
 
 STAKE_MESSAGE = (
     "\U00002757Telliot will automatically stake more TRB "
@@ -233,6 +232,15 @@ def reporter() -> None:
     type=float,
     default=10.0,
 )
+@click.option(
+    "--min-native-token-balance",
+    "-mnb",
+    "min_native_token_balance",
+    help="Minimum native token balance required to report. Denominated in ether.",
+    nargs=1,
+    type=float,
+    default=0.25,
+)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pwd", "--password", type=str)
@@ -259,6 +267,7 @@ async def report(
     password: str,
     signature_password: str,
     rng_auto: bool,
+    min_native_token_balance: float,
     custom_token_contract: Optional[ChecksumAddress],
     custom_oracle_contract: Optional[ChecksumAddress],
     custom_autopay_contract: Optional[ChecksumAddress],
@@ -339,6 +348,7 @@ async def report(
             gas_price_speed=gas_price_speed,
             reporting_diva_protocol=reporting_diva_protocol,
             stake_amount=stake,
+            min_native_token_balance=min_native_token_balance,
         )
 
         _ = input("Press [ENTER] to confirm settings.")
@@ -398,6 +408,7 @@ async def report(
             "expected_profit": expected_profit,
             "stake": stake,
             "transaction_type": tx_type,
+            "min_native_token_balance": int(min_native_token_balance * 10**18),
         }
 
         if sig_acct_addr:
@@ -406,8 +417,8 @@ async def report(
                 **common_reporter_kwargs,
             )
         elif rng_auto:
+            common_reporter_kwargs["wait_period"] = 120 if wait_period < 120 else wait_period
             reporter = RNGReporter(  # type: ignore
-                wait_period=120 if wait_period < 120 else wait_period,
                 **common_reporter_kwargs,
             )
         elif reporting_diva_protocol:

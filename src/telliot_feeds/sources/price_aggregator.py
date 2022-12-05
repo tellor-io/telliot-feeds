@@ -80,7 +80,7 @@ class PriceAggregator(DataSource[float]):
         for datapoint in datapoints:
             v, _ = datapoint  # Ignore input timestamps
             # Check for valid answers
-            if v is not None:
+            if v is not None and isinstance(v, float):
                 prices.append(v)
 
         if not prices:
@@ -94,6 +94,6 @@ class PriceAggregator(DataSource[float]):
         self.store_datapoint(datapoint)
 
         logger.info("Feed Price: {} reported at time {}".format(datapoint[0], datapoint[1]))
-        logger.info("Number of Sources used for this report are: {}".format(len(prices)))
+        logger.info("Number of sources used in aggregate: {}".format(len(prices)))
 
         return datapoint

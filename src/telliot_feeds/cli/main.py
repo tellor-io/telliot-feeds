@@ -9,6 +9,7 @@ from chained_accounts import find_accounts
 from click.core import Context
 
 from telliot_feeds.cli.commands.catalog import catalog
+from telliot_feeds.cli.commands.config import config
 from telliot_feeds.cli.commands.integrations import integrations
 from telliot_feeds.cli.commands.query import query
 from telliot_feeds.cli.commands.report import report
@@ -67,6 +68,7 @@ main.add_command(query)
 main.add_command(catalog)
 main.add_command(settle)
 main.add_command(integrations)
+main.add_command(config)
 
 if __name__ == "__main__":
     main()

@@ -1,83 +1,53 @@
 from unittest.mock import patch
 
 import pytest
-import pytest_asyncio
-from brownie import accounts
 from brownie import chain
-from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
-from telliot_feeds.reporters.tellorflex import TellorFlexReporter
-
-
-@pytest_asyncio.fixture(scope="function")
-async def polygon_reporter(
-    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract, multicall_contract
-):
-    async with TelliotCore(config=mumbai_test_cfg) as core:
-
-        account = core.get_account()
-
-        flex = core.get_tellorflex_contracts()
-        flex.oracle.address = mock_flex_contract.address
-        flex.autopay.address = mock_autopay_contract.address
-        flex.token.address = mock_token_contract.address
-
-        flex.oracle.connect()
-        flex.token.connect()
-        flex.autopay.connect()
-        flex = core.get_tellorflex_contracts()
-
-        r = TellorFlexReporter(
-            oracle=flex.oracle,
-            token=flex.token,
-            autopay=flex.autopay,
-            endpoint=core.endpoint,
-            account=account,
-            chain_id=80001,
-            transaction_type=0,
-        )
-        # mint token and send to reporter address
-        mock_token_contract.mint(account.address, 1000e18)
-
-        # send eth from brownie address to reporter address for txn fees
-        accounts[1].transfer(account.address, "1 ether")
-
-        return r
+from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 
 
 @pytest.mark.asyncio
-async def test_YOLO_feed_suggestion(polygon_reporter):
-    polygon_reporter.expected_profit = "YOLO"
-    feed = await polygon_reporter.fetch_datafeed()
+async def test_YOLO_feed_suggestion(tellor_flex_reporter):
+    tellor_flex_reporter.expected_profit = "YOLO"
+    feed = await tellor_flex_reporter.fetch_datafeed()
 
     assert feed is not None
     assert isinstance(feed, DataFeed)
 
 
 @pytest.mark.asyncio
-async def test_ensure_profitable(polygon_reporter):
-    status = await polygon_reporter.ensure_profitable(matic_usd_median_feed)
+async def test_ensure_profitable(tellor_flex_reporter):
+    r = tellor_flex_reporter
+    r.expected_profit = "YOLO"
+    unused_feed = matic_usd_median_feed
+    status = await r.ensure_profitable(unused_feed)
 
     assert isinstance(status, ResponseStatus)
     assert status.ok
 
+    r.chain_id = 1
+    r.expected_profit = 100.0
+    status = await r.ensure_profitable(unused_feed)
+
+    assert not status.ok
+
 
 @pytest.mark.asyncio
-async def test_fetch_gas_price(polygon_reporter):
-    price = await polygon_reporter.fetch_gas_price()
+async def test_fetch_gas_price(tellor_flex_reporter):
+    price = await tellor_flex_reporter.fetch_gas_price()
 
     assert isinstance(price, int)
     assert price > 0
 
 
 @pytest.mark.asyncio
-async def test_ensure_staked(polygon_reporter):
-    staked, status = await polygon_reporter.ensure_staked()
+async def test_ensure_staked(tellor_flex_reporter):
+    staked, status = await tellor_flex_reporter.ensure_staked()
 
     assert isinstance(status, ResponseStatus)
     assert isinstance(staked, bool)
@@ -88,8 +58,8 @@ async def test_ensure_staked(polygon_reporter):
 
 
 @pytest.mark.asyncio
-async def test_check_reporter_lock(polygon_reporter):
-    status = await polygon_reporter.check_reporter_lock()
+async def test_check_reporter_lock(tellor_flex_reporter):
+    status = await tellor_flex_reporter.check_reporter_lock()
 
     assert isinstance(status, ResponseStatus)
     if not status.ok:
@@ -97,9 +67,9 @@ async def test_check_reporter_lock(polygon_reporter):
 
 
 @pytest.mark.asyncio
-async def test_get_num_reports_by_id(polygon_reporter):
+async def test_get_num_reports_by_id(tellor_flex_reporter):
     qid = eth_usd_median_feed.query.query_id
-    count, status = await polygon_reporter.get_num_reports_by_id(qid)
+    count, status = await tellor_flex_reporter.get_num_reports_by_id(qid)
 
     assert isinstance(status, ResponseStatus)
     if status.ok:
@@ -109,9 +79,9 @@ async def test_get_num_reports_by_id(polygon_reporter):
 
 
 @pytest.mark.asyncio
-async def test_fetch_gas_price_error(polygon_reporter, caplog):
+async def test_fetch_gas_price_error(tellor_flex_reporter, caplog):
     # Test invalid gas price speed
-    r = polygon_reporter
+    r = tellor_flex_reporter
     gp = await r.fetch_gas_price("blah")
     assert gp is None
     assert "Invalid gas price speed for matic gasstation: blah" in caplog.text
@@ -129,13 +99,13 @@ async def test_fetch_gas_price_error(polygon_reporter, caplog):
 
 
 @pytest.mark.asyncio
-async def test_reporting_without_internet(polygon_reporter, caplog):
+async def test_reporting_without_internet(tellor_flex_reporter, caplog):
     async def offline():
         return False
 
     with patch("asyncio.sleep", side_effect=InterruptedError):
 
-        r = polygon_reporter
+        r = tellor_flex_reporter
 
         r.is_online = lambda: offline()
 
@@ -146,9 +116,9 @@ async def test_reporting_without_internet(polygon_reporter, caplog):
 
 
 @pytest.mark.asyncio
-async def test_dispute(polygon_reporter: TellorFlexReporter):
+async def test_dispute(tellor_flex_reporter: TellorFlexReporter):
     # Test when reporter in dispute
-    r = polygon_reporter
+    r = tellor_flex_reporter
 
     async def in_dispute(_):
         return True
@@ -161,10 +131,10 @@ async def test_dispute(polygon_reporter: TellorFlexReporter):
 
 
 @pytest.mark.asyncio
-async def test_reset_datafeed(polygon_reporter):
+async def test_reset_datafeed(tellor_flex_reporter):
     # Test when reporter selects qtag vs not
     # datafeed should persist if qtag selected
-    r: TellorFlexReporter = polygon_reporter
+    r: TellorFlexReporter = tellor_flex_reporter
 
     reporter1 = TellorFlexReporter(
         oracle=r.oracle,
@@ -175,6 +145,7 @@ async def test_reset_datafeed(polygon_reporter):
         chain_id=80001,
         transaction_type=0,
         datafeed=CATALOG_FEEDS["trb-usd-spot"],
+        min_native_token_balance=0,
     )
     reporter2 = TellorFlexReporter(
         oracle=r.oracle,
@@ -184,6 +155,7 @@ async def test_reset_datafeed(polygon_reporter):
         account=r.account,
         chain_id=80001,
         transaction_type=0,
+        min_native_token_balance=0,
     )
 
     # Unlocker reporter lock checker
