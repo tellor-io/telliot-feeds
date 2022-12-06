@@ -42,17 +42,24 @@ class BinanceSpotPriceService(WebPriceService):
         elif "response" in d:
             response = d["response"]
 
+            if isinstance(response, dict) and "msg" in response:
+                logger.warning(response["msg"])
+                return None, None
+
+            if isinstance(response, list) and len(response) == 0:
+                logger.info("No data returned from Binance")
+                return None, None
+
             try:
                 price = float(response[0][4])
-            except KeyError as e:
-                msg = f"Error parsing Binance API response: KeyError: {e}"
+                return price, datetime_now_utc()
+            except Exception as e:
+                msg = f"Error parsing Binance API response. Error: {e}"
                 logger.warning(msg)
                 return None, None
 
         else:
             raise Exception("Invalid response from get_url")
-
-        return price, datetime_now_utc()
 
 
 @dataclass

@@ -135,7 +135,7 @@ async def test_no_native_token(tellor_360, caplog):
         "chain_id": CHAIN_ID,
         "transaction_type": 0,
         "wait_period": 0,
-        "min_native_token_balance": 2 * 10**18,
+        "min_native_token_balance": 100 * 10**18,
     }
     reporter = Tellor360Reporter(**reporter_kwargs)
 
