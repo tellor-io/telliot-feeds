@@ -1,0 +1,6 @@
+services:
+  telliot:
+    container_name: yourchoice
+    build: .
+    volumes:
+      - .:/app
