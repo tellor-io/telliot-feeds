@@ -68,7 +68,7 @@ class GeminiSpotPriceService(WebPriceService):
                 return None, None
 
             if r.last is not None:
-                return r.last, datetime_now_utc()
+                return float(r.last), datetime_now_utc()
             else:
                 logger.error(r)
                 return None, None
