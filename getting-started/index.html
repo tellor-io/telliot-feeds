@@ -269,6 +269,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#setup-environment-with-docker" class="md-nav__link">
+    Setup environment with Docker
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#telliot-configuration" class="md-nav__link">
     Telliot Configuration
   </a>
@@ -376,20 +383,6 @@
     <li class="md-nav__item">
       <a href="../examples/spot_price_query_example/" class="md-nav__link">
         SpotPrice Query
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../examples/legacy_query_example/" class="md-nav__link">
-        Legacy Query
       </a>
     </li>
   
@@ -703,6 +696,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#setup-environment-with-docker" class="md-nav__link">
+    Setup environment with Docker
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#telliot-configuration" class="md-nav__link">
     Telliot Configuration
   </a>
@@ -792,6 +792,22 @@ source tenv/bin/activate
 (including <a href="https://github.com/tellor-io/telliot-core">telliot-core</a> and <a href="https://github.com/pydefi/chained-accounts">chained-accounts</a>) through the command line:</p>
 <div class="highlight"><pre><span></span><code>pip install telliot-feeds
 </code></pre></div>
+<h2 id="setup-environment-with-docker">Setup environment with Docker<a class="headerlink" href="#setup-environment-with-docker" title="Permanent link">&para;</a></h2>
+<p>If you want to configure and run telliot in a docker container (skip environment setup):
+- pull image from docker hub <code>docker pull tellorofficial/telliot</code>
+- create the following <code>docker-compose.yml</code> using the command <code>echo "below text" &gt; docker-compose.yml</code>:
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">telliot</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tellorofficial/telliot</span><span class="w"></span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">telliot_container</span><span class="w"></span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span><span class="w"></span>
+<span class="w">    </span><span class="nt">tty</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
+<span class="w">    </span><span class="nt">entrypoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sh</span><span class="w"></span>
+</code></pre></div>
+- create &amp; start container in background: <code>docker-compose up -d</code>
+- open shell to container: <code>docker exec -it telliot_container sh</code>
+- configure telliot (see below)
+- close shell to container: <code>exit</code></p>
 <h2 id="telliot-configuration">Telliot Configuration<a class="headerlink" href="#telliot-configuration" title="Permanent link">&para;</a></h2>
 <p>After installation, Telliot must be personalized to use your own private keys and endpoints.</p>
 <p>First, create the default configuration files:</p>
@@ -809,7 +825,7 @@ source tenv/bin/activate
 <h3 id="configure-endpoints">Configure endpoints<a class="headerlink" href="#configure-endpoints" title="Permanent link">&para;</a></h3>
 <p>Edit <code>~/telliot/endpoints.yaml</code> to configure Telliot to use your own endpoints.</p>
 <p>If you don't have an endpoint, a free one is available at <a href="http://www.infura.io">Infura.io</a>.  Simply replace <code>INFURA_API_KEY</code> with the one provided by Infura.</p>
-<p>Endpoints should be configured for both Ethereum mainnet and Rinkeby testnet.</p>
+<p>Endpoints should be configured for both Ethereum mainnet and Goerli testnet.</p>
 <p><strong>Warning! All telliot software and reporter feeds should be validated on testnets prior to deploying on mainnet.</strong></p>
 <p>Note that endpoints must use the websocket protocol because HTTPS endpoints do not support event listeners. If reporting on Polygon, websockets are not supported, so use an HTTPS endpoint</p>
 <p><em>Example <code>endpoints.yaml</code> file:</em>
@@ -821,12 +837,6 @@ source tenv/bin/activate
 <span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Infura</span><span class="w"></span>
 <span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wss://mainnet.infura.io/ws/v3/{INFURA_API_KEY}</span><span class="w"></span>
 <span class="w">  </span><span class="nt">explorer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://etherscan.io</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RPCEndpoint</span><span class="w"></span>
-<span class="w">  </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span><span class="w"></span>
-<span class="w">  </span><span class="nt">network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rinkeby</span><span class="w"></span>
-<span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Infura</span><span class="w"></span>
-<span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wss://rinkeby.infura.io/ws/v3{INFURA_API_KEY}</span><span class="w"></span>
-<span class="w">  </span><span class="nt">explorer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://rinkeby.etherscan.io</span><span class="w"></span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RPCEndpoint</span><span class="w"></span>
 <span class="w">  </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">137</span><span class="w"></span>
 <span class="w">  </span><span class="nt">network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet</span><span class="w"></span>
@@ -851,8 +861,6 @@ Enter encryption password for my-matic-acct:
 Confirm password: 
 Added new account my-matic-acct (address= 0xcd19cf65af3a3aea1f44a7cb0257fc7455f245f0) for use on chains (137,)
 </code></pre></div>
-<p>Note that reporting accounts can be used for ETH mainnet (chain_id=1), Rinkeby testnet (chain_id=4), or Polygon testnet
-(chain_id=80001).  Also note that a single account/private key can be associated with multiple chains.</p>
 <p>Detailed instructions for managing EVM accounts can be found in the
 <a href="https://github.com/pydefi/chained-accounts"><code>chained_accounts</code> package documentation</a>. </p>
 <p>After configuring accounts, read the <a href="https://tellor-io.github.io/telliot-feeds/usage/">Usage</a> section,
