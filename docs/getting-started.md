@@ -35,6 +35,24 @@ You can install Telliot Feeds and all of it's dependencies
 
     pip install telliot-feeds
 
+## Setup environment with Docker
+If you want to configure and run telliot in a docker container (skip environment setup):
+- pull image from docker hub `docker pull tellorofficial/telliot`
+- create the following `docker-compose.yml` using the command `echo "below text" > docker-compose.yml`:
+```yaml
+services:
+  telliot:
+    image: tellorofficial/telliot
+    container_name: telliot_container
+    build: .
+    tty: true
+    entrypoint: sh
+```
+- create & start container in background: `docker-compose up -d`
+- open shell to container: `docker exec -it telliot_container sh`
+- configure telliot (see below)
+- close shell to container: `exit`
+
 ## Telliot Configuration
 
 After installation, Telliot must be personalized to use your own private keys and endpoints.
