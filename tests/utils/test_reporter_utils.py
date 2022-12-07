@@ -2,11 +2,9 @@ from unittest import mock
 
 import pytest
 from brownie import accounts
-from click.testing import CliRunner
 from telliot_core.apps.core import TelliotCore
 from web3 import Web3
 
-from telliot_feeds.cli.main import main as cli_main
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.queries.query import OracleQuery
@@ -33,14 +31,6 @@ async def test_suggested_report(tellor_360):
     catalog_entry = entries[0]
     q = catalog_entry.query
     assert isinstance(q, OracleQuery)
-
-
-@pytest.mark.skip("Disabled until we need this functionality")
-def test_suggested_report_cli():
-    """Test suggested report CLI"""
-    runner = CliRunner()
-    result = runner.invoke(cli_main, ["--test_config", "query", "suggest"])
-    assert "Suggested query" in result.output
 
 
 def test_reporter_sync_schedule_list():
@@ -70,7 +60,7 @@ async def test_has_native_token_funds(mumbai_test_cfg, caplog):
         has_funds = has_native_token_funds(account=addr, web3=endpoint.web3, alert=fake_alert, min_balance=1e18)
         assert has_funds is False
         assert "bingo" in caplog.text
-        assert "insufficient native token funds" in caplog.text
+        assert "insufficient native token funds" in caplog.text.lower()
 
         # Fund account
         accounts[0].transfer(addr, "2 ether")
