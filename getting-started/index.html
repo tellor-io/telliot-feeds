@@ -793,9 +793,10 @@ source tenv/bin/activate
 <div class="highlight"><pre><span></span><code>pip install telliot-feeds
 </code></pre></div>
 <h2 id="setup-environment-with-docker">Setup environment with Docker<a class="headerlink" href="#setup-environment-with-docker" title="Permanent link">&para;</a></h2>
-<p>If you want to configure and run telliot in a docker container (skip environment setup):
-- pull image from docker hub <code>docker pull tellorofficial/telliot</code>
-- create the following <code>docker-compose.yml</code> using the command <code>echo "below text" &gt; docker-compose.yml</code>:
+<p>If you want to configure and run telliot in a docker container (skip environment setup):</p>
+<ul>
+<li>pull image from docker hub <code>docker pull tellorofficial/telliot</code></li>
+<li>create the following <code>docker-compose.yml</code> using the command <code>echo "below text" &gt; docker-compose.yml</code>:
 <div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">telliot</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tellorofficial/telliot</span><span class="w"></span>
@@ -803,11 +804,12 @@ source tenv/bin/activate
 <span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span><span class="w"></span>
 <span class="w">    </span><span class="nt">tty</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 <span class="w">    </span><span class="nt">entrypoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sh</span><span class="w"></span>
-</code></pre></div>
-- create &amp; start container in background: <code>docker-compose up -d</code>
-- open shell to container: <code>docker exec -it telliot_container sh</code>
-- configure telliot (see below)
-- close shell to container: <code>exit</code></p>
+</code></pre></div></li>
+<li>create &amp; start container in background: <code>docker-compose up -d</code></li>
+<li>open shell to container: <code>docker exec -it telliot_container sh</code></li>
+<li>configure telliot (see below)</li>
+<li>close shell to container: <code>exit</code></li>
+</ul>
 <h2 id="telliot-configuration">Telliot Configuration<a class="headerlink" href="#telliot-configuration" title="Permanent link">&para;</a></h2>
 <p>After installation, Telliot must be personalized to use your own private keys and endpoints.</p>
 <p>First, create the default configuration files:</p>
