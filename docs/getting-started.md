@@ -37,6 +37,7 @@ You can install Telliot Feeds and all of it's dependencies
 
 ## Setup environment with Docker
 If you want to configure and run telliot in a docker container (skip environment setup):
+
 - pull image from docker hub `docker pull tellorofficial/telliot`
 - create the following `docker-compose.yml` using the command `echo "below text" > docker-compose.yml`:
 ```yaml
