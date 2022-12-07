@@ -40,20 +40,24 @@ def mock_config():
     shutil.rmtree(os.path.join(os.getcwd(), ".mock_config"))
 
 
+@pytest.fixture
 def mock_account():
     # since there is no remove() func for ChainedAccounts
     # we will add an account if the account does not exist in our keyfile
     try:
         fake_private_key = "ff27eb0c5059fc99f9d7b48931d135b20f1293db8d0f4fec4ecf5131fb40f1f5"  # https://vanity-eth.tk/
-        return ChainedAccount.add("mock-account", 5, fake_private_key, "password")
+        return ChainedAccount.add("_mock_goerli_acct", 5, fake_private_key, "password")
     except Exception:
-        return find_accounts(chain_id=5, name="mock-account")[0]
+        return find_accounts(chain_id=5, name="_mock_goerli_acct")[0]
 
 
-def test_update_all_configs(mock_config):
+def test_update_all_configs(mock_config, mock_account):
     """test updating chain id, endpoint, and account"""
 
     cfg = mock_config
+    print("mock config chain id:", cfg.main.chain_id)
+    mock_acct = mock_account
+    print("mock account:", mock_acct)
 
     # confirmations
     update_settings = True
@@ -70,14 +74,14 @@ def test_update_all_configs(mock_config):
         mock.patch("click.confirm", side_effect=[update_settings, update_chain_id, use_endpoint]),
         mock.patch("click.prompt", side_effect=[new_chain_id]),
         mock.patch("telliot_feeds.utils.cfg.setup_endpoint", side_effect=[mock_endpoint]),
-        mock.patch("telliot_feeds.utils.cfg.setup_account", return_value=mock_account()),
+        mock.patch("telliot_feeds.utils.cfg.setup_account", return_value=mock_acct),
     ):
         file_before = cfg._ep_config_file.get_config()
         assert mock_endpoint not in file_before.endpoints
-        cfg, account = setup_config(cfg=cfg, account_name="mock-account")
+        cfg, account = setup_config(cfg=cfg, account_name="_mock_goerli_acct")
         assert cfg.main.chain_id == new_chain_id
         assert check_endpoint(cfg) == mock_endpoint
-        assert "mock-account" in account.name
+        assert "_mock_goerli_acct" in account.name
         file_after = cfg._ep_config_file.get_config()
         assert mock_endpoint in file_after.endpoints
         # assert len(file_after.endpoints) > len(file_before.endpoints)
@@ -125,7 +129,7 @@ def test_setup_account(mock_config):
         cfg.main.chain_id = 5
         selected_acc = setup_account(cfg.main.chain_id)
 
-        assert "mock-account" in [a.name for a in check_accounts(cfg, "mock-account")]
+        assert "_mock_goerli_acct" in [a.name for a in check_accounts(cfg, "_mock_goerli_acct")]
 
 
 def test_not_updating_settings(mock_config):
@@ -145,18 +149,18 @@ def test_not_updating_settings(mock_config):
         mock.patch("telliot_feeds.utils.cfg.setup_account", return_value=mock_account()),
     ):
         file_before = cfg._ep_config_file.get_config()
-        cfg, account = setup_config(cfg=cfg, account_name="mock-account")
+        cfg, account = setup_config(cfg=cfg, account_name="_mock_goerli_acct")
         assert check_endpoint(cfg) != mock_endpoint
-        assert "mock-account" in account.name
+        assert "_mock_goerli_acct" in account.name
         file_after = cfg._ep_config_file.get_config()
 
         assert len(file_after.endpoints) == len(file_before.endpoints)
 
 
-def test_continue_with_incomplete_settings(caplog, mock_config):
+def test_continue_with_incomplete_settings(mock_config):
     """test declining to update settings when account and endpoints are unset"""
-
     cfg = mock_config
+    print("cfg.main.chain_id", cfg.main.chain_id)
 
     # confirmations
     update_settings = False
@@ -170,7 +174,7 @@ def test_continue_with_incomplete_settings(caplog, mock_config):
         mock.patch("telliot_feeds.utils.cfg.setup_account", return_value=mock_account()),
     ):
         file_before = cfg._ep_config_file.get_config()
-        cfg, account = setup_config(cfg=cfg, account_name="mock-account2")
+        cfg, account = setup_config(cfg=cfg, account_name="_mock_goerli_acct2")
         assert check_endpoint(cfg) != mock_endpoint
         assert not account
         file_after = cfg._ep_config_file.get_config()
