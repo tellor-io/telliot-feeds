@@ -89,7 +89,7 @@ contract TellorFlex360 {
      * @param _governanceAddress address of governance contract (github.com/tellor-io/governance)
      */
     function init(address _governanceAddress) external {
-        require(msg.sender == owner, "only owner can set governance address");
+        // require(msg.sender == owner, "only owner can set governance address");
         require(governance == address(0), "governance address already set");
         require(
             _governanceAddress != address(0),

@@ -222,10 +222,9 @@ class DIVAProtocolReporter(Tellor360Reporter):
             logger.warning(status.error)
             return None, status
 
-        # Don't check reporter lock for testnet
-        # status = await self.check_reporter_lock()
-        # if not status.ok:
-        #     return None, status
+        status = await self.check_reporter_lock()
+        if not status.ok:
+            return None, status
 
         datafeed = await self.fetch_datafeed()
         if not datafeed:
