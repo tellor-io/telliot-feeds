@@ -51,9 +51,7 @@ class MulticallAutopay(CallFunctions):
             feed.current_value_timestamp = timestamps[-1] if timestamps else 0
             feed.current_queryid_value = values[-1] if values else b""
 
-            values_lis = values[:-1]
-            timestamps_lis = timestamps[:-1]
-            feed.queryid_timestamps_values_list = list(map(Values, values_lis, timestamps_lis))
+            feed.queryid_timestamps_values_list = list(map(Values, values, timestamps))
 
         return feeds, status
 
