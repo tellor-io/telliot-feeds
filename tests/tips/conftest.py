@@ -127,7 +127,7 @@ async def setup_one_time_tips(autopay_contract_setup):
                 gas_limit=3500000,
                 legacy_gas_price=1,
                 _queryId=query_id,
-                _amount=int(int(count) * 10**18),
+                _amount=int(count * 10**18),
                 _queryData=query_data,
             )
             assert status.ok
