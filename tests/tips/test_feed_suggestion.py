@@ -49,7 +49,7 @@ async def test_fetching_tips(tip_feeds_and_one_time_tips):
     datafeed, tip = await get_feed_and_tip(flex.autopay)
     assert isinstance(datafeed, DataFeed)
     assert isinstance(tip, int)
-    assert tip == 25e18
+    assert tip == 26e18
 
 
 @pytest.mark.asyncio
