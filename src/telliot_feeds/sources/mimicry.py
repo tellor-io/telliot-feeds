@@ -1,20 +1,26 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
+
 import operator
-from typing import Any, List, Tuple, Union
+import time
+from dataclasses import dataclass
+from dataclasses import field
+from datetime import datetime
+from datetime import timedelta
+from typing import Any
+from typing import Dict
+from typing import List
 from typing import Optional
+from typing import Union
 
-
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 import requests
+from dateutil.relativedelta import relativedelta
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
 from telliot_feeds.datasource import DataSource
+from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.utils.log import get_logger
-
 
 
 logger = get_logger(__name__)
@@ -26,21 +32,26 @@ retry_strategy = Retry(
 )
 adapter = HTTPAdapter(max_retries=retry_strategy)
 
+
 @dataclass
 class Transaction:
     """wrapper class for nft sale transactions"""
+
     price: int
     item_id: Union[int, str]
     timestamp: int
 
+
 @dataclass
 class IndexValueHistoryItem:
     """wrapper class for transactions with index value added"""
-    item_id:Union[int, str]
+
+    item_id: Union[int, str]
     price: int
-    index_value: int
-    index_ratio: float
+    index_value: float
     transaction: Transaction
+    index_ratio: float = 0
+
 
 @dataclass
 class IndexValueHistoryList:
@@ -48,20 +59,27 @@ class IndexValueHistoryList:
 
     index_values: List[IndexValueHistoryItem]
 
-    async def get_index_value(self) -> int:
+    async def get_index_value(self) -> float:
         """get current index value"""
         return self.index_values[-1].index_value
 
-    async def get_index_ratios(self):
+    async def get_index_ratios(self) -> List[float]:
         """calculates index ratio for the last transaction of each item in the collection"""
 
-        for last_sale in self.index_values:
-            index_ratio = last_sale.price / last_sale.index_value
-            last_sale.index_ratio = index_ratio
+        index_ratios = []
 
-        
+        last_sale_per_item_id = {}
 
-    
+        for item in self.index_values:
+            last_sale_per_item_id[item.item_id] = item
+
+        for item in last_sale_per_item_id.values():
+            index_ratio = item.price / item.index_value
+            item.index_ratio = index_ratio
+            index_ratios.append(index_ratio)
+
+        return index_ratios
+
 
 @dataclass
 class TransactionList:
@@ -70,19 +88,20 @@ class TransactionList:
     transactions: List[Transaction] = field(default_factory=list)
     floor_price: float = 0.0
 
-    async def sort_transactions(self, by: str):
-        """sort of shallow copy of the tx list"""
-        self.transactions.copy().sort(key=operator.attrgetter(by))
+    async def sort_transactions(self, by: str) -> None:
+        """sort of the tx list"""
+        self.transactions.sort(key=operator.attrgetter(by))
 
-    async def filter_valid_transactions(self) -> TransactionList:
+    async def filter_valid_transactions(self) -> None:
         """filter for valid transactions, removing invalid txs from the list"""
-        one_year_ago = datetime.now() - relativedelta(years=1)
-        six_months_ago = datetime.now() - relativedelta(months=6)
+        one_year_ago = time.time() - relativedelta(years=1).seconds
+        six_months_ago = time.time() - relativedelta(months=6).seconds
 
-        inclusion_dict = {}
+        inclusion_dict: Dict[Union[str, int], Dict[str, Any]] = {}
 
         for transaction in self.transactions:
-            if not transaction.item_id in inclusion_dict:
+            if transaction.item_id not in inclusion_dict:
+                inclusion_dict[transaction.item_id]: Dict[str, Any] = {}
                 inclusion_dict[transaction.item_id]["past_year_sale_count"] = 0
                 inclusion_dict[transaction.item_id]["has_sale_in_last_six_months"] = False
                 inclusion_dict[transaction.item_id]["is_valid"] = False
@@ -90,13 +109,12 @@ class TransactionList:
             if inclusion_dict[transaction.item_id]["is_valid"]:
                 continue
 
-            if datetime.now() - transaction.timestamp > one_year_ago:
+            if time.time() - transaction.timestamp > one_year_ago:
                 continue
 
-            past_year_sale_count = inclusion_dict[transaction.item_id]["past_year_sale_count"]
             inclusion_dict[transaction.item_id]["past_year_sale_count"] += 1
 
-            if datetime.now() - transaction.timestamp > six_months_ago:
+            if time.time() - transaction.timestamp > six_months_ago:
                 continue
 
             inclusion_dict[transaction.item_id]["has_sale_in_last_six_months"] = True
@@ -104,53 +122,57 @@ class TransactionList:
             if inclusion_dict[transaction.item_id]["past_year_sale_count"] >= 2:
                 inclusion_dict[transaction.item_id]["is_valid"] = True
 
-        self.transactions = [tx for tx in self.transactions if inclusion_dict[tx]["is_valid"]]
+        self.transactions = [tx for tx in self.transactions if inclusion_dict[tx.item_id]["is_valid"]]
 
     async def create_index_value_history(self) -> IndexValueHistoryList:
         """converts TransactionList to List of IndexValueHistoryItem, adding the index value"""
 
         transactions_dict = {}
 
-        last_index_value = 0
-        last_divisor = 1
+        last_index_value = 0.0
+        last_divisor = 1.0
 
         result = []
 
+        count = 0
+
         for transaction in self.transactions:
 
-            is_first_sale = not transactions_dict[transaction.item_id]
+            is_first_sale = transaction.item_id not in transactions_dict
 
             transactions_dict[transaction.item_id] = transaction
 
-            item_count = transactions_dict.keys().length
+            item_count = len(transactions_dict.keys())
 
-            all_last_sold_value = sum(transactions_dict.values())
+            all_last_sold_value = sum([tx.price for tx in transactions_dict.values()])
 
             index_value = all_last_sold_value / (item_count * last_divisor)
 
-            if not transaction:
+            if count == 0:
                 last_index_value = index_value
 
                 iv = IndexValueHistoryItem(transaction.item_id, transaction.price, index_value, transaction)
 
                 result.append(iv)
 
+                count += 1
+
                 continue
 
             next_divisor = last_divisor * (index_value / last_index_value) if is_first_sale else last_divisor
 
-            weighted_index_value = all_last_sold_value / ( item_count * next_divisor)
+            weighted_index_value = all_last_sold_value / (item_count * next_divisor)
 
             last_index_value = weighted_index_value
             last_divisor = next_divisor
 
             iv = IndexValueHistoryItem(transaction.item_id, transaction.price, weighted_index_value, transaction)
 
-        return result
+            result.append(iv)
 
+            count += 1
 
-
-
+        return IndexValueHistoryList(index_values=result)
 
 
 @dataclass
@@ -161,10 +183,7 @@ class MimicryCollectionStatSource(DataSource[str]):
     collectionAddress: Optional[str] = None
     metric: Optional[int] = None
 
-    async def tami(
-        self,
-        transaction_history: TransactionList
-    ) -> Optional[float]:
+    async def tami(self, transaction_history: TransactionList) -> Optional[float]:
         """
         Calculates Time-Adjusted Market Index.
         see https://github.com/Mimicry-Protocol/TAMI
@@ -174,36 +193,31 @@ class MimicryCollectionStatSource(DataSource[str]):
         await transaction_history.filter_valid_transactions()
         index_value_history = await transaction_history.create_index_value_history()
 
-        if len(index_value_history) == 0:
+        if len(index_value_history.index_values) == 0:
             return None
 
-        index_value = await index_value_history.get_index_value(index_value_history)
-        index_ratios = await index_value_history.get_index_ratios(index_value_history)
+        index_value = await index_value_history.get_index_value()
+        index_ratios = await index_value_history.get_index_ratios()
 
-        time_adjusted_values = [item.index_ratio * index_value for item in index_ratios]
+        time_adjusted_values = [ratio * index_value for ratio in index_ratios]
 
         return sum(time_adjusted_values)
 
-
-
-
-    async def get_collection_market_cap(
-        self,
-        transaction_history: TransactionList
-    ) -> Optional[float]:
+    async def get_collection_market_cap(self, transaction_history: TransactionList) -> Optional[float]:
 
         values = []
-        transaction_history.sort_transactions("timestamp")
+        await transaction_history.sort_transactions("timestamp")
 
         transaction_history.transactions.reverse()
 
         for sale in transaction_history.transactions:
             # For each token in the collection
-            # calculate its value by taking the greater value between the collection's floor price and last sale price of that NFT
+            # calculate its value by taking the greater value
+            # between the collection's floor price and last sale price of that NFT
             if transaction_history.floor_price < sale.price:
                 values.append(sale.price)
             else:
-                values.append(transaction_history.floor_price)
+                values.append(int(transaction_history.floor_price))
 
             for other_sale in transaction_history.transactions:
                 if other_sale.item_id == sale.item_id:
@@ -212,12 +226,11 @@ class MimicryCollectionStatSource(DataSource[str]):
         # return(sum(values))
         return sum(values)
 
-
-    async def request_historical_sales_data(self, contract:str, all=True) -> Optional[TransactionList]:
+    async def request_historical_sales_data(self, contract: str, all: bool = True) -> Optional[TransactionList]:
         """Requests historical sales
          data of the selected collection.
          Data retrieved from Reservoir.
-         
+
         Agruments:
             all (bool): if True, see all data for the selected collection (if False, only 12 months)
 
@@ -226,17 +239,14 @@ class MimicryCollectionStatSource(DataSource[str]):
 
         """
         url = f"https://api.reservoir.tools/sales/v4?contract={contract}"
-        headers = {
-                    "accept": "*/*",
-                    "x-api-key": "demo-api-key"
-        }
+        headers = {"accept": "*/*", "x-api-key": "demo-api-key"}
         with requests.Session() as s:
             s.mount("https://", adapter)
             if not all:
-                one_year_ago = datetime.now() - timedelta(years = 1)
+                one_year_ago = datetime.now() - timedelta(days=365)
                 url += f"&startTimestamp={one_year_ago}"
             try:
-                request = s.get(url, timeout=0.5, headers=headers)   
+                request = s.get(url, timeout=0.5, headers=headers)
             except requests.exceptions.RequestException as e:
                 logger.error(f"Reservoir API error: {e}")
                 return None
@@ -244,7 +254,7 @@ class MimicryCollectionStatSource(DataSource[str]):
             except requests.exceptions.Timeout as e:
                 logger.error(f"Reservoir API timed out: {e}")
                 return None
-            
+
             tx_list = TransactionList()
 
             for sale in request.json()["sales"]:
@@ -258,14 +268,14 @@ class MimicryCollectionStatSource(DataSource[str]):
 
                     tx_list.transactions.append(tx)
                 except KeyError as e:
-                    logger.warn("Mimicry: Reservoir Sales API KeyError: " + e)
+                    logger.warn("Mimicry: Reservoir Sales API KeyError: " + str(e))
 
             if all:
-                url = f"https://api.reservoir.tools/oracle/collections/floor-ask/v4?kind=spot&currency=0x0000000000000000000000000000000000000000&twapSeconds=0&collection={contract}"
-                headers = {
-                    "accept": "*/*",
-                    "x-api-key": "demo-api-key"
-                }
+                url = (
+                    "https://api.reservoir.tools/oracle/collections/floor-ask/v4?kind="
+                    f"spot&currency=0x0000000000000000000000000000000000000000&twapSeconds=0&collection={contract}"
+                )
+                headers = {"accept": "*/*", "x-api-key": "demo-api-key"}
 
                 try:
                     request = s.get(url, timeout=0.5, headers=headers)
@@ -279,9 +289,7 @@ class MimicryCollectionStatSource(DataSource[str]):
 
                 tx_list.floor_price = request.json()["price"]
 
-
             return tx_list
-
 
     async def fetch_new_datapoint(
         self,
@@ -293,21 +301,26 @@ class MimicryCollectionStatSource(DataSource[str]):
             float -- the desired metric
         """
 
+        if not self.collectionAddress:
+            logger.error("Missing a collection address for Mimicry NFT index calculation")
+            return None, None
+
         if self.metric == 0:
-            past_year_sales_data = await self.request_historical_sales_data(all=False)
+            past_year_sales_data = await self.request_historical_sales_data(contract=self.collectionAddress, all=False)
             if past_year_sales_data:
-                return self.tami(past_year_sales_data)
+                return await self.tami(past_year_sales_data), datetime_now_utc()
             else:
                 logger.error("unable to retieve NFT collection historical sales data for TAMI")
-                return None
-            
+                return None, None
+
         elif self.metric == 1:
-            all_sales_data = await self.request_historical_sales_data()
+            all_sales_data = await self.request_historical_sales_data(contract=self.collectionAddress)
             if all_sales_data:
-                return self.get_collection_market_cap(all_sales_data)
+                return self.get_collection_market_cap(all_sales_data), datetime_now_utc()
             else:
                 logger.error("unable to retieve NFT collection historical sales data for total market cap")
-                return None
+                return None, None
 
         else:
             logger.info(msg=f"Invalid metric for Mimicry Protocol: {self.metric}")
+            return None, None

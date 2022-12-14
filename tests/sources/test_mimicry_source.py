@@ -1,21 +1,29 @@
 import pytest
-from telliot_feeds.sources.mimicry import MimicryCollectionStatSource, Transaction, TransactionList
+
+from telliot_feeds.sources.mimicry import IndexValueHistoryList
+from telliot_feeds.sources.mimicry import MimicryCollectionStatSource
+from telliot_feeds.sources.mimicry import Transaction
+from telliot_feeds.sources.mimicry import TransactionList
 
 chain_id = 1
 collection = "0x5180db8F5c931aaE63c74266b211F580155ecac8"
 
-transactions = [
-    Transaction(500, "Lavender", 1),
-    Transaction(700, "Hyacinth", 2),
-    Transaction(400, "Hyacinth", 3),
-    Transaction(612, "Mars", 4),
-    Transaction(1200, "Mars", 5)
+
+@pytest.fixture(scope="module")
+def transactions_list():
+    transactions = [
+        Transaction(500, "Lavender", 1593129600000),
+        Transaction(700, "Hyacinth", 1600992000000),
+        Transaction(400, "Hyacinth", 1614211200000),
+        Transaction(612, "Mars", 1624406400000),
+        Transaction(1200, "Mars", 1639008000000),
     ]
 
-transactions_list = TransactionList(transactions=transactions, floor_price=700)
+    return TransactionList(transactions=transactions, floor_price=700)
+
 
 @pytest.mark.asyncio
-async def test_get_collection_market_cap():
+async def test_get_collection_market_cap(transactions_list):
     """test algorithm for calculating market cap of an NFT collection"""
 
     mc = MimicryCollectionStatSource(chainId=1, collectionAddress=collection, metric=1)
@@ -24,12 +32,79 @@ async def test_get_collection_market_cap():
 
     assert market_cap == 2600
 
+
 @pytest.mark.asyncio
-async def test_tami():
+async def test_tami(transactions_list):
     """test implementation of the TAMI algorithm"""
 
     mc = MimicryCollectionStatSource(chainId=1, collectionAddress=collection, metric=1)
 
     tami_index = await mc.tami(transactions_list)
 
-    assert tami_index == 520.83
+    assert tami_index == pytest.approx(1832.411067193676)
+
+
+@pytest.mark.asyncio
+async def test_index_ratios(transactions_list: TransactionList):
+    """test calculation of index ratios"""
+
+    await transactions_list.sort_transactions("timestamp")
+
+    history_list: IndexValueHistoryList = await transactions_list.create_index_value_history()
+
+    iv = await history_list.get_index_value()
+
+    # assert pytest.approx(520.83) == iv
+
+    index_ratios = await history_list.get_index_ratios()
+
+    print(iv)
+    print(index_ratios)
+
+    assert iv == pytest.approx(520.8333333333334)
+    assert index_ratios[0] == 1.0
+    assert index_ratios[2] == pytest.approx(1.06, 1e6)
+    assert index_ratios[4] == pytest.approx(2.304)
+
+
+@pytest.mark.asyncio
+async def test_index_value(transactions_list: TransactionList):
+    """test index price calculation"""
+
+    await transactions_list.sort_transactions("timestamp")
+    # await transactions_list.filter_valid_transactions()
+
+    history_list: IndexValueHistoryList = await transactions_list.create_index_value_history()
+
+    expected_index_values = [500, 500, 375, 375, 520.8333333333334]
+
+    actual_index_values = []
+
+    for i in history_list.index_values:
+        actual_index_values.append(i.index_value)
+
+    assert expected_index_values == actual_index_values
+
+
+@pytest.mark.asyncio
+async def test_filter_valid_transactions(transactions_list: TransactionList):
+    """test that TAMI algorithm filters the right transactions"""
+
+    await transactions_list.sort_transactions("timestamp")
+
+    assert len(transactions_list.transactions) == 5
+
+    await transactions_list.filter_valid_transactions()
+
+    assert len(transactions_list.transactions) == 4
+
+
+@pytest.mark.asyncio
+async def test_sort_transactions(transactions_list: TransactionList):
+
+    await transactions_list.sort_transactions("timestamp")
+
+    prev_timestamp = 0
+    for tx in transactions_list.transactions:
+        assert tx.timestamp > prev_timestamp
+        prev_timestamp = tx.timestamp

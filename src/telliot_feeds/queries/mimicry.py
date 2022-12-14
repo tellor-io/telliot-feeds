@@ -37,8 +37,8 @@ class MimicryCollectionStat(AbiQuery):
             "name": "collectionAddress",
         },
         {
-            "type":"uint256",
-            "name":"metric",
+            "type": "uint256",
+            "name": "metric",
         },
     ]
 
