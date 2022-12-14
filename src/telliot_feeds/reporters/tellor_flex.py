@@ -75,6 +75,7 @@ class TellorFlexReporter(IntervalReporter):
         self.staked_amount: Optional[float] = None
         self.qtag_selected = False if self.datafeed is None else True
         self.min_native_token_balance = min_native_token_balance
+        self.check_rewards: bool = True
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
@@ -264,7 +265,10 @@ class TellorFlexReporter(IntervalReporter):
         datafeed: DataFeed[Any],
     ) -> ResponseStatus:
         status = ResponseStatus()
+        if not self.check_rewards:
+            return status
         tip = self.autopaytip
+
         # Fetch token prices in USD
         native_token_feed = get_native_token_feed(self.chain_id)
         price_feeds = [native_token_feed, trb_usd_median_feed]
