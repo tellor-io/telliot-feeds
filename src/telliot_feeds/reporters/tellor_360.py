@@ -1,4 +1,5 @@
 import math
+import random
 import time
 from dataclasses import dataclass
 from datetime import timedelta
@@ -17,7 +18,6 @@ from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
 from telliot_feeds.utils.log import get_logger
-from telliot_feeds.utils.reporter_utils import tellor_suggested_report
 
 logger = get_logger(__name__)
 
@@ -54,6 +54,7 @@ class Tellor360Reporter(TellorFlexReporter):
         self.allowed_stake_amount = 0
         super().__init__(*args, **kwargs)
         self.stake: float = stake
+        self.use_random_feeds: bool = False
 
         assert self.acct_addr == to_checksum_address(self.account.address)
 
@@ -192,44 +193,40 @@ class Tellor360Reporter(TellorFlexReporter):
         return ResponseStatus()
 
     async def rewards(self) -> int:
-
+        """Fetches total time based rewards plus tips for current datafeed"""
         time_based_rewards: int = 0
         fetch_autopay_tip: int = 0
+        total_rewards: int = 0
 
         if self.datafeed is not None:
             fetch_autopay_tip = await fetch_feed_tip(self.autopay, self.datafeed.query.query_id)
+            if fetch_autopay_tip is not None:
+                total_rewards += fetch_autopay_tip
 
-        if self.chain_id == 1 or self.chain_id == 5:
+        if self.chain_id in (1, 5):
             time_based_rewards = await get_time_based_rewards(self.oracle)
+            if time_based_rewards is not None:
+                total_rewards += time_based_rewards
 
-        if fetch_autopay_tip is not None:
-            return fetch_autopay_tip + time_based_rewards
-
-        return time_based_rewards
+        return total_rewards
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         """Fetches datafeed suggestion plus the reward amount from autopay if query tag isn't selected
         if query tag is selected fetches the rewards, if any, for that query tag"""
-        if self.datafeed:
-            self.autopaytip = await self.rewards()
-            return self.datafeed
-        suggested_feed, tip_amount = await get_feed_and_tip(self.autopay)
+        if self.use_random_feeds:
+            self.datafeed = random.choice(list(CATALOG_FEEDS.values()))
 
-        if suggested_feed is not None:
-            self.autopaytip = tip_amount  # type: ignore
-            self.datafeed = suggested_feed
-            return self.datafeed
+        # Fetch datafeed based on whichever is most funded in the AutoPay contract
+        if self.datafeed is None:
+            suggested_feed, tip_amount = await get_feed_and_tip(self.autopay)
 
-        if suggested_feed is None:
-            suggested_qtag = await tellor_suggested_report(self.oracle)
-            if suggested_qtag is None:
-                logger.warning("Could not suggest query tag")
-                return None
-            elif suggested_qtag not in CATALOG_FEEDS:
-                logger.warning(f"Suggested query tag not in catalog: {suggested_qtag}")
-                return None
-            else:
-                self.datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
-                self.autopaytip = await self.rewards()
+            if suggested_feed is not None:
+                self.autopaytip = tip_amount  # type: ignore
+                self.datafeed = suggested_feed
                 return self.datafeed
-        return None
+
+        # TODO: This should be removed and moved to profit check method perhaps
+        if self.check_rewards:
+            self.autopaytip = await self.rewards()
+
+        return self.datafeed
