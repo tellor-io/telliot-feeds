@@ -1,5 +1,7 @@
 import pytest
 
+from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
@@ -142,3 +144,38 @@ async def test_no_native_token(tellor_360, caplog):
     await reporter.report(report_count=1)
 
     assert "insufficient native token funds" in caplog.text.lower()
+
+
+@pytest.mark.asyncio
+async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, caplog):
+    """Test reporter lock check when reporting for a tip that requires a manaul data source"""
+    contracts, account = tellor_360
+
+    reporter_kwargs = {
+        "oracle": contracts.oracle,
+        "token": contracts.token,
+        "autopay": contracts.autopay,
+        "endpoint": contracts.oracle.node,
+        "account": account,
+        "chain_id": CHAIN_ID,
+        "transaction_type": 0,
+        "wait_period": 0,
+        "min_native_token_balance": 0,
+    }
+
+    # mock get_feed_and_tip, which is called in the Tellor360Reporter.fetch_datafeed method
+    async def mock_get_feed_and_tip(*args, **kwargs):
+        return [snapshot_manual_feed, int(1e18)]
+
+    monkeypatch.setattr("telliot_feeds.reporters.tellor_360.get_feed_and_tip", mock_get_feed_and_tip)
+    reporter = Tellor360Reporter(**reporter_kwargs)
+
+    # report once to trigger reporter lock next time
+    reporter.datafeed = eth_usd_median_feed
+    _, status = await reporter.report_once()
+    assert status.ok
+
+    # set datafeed to None so fetch_datafeed will call get_feed_and_tip
+    reporter.datafeed = None
+    await reporter.report(report_count=1)
+    assert "Currently in reporter lock. Time left: 11:59" in caplog.text
