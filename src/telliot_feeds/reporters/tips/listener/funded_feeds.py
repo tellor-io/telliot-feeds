@@ -123,8 +123,11 @@ class FundedFeeds(FundedFeedFilter):
         eligible_funded_feeds, status = await self.filtered_funded_feeds(
             now_timestamp=current_time, month_old_timestamp=one_month_ago
         )
+        if not status.ok:
+            logger.error(f"Error getting eligible funded feeds: {status.error}")
+            return None
         if not eligible_funded_feeds:
-            logger.info(status.error)
+            logger.info("No eligible funded feeds found")
             return None
         # dictionary of key: queryData with value: tipAmount
         querydata_and_tip = {}
