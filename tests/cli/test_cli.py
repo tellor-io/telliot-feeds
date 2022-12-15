@@ -143,6 +143,16 @@ def test_stake_flag():
     assert "".join([s.strip() for s in STAKE_MESSAGE.split()]) in "".join([s.strip() for s in result.stdout.split()])
 
 
+def test_report_options_available():
+    """Ensure check_rewards & use_random_feeds options available."""
+    runner = CliRunner()
+    result = runner.invoke(cli_main, ["report", "--help"])
+
+    assert result.exit_code == 0
+    assert "--check-rewards" in result.stdout
+    assert "--random-feeds" in result.stdout
+
+
 def test_cmd_settle():
     """Test CLI settle DIVA pool command"""
     runner = CliRunner()
