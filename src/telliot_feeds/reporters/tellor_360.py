@@ -47,13 +47,13 @@ class StakerInfo:
 
 
 class Tellor360Reporter(TellorFlexReporter):
-    def __init__(self, stake: float = 0, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, stake: float = 0, use_random_feeds: bool = False, *args: Any, **kwargs: Any) -> None:
         self.stake_amount: Optional[int] = None
         self.staker_info: Optional[StakerInfo] = None
         self.allowed_stake_amount = 0
         super().__init__(*args, **kwargs)
         self.stake: float = stake
-        self.use_random_feeds: bool = False
+        self.use_random_feeds: bool = use_random_feeds
 
         assert self.acct_addr == to_checksum_address(self.account.address)
 
