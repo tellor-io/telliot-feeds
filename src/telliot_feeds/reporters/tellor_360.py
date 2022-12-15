@@ -1,5 +1,4 @@
 import math
-import random
 import time
 from dataclasses import dataclass
 from datetime import timedelta
@@ -11,13 +10,13 @@ from eth_utils import to_checksum_address
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
-from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.reporter_utils import suggest_random_feed
 
 logger = get_logger(__name__)
 
@@ -214,7 +213,7 @@ class Tellor360Reporter(TellorFlexReporter):
         """Fetches datafeed suggestion plus the reward amount from autopay if query tag isn't selected
         if query tag is selected fetches the rewards, if any, for that query tag"""
         if self.use_random_feeds:
-            self.datafeed = random.choice(list(CATALOG_FEEDS.values()))
+            self.datafeed = suggest_random_feed()
 
         # Fetch datafeed based on whichever is most funded in the AutoPay contract
         if self.datafeed is None:

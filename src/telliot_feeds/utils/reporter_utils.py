@@ -1,4 +1,5 @@
 import json
+import random
 from typing import Any
 from typing import Callable
 from typing import List
@@ -19,6 +20,7 @@ from web3 import Web3
 from telliot_feeds.constants import ETHEREUM_CHAINS
 from telliot_feeds.constants import POLYGON_CHAINS
 from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.queries.query_catalog import query_catalog
@@ -57,6 +59,11 @@ async def tellor_suggested_report(
 
     else:
         return None
+
+
+def suggest_random_feed() -> DataFeed[Any]:
+    """Suggest a random feed to report against."""
+    return random.choice(CATALOG_FEEDS.values())  # type: ignore
 
 
 async def is_online() -> bool:

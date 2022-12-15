@@ -5,6 +5,8 @@ from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from web3 import Web3
 
+from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.queries.query import OracleQuery
@@ -14,6 +16,7 @@ from telliot_feeds.utils.reporter_utils import get_native_token_feed
 from telliot_feeds.utils.reporter_utils import has_native_token_funds
 from telliot_feeds.utils.reporter_utils import is_online
 from telliot_feeds.utils.reporter_utils import reporter_sync_schedule
+from telliot_feeds.utils.reporter_utils import suggest_random_feed
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
 
 
@@ -95,3 +98,11 @@ async def test_checking_if_online():
 
     online = await is_online()
     assert isinstance(online, bool)
+
+
+def test_suggest_random_feed():
+    """Test suggest_random_feed"""
+    feed = suggest_random_feed()
+
+    assert isinstance(feed, DataFeed)
+    assert feed in CATALOG_FEEDS.values()
