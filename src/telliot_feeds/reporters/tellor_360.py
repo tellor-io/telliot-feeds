@@ -210,8 +210,18 @@ class Tellor360Reporter(TellorFlexReporter):
         return total_rewards
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
-        """Fetches datafeed suggestion plus the reward amount from autopay if query tag isn't selected
-        if query tag is selected fetches the rewards, if any, for that query tag"""
+        """Fetches datafeed
+
+        If the user did not select a query tag, there will have been no datafeed passed to
+        the reporter upon instantiation.
+        If the user uses the random feeds flag, the datafeed will be chosen randomly.
+        If the user did not select a query tag or use the random feeds flag, the datafeed will
+        be chosen based on the most funded datafeed in the AutoPay contract.
+
+        If the no-rewards-check flag is used, the reporter will not check profitability or
+        available tips for the datafeed unless the user has not selected a query tag or
+        used the random feeds flag.
+        """
         if self.use_random_feeds:
             self.datafeed = suggest_random_feed()
 
