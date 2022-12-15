@@ -52,6 +52,7 @@ class TellorFlexReporter(IntervalReporter):
         gas_price_speed: str = "safeLow",
         wait_period: int = 7,
         min_native_token_balance: int = 10**18,
+        check_rewards = True,
     ) -> None:
 
         self.endpoint = endpoint
@@ -75,7 +76,7 @@ class TellorFlexReporter(IntervalReporter):
         self.staked_amount: Optional[float] = None
         self.qtag_selected = False if self.datafeed is None else True
         self.min_native_token_balance = min_native_token_balance
-        self.check_rewards: bool = True
+        self.check_rewards: bool = check_rewards
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
