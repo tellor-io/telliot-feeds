@@ -131,7 +131,10 @@ def guaranteed_price_source():
         """Source that does not return an updated DataPoint."""
 
         async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
-            return (1234.0, datetime_now_utc())
+            datapoint = (1234.0, datetime_now_utc())
+            self.store_datapoint(datapoint)
+            print("Guaranteed price source returning:", datapoint[0])
+            return datapoint
 
     return GoodSource()
 

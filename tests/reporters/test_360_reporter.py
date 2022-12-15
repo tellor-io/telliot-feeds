@@ -11,9 +11,13 @@ CHAIN_ID = 80001
 
 
 @pytest.mark.asyncio
-async def test_report(tellor_360, caplog):
+async def test_report(tellor_360, caplog, guaranteed_price_source):
     """Test 360 reporter deposit and balance changes when stakeAmount changes"""
     contracts, account = tellor_360
+    feed = eth_usd_median_feed
+    feed.source = guaranteed_price_source
+    v, t = await feed.source.fetch_new_datapoint()
+    assert v is not None
 
     r = Tellor360Reporter(
         oracle=contracts.oracle,
@@ -24,6 +28,8 @@ async def test_report(tellor_360, caplog):
         chain_id=CHAIN_ID,
         transaction_type=0,
         min_native_token_balance=0,
+        datafeed = feed,
+        check_rewards = False
     )
 
     await r.report_once()
