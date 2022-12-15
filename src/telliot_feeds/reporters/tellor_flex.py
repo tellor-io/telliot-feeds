@@ -208,10 +208,6 @@ class TellorFlexReporter(IntervalReporter):
 
         return ResponseStatus()
 
-    async def get_num_reports_by_id(self, query_id: bytes) -> Tuple[int, ResponseStatus]:
-        count, read_status = await self.oracle.read(func_name="getNewValueCountbyQueryId", _queryId=query_id)
-        return count, read_status
-
     async def rewards(self) -> int:
         tip = 0
         datafeed: DataFeed[Any] = self.datafeed  # type: ignore

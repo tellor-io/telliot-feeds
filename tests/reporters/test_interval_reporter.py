@@ -46,7 +46,7 @@ async def test_get_fee_info(tellor_flex_reporter):
 @pytest.mark.asyncio
 async def test_get_num_reports_by_id(tellor_flex_reporter):
     r = tellor_flex_reporter
-    num, status = await r.get_num_reports_by_id(r.datafeed.query.query_id)
+    num, status = await r.get_num_reports_by_id(eth_usd_median_feed.query.query_id)
 
     assert isinstance(status, ResponseStatus)
 
