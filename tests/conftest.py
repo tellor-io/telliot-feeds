@@ -123,17 +123,20 @@ def bad_datasource():
     return BadDataSource()
 
 
+class GoodFakeSource(DataSource[float]):
+    """Source that does not return an updated DataPoint."""
+
+    async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
+        datapoint = (1234.0, datetime_now_utc())
+        self.store_datapoint(datapoint)
+        print("Guaranteed price source returning:", datapoint[0])
+        return datapoint
+
+
 @pytest.fixture(scope="module")
 def guaranteed_price_source():
     """Used for testing no updated value for datafeeds."""
-
-    class GoodSource(DataSource[float]):
-        """Source that does not return an updated DataPoint."""
-
-        async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
-            return (1234.0, datetime_now_utc())
-
-    return GoodSource()
+    return GoodFakeSource()
 
 
 def local_node_cfg(chain_id: int):

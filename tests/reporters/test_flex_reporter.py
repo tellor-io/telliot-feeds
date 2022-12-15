@@ -84,7 +84,7 @@ async def test_fetch_gas_price_error(tellor_flex_reporter, caplog):
     r = tellor_flex_reporter
     gp = await r.fetch_gas_price("blah")
     assert gp is None
-    assert "Invalid gas price speed for matic gasstation: blah" in caplog.text
+    assert "invalid gas price speed for gasstation: blah" in caplog.text.lower()
 
     # Test fetch gas price failure
     async def _fetch_gas_price():
