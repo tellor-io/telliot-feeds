@@ -12,5 +12,5 @@ This package contains reporting tools and datafeeds for Tellor oracles.
 
 Report using the CLI:
 ```
-telliot -a fakeaccountname report
+telliot -a myaccount report
 ```
