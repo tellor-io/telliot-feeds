@@ -105,4 +105,4 @@ def test_suggest_random_feed():
     feed = suggest_random_feed()
 
     assert isinstance(feed, DataFeed)
-    assert feed in CATALOG_FEEDS.values()
+    assert feed in list(CATALOG_FEEDS.values())
