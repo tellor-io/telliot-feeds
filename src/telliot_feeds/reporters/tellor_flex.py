@@ -52,7 +52,7 @@ class TellorFlexReporter(IntervalReporter):
         gas_price_speed: str = "safeLow",
         wait_period: int = 7,
         min_native_token_balance: int = 10**18,
-        check_rewards = True,
+        check_rewards: bool = True,
     ) -> None:
 
         self.endpoint = endpoint

@@ -28,8 +28,8 @@ async def test_report(tellor_360, caplog, guaranteed_price_source):
         chain_id=CHAIN_ID,
         transaction_type=0,
         min_native_token_balance=0,
-        datafeed = feed,
-        check_rewards = False
+        datafeed=feed,
+        check_rewards=False,
     )
 
     await r.report_once()
