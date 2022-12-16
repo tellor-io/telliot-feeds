@@ -61,15 +61,21 @@ class FundedFeeds(FundedFeedFilter):
     ) -> tuple[Optional[list[QueryIdandFeedDetails]], ResponseStatus]:
 
         telliot_supported_feeds, status = await self.get_funded_feed_queries()
-
-        if not status.ok or not telliot_supported_feeds:
+        print("got telliot_supported_feeds.... in filtered_funded_feeds")
+        if not status.ok:
+            logger.error("Error getting supported feeds")
+            return None, status
+        if not telliot_supported_feeds:
+            logger.info("No supported feeds found")
             return None, status
 
         # assemble both feed id and query id
         for feed in telliot_supported_feeds:
             feed.feed_id, feed.query_id = self.generate_ids(feed=feed)
+        print("got feed id and query id for each supported feed...")
         # for feeds with price threshold gt zero check if api support
         catalog_supported_feeds = self.api_support_check(feeds=telliot_supported_feeds)
+        print("got catalog_supported_feeds...")
 
         if not catalog_supported_feeds:
             note = (
@@ -81,23 +87,32 @@ class FundedFeeds(FundedFeedFilter):
         feeds_timestsamps_and_values_lis, status = await self.multi_call.month_of_timestamps_and_values(
             feeds=catalog_supported_feeds, now_timestamp=now_timestamp, max_age=month_old_timestamp, max_count=40_000
         )
+        print("got feeds_timestsamps_and_values_lis...")
 
-        if not status.ok or not feeds_timestsamps_and_values_lis:
+        if not status.ok:
+            logger.error("Error getting feeds, timestamps, and values")
+            return None, status
+
+        if not feeds_timestsamps_and_values_lis:
+            logger.info("No feeds, timestamps, and values found")
             return None, status
 
         # filter out feeds that aren't eligible to submit for NOW
         feeds_timestsamps_and_values_filtered = await self.window_and_priceThreshold_unmet_filter(
             feeds=feeds_timestsamps_and_values_lis, now_timestamp=now_timestamp
         )
+        print("got feeds_timestsamps_and_values_filtered...")
         # for list of previous values, filter out any that weren't eligible for a tip
         historical_timestamps_list_filtered = self.filter_historical_submissions(
             feeds=feeds_timestsamps_and_values_filtered
         )
+        print("got historical_timestamps_list_filtered...")
 
         # get claim status count for every query ids eligible timestamp
         reward_claimed_status, status = await self.multi_call.rewards_claimed_status_call(
             feeds=historical_timestamps_list_filtered
         )
+        print("got reward_claimed_status...")
 
         if reward_claimed_status is None:
             return historical_timestamps_list_filtered, ResponseStatus()
@@ -105,6 +120,7 @@ class FundedFeeds(FundedFeedFilter):
         funded_feeds = self.calculate_true_feed_balance(
             feeds=historical_timestamps_list_filtered, unclaimed_timestamps_count=reward_claimed_status
         )
+        print("got funded_feeds...")
 
         return funded_feeds, ResponseStatus()
 
@@ -118,11 +134,13 @@ class FundedFeeds(FundedFeedFilter):
         - key: querydata
         - value: tip amount
         """
+        print("Getting eligible funded feeds......")
         one_month_ago = current_time - 2_592_000
 
         eligible_funded_feeds, status = await self.filtered_funded_feeds(
             now_timestamp=current_time, month_old_timestamp=one_month_ago
         )
+        print("Done getting eligible funded feeds....")
         if not status.ok:
             logger.error(f"Error getting eligible funded feeds: {status.error}")
             return None
