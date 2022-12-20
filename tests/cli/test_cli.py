@@ -185,3 +185,16 @@ def test_config_cmd():
     result = runner.invoke(cli_main, ["config", "init"])
     assert not result.exception
     print(result.stdout)
+
+
+def test_account_cmd():
+    """Test command: account."""
+    runner = CliRunner()
+    result = runner.invoke(cli_main, ["account", "--help"])
+    msg = result.stdout.lower()
+
+    assert not result.exception
+    assert "find" in msg
+    assert "create" in msg
+    assert "key" in msg
+    assert "delete" in msg
