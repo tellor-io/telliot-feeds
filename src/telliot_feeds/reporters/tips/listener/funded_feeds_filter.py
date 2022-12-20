@@ -66,7 +66,7 @@ class FundedFeedFilter:
         eligible = [time_diff < feed_window, timestamp_before < current_window_start]
         return all(eligible), time_diff
 
-    async def price_change(self, query_id: bytes, value_before: int) -> Optional[float]:
+    async def price_change(self, query_id: bytes, value_before: float) -> Optional[float]:
         """Check if priceThreshold is met for submitting now
 
         Args:
@@ -213,7 +213,7 @@ class FundedFeedFilter:
 
             if price_threshold != 0 and not in_eligible_window:
                 try:
-                    value_before = int(int(feed.current_queryid_value.hex(), 16) / 10**18)
+                    value_before = int(feed.current_queryid_value.hex(), 16) / 10**18
                 except ValueError:
                     _ = error_status("Error decoding current query id value")
                     continue
@@ -231,7 +231,7 @@ class FundedFeedFilter:
         return feeds
 
 
-def _get_price_change(previous_val: int, current_val: int) -> int:
+def _get_price_change(previous_val: float, current_val: float) -> int:
     """Get percentage change
 
     Args:

@@ -1,7 +1,6 @@
 # Getting Started
 
-Installation of Telliot Feeds requires that Python 3.9 or greater is already
-installed on your system.
+Python 3.9 is required. You can set this up yourself or use [docker](#setup-environment-with-docker)
 
 
 ## Install Telliot Feeds
@@ -30,8 +29,7 @@ In this example, the virtual environment is located in a subfolder called `tenv`
     source tenv/bin/activate
     ```
 
-You can install Telliot Feeds and all of it's dependencies
-(including [telliot-core](https://github.com/tellor-io/telliot-core) and [chained-accounts](https://github.com/pydefi/chained-accounts)) through the command line:
+You can install the needed dependencies with pip:
 
     pip install telliot-feeds
 

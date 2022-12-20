@@ -22,6 +22,7 @@ from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_f
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
 from telliot_feeds.feeds.pls_usd_feed import pls_usd_feed
+from telliot_feeds.feeds.rai_usd_feed import rai_usd_median_feed
 from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_feed_example
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
@@ -31,6 +32,7 @@ from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
 from telliot_feeds.feeds.tellor_rng_feed import tellor_rng_feed
 from telliot_feeds.feeds.tellor_rng_manual_feed import tellor_rng_manual_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
+from telliot_feeds.feeds.twap_manual_feed import twap_30d_example_manual_feed
 from telliot_feeds.feeds.twap_manual_feed import twap_manual_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
@@ -59,12 +61,13 @@ CATALOG_FEEDS = {
     "diva-protocol-example": diva_manual_feed,
     "string-query-example": string_query_feed,
     "tellor-rng-example": tellor_rng_feed,
-    "twap-eth-usd-example": twap_manual_feed,
+    "twap-eth-usd-example": twap_30d_example_manual_feed,
     "pls-usd-spot": pls_usd_feed,
     "eth-usd-spot": eth_usd_median_feed,
     "btc-usd-spot": btc_usd_median_feed,
     "trb-usd-spot": trb_usd_median_feed,
     "albt-usd-spot": albt_usd_median_feed,
+    "rai-usd-spot": rai_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

@@ -43,6 +43,11 @@ STAKE_MESSAGE = (
     "If you would like to stake more than required, enter the TOTAL stake amount you wish to be staked.\n"
     "For example, if you wish to stake 1000 TRB, enter 1000.\n"
 )
+REWARDS_CHECK_MESSAGE = (
+    "If the --no-rewards-check flag is set, the reporter will not check profitability or\n"
+    "available tips for the datafeed unless the user has not selected a query tag or\n"
+    "used the random feeds flag.\n"
+)
 
 
 @click.group()
@@ -241,6 +246,20 @@ def reporter() -> None:
     type=float,
     default=0.25,
 )
+@click.option(
+    "--check-rewards/--no-check-rewards",
+    "-cr/-ncr",
+    "check_rewards",
+    default=True,
+    help=REWARDS_CHECK_MESSAGE,
+)
+@click.option(
+    "--random-feeds/--no-random-feeds",
+    "-rf/-nrf",
+    "use_random_feeds",
+    default=False,
+    help="Reporter will use a random datafeed from the catalog.",
+)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pwd", "--password", type=str)
@@ -273,6 +292,8 @@ async def report(
     custom_autopay_contract: Optional[ChecksumAddress],
     tellor_360: bool,
     stake: float,
+    check_rewards: bool,
+    use_random_feeds: bool,
 ) -> None:
     """Report values to Tellor oracle"""
     name = ctx.obj["ACCOUNT_NAME"]
@@ -409,6 +430,8 @@ async def report(
             "stake": stake,
             "transaction_type": tx_type,
             "min_native_token_balance": int(min_native_token_balance * 10**18),
+            "check_rewards": check_rewards,
+            "use_random_feeds": use_random_feeds,
         }
 
         if sig_acct_addr:

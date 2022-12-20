@@ -52,6 +52,7 @@ class TellorFlexReporter(IntervalReporter):
         gas_price_speed: str = "safeLow",
         wait_period: int = 7,
         min_native_token_balance: int = 10**18,
+        check_rewards: bool = True,
     ) -> None:
 
         self.endpoint = endpoint
@@ -75,6 +76,7 @@ class TellorFlexReporter(IntervalReporter):
         self.staked_amount: Optional[float] = None
         self.qtag_selected = False if self.datafeed is None else True
         self.min_native_token_balance = min_native_token_balance
+        self.check_rewards: bool = check_rewards
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
@@ -208,10 +210,6 @@ class TellorFlexReporter(IntervalReporter):
 
         return ResponseStatus()
 
-    async def get_num_reports_by_id(self, query_id: bytes) -> Tuple[int, ResponseStatus]:
-        count, read_status = await self.oracle.read(func_name="getNewValueCountbyQueryId", _queryId=query_id)
-        return count, read_status
-
     async def rewards(self) -> int:
         tip = 0
         datafeed: DataFeed[Any] = self.datafeed  # type: ignore
@@ -268,7 +266,10 @@ class TellorFlexReporter(IntervalReporter):
         datafeed: DataFeed[Any],
     ) -> ResponseStatus:
         status = ResponseStatus()
+        if not self.check_rewards:
+            return status
         tip = self.autopaytip
+
         # Fetch token prices in USD
         native_token_feed = get_native_token_feed(self.chain_id)
         price_feeds = [native_token_feed, trb_usd_median_feed]
