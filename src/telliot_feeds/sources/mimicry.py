@@ -244,7 +244,8 @@ class MimicryCollectionStatSource(DataSource[str]):
             s.mount("https://", adapter)
             if not all:
                 one_year_ago = datetime.now() - timedelta(days=365)
-                url += f"&startTimestamp={one_year_ago}"
+                start_timestamp = int(one_year_ago.timestamp())
+                url += f"&startTimestamp={start_timestamp}"
             try:
                 request = s.get(url, timeout=0.5, headers=headers)
             except requests.exceptions.RequestException as e:
@@ -253,6 +254,10 @@ class MimicryCollectionStatSource(DataSource[str]):
 
             except requests.exceptions.Timeout as e:
                 logger.error(f"Reservoir API timed out: {e}")
+                return None
+
+            if not request.ok:
+                logger.error(f"Reservoir API error: {request.text}")
                 return None
 
             tx_list = TransactionList()
@@ -316,7 +321,7 @@ class MimicryCollectionStatSource(DataSource[str]):
         elif self.metric == 1:
             all_sales_data = await self.request_historical_sales_data(contract=self.collectionAddress)
             if all_sales_data:
-                return self.get_collection_market_cap(all_sales_data), datetime_now_utc()
+                return await self.get_collection_market_cap(all_sales_data), datetime_now_utc()
             else:
                 logger.error("unable to retieve NFT collection historical sales data for total market cap")
                 return None, None

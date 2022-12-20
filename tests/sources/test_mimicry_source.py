@@ -108,3 +108,17 @@ async def test_sort_transactions(transactions_list: TransactionList):
     for tx in transactions_list.transactions:
         assert tx.timestamp > prev_timestamp
         prev_timestamp = tx.timestamp
+
+@pytest.mark.asyncio
+async def test_fetching_data():
+
+    # tami
+    source = MimicryCollectionStatSource(chainId=1, collectionAddress=collection, metric=0)
+    val, _ = await source.fetch_new_datapoint()
+    assert isinstance(val, float)
+
+    # market cap
+    source.metric = 1
+    val, _ = await source.fetch_new_datapoint()
+    print(val)
+    assert isinstance(val, float)
