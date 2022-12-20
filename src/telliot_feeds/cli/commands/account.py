@@ -1,8 +1,8 @@
 import click
 from chained_accounts.cli import add as chained_accounts_add
+from chained_accounts.cli import delete as chained_accounts_delete
 from chained_accounts.cli import find as chained_accounts_find
 from chained_accounts.cli import key as chained_accounts_key
-from chained_accounts.cli import delete as chained_accounts_delete
 
 
 @click.group()
