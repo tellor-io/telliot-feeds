@@ -9,7 +9,7 @@ chain_id = 1
 collection = "0x5180db8F5c931aaE63c74266b211F580155ecac8"
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def transactions_list():
     transactions = [
         Transaction(500, "Lavender", 1593129600000),
@@ -63,8 +63,8 @@ async def test_index_ratios(transactions_list: TransactionList):
 
     assert iv == pytest.approx(520.8333333333334)
     assert index_ratios[0] == 1.0
-    assert index_ratios[2] == pytest.approx(1.06, 1e6)
-    assert index_ratios[4] == pytest.approx(2.304)
+    assert index_ratios[1] == pytest.approx(1.06, 1e6)
+    assert index_ratios[2] == pytest.approx(2.304)
 
 
 @pytest.mark.asyncio
@@ -108,6 +108,7 @@ async def test_sort_transactions(transactions_list: TransactionList):
     for tx in transactions_list.transactions:
         assert tx.timestamp > prev_timestamp
         prev_timestamp = tx.timestamp
+
 
 @pytest.mark.asyncio
 async def test_fetching_data():
