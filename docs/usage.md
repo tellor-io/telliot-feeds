@@ -1,7 +1,5 @@
 # Usage
 
-**This is experimental software! You might lose money!**
-
 Prerequisites: [Getting Started](https://tellor-io.github.io/telliot-feeds/getting-started/)
 
 To use any of the telliot datafeed and reporter examples, use the command line interface (CLI) tool. A basic example:
@@ -26,21 +24,6 @@ Use the help flag to view available commands and option flags:
 
 ```
 $ telliot-feeds --help
-Usage: telliot-feeds [OPTIONS] COMMAND [ARGS]...
-
-  Telliot command line interface
-
-Options:
-  -a, --account TEXT              Name of account used for reporting.
-  -sgt, --signature-tag TEXT      use specific signature account by tag
-  -fb, --flashbots / -nfb, --no-flashbots
-  --test_config                   Runs command with test configuration
-                                  (developer use only)
-  --help                          Show this message and exit.
-
-Commands:
-  report  Report values to Tellor oracle
-  tip     Tip TRB for a selected query ID
 ```
 
 The help flag shows subcommand options as well:
@@ -59,7 +42,7 @@ telliot-feeds -a fakeaccountname report
 
 ## Report Command
 
-Use the `report` command to submit data to the TellorX or TellorFlex oracles. Example `report` command usage:
+Use the `report` command to submit data to Tellor oracles. Example `report` command usage:
 
 ```
 telliot-feeds -a bigdaddysatoshi report
@@ -152,16 +135,6 @@ Example usage:
 
 ```
 telliot-feeds -a mainnetstaker1 -sgt sigacct -fb report
-```
-
-# Reporting on Polygon
-
-Only legacy transaction types are supported. Also, TellorFlex on Polygon has no built-in rewards for reporting, so profitability checks are skipped. Read more about TellorFlex on Polygon [here](https://github.com/tellor-io/tellorFlex).
-
-Example usage:
-
-```
-telliot-feeds -a mumbaistaker report
 ```
 
 ## Staking
