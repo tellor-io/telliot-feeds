@@ -32,6 +32,7 @@ from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
 from telliot_feeds.feeds.tellor_rng_feed import tellor_rng_feed
 from telliot_feeds.feeds.tellor_rng_manual_feed import tellor_rng_manual_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
+from telliot_feeds.feeds.twap_manual_feed import twap_30d_example_manual_feed
 from telliot_feeds.feeds.twap_manual_feed import twap_manual_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
@@ -60,7 +61,7 @@ CATALOG_FEEDS = {
     "diva-protocol-example": diva_manual_feed,
     "string-query-example": string_query_feed,
     "tellor-rng-example": tellor_rng_feed,
-    "twap-eth-usd-example": twap_manual_feed,
+    "twap-eth-usd-example": twap_30d_example_manual_feed,
     "pls-usd-spot": pls_usd_feed,
     "eth-usd-spot": eth_usd_median_feed,
     "btc-usd-spot": btc_usd_median_feed,
