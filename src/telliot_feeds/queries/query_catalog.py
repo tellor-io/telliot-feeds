@@ -156,3 +156,9 @@ query_catalog.add_entry(
     title="ALBT/USD spot price",
     q=SpotPrice(asset="albt", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="rai-usd-spot",
+    title="RAI/USD spot price",
+    q=SpotPrice(asset="rai", currency="usd"),
+)

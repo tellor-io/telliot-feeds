@@ -30,6 +30,7 @@ coingecko_coin_id = {
     "usdc": "usd-coin",
     "vsq": "vesq",
     "albt": "allianceblock",
+    "rai": "rai",
 }
 
 
