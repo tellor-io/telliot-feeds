@@ -133,8 +133,8 @@ class TransactionList:
             price: 500
             index_value: 300
             transaction: Transaction(price=500, item_id="Hyacinth", timestmap="12345678")
-            index_ratio: 0.6          
-        
+            index_ratio: 0.6
+
         """
 
         transactions_dict = {}
@@ -259,11 +259,11 @@ class MimicryCollectionStatSource(DataSource[str]):
             try:
                 request = s.get(url, timeout=0.5, headers=headers)
             except requests.exceptions.RequestException as e:
-                logger.error(f"Reservoir API error: {e}")
+                logger.error(f"Request to Reservoir Sales API failed: {str(e)}")
                 return None
 
             except requests.exceptions.Timeout as e:
-                logger.error(f"Reservoir API timed out: {e}")
+                logger.error(f"Reservoir API timed out: {str(e)}")
                 return None
 
             if not request.ok:
@@ -275,7 +275,7 @@ class MimicryCollectionStatSource(DataSource[str]):
             try:
                 sales_data = request.json()["sales"]
             except requests.exceptions.JSONDecodeError as e:
-                logger.error(f"Unable to parse Reservoir API response: {str(e)}")
+                logger.error(f"Unable to parse Reservoir Sales API response: {str(e)}")
                 return None
 
             for sale in sales_data:
@@ -284,12 +284,11 @@ class MimicryCollectionStatSource(DataSource[str]):
                     price = sale["price"]["amount"]["usd"]
                     item_id = sale["token"]["tokenId"]
                     timestamp = sale["timestamp"]
-
-                    tx = Transaction(price=price, item_id=item_id, timestamp=timestamp)
-
-                    tx_list.transactions.append(tx)
                 except KeyError as e:
                     logger.warn("Mimicry: Reservoir Sales API KeyError: " + str(e))
+                    return None
+                tx = Transaction(price=price, item_id=item_id, timestamp=timestamp)
+                tx_list.transactions.append(tx)
 
             if all:
                 url = (
@@ -301,14 +300,18 @@ class MimicryCollectionStatSource(DataSource[str]):
                 try:
                     request = s.get(url, timeout=0.5, headers=headers)
                 except requests.exceptions.RequestException as e:
-                    logger.error(f"Reservoir API error: {e}")
+                    logger.error(f"Request to Reservoir FloorPrice API failed: {str(e)}")
                     return None
 
                 except requests.exceptions.Timeout as e:
-                    logger.error(f"Reservoir API timed out: {e}")
+                    logger.error(f"Request to Reservoir FloorPrice API timed out: {str(e)}")
                     return None
 
-                tx_list.floor_price = request.json()["price"]
+                try:
+                    tx_list.floor_price = request.json()["price"]
+                except requests.exceptions.JSONDecodeError as e:
+                    logger.error(f"Unable to parse price from Reservoir FloorPrice API response: {str(e)}")
+                    return None
 
             return tx_list
 
