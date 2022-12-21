@@ -71,9 +71,15 @@ except ImportError:
     import selectors
     import termios
 
-    input_timeout = posix_inputimeout
+    input_timeout_func = posix_inputimeout
 
 else:
     import time
 
-    input_timeout = win_inputimeout
+    input_timeout_func = win_inputimeout
+
+class InputTimeout:
+    def __call__(self, prompt: str = '', timeout: float = DEFAULT_TIMEOUT) -> Any:
+        return input_timeout_func(prompt, timeout)
+
+input_timeout = InputTimeout()
