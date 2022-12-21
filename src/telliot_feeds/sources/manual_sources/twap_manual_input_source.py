@@ -3,7 +3,9 @@ from dataclasses import dataclass
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.utils.input_timeout import input_timeout
 from telliot_feeds.utils.log import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -20,7 +22,7 @@ class TWAPManualSource(DataSource[float]):
         num = None
 
         while num is None:
-            usr_inpt = input()
+            usr_inpt = input_timeout()
 
             try:
                 inpt = float(usr_inpt)
@@ -34,7 +36,7 @@ class TWAPManualSource(DataSource[float]):
             print(f"\nTWAP value (with 18 decimals of precision) to be submitted on chain:  {inpt*10**18:.0f}")
             print("Press [ENTER] to confirm.")
 
-            _ = input()
+            _ = input_timeout()
 
             num = inpt
 

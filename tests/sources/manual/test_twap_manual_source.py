@@ -6,17 +6,15 @@ from telliot_feeds.sources.manual_sources.twap_manual_input_source import TWAPMa
 
 
 @pytest.mark.asyncio
-async def test_manual_twap_positive_input(
-    monkeypatch,
-):
-    monkeypatch.setattr("builtins.input", lambda: "1234")
-    result, _ = await TWAPManualSource().fetch_new_datapoint()
-    assert result == 1234
+async def test_manual_twap_positive_input():
+    with mock.patch("telliot_feeds.utils.input_timeout.InputTimeout.__call__", side_effect=["1234", ""]):
+        result, _ = await TWAPManualSource().fetch_new_datapoint()
+        assert result == 1234
 
 
 @pytest.mark.asyncio
 async def test_manual_twap_negative_input(capsys):
-    with mock.patch("builtins.input", side_effect=["-1234", "1234", ""]):
+    with mock.patch("telliot_feeds.utils.input_timeout.InputTimeout.__call__", side_effect=["-1234", "1234", ""]):
         result, _ = await TWAPManualSource().fetch_new_datapoint()
         expected = "Invalid input. Number must greater than 0."
         captured_output = capsys.readouterr()
@@ -27,7 +25,7 @@ async def test_manual_twap_negative_input(capsys):
 
 @pytest.mark.asyncio
 async def test_manual_twap_non_number_input(capsys):
-    with mock.patch("builtins.input", side_effect=["hello", "1234", ""]):
+    with mock.patch("telliot_feeds.utils.input_timeout.InputTimeout.__call__", side_effect=["hello", "1234", ""]):
         result, _ = await TWAPManualSource().fetch_new_datapoint()
         expected = "Invalid input. Enter a decimal value (float)."
         captured_output = capsys.readouterr()

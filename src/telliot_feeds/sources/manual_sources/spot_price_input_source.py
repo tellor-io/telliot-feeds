@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import DataPoint
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
+from telliot_feeds.utils.input_timeout import input_timeout
 from telliot_feeds.utils.log import get_logger
 
 
@@ -21,10 +22,10 @@ class SpotPriceManualSource(DataSource[float]):
         spot = None
 
         while spot is None:
-            usr_inpt = input()
+            usr_inpt = input_timeout()
 
             try:
-                usr_inpt = float(usr_inpt)  # type: ignore
+                usr_inpt = float(usr_inpt)
             except ValueError:
                 print("Invalid input. Enter decimal value (float).")
                 continue
@@ -32,7 +33,7 @@ class SpotPriceManualSource(DataSource[float]):
             print(f"\nSpot price (with 18 decimals of precision) to be submitted on chain: {usr_inpt*10**18:.0f}")
             print("Press [ENTER] to confirm.")
 
-            _ = input()
+            _ = input_timeout()
 
             spot = usr_inpt
 

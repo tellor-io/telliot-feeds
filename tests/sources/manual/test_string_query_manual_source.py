@@ -7,7 +7,7 @@ from telliot_feeds.sources.manual_sources.string_query_manual_source import Stri
 
 @pytest.mark.asyncio
 async def test_string_query_input(capsys):
-    with mock.patch("builtins.input", side_effect=["hello", ""]):
+    with mock.patch("telliot_feeds.utils.input_timeout.InputTimeout.__call__", side_effect=["hello", ""]):
         result, _ = await StringQueryManualSource().fetch_new_datapoint()
         expected = "String query response to be submitted to oracle->: hello"
         captured_output = capsys.readouterr()
@@ -17,7 +17,7 @@ async def test_string_query_input(capsys):
 
 @pytest.mark.asyncio
 async def test_string_query_empty_input(capsys):
-    with mock.patch("builtins.input", side_effect=["", ""]):
+    with mock.patch("telliot_feeds.utils.input_timeout.InputTimeout.__call__", side_effect=["", ""]):
         result, _ = await StringQueryManualSource().fetch_new_datapoint()
         expected = "String query response to be submitted to oracle->: "
         captured_output = capsys.readouterr()
