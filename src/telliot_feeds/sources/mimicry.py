@@ -214,6 +214,7 @@ class MimicryCollectionStatSource(DataSource[str]):
         return sum(time_adjusted_values)
 
     def get_collection_market_cap(self, transaction_history: TransactionList) -> Optional[float]:
+        """calculate the market cap of an NFT series based on a list of Transactions."""
 
         values = []
         transaction_history.sort_transactions("timestamp")
@@ -233,7 +234,6 @@ class MimicryCollectionStatSource(DataSource[str]):
                 if other_sale.item_id == sale.item_id:
                     transaction_history.transactions.remove(other_sale)
 
-        # return(sum(values))
         return sum(values)
 
     async def request_historical_sales_data(self, contract: str, all: bool = True) -> Optional[TransactionList]:
@@ -267,12 +267,18 @@ class MimicryCollectionStatSource(DataSource[str]):
                 return None
 
             if not request.ok:
-                logger.error(f"Reservoir API error: {request.text}")
+                logger.error(f"Reservoir API request unsucessful: {request.text}")
                 return None
 
             tx_list = TransactionList()
 
-            for sale in request.json()["sales"]:
+            try:
+                sales_data = request.json()["sales"]
+            except requests.exceptions.JSONDecodeError as e:
+                logger.error(f"Unable to parse Reservoir API response: {str(e)}")
+                return None
+
+            for sale in sales_data:
 
                 try:
                     price = sale["price"]["amount"]["usd"]
