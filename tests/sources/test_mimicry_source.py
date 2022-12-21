@@ -28,7 +28,7 @@ async def test_get_collection_market_cap(transactions_list):
 
     mc = MimicryCollectionStatSource(chainId=1, collectionAddress=collection, metric=1)
 
-    market_cap = await mc.get_collection_market_cap(transactions_list)
+    market_cap = mc.get_collection_market_cap(transactions_list)
 
     assert market_cap == 2600
 
@@ -39,7 +39,7 @@ async def test_tami(transactions_list):
 
     mc = MimicryCollectionStatSource(chainId=1, collectionAddress=collection, metric=1)
 
-    tami_index = await mc.tami(transactions_list)
+    tami_index = mc.tami(transactions_list)
 
     assert tami_index == pytest.approx(1832.411067193676)
 
@@ -48,18 +48,13 @@ async def test_tami(transactions_list):
 async def test_index_ratios(transactions_list: TransactionList):
     """test calculation of index ratios"""
 
-    await transactions_list.sort_transactions("timestamp")
+    transactions_list.sort_transactions("timestamp")
 
-    history_list: IndexValueHistoryList = await transactions_list.create_index_value_history()
+    history_list: IndexValueHistoryList = transactions_list.create_index_value_history()
 
-    iv = await history_list.get_index_value()
+    iv = history_list.get_index_value()
 
-    # assert pytest.approx(520.83) == iv
-
-    index_ratios = await history_list.get_index_ratios()
-
-    print(iv)
-    print(index_ratios)
+    index_ratios = history_list.get_index_ratios()
 
     assert iv == pytest.approx(520.8333333333334)
     assert index_ratios[0] == 1.0
@@ -71,10 +66,9 @@ async def test_index_ratios(transactions_list: TransactionList):
 async def test_index_value(transactions_list: TransactionList):
     """test index price calculation"""
 
-    await transactions_list.sort_transactions("timestamp")
-    # await transactions_list.filter_valid_transactions()
+    transactions_list.sort_transactions("timestamp")
 
-    history_list: IndexValueHistoryList = await transactions_list.create_index_value_history()
+    history_list: IndexValueHistoryList = transactions_list.create_index_value_history()
 
     expected_index_values = [500, 500, 375, 375, 520.8333333333334]
 
@@ -90,11 +84,11 @@ async def test_index_value(transactions_list: TransactionList):
 async def test_filter_valid_transactions(transactions_list: TransactionList):
     """test that TAMI algorithm filters the right transactions"""
 
-    await transactions_list.sort_transactions("timestamp")
+    transactions_list.sort_transactions("timestamp")
 
     assert len(transactions_list.transactions) == 5
 
-    await transactions_list.filter_valid_transactions()
+    transactions_list.filter_valid_transactions()
 
     assert len(transactions_list.transactions) == 4
 
@@ -102,7 +96,7 @@ async def test_filter_valid_transactions(transactions_list: TransactionList):
 @pytest.mark.asyncio
 async def test_sort_transactions(transactions_list: TransactionList):
 
-    await transactions_list.sort_transactions("timestamp")
+    transactions_list.sort_transactions("timestamp")
 
     prev_timestamp = 0
     for tx in transactions_list.transactions:

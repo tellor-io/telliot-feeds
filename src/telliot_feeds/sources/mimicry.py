@@ -59,11 +59,11 @@ class IndexValueHistoryList:
 
     index_values: List[IndexValueHistoryItem]
 
-    async def get_index_value(self) -> float:
+    def get_index_value(self) -> float:
         """get current index value"""
         return self.index_values[-1].index_value
 
-    async def get_index_ratios(self) -> List[float]:
+    def get_index_ratios(self) -> List[float]:
         """calculates index ratio for the last transaction of each item in the collection"""
 
         index_ratios = []
@@ -88,12 +88,12 @@ class TransactionList:
     transactions: List[Transaction] = field(default_factory=list)
     floor_price: float = 0.0
 
-    async def sort_transactions(self, by: str) -> None:
+    def sort_transactions(self, by: str) -> None:
         """sort of the tx list"""
         self.transactions.sort(key=operator.attrgetter(by))
 
-    async def filter_valid_transactions(self) -> None:
-        """filter for valid transactions, removing invalid txs from the list"""
+    def filter_valid_transactions(self) -> None:
+        """filter for valid transactions, removing items with <2 sales in the past year from the TransactionList."""
         one_year_ago = time.time() - relativedelta(years=1).seconds
         six_months_ago = time.time() - relativedelta(months=6).seconds
 
@@ -124,8 +124,18 @@ class TransactionList:
 
         self.transactions = [tx for tx in self.transactions if inclusion_dict[tx.item_id]["is_valid"]]
 
-    async def create_index_value_history(self) -> IndexValueHistoryList:
-        """converts TransactionList to List of IndexValueHistoryItem, adding the index value"""
+    def create_index_value_history(self) -> IndexValueHistoryList:
+        """
+        converts TransactionList to List of IndexValueHistoryItem, adding the index value
+
+        example IndexValueHistoryItem:
+            item_id = "Hyacinth"
+            price: 500
+            index_value: 300
+            transaction: Transaction(price=500, item_id="Hyacinth", timestmap="12345678")
+            index_ratio: 0.6          
+        
+        """
 
         transactions_dict = {}
 
@@ -177,36 +187,36 @@ class TransactionList:
 
 @dataclass
 class MimicryCollectionStatSource(DataSource[str]):
-    """DataSource for GasPriceOracle expected response data."""
+    """DataSource for MimicryCollectionStat expected response data."""
 
     chainId: Optional[int] = None
     collectionAddress: Optional[str] = None
     metric: Optional[int] = None
 
-    async def tami(self, transaction_history: TransactionList) -> Optional[float]:
+    def tami(self, transaction_history: TransactionList) -> Optional[float]:
         """
         Calculates Time-Adjusted Market Index.
         see https://github.com/Mimicry-Protocol/TAMI
         """
 
-        await transaction_history.sort_transactions("timestamp")
-        await transaction_history.filter_valid_transactions()
-        index_value_history = await transaction_history.create_index_value_history()
+        transaction_history.sort_transactions("timestamp")
+        transaction_history.filter_valid_transactions()
+        index_value_history = transaction_history.create_index_value_history()
 
         if len(index_value_history.index_values) == 0:
             return None
 
-        index_value = await index_value_history.get_index_value()
-        index_ratios = await index_value_history.get_index_ratios()
+        index_value = index_value_history.get_index_value()
+        index_ratios = index_value_history.get_index_ratios()
 
         time_adjusted_values = [ratio * index_value for ratio in index_ratios]
 
         return sum(time_adjusted_values)
 
-    async def get_collection_market_cap(self, transaction_history: TransactionList) -> Optional[float]:
+    def get_collection_market_cap(self, transaction_history: TransactionList) -> Optional[float]:
 
         values = []
-        await transaction_history.sort_transactions("timestamp")
+        transaction_history.sort_transactions("timestamp")
 
         transaction_history.transactions.reverse()
 
@@ -313,7 +323,7 @@ class MimicryCollectionStatSource(DataSource[str]):
         if self.metric == 0:
             past_year_sales_data = await self.request_historical_sales_data(contract=self.collectionAddress, all=False)
             if past_year_sales_data:
-                return await self.tami(past_year_sales_data), datetime_now_utc()
+                return self.tami(past_year_sales_data), datetime_now_utc()
             else:
                 logger.error("unable to retieve NFT collection historical sales data for TAMI")
                 return None, None
@@ -321,7 +331,7 @@ class MimicryCollectionStatSource(DataSource[str]):
         elif self.metric == 1:
             all_sales_data = await self.request_historical_sales_data(contract=self.collectionAddress)
             if all_sales_data:
-                return await self.get_collection_market_cap(all_sales_data), datetime_now_utc()
+                return self.get_collection_market_cap(all_sales_data), datetime_now_utc()
             else:
                 logger.error("unable to retieve NFT collection historical sales data for total market cap")
                 return None, None
