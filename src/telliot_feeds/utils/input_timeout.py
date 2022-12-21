@@ -8,9 +8,9 @@ from typing import Any
 DEFAULT_TIMEOUT = 600.0  # 10 mins
 INTERVAL = 0.05
 
-SP = ' '
-CR = '\r'
-LF = '\n'
+SP = " "
+CR = "\r"
+LF = "\n"
 CRLF = CR + LF
 
 
@@ -23,7 +23,7 @@ def echo(string: str) -> None:
     sys.stdout.flush()
 
 
-def posix_inputimeout(prompt: str = '', timeout: float = DEFAULT_TIMEOUT) -> Any:
+def posix_inputimeout(prompt: str = "", timeout: float = DEFAULT_TIMEOUT) -> Any:
     echo(prompt)
     sel = selectors.DefaultSelector()
     sel.register(sys.stdin, selectors.EVENT_READ)
@@ -38,11 +38,11 @@ def posix_inputimeout(prompt: str = '', timeout: float = DEFAULT_TIMEOUT) -> Any
         raise TimeoutOccurred
 
 
-def win_inputimeout(prompt: str = '', timeout: float = DEFAULT_TIMEOUT) -> str:
+def win_inputimeout(prompt: str = "", timeout: float = DEFAULT_TIMEOUT) -> str:
     echo(prompt)
     begin = time.monotonic()
     end = begin + timeout
-    line = ''
+    line = ""
 
     while time.monotonic() < end:
         if msvcrt.kbhit():  # type: ignore
@@ -50,12 +50,12 @@ def win_inputimeout(prompt: str = '', timeout: float = DEFAULT_TIMEOUT) -> str:
             if c in (CR, LF):
                 echo(CRLF)
                 return line
-            if c == '\003':
+            if c == "\003":
                 raise KeyboardInterrupt
-            if c == '\b':
+            if c == "\b":
                 line = line[:-1]
                 cover = SP * len(prompt + line + SP)
-                echo(''.join([CR, cover, CR, prompt, line]))
+                echo("".join([CR, cover, CR, prompt, line]))
             else:
                 line += c
         time.sleep(INTERVAL)
@@ -78,8 +78,10 @@ else:
 
     input_timeout_func = win_inputimeout
 
+
 class InputTimeout:
-    def __call__(self, prompt: str = '', timeout: float = DEFAULT_TIMEOUT) -> Any:
+    def __call__(self, prompt: str = "", timeout: float = DEFAULT_TIMEOUT) -> Any:
         return input_timeout_func(prompt, timeout)
+
 
 input_timeout = InputTimeout()
