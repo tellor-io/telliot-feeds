@@ -5,6 +5,7 @@ from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.input_timeout import input_timeout
 
 
 logger = get_logger(__name__)
@@ -16,7 +17,7 @@ def get_price_from_user(param: str) -> float:
     print(f"Type price of {param} and press [ENTER]")
 
     while param_price is None:
-        inpt = input()
+        inpt = input_timeout()
         try:
             price = float(inpt)
         except ValueError:
@@ -52,7 +53,7 @@ class DivaManualSource(DataSource[list[float]]):
         )
         print("Press [ENTER] to confirm.")
 
-        _ = input()
+        _ = input_timeout()
 
         return prices
 
