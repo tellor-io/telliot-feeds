@@ -1,19 +1,23 @@
 from datetime import datetime
 from unittest import mock
+import io
 
 import pytest
 
 from telliot_feeds.sources.manual_sources.diva_manual_source import DivaManualSource
+from telliot_feeds.utils.input_timeout import InputTimeout
 
 
 @pytest.mark.asyncio
-async def test_source(capsys):
+async def test_source(capsys, monkeypatch):
     """Test retrieving DIVA Protocol query response from user input."""
-    with mock.patch("builtins.input", side_effect=["-1234", "1234", "5678", ""]):
-        source = DivaManualSource()
-        val, dt = await source.fetch_new_datapoint()
-        captured = capsys.readouterr()
+    def mock_input(timeout=0, *args, **kwargs):
+        return "1234.0\n"
+    monkeypatch.setattr(InputTimeout, "__call__", mock_input)
+    source = DivaManualSource()
+    val, dt = await source.fetch_new_datapoint()
+    captured = capsys.readouterr()
 
-        assert isinstance(dt, datetime)
-        assert val == [1234, 5678]
-        assert "[1234000000000000000000, 5678000000000000524288]" in captured.out
+    assert isinstance(dt, datetime)
+    assert val == [1234.0, 1234.0]
+    assert "[1234000000000000000000, " in captured.out
