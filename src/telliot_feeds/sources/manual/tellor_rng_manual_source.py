@@ -6,7 +6,7 @@ from eth_abi.exceptions import ValueOutOfBounds
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
-from telliot_feeds.utils.input_timeout import input_timeout
+from telliot_feeds.utils.input_timeout import input_timeout, TimeoutOccurred
 from telliot_feeds.utils.log import get_logger
 
 
@@ -54,7 +54,11 @@ class TellorRNGManualInputSource(DataSource[bytes]):
         Returns:
             Current time-stamped value
         """
-        response = self.parse_user_input()
+        try:
+            response = self.parse_user_val()
+        except TimeoutOccurred:
+            logger.info("Timeout occurred while waiting for user input")
+            return None, None
 
         datapoint = (response, datetime_now_utc())
         self.store_datapoint(datapoint)

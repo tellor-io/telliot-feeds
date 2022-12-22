@@ -1,9 +1,10 @@
+import asyncio
 from dataclasses import dataclass
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import DataPoint
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
-from telliot_feeds.utils.input_timeout import input_timeout
+from telliot_feeds.utils.input_timeout import input_timeout, TimeoutOccurred
 from telliot_feeds.utils.log import get_logger
 
 
@@ -45,7 +46,11 @@ class SpotPriceManualSource(DataSource[float]):
         Returns:
             Current time-stamped value
         """
-        price = self.parse_user_val()
+        try:
+            price = self.parse_user_val()
+        except TimeoutOccurred:
+            logger.info("Timeout occurred while waiting for user input")
+            return None, None
 
         datapoint = (price, datetime_now_utc())
         self.store_datapoint(datapoint)
@@ -53,3 +58,9 @@ class SpotPriceManualSource(DataSource[float]):
         logger.info(f"Spot price {datapoint[0]} retrieved at time {datapoint[1]}")
 
         return datapoint
+
+
+if __name__ == "__main__":
+    spot = SpotPriceManualSource()
+    v, t = asyncio.run(spot.fetch_new_datapoint())
+    print("datapoint:", v, t)

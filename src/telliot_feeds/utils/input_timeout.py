@@ -6,6 +6,7 @@ import sys
 from typing import Any
 
 DEFAULT_TIMEOUT = 600.0  # 10 mins
+# DEFAULT_TIMEOUT = 10.0  # 10 secs
 INTERVAL = 0.05
 
 SP = " "
