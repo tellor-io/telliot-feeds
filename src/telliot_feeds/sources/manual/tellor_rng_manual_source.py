@@ -6,7 +6,8 @@ from eth_abi.exceptions import ValueOutOfBounds
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
-from telliot_feeds.utils.input_timeout import input_timeout, TimeoutOccurred
+from telliot_feeds.utils.input_timeout import input_timeout
+from telliot_feeds.utils.input_timeout import TimeoutOccurred
 from telliot_feeds.utils.log import get_logger
 
 
