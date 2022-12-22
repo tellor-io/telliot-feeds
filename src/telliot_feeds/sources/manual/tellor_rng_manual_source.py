@@ -56,7 +56,7 @@ class TellorRNGManualInputSource(DataSource[bytes]):
             Current time-stamped value
         """
         try:
-            response = self.parse_user_val()
+            response = self.parse_user_input()
         except TimeoutOccurred:
             logger.info("Timeout occurred while waiting for user input")
             return None, None
