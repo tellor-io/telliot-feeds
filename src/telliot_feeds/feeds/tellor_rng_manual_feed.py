@@ -1,6 +1,6 @@
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.tellor_rng import TellorRNG
-from telliot_feeds.sources.manual_sources.tellor_rng_manual_source import TellorRNGManualInputSource
+from telliot_feeds.sources.manual.tellor_rng_manual_source import TellorRNGManualInputSource
 
 
 timestamp = None

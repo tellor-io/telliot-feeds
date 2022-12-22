@@ -1,6 +1,6 @@
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
-from telliot_feeds.sources.manual_sources.diva_manual_source import DivaManualSource
+from telliot_feeds.sources.manual.diva_manual_source import DivaManualSource
 
 
 pool_id = None

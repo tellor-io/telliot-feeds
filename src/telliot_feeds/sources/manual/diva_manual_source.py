@@ -4,6 +4,8 @@ from typing import Optional
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.utils.input_timeout import input_timeout
+from telliot_feeds.utils.input_timeout import TimeoutOccurred
 from telliot_feeds.utils.log import get_logger
 
 
@@ -16,7 +18,7 @@ def get_price_from_user(param: str) -> float:
     print(f"Type price of {param} and press [ENTER]")
 
     while param_price is None:
-        inpt = input()
+        inpt = input_timeout()
         try:
             price = float(inpt)
         except ValueError:
@@ -52,7 +54,7 @@ class DivaManualSource(DataSource[list[float]]):
         )
         print("Press [ENTER] to confirm.")
 
-        _ = input()
+        _ = input_timeout()
 
         return prices
 
@@ -62,7 +64,11 @@ class DivaManualSource(DataSource[list[float]]):
         Returns:
             Current time-stamped value
         """
-        response = self.parse_user_val()
+        try:
+            response = self.parse_user_val()
+        except TimeoutOccurred:
+            logger.info("Timeout occurred while waiting for user input")
+            return None, None
 
         datapoint = (response, datetime_now_utc())
         self.store_datapoint(datapoint)
