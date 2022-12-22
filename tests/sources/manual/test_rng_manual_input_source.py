@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from telliot_feeds.sources.manual_sources.tellor_rng_manual_source import TellorRNGManualInputSource
+from telliot_feeds.sources.manual.tellor_rng_manual_source import TellorRNGManualInputSource
 
 
 @pytest.mark.asyncio

@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from telliot_feeds.sources.manual_sources.spot_price_input_source import SpotPriceManualSource
+from telliot_feeds.sources.manual.spot_price_input_source import SpotPriceManualSource
 from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)

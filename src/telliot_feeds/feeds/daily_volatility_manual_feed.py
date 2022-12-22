@@ -1,6 +1,6 @@
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.daily_volatility import DailyVolatility
-from telliot_feeds.sources.manual_sources.daily_volatility_manual_source import DailyVolatilityManualSource
+from telliot_feeds.sources.manual.daily_volatility_manual_source import DailyVolatilityManualSource
 
 
 asset = ""

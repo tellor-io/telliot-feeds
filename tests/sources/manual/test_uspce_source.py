@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from telliot_feeds.sources.uspce import USPCESource
+from telliot_feeds.sources.manual.uspce import USPCESource
 
 
 @pytest.mark.asyncio

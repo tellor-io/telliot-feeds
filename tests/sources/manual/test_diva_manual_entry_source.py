@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from telliot_feeds.sources.manual_sources.diva_manual_source import DivaManualSource
+from telliot_feeds.sources.manual.diva_manual_source import DivaManualSource
 from telliot_feeds.utils.input_timeout import InputTimeout
 
 

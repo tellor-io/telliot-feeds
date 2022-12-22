@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from telliot_feeds.sources.manual_sources.string_query_manual_source import StringQueryManualSource
+from telliot_feeds.sources.manual.string_query_manual_source import StringQueryManualSource
 
 
 @pytest.mark.asyncio

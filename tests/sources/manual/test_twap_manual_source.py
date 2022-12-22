@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from telliot_feeds.sources.manual_sources.twap_manual_input_source import TWAPManualSource
+from telliot_feeds.sources.manual.twap_manual_input_source import TWAPManualSource
 
 
 @pytest.mark.asyncio

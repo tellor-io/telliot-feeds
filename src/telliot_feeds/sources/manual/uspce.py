@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import DataPoint
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
+from telliot_feeds.utils.input_timeout import input_timeout
 from telliot_feeds.utils.log import get_logger
 
 
@@ -16,7 +17,7 @@ class USPCESource(DataSource[float]):
     def parse_user_val(test_input: str) -> float:
         """Parse USPCE value from user input."""
         # This arg is to avoid a TypeError when the default
-        # input() method is overriden in test_source.py.
+        # input_timeout() method is overriden in test_source.py.
         # The error says this method expects no params,
         # but is passed one. TODO: fix
         _ = test_input
@@ -26,7 +27,7 @@ class USPCESource(DataSource[float]):
         uspce = None
 
         while uspce is None:
-            inpt = input()
+            inpt = input_timeout()
 
             try:
                 inpt = float(inpt)  # type: ignore
@@ -35,7 +36,7 @@ class USPCESource(DataSource[float]):
                 continue
 
             print(f"Submitting value: {inpt}\nPress [ENTER] to confirm.")
-            _ = input()
+            _ = input_timeout()
 
             uspce = inpt
 
