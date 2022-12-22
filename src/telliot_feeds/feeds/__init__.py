@@ -1,5 +1,6 @@
 from typing import Any
 from typing import Dict
+from telliot_feeds.feeds.mimicry_feed import mimicry_collection_stat_datafeed
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.albt_usd_feed import albt_usd_median_feed
@@ -84,4 +85,5 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "TellorRNGManualResponse": tellor_rng_manual_feed,
     "AmpleforthCustomSpotPrice": ampl_usd_vwap_feed,
     "AmpleforthUSPCE": uspce_feed,
+    "MimicryCollectionStat": mimicry_collection_stat_datafeed
 }

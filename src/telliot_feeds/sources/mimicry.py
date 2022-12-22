@@ -204,6 +204,7 @@ class MimicryCollectionStatSource(DataSource[str]):
         index_value_history = transaction_history.create_index_value_history()
 
         if len(index_value_history.index_values) == 0:
+            logger.info("Mimicry: No index values found in transaction history")
             return None
 
         index_value = index_value_history.get_index_value()
@@ -332,7 +333,9 @@ class MimicryCollectionStatSource(DataSource[str]):
         if self.metric == 0:
             past_year_sales_data = await self.request_historical_sales_data(contract=self.collectionAddress, all=False)
             if past_year_sales_data:
-                return self.tami(past_year_sales_data), datetime_now_utc()
+                datapoint = (self.tami(past_year_sales_data), datetime_now_utc())
+                self.store_datapoint(datapoint=datapoint)
+                return datapoint
             else:
                 logger.error("unable to retieve NFT collection historical sales data for TAMI")
                 return None, None
@@ -340,7 +343,9 @@ class MimicryCollectionStatSource(DataSource[str]):
         elif self.metric == 1:
             all_sales_data = await self.request_historical_sales_data(contract=self.collectionAddress)
             if all_sales_data:
-                return self.get_collection_market_cap(all_sales_data), datetime_now_utc()
+                datapoint = (self.get_collection_market_cap(all_sales_data), datetime_now_utc())
+                self.store_datapoint(datapoint=datapoint)
+                return datapoint
             else:
                 logger.error("unable to retieve NFT collection historical sales data for total market cap")
                 return None, None
