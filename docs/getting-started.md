@@ -1,6 +1,6 @@
 # Getting Started
 
-Python 3.9 is required. You can set this up yourself or use [docker](#setup-environment-with-docker)
+Python 3.9 is required to install and use`telliot-feeds`. You can do yourself or use [docker](#setup-environment-with-docker). If you follow the docker instructions, you can skip the install and environment setup steps.
 
 
 ## Install Telliot Feeds
