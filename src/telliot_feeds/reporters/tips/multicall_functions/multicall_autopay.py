@@ -46,10 +46,10 @@ class MulticallAutopay(CallFunctions):
             values_tup = ("values_array", feed.query_id)
             timestamps_tup = ("timestamps_array", feed.query_id)
             if values_tup not in multiple_values_response:
-                note = f"values_tup not in multiple_values_response: {values_tup}"
+                note = f"values_tup not in multiple_values_response: ('values_array', 0x{feed.query_id.hex()})"
                 return None, error_status(note)
             if timestamps_tup not in multiple_values_response:
-                note = f"timestamps_tup not in multiple_values_response: {timestamps_tup}"
+                note = f"timestamps_tup not in multiple_values_response: ('timestamps_array', 0x{feed.query_id.hex()})"
                 return None, error_status(note)
             values = multiple_values_response[values_tup]
             timestamps = multiple_values_response[timestamps_tup]
