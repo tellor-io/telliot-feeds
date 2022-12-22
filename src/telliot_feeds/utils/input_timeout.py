@@ -85,3 +85,11 @@ class InputTimeout:
 
 
 input_timeout = InputTimeout()
+
+
+if __name__ == "__main__":
+    try:
+        user_input = input_timeout("Type something: ", 5.0)
+        print(f"You typed: {user_input}")
+    except TimeoutOccurred:
+        print("Timeout occurred")
