@@ -15,7 +15,10 @@ from web3 import Web3
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.utils.input_timeout import input_timeout
+from telliot_feeds.utils.input_timeout import TimeoutOccurred
 from telliot_feeds.utils.log import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -162,16 +165,16 @@ class TellorRNGManualSource(DataSource[Any]):
 
         data = None
         while data is None:
-            inpt = input()
+            inpt = input_timeout()
 
             try:
-                inpt = int(inpt)  # type: ignore
+                inpt = int(inpt)
             except ValueError:
                 print("Invalid input. Enter decimal value (int).")
                 continue
 
             print(f"Generating random number from timestamp: {inpt}\nPress [ENTER] to confirm.")
-            _ = input()
+            _ = input_timeout()
             data = inpt
 
         self.timestamp = data
@@ -185,7 +188,11 @@ class TellorRNGManualSource(DataSource[Any]):
         """
 
         if self.timestamp == 0:
-            timestamp = self.parse_user_val()
+            try:
+                timestamp = self.parse_user_val()
+            except TimeoutOccurred:
+                logger.info("Timeout occurred while waiting for user input")
+                return None, None
         else:
             timestamp = self.timestamp
 
@@ -211,12 +218,7 @@ class TellorRNGManualSource(DataSource[Any]):
         return datapoint
 
 
-async def main() -> None:
-    """Runs the data source."""
-    source = TellorRNGManualSource()
-    await source.fetch_new_datapoint()
-
-
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    s = TellorRNGManualSource()
+    v, t = asyncio.run(s.fetch_new_datapoint())
+    print("datapoint:", v, t)

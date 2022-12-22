@@ -7,7 +7,7 @@ https://github.com/tellor-io/dataSpecs/blob/main/types/Snapshot.md
 """
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.snapshot import Snapshot
-from telliot_feeds.sources.manual_input_source import ManualSnapshotInputSource
+from telliot_feeds.sources.manual.snapshot import ManualSnapshotInputSource
 
 proposalId = None
 
