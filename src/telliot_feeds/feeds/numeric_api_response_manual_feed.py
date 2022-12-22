@@ -1,6 +1,6 @@
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
-from telliot_feeds.sources.manual_sources.numeric_api_manual_response import NumericApiManualResponse
+from telliot_feeds.sources.manual.numeric_api_manual_response import NumericApiManualResponse
 
 
 url = None
