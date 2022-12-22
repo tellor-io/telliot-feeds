@@ -136,12 +136,14 @@ class FundedFeeds(FundedFeedFilter):
         """
         print("Getting eligible funded feeds......")
         one_month_ago = current_time - 2_592_000
-        week_ago = current_time - 604_800
-        one_day_ago = current_time - 259_200
+        # week_ago = current_time - 604_800
+        # one_day_ago = current_time - 259_200
 
         eligible_funded_feeds, status = await self.filtered_funded_feeds(
-            # now_timestamp=current_time, month_old_timestamp=one_month_ago
-            now_timestamp=current_time, month_old_timestamp=one_day_ago
+            now_timestamp=current_time,
+            month_old_timestamp=one_month_ago
+            # now_timestamp=current_time,
+            # month_old_timestamp=one_day_ago,
         )
         print("Done getting eligible funded feeds....")
         if not status.ok:
