@@ -2,10 +2,10 @@
 
 Prerequisites: [Getting Started](https://tellor-io.github.io/telliot-feeds/getting-started/)
 
-To use any of the telliot datafeed and reporter examples, use the command line interface (CLI) tool. A basic example:
+To report data to Tellor oracles, or access any other functionality, use the `telliot` CLI. A basic example:
 
 ```
-$ telliot-feeds --account fakename report
+$ telliot -a acct1 report -ncr -qt trb-usd-spot
 ```
 
 **Be sure to always confirm the correct settings when prompted and read chain-specific usage sections before setting up your reporter!**
@@ -20,24 +20,84 @@ $ telliot-feeds --account fakename report
 
 ## Help flag
 
-Use the help flag to view available commands and option flags:
+Use the help flag to view all available commands and option flags:
 
 ```
-$ telliot-feeds --help
+$ telliot --help
 ```
 
 The help flag shows subcommand options as well:
 
 ```
-$ telliot-feeds report --help
+$ telliot report --help
+Usage: telliot report [OPTIONS]
+
+  Report values to Tellor oracle
+
+Options:
+  -b, --build-feed                build a datafeed from a query type and query
+                                  parameters
+  -qt, --query-tag [trb-usd-spot|ohm-eth-spot|vsq-usd-spot|bct-usd-spot|dai-usd-spot|ric-usd-spot|idle-usd-spot|mkr-usd-spot|sushi-usd-spot|matic-usd-spot|usdc-usd-spot|gas-price-oracle-example|eur-usd-spot|snapshot-proposal-example|eth-usd-30day_volatility|numeric-api-response-example|diva-protocol-example|string-query-example|pls-usd-spot|eth-usd-spot|btc-usd-spot|tellor-rng-example|twap-eth-usd-example|ampleforth-uspce|ampleforth-custom|albt-usd-spot|rai-usd-spot]
+                                  select datafeed using query tag
+  -gl, --gas-limit INTEGER        use custom gas limit
+  -mf, --max-fee INTEGER          use custom maxFeePerGas (gwei)
+  -pf, --priority-fee INTEGER     use custom maxPriorityFeePerGas (gwei)
+  -gp, --gas-price INTEGER        use custom legacy gasPrice (gwei)
+  -p, --profit TEXT               lower threshold (inclusive) for expected
+                                  percent profit
+  -tx, --tx-type TEXT             choose transaction type (0 for legacy txs, 2
+                                  for EIP-1559)
+  -gps, --gas-price-speed [safeLow|average|fast|fastest]
+                                  gas price speed for eth gas station API
+  -wp, --wait-period INTEGER      wait period between feed suggestion calls
+  -rngts, --rng-timestamp INTEGER
+                                  timestamp for Tellor RNG
+  -dpt, --diva-protocol BOOLEAN   Report & settle DIVA Protocol derivative
+                                  pools
+  -dda, --diva-diamond-address TEXT
+                                  DIVA Protocol contract address
+  -dma, --diva-middleware-address TEXT
+                                  DIVA Protocol middleware contract address
+  -custom-token, --custom-token-contract TEXT
+                                  Address of custom token contract
+  -custom-oracle, --custom-oracle-contract TEXT
+                                  Address of custom oracle contract
+  -custom-autopay, --custom-autopay-contract TEXT
+                                  Address of custom autopay contract
+  -360, --tellor-360 / -flex, --tellor-flex
+                                  Choose between Tellor 360 or Flex contracts
+  -s, --stake FLOAT               ❗Telliot will automatically stake more TRB
+                                  if your stake is below or falls below the
+                                  stake amount required to report. If you
+                                  would like to stake more than required,
+                                  enter the TOTAL stake amount you wish to be
+                                  staked. For example, if you wish to stake
+                                  1000 TRB, enter 1000.
+  -mnb, --min-native-token-balance FLOAT
+                                  Minimum native token balance required to
+                                  report. Denominated in ether.
+  -cr, --check-rewards / -ncr, --no-check-rewards
+                                  If the --no-rewards-check flag is set, the
+                                  reporter will not check profitability or
+                                  available tips for the datafeed unless the
+                                  user has not selected a query tag or used
+                                  the random feeds flag.
+  -rf, --random-feeds / -nrf, --no-random-feeds
+                                  Reporter will use a random datafeed from the
+                                  catalog.
+  --rng-auto / --rng-auto-off
+  --submit-once / --submit-continuous
+  -pwd, --password TEXT
+  -spwd, --signature-password TEXT
+  --help 
 ```
 
-## Account Flag
+### Account Flag
 
 You must select an account to use for reporting. The account flag (`--account`/`-a`) is used to retrieve a [ChainedAccount](https://github.com/pydefi/chained-accounts) with a corresponding name. This `ChainedAccount` stores the account's checksum address, private key, and chain IDs. Example usage:
 
 ```
-telliot-feeds -a fakeaccountname report
+telliot --account acct1 report
 ```
 
 ## Report Command
@@ -45,47 +105,40 @@ telliot-feeds -a fakeaccountname report
 Use the `report` command to submit data to Tellor oracles. Example `report` command usage:
 
 ```
-telliot-feeds -a bigdaddysatoshi report
+telliot -a acct2 report
 ```
 
 By default, the reporter will continue to attempt reporting whenever out of reporting lock. Use the `--submit-once` flag to only report once:
 
 ```
-telliot-feeds -a staker1 report --submit-once
+telliot -a staker1 report --submit-once
 ```
 
 ### Build Feed Flag
 
-Use the build-a-feed flag (`--build-feed`) to build a DataFeed of a QueryType with one or more QueryParameters. When reporting, the CLI will list the QueryTypes this flag supports. To select a QueryType, enter a type from the list provided. Then, enter in the corresponding QueryParameters for the QueryType you have selected, and telliot-feeds will build the Query and select the appropriate source.
+Use the build-a-feed flag (`--build-feed`) to build a DataFeed of a QueryType with one or more QueryParameters. When reporting, the CLI will list the QueryTypes this flag supports. To select a QueryType, enter a type from the list provided. Then, enter in the corresponding QueryParameters for the QueryType you have selected, and telliot will build the Query and select the appropriate source.
 
-ex: \
-input...
-```sh
-telliot-feeds -a staker1 report --build-feed --submit-once -p YOLO
 ```
-
-output...
-```
-Enter a valid Query Type: NumericApiResponse
-Enter value for Query Parameter url: https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw
-Enter value for Query Parameter parseStr: uniswap, usd
+telliot -a staker1 report --build-feed --submit-once -p YOLO
 ```
 
 ## Profit Flag
 
 **Reporting for profit is extremely competitive and profit estimates aren't guarantees that you won't lose money!**
 
-Use the profit flag (`--profit/-p`) to.. specify an expected profit. The default is 100% profit, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use the `"YOLO"` string:
+Use this flag (`--profit/-p`) to set an expected profit. The default is 100%, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use the `"YOLO"` string:
 
 ```
-telliot-feeds -a staker1 report -p YOLO
+telliot -a acct1 report -p YOLO
 ```
 
 Normal profit flag usage:
 
 ```
-telliot-feeds -a staker4000 report -p 2
+telliot -a acct4 report -p 2
 ```
+
+**Note: Skipping profit checks does not skip checks for tips on the [AutoPay contract](https://github.com/tellor-io/autoPay). If you'd like to skip these checks as well, use the `--no-check-rewards/-ncr` flag.**
 
 ## Gas, Fee, & Transaction Type Flags
 
@@ -96,7 +149,7 @@ The `--gas-price/-gp` flag is for legacy transactions, while the `--max-fee/-mf`
 Example usage:
 
 ```
-telliot-feeds -a kevin report -tx 0 -gl 310000 -gp 9001 -p 22
+telliot -a acct3 report -tx 0 -gl 310000 -gp 9001 -p 22
 ```
 
 # Reporting on Ethereum
@@ -112,7 +165,7 @@ If you want to report without flashbots on Ethereum mainnet, use the `--no-flash
 Example usage:
 
 ```
-telliot-feeds -a mainnetstaker7 -nfb report
+telliot -a acct1 -nfb report
 ```
 
 ## Using Flashbots
@@ -134,31 +187,20 @@ When reporting, select your signatory account by tag as well as your staked main
 Example usage:
 
 ```
-telliot-feeds -a mainnetstaker1 -sgt sigacct -fb report
+telliot -a acct2 -sgt sigacct -fb report
 ```
 
 ## Staking
 
-With TellorFlex on Polygon, reporters can stake multiple times. Each stake is 10 TRB, so if you stake 140 TRB, you've staked 14 times.
+If reporting to Tellor360 oracles, reporters can stake multiple times. Each stake is 10 TRB, so if you stake 140 TRB, you've staked 14 times.
 
-The `TellorFlexReporter` will prompt the user to enter a desired stake amount:
-
-```
-Enter amount TRB to stake if unstaked: [10.0]:
-```
-
-If the current account being used to report isn't staked, the reporter will use the CLI-entered stake amount to stake. Also, if the reporter account's actual stake is reduced after a dispute, the reporter will attempt to stake the difference in TRB to return to the original desired stake amount.
-
-Example:
+The reporter will automatically attempt to stake the required amount, but if you'd like to stake more than the current minimum, use the `--stake/-s` flag.
 
 ```
-- user enters desired stake of 50
-- reporter identifies that current address has only 40 TRB staked
-- reporter stakes an additional 10 TRB, bringing the total amount staked to 50 TRB
-- reporter reports
-- reporter waits while in reporter lock
-...
+telliot -a acct1 report -s 2000 -ncr -rf
 ```
+
+If the reporter account's actual stake is reduced after a dispute, the reporter will attempt to stake the difference in TRB to return to the original desired stake amount.
 
 ### Withdraw Stake
 
@@ -166,10 +208,10 @@ To withdraw your stake, there isn't a command available. Instead, you'll have to
 
 ## Reporter Lock
 
-TellorX reporters on Ethereum must wait 12 hours between each data sumbission. The reporter lock for TellorFlex on Polygon is variable. It depends on how many stakes an account has. Specifically:
+The amount of times a reporter can submit data to a Tellor oracles is determined by the number of stakes per 12 hours.:
 
 ```
 reporter_lock = 12 hours / number_of_stakes
 ```
 
-So if you have 120 TRB staked, you can report every hour.
+So if the current min stake amount is 10 TRB, and you have 120 TRB staked, you can report every hour. But if the min stake abount is updated to 20 TRB, you can only report every two hours.
