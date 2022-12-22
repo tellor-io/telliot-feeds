@@ -43,12 +43,11 @@ class TipListenerFilter:
         Return: bool
         """
         qtyp_name = self.decode_typ_name(qdata)
-        lis = []
-        for key in Registry.registry:
-            if qtyp_name != "TellorRNG":
-                lis.append(key)
-        return tuple(lis)
-        # return qtyp_name in Registry.registry
+
+        if qtyp_name == "TellorRNG":
+            return False
+        
+        return qtyp_name in Registry.registry
 
     def qtag_from_feed_catalog(self, qdata: bytes) -> Optional[str]:
         """Check if query tag for given query data is available in CATALOG_FEEDS
