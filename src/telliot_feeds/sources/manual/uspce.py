@@ -30,7 +30,7 @@ class USPCESource(DataSource[float]):
             inpt = input_timeout()
 
             try:
-                inpt = float(inpt)  # type: ignore
+                inpt = float(inpt)
             except ValueError:
                 print("Invalid input. Enter decimal value (float).")
                 continue
