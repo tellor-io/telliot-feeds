@@ -34,7 +34,6 @@ class MulticallAutopay(CallFunctions):
             return None, error_status("Unable to assemble getMultipleValues Call object")
 
         multiple_values_response, status = await self.multi_call(calls)
-        print("got multiple_values_response.... in month_of_timestamps_and_values")
 
         if not status.ok:
             return None, status

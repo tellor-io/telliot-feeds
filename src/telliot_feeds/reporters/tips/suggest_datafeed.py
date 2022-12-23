@@ -31,7 +31,6 @@ async def get_feed_and_tip(
     Returns:
     - tuple of feed and tip amount
     """
-    print("here boii. starting get_feed_and_tip")
     if current_timestamp is None:
         current_timestamp = TimeStamp.now().ts
 
@@ -42,14 +41,10 @@ async def get_feed_and_tip(
         autopay=autopay, multi_call=multi_call, listener_filter=listener_filter.qtype_name_in_registry
     )
 
-    print("got funded feeds......")
-
     feed_tips = await funded_feeds.querydata_and_tip(current_time=current_timestamp)
-    print("got feed tips.....")
     onetime_tips = await get_funded_one_time_tips(
         autopay=autopay, listener_filter=listener_filter.qtype_name_in_registry
     )
-    print("got onetime tips ........")
 
     if not feed_tips and not onetime_tips:
         logger.info("No tips available in autopay")

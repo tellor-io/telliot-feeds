@@ -30,10 +30,8 @@ class AssembleCall:
         """
         status = ResponseStatus()
         multi_call = Multicall(calls=calls, _w3=self.autopay.node._web3, require_success=success)
-        print("assembled multicall...")
         try:
             data: dict[Any, Any] = await multi_call.coroutine()
-            print("got data from multicall...")
             return data, status
         except Exception as e:
             msg = "multicall failed to fetch data"
