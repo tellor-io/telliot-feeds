@@ -42,8 +42,16 @@ class MulticallAutopay(CallFunctions):
             return None, error_status("No response returned from getMultipleValuesBefore batch multicall")
 
         for feed in feeds:
-            values = multiple_values_response[("values_array", feed.query_id)]
-            timestamps = multiple_values_response[("timestamps_array", feed.query_id)]
+            values_tup = ("values_array", feed.query_id)
+            timestamps_tup = ("timestamps_array", feed.query_id)
+            if values_tup not in multiple_values_response:
+                note = f"values_tup not in multiple_values_response: ('values_array', 0x{feed.query_id.hex()})"
+                return None, error_status(note)
+            if timestamps_tup not in multiple_values_response:
+                note = f"timestamps_tup not in multiple_values_response: ('timestamps_array', 0x{feed.query_id.hex()})"
+                return None, error_status(note)
+            values = multiple_values_response[values_tup]
+            timestamps = multiple_values_response[timestamps_tup]
             # short circuit the loop since None means failed response and can't calculate tip accurately
             if values is None:
                 note = "getMultipleValuesBefore call failed"

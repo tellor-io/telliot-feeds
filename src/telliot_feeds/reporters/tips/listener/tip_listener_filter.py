@@ -43,6 +43,10 @@ class TipListenerFilter:
         Return: bool
         """
         qtyp_name = self.decode_typ_name(qdata)
+
+        if qtyp_name == "TellorRNG":
+            return False
+
         return qtyp_name in Registry.registry
 
     def qtag_from_feed_catalog(self, qdata: bytes) -> Optional[str]:
