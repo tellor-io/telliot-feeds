@@ -61,8 +61,11 @@ class FundedFeeds(FundedFeedFilter):
     ) -> tuple[Optional[list[QueryIdandFeedDetails]], ResponseStatus]:
 
         telliot_supported_feeds, status = await self.get_funded_feed_queries()
-
-        if not status.ok or not telliot_supported_feeds:
+        if not status.ok:
+            logger.error("Error getting supported feeds")
+            return None, status
+        if not telliot_supported_feeds:
+            logger.info("No supported feeds found")
             return None, status
 
         # assemble both feed id and query id
@@ -82,7 +85,12 @@ class FundedFeeds(FundedFeedFilter):
             feeds=catalog_supported_feeds, now_timestamp=now_timestamp, max_age=month_old_timestamp, max_count=40_000
         )
 
-        if not status.ok or not feeds_timestsamps_and_values_lis:
+        if not status.ok:
+            logger.error("Error getting feeds, timestamps, and values")
+            return None, status
+
+        if not feeds_timestsamps_and_values_lis:
+            logger.info("No feeds, timestamps, and values found")
             return None, status
 
         # filter out feeds that aren't eligible to submit for NOW
@@ -119,12 +127,20 @@ class FundedFeeds(FundedFeedFilter):
         - value: tip amount
         """
         one_month_ago = current_time - 2_592_000
+        # week_ago = current_time - 604_800
+        # one_day_ago = current_time - 259_200
 
         eligible_funded_feeds, status = await self.filtered_funded_feeds(
-            now_timestamp=current_time, month_old_timestamp=one_month_ago
+            now_timestamp=current_time,
+            month_old_timestamp=one_month_ago
+            # now_timestamp=current_time,
+            # month_old_timestamp=one_day_ago,
         )
+        if not status.ok:
+            logger.error(f"Error getting eligible funded feeds: {status.error}")
+            return None
         if not eligible_funded_feeds:
-            logger.info(status.error)
+            logger.info("No eligible funded feeds found")
             return None
         # dictionary of key: queryData with value: tipAmount
         querydata_and_tip = {}

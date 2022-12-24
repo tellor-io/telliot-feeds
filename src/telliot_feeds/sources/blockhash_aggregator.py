@@ -114,7 +114,7 @@ async def get_btc_hash(timestamp: int) -> Tuple[Optional[str], Optional[int]]:
         ts = timestamp + 480 * 60
 
         try:
-            rsp = s.get(f" https://blockchain.info/blocks/{ts * 1000}?format=json")
+            rsp = s.get(f"https://blockchain.info/blocks/{ts * 1000}?format=json")
         except requests.exceptions.ConnectTimeout:
             logger.error("Connection timeout getting BTC block num from timestamp")
             return None, None
