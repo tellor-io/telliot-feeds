@@ -33,7 +33,7 @@ You can install the needed dependencies with pip:
 
     pip install telliot-feeds
 
-## Setup environment with Docker
+## (Optional) Setup environment with Docker
 If you want to configure and run telliot in a docker container (skip environment setup):
 
 - pull image from docker hub `docker pull tellorofficial/telliot`
