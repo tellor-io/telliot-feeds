@@ -1,6 +1,5 @@
 from typing import Any
 from typing import Dict
-from telliot_feeds.feeds.mimicry_feed import mimicry_collection_stat_datafeed
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.albt_usd_feed import albt_usd_median_feed
@@ -18,6 +17,7 @@ from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed_example
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
+from telliot_feeds.feeds.mimicry_feed import mimicry_collection_stat_datafeed
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
@@ -85,5 +85,5 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "TellorRNGManualResponse": tellor_rng_manual_feed,
     "AmpleforthCustomSpotPrice": ampl_usd_vwap_feed,
     "AmpleforthUSPCE": uspce_feed,
-    "MimicryCollectionStat": mimicry_collection_stat_datafeed
+    "MimicryCollectionStat": mimicry_collection_stat_datafeed,
 }

@@ -217,23 +217,28 @@ class MimicryCollectionStatSource(DataSource[str]):
     def get_collection_market_cap(self, transaction_history: TransactionList) -> Optional[float]:
         """calculate the market cap of an NFT series based on a list of Transactions."""
 
-        values = []
+        values: List[Union[int, float]] = []
+
         transaction_history.sort_transactions("timestamp")
 
         transaction_history.transactions.reverse()
 
+        last_sale_found = []
+
         for sale in transaction_history.transactions:
+
+            if sale.item_id in last_sale_found:
+                continue
+
             # For each token in the collection
             # calculate its value by taking the greater value
             # between the collection's floor price and last sale price of that NFT
             if transaction_history.floor_price < sale.price:
                 values.append(sale.price)
             else:
-                values.append(int(transaction_history.floor_price))
+                values.append(transaction_history.floor_price)
 
-            for other_sale in transaction_history.transactions:
-                if other_sale.item_id == sale.item_id:
-                    transaction_history.transactions.remove(other_sale)
+            last_sale_found.append(sale.item_id)
 
         return sum(values)
 
@@ -249,72 +254,84 @@ class MimicryCollectionStatSource(DataSource[str]):
             TransactionList: formatted historical sales data of a collection retrieved from Reservoir
 
         """
-        url = f"https://api.reservoir.tools/sales/v4?contract={contract}"
-        headers = {"accept": "*/*", "x-api-key": "demo-api-key"}
-        with requests.Session() as s:
-            s.mount("https://", adapter)
-            if not all:
-                one_year_ago = datetime.now() - timedelta(days=365)
-                start_timestamp = int(one_year_ago.timestamp())
-                url += f"&startTimestamp={start_timestamp}"
-            try:
-                request = s.get(url, timeout=0.5, headers=headers)
-            except requests.exceptions.RequestException as e:
-                logger.error(f"Request to Reservoir Sales API failed: {str(e)}")
-                return None
-
-            except requests.exceptions.Timeout as e:
-                logger.error(f"Reservoir API timed out: {str(e)}")
-                return None
-
-            if not request.ok:
-                logger.error(f"Reservoir API request unsucessful: {request.text}")
-                return None
-
-            tx_list = TransactionList()
-
-            try:
-                sales_data = request.json()["sales"]
-            except requests.exceptions.JSONDecodeError as e:
-                logger.error(f"Unable to parse Reservoir Sales API response: {str(e)}")
-                return None
-
-            for sale in sales_data:
-
+        continuation_token = ""
+        tx_list = TransactionList()
+        while True:
+            url = f"https://api.reservoir.tools/sales/v4?contract={contract}"
+            headers = {"accept": "*/*", "x-api-key": "demo-api-key"}
+            with requests.Session() as s:
+                s.mount("https://", adapter)
+                if not all:
+                    one_year_ago = datetime.now() - timedelta(days=365)
+                    start_timestamp = int(one_year_ago.timestamp())
+                    url += f"&startTimestamp={start_timestamp}"
+                else:
+                    url += "&startTimestamp=0"
+                # paginate
+                if continuation_token:
+                    url += "&continuation=" + continuation_token
+                # 1000 sales per page
+                url += "&limit=1000"
                 try:
-                    price = sale["price"]["amount"]["usd"]
-                    item_id = sale["token"]["tokenId"]
-                    timestamp = sale["timestamp"]
-                except KeyError as e:
-                    logger.warn("Mimicry: Reservoir Sales API KeyError: " + str(e))
-                    return None
-                tx = Transaction(price=price, item_id=item_id, timestamp=timestamp)
-                tx_list.transactions.append(tx)
-
-            if all:
-                url = (
-                    "https://api.reservoir.tools/oracle/collections/floor-ask/v4?kind="
-                    f"spot&currency=0x0000000000000000000000000000000000000000&twapSeconds=0&collection={contract}"
-                )
-                headers = {"accept": "*/*", "x-api-key": "demo-api-key"}
-
-                try:
-                    request = s.get(url, timeout=0.5, headers=headers)
+                    request = s.get(url, timeout=2, headers=headers)
                 except requests.exceptions.RequestException as e:
-                    logger.error(f"Request to Reservoir FloorPrice API failed: {str(e)}")
+                    logger.error(f"Request to Reservoir Sales API failed: {str(e)}")
                     return None
 
                 except requests.exceptions.Timeout as e:
-                    logger.error(f"Request to Reservoir FloorPrice API timed out: {str(e)}")
+                    logger.error(f"Reservoir API timed out: {str(e)}")
                     return None
 
+                if not request.ok:
+                    logger.error(f"Reservoir API request unsucessful: {request.text}")
+                    return None
                 try:
-                    tx_list.floor_price = request.json()["price"]
+                    sales_data = request.json()["sales"]
+                    continuation_token = request.json()["continuation"]
                 except requests.exceptions.JSONDecodeError as e:
-                    logger.error(f"Unable to parse price from Reservoir FloorPrice API response: {str(e)}")
+                    logger.error(f"Unable to parse Reservoir Sales API response: {str(e)}")
                     return None
 
-            return tx_list
+                for sale in sales_data:
+
+                    try:
+                        price = sale["price"]["amount"]["usd"]
+                        item_id = sale["token"]["tokenId"]
+                        timestamp = sale["timestamp"]
+                    except KeyError as e:
+                        logger.error("Mimicry: Reservoir Sales API KeyError: " + str(e))
+                        return None
+                    tx = Transaction(price=price, item_id=item_id, timestamp=timestamp)
+                    tx_list.transactions.append(tx)
+
+                # if on last page
+                if len(sales_data) < 1000:
+                    break
+
+        if all:
+            url = (
+                "https://api.reservoir.tools/oracle/collections/floor-ask/v4?kind="
+                f"spot&currency=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48&twapSeconds=0&collection={contract}"
+            )
+            headers = {"accept": "*/*", "x-api-key": "demo-api-key"}
+
+            try:
+                request = s.get(url, timeout=0.5, headers=headers)
+            except requests.exceptions.RequestException as e:
+                logger.error(f"Request to Reservoir FloorPrice API failed: {str(e)}")
+                return None
+
+            except requests.exceptions.Timeout as e:
+                logger.error(f"Request to Reservoir FloorPrice API timed out: {str(e)}")
+                return None
+
+            try:
+                tx_list.floor_price = request.json()["price"]
+            except requests.exceptions.JSONDecodeError as e:
+                logger.error(f"Unable to parse price from Reservoir FloorPrice API response: {str(e)}")
+                return None
+
+        return tx_list
 
     async def fetch_new_datapoint(
         self,
@@ -333,21 +350,40 @@ class MimicryCollectionStatSource(DataSource[str]):
         if self.metric == 0:
             past_year_sales_data = await self.request_historical_sales_data(contract=self.collectionAddress, all=False)
             if past_year_sales_data:
-                datapoint = (self.tami(past_year_sales_data), datetime_now_utc())
+                tami = self.tami(past_year_sales_data)
+
+                if not tami:
+                    logger.info(
+                        f"Unable to calculate TAMI index"
+                        f"for collection {self.collectionAddress} on chain id {self.chainId}"
+                    )
+                    return None, None
+                datapoint = (tami, datetime_now_utc())
                 self.store_datapoint(datapoint=datapoint)
                 return datapoint
             else:
-                logger.error("unable to retieve NFT collection historical sales data for TAMI")
+                logger.error(
+                    f"unable to retrieve NFT collection historical sales data for TAMI "
+                    f"for collection {self.collectionAddress} on chain id {self.chainId}"
+                )
                 return None, None
 
         elif self.metric == 1:
             all_sales_data = await self.request_historical_sales_data(contract=self.collectionAddress)
             if all_sales_data:
-                datapoint = (self.get_collection_market_cap(all_sales_data), datetime_now_utc())
+                market_cap = self.get_collection_market_cap(all_sales_data)
+
+                if not market_cap:
+                    logger.info(
+                        f"Unable to calculate NFT market cap"
+                        f"for collection {self.collectionAddress} on chain id {self.chainId}"
+                    )
+                    return None, None
+                datapoint = (market_cap, datetime_now_utc())
                 self.store_datapoint(datapoint=datapoint)
                 return datapoint
             else:
-                logger.error("unable to retieve NFT collection historical sales data for total market cap")
+                logger.error("unable to retrieve NFT collection historical sales data for total market cap")
                 return None, None
 
         else:
