@@ -6,7 +6,7 @@ Python 3.9 is required to install and use`telliot-feeds`. You can do yourself or
 
 ## Install Telliot Feeds
 
-*Optional*: Create and activate a [virtual environment](https://docs.python.org/3/library/venv.html).  
+*Optional*: Create and activate a [virtual environment](https://docs.python.org/3/library/venv.html). It doesn't matter where you create the virtual environment, but your home directory is fine.
 In this example, the virtual environment is located in a subfolder called `tenv`:
 
 === "Linux"
