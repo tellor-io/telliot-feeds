@@ -1,5 +1,6 @@
 # Getting Started
 
+## Prerequisites
 Python 3.9 is required to install and use`telliot-feeds`. You can do yourself or use [docker](#setup-environment-with-docker). If you follow the docker instructions, you can skip the install and environment setup steps.
 
 
@@ -11,21 +12,21 @@ In this example, the virtual environment is located in a subfolder called `tenv`
 === "Linux"
 
     ```
-    python3 -m venv tenv
+    python3.9 -m venv tenv
     source tenv/bin/activate
     ```
 
 === "Windows"
 
     ```
-    py -m venv tenv
+    py3.9 -m venv tenv
     tenv\Scripts\activate
     ```
 
 === "Mac M1"
 
     ```
-    python3 -m venv tenv
+    python3.9 -m venv tenv
     source tenv/bin/activate
     ```
 
@@ -58,7 +59,7 @@ After installation, Telliot must be personalized to use your own private keys an
 
 First, create the default configuration files:
 
-    telliot config init
+    telliot-core config init
 
 The default configuration files are created in a folder called `telliot` in the user home folder:
 
@@ -71,7 +72,29 @@ To show the current configuration:
 
     telliot config show
 
+### Add Reporting Accounts
+
+The reporter needs to know which accounts are available for submitting values to the oracle.
+Use the command line to add necessary reporting accounts/private keys.
+
+For example, to add an account called `my-matic-acct` for reporting on polygon mainnet (EVM chain_id=137):
+
+    >> chained add my-matic-acct 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
+    Enter encryption password for my-matic-acct: 
+    Confirm password: 
+    Added new account my-matic-acct (address= 0xcd19cf65af3a3aea1f44a7cb0257fc7455f245f0) for use on chains (137,)
+
+Detailed instructions for managing EVM accounts can be found in the
+[`chained_accounts` package documentation](https://github.com/pydefi/chained-accounts). 
+
+After configuring accounts, read the [Usage](https://tellor-io.github.io/telliot-feeds/usage/) section,
+then you'll be set to report.
+
 ### Configure endpoints
+
+You can add your RPC endpoints via the command line or by editing the `endpoints.yaml` file. To edit them via the command line, use the following command:
+
+    telliot -a myacct report
 
 Edit `~/telliot/endpoints.yaml` to configure Telliot to use your own endpoints.
 
@@ -107,25 +130,6 @@ endpoints:
   explorer: https://mumbai.polygonscan.com/
 ...
 ```
-Once you've specified your endpoints, what's left is to configure your account information (private keys, chain IDs, et.) using `chained-accounts`.
-
-### Add Reporting Accounts
-
-The reporter needs to know which accounts are available for submitting values to the oracle.
-Use the command line to add necessary reporting accounts/private keys.
-
-For example, to add an account called `my-matic-acct` for reporting on polygon mainnet (EVM chain_id=137):
-
-    >> chained add my-matic-acct 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
-    Enter encryption password for my-matic-acct: 
-    Confirm password: 
-    Added new account my-matic-acct (address= 0xcd19cf65af3a3aea1f44a7cb0257fc7455f245f0) for use on chains (137,)
-
-Detailed instructions for managing EVM accounts can be found in the
-[`chained_accounts` package documentation](https://github.com/pydefi/chained-accounts). 
-
-After configuring accounts, read the [Usage](https://tellor-io.github.io/telliot-feeds/usage/) section,
-then you'll be set to report.
 
 ## Other possible configs
 ### AMPL

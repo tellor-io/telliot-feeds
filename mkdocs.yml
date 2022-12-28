@@ -66,19 +66,16 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting started: getting-started.md
-  - Usage: usage.md
-  - Examples:
-      - SpotPrice Query: examples/spot_price_query_example.md
-      - Text Query: examples/text_query_example.md
-  - New Oracle Queries:
-      - Creating New Queries: new-query.md
-  - Code Reference:
-      - Queries Module:
-          - Query Types: code/query-types.md
-          - Query Base Classes: code/query-base-classes.md
-          - Query Catalog: code/query-catalog.md
-      - Data Feed Module: code/datafeed.md
-      - Types Module: code/dtypes.md
+  - Usage (telliot CLI): usage.md
   - Contributing:
-      - Developer's Guide: contributing.md
+      - Developer's Setup: contributing.md
+      - Add New Spot Price: add-new-spot-price.md
+      - Add New Data Type (query type): new-query.md
       - Documentation: documentation.md
+  - Code Reference:
+    - Queries Module:
+        - Query Types: code/query-types.md
+        - Query Base Classes: code/query-base-classes.md
+        - Query Catalog: code/query-catalog.md
+    - Data Feed Module: code/datafeed.md
+    - Types Module: code/dtypes.md
