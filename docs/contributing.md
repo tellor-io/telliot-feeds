@@ -7,7 +7,6 @@ is already installed on the system.*
 
 Clone telliot repositories to a local working directory:
 
-    git clone https://github.com/tellor-io/telliot-core.git
     git clone https://github.com/tellor-io/telliot-feeds.git
 
 Change directories:
@@ -20,22 +19,21 @@ located in a subfolder called `tenv`:
 === "Linux"
 
     ```
-    python3 -m venv tenv
+    python3.9 -m venv tenv
     source tenv/bin/activate
     ```
 
 === "Windows"
 
     ```
-    py -m venv tenv
+    py3.9 -m venv tenv
     tenv\Scripts\activate
     ```
 
 Install the project using using an [editable installation](https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs).
 
     pip install -e .
-    pip install -r requirements-dev.txt
-    pip install -e ../telliot-core 
+    pip install -r requirements-dev.txt 
 
 
 ## Test Environment
