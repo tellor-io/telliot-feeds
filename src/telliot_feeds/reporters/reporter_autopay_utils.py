@@ -366,7 +366,7 @@ async def autopay_suggested_report(
     Return: query id, tip amount
     """
     chain = autopay.node.chain_id
-    if chain in (137, 80001, 69, 1666600000, 1666700000, 421611, 42161):
+    if chain in (137, 80001, 69, 1666600000, 1666700000, 421611, 42161, 10200):
 
         # get query_ids with one time tips
         singletip_dict = await get_one_time_tips(autopay)
