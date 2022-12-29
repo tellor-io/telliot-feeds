@@ -29,6 +29,10 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
+# chains where autopay contract is deployed
+AUTOPAY_CHAINS = (137, 80001, 69, 1666600000, 1666700000, 421611, 42161, 10200)
+
+
 @dataclass
 class Tag:
     query_tag: str
@@ -366,7 +370,7 @@ async def autopay_suggested_report(
     Return: query id, tip amount
     """
     chain = autopay.node.chain_id
-    if chain in (137, 80001, 69, 1666600000, 1666700000, 421611, 42161, 10200):
+    if chain in AUTOPAY_CHAINS:
 
         # get query_ids with one time tips
         singletip_dict = await get_one_time_tips(autopay)
@@ -395,6 +399,7 @@ async def autopay_suggested_report(
         else:
             return None, None
     else:
+        logger.warning(f"Chain {chain} does not have Autopay contract support")
         return None, None
 
 
