@@ -69,7 +69,8 @@ nav:
   - Usage (telliot CLI): usage.md
   - Contributing:
       - Developer's Setup: contributing.md
-      - Add New Spot Price: add-new-spot-price.md
+      - Add New Spot Price: add-spot-price.md
+      - Add New Chain: add-chain.md
       - Add New Data Type (query type): new-query.md
       - Documentation: documentation.md
   - Code Reference:

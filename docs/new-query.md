@@ -1,10 +1,20 @@
-# Creating New or Custom Oracle Queries
+# Add New Data Type (Custom Oracle Queries)
+## Checklist
+- Links to [dataSpecs](https://github.com/tellor-io/dataSpecs) issue & new query type file
+- Add query type (subclass `AbiQuery`)
+- Add sources (subclass `DataSource`)
+- Add feed (instance of `DataFeed`)
+- Add example instance of the query type to catalog
+- Add support for building custom instances of the new query type (using the `--build-feed` flag)
+- Tests for new query type, sources, feeds, & additions to the CLI
+- Update docs for each addition
+- Include example transactions from a block explorer of new query type submitted to Tellor using `telliot-feeds`
 
 If the Tellor oracle doesn't have the on-chain data your smart contract needs, this section should
 help you define a new query so that Tellor's decentralized network of reporters can get busy putting
 your data securely on-chain.
 
-## The Art of Query Design
+## More Info on Query Design
 
 Creating new Tellor query is pretty simple - there are only a few steps. Along the way, though,
 there are some important considerations and decisions to make so that Tellor's oracle data serves
