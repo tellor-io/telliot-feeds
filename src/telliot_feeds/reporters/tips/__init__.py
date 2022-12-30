@@ -1,3 +1,5 @@
+from typing import Optional
+
 from multicall.constants import MULTICALL2_ADDRESSES
 from multicall.constants import MULTICALL3_ADDRESSES
 from multicall.constants import Network
@@ -11,9 +13,9 @@ def add_multicall_support(
     network: str,
     network_id: int,
     state_override: bool = True,
-    multicall2_address: str = None,
-    multicall3_address: str = None,
-):
+    multicall2_address: Optional[str] = None,
+    multicall3_address: Optional[str] = None,
+) -> None:
     """Add support for a network that doesn't have multicall support in the package"""
     if not hasattr(Network, network):
         setattr(Network, network, network_id)
@@ -28,12 +30,14 @@ def add_multicall_support(
         else:
             MULTICALL3_ADDRESSES[attr] = multicall3_address
 
+    return None
 
-_ = add_multicall_support(
+
+add_multicall_support(
     network="PulsechainTestnet", network_id=941, multicall2_address="0x959a437F1444DaDaC8aF997E71EAF0479c810267"
 )
 
-_ = add_multicall_support(
+add_multicall_support(
     network="Chiado",
     network_id=10200,
     state_override=False,

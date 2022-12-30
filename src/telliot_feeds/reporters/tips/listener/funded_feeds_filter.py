@@ -186,7 +186,7 @@ class FundedFeedFilter:
 
         Returns: list of feeds that could possibly reward a tip
         """
-        self.prices = {}
+        self.prices: dict[bytes, float] = {}
         for feed in list(feeds):
             # check if your timestamp will be first in window for
             # this feed if not discard feed_details
