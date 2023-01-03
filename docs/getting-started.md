@@ -3,7 +3,7 @@
 ## Prerequisites
 [Python 3.9](https://www.python.org/downloads/release/python-3915/) is required to install and use`telliot-feeds`. Alternatively, you can use our [docker](https://docs.docker.com/get-started/) release. 
 
-*If you're using docker, please skip ahead to the section titled **"Docker Setup"**.*
+*If you're using docker, please follow the [Docker setup instructions](#optional-docker-setup).*
 
 
 ## Install Telliot Feeds
