@@ -12,4 +12,4 @@
     - get image id: `docker images`
     - tag image: `docker tag {img_id} tellorofficial/telliot:latest` (replace {img_id} with the image id)
     - push image: `docker push tellorofficial/telliot:latest`
-5. Test the new image using the steps in the docker getting started section of the docs [here](https://tellor-io.github.io/telliot-feeds/getting-started/#setup-environment-with-docker).
+5. Test the new image using the steps in the docker getting started section of the docs [here](https://tellor-io.github.io/telliot-feeds/getting-started/#optional-docker-setup).

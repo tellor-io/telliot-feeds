@@ -73,6 +73,7 @@ nav:
       - Add New Chain: add-chain.md
       - Add New Data Type (query type): new-query.md
       - Documentation: documentation.md
+      - New Release Steps: new-release.md
   - Code Reference:
     - Queries Module:
         - Query Types: code/query-types.md
