@@ -278,8 +278,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#optional-setup-environment-with-docker" class="md-nav__link">
-    (Optional) Setup environment with Docker
+  <a href="#optional-docker-setup" class="md-nav__link">
+    (Optional) Docker Setup
   </a>
   
 </li>
@@ -640,8 +640,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#optional-setup-environment-with-docker" class="md-nav__link">
-    (Optional) Setup environment with Docker
+  <a href="#optional-docker-setup" class="md-nav__link">
+    (Optional) Docker Setup
   </a>
   
 </li>
@@ -710,10 +710,11 @@
 
 <h1 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h1>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
-<p>Python 3.9 is required to install and use<code>telliot-feeds</code>. You can do yourself or use <a href="#setup-environment-with-docker">docker</a>. If you follow the docker instructions, you can skip the install and environment setup steps.</p>
+<p><a href="https://www.python.org/downloads/release/python-3915/">Python 3.9</a> is required to install and use<code>telliot-feeds</code>. Alternatively, you can use our <a href="https://docs.docker.com/get-started/">docker</a> release. </p>
+<p><em>If you're using docker, please follow the <a href="#optional-docker-setup">Docker setup instructions</a>.</em></p>
 <h2 id="install-telliot-feeds">Install Telliot Feeds<a class="headerlink" href="#install-telliot-feeds" title="Permanent link">&para;</a></h2>
-<p><em>Optional</em>: Create and activate a <a href="https://docs.python.org/3/library/venv.html">virtual environment</a>. It doesn't matter where you create the virtual environment, but your home directory is fine.
-In this example, the virtual environment is located in a subfolder called <code>tenv</code>:</p>
+<p>It's generally considered good practice to run telliot from a python <a href="https://docs.python.org/3/library/venv.html">virtual environment</a>. This is not required, but it helps prevent dependency conflicts with other Python programs running on your computer. </p>
+<p>In this example, the virtual environment will be created in a subfolder called <code>tenv</code>:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Linux</label><label for="__tabbed_1_2">Windows</label><label for="__tabbed_1_3">Mac M1</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -733,11 +734,12 @@ source tenv/bin/activate
 </div>
 </div>
 </div>
-<p>You can install the needed dependencies with pip:</p>
+<p>Once the virtual environment is activated, install telliot feeds with pip:</p>
 <div class="highlight"><pre><span></span><code>pip install telliot-feeds
 </code></pre></div>
-<h2 id="optional-setup-environment-with-docker">(Optional) Setup environment with Docker<a class="headerlink" href="#optional-setup-environment-with-docker" title="Permanent link">&para;</a></h2>
-<p>If you want to configure and run telliot in a docker container (skip environment setup):</p>
+<p><em>If your log shows no errors, that's it! Next, follow the instructions for <a href="#telliot-configuration">configuring telliot</a>.</em></p>
+<h2 id="optional-docker-setup">(Optional) Docker Setup<a class="headerlink" href="#optional-docker-setup" title="Permanent link">&para;</a></h2>
+<p>If you want to configure and run telliot in a docker container:</p>
 <ul>
 <li>pull image from docker hub <code>docker pull tellorofficial/telliot</code></li>
 <li>create the following <code>docker-compose.yml</code> using the command <code>echo "below text" &gt; docker-compose.yml</code>:
@@ -759,17 +761,17 @@ source tenv/bin/activate
 <p>First, create the default configuration files:</p>
 <div class="highlight"><pre><span></span><code>telliot config init
 </code></pre></div>
-<p>The default configuration files are created in a folder called <code>telliot</code> in the user home folder:</p>
+<p>The default configuration files are created in a folder called <code>telliot</code> in the user's home folder:</p>
 <div class="highlight"><pre><span></span><code>~/telliot
     ├── chains.json
     ├── endpoints.yaml
     └── main.yaml
 </code></pre></div>
-<p>To show the current configuration:</p>
+<p>To view your current configuration at any time:</p>
 <div class="highlight"><pre><span></span><code>telliot config show
 </code></pre></div>
 <h3 id="add-reporting-accounts">Add Reporting Accounts<a class="headerlink" href="#add-reporting-accounts" title="Permanent link">&para;</a></h3>
-<p>The reporter needs to know which accounts are available for submitting values to the oracle.
+<p>The reporter (telliot) needs to know which accounts (wallet addresses) are available for submitting values to the oracle.
 Use the command line to add necessary reporting accounts/private keys.</p>
 <p>For example, to add an account called <code>my-matic-acct</code> for reporting on Polygon mainnet (chain ID 137):</p>
 <div class="highlight"><pre><span></span><code>&gt;&gt; telliot account add my-matic-acct 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
@@ -787,10 +789,10 @@ then you'll be set to report.</p>
 <div class="highlight"><pre><span></span><code>telliot -a myacct report
 </code></pre></div>
 <p>Edit <code>~/telliot/endpoints.yaml</code> to configure Telliot to use your own endpoints.</p>
-<p>If you don't have an endpoint, a free one is available at <a href="http://www.infura.io">Infura.io</a>.  Simply replace <code>INFURA_API_KEY</code> with the one provided by Infura.</p>
-<p>Endpoints should be configured for both Ethereum mainnet and Goerli testnet.</p>
+<p>If you don't have your own endpoint, a free one can be obtained at <a href="http://www.infura.io">Infura.io</a>.  Simply replace <code>INFURA_API_KEY</code> with the one provided by Infura.</p>
+<p>For the funcitonality of telliot feeds, Endpoints should be configured for both Ethereum mainnet and Goerli testnet. (even if you don't plan on reporting oracle data on those networks)</p>
 <p><strong>Warning! All telliot software and reporter feeds should be validated on testnets prior to deploying on mainnet.</strong></p>
-<p>Note that endpoints must use the websocket protocol because HTTPS endpoints do not support event listeners. If reporting on Polygon, websockets are not supported, so use an HTTPS endpoint</p>
+<p>Note that endpoints should use the websocket (wss) protocol because HTTPS endpoints do not support event listeners. (If reporting on Polygon, websockets are not supported, so the HTTPS endpoint is fine.)</p>
 <p><em>Example <code>endpoints.yaml</code> file:</em>
 <div class="highlight"><pre><span></span><code><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">EndpointList</span><span class="w"></span>
 <span class="nt">endpoints</span><span class="p">:</span><span class="w"></span>
@@ -819,8 +821,8 @@ then you'll be set to report.</p>
 <p>If you'd like to report legacy AMPL values, generate default AMPL configs from the repository's home directory:
 <div class="highlight"><pre><span></span><code>python3 src/telliot_feeds/config.py
 </code></pre></div></p>
-<p>After, add AMPL api keys (BraveNewCoin/Rapid &amp; AnyBlock) to <code>~/telliot/api_keys.yaml</code>
-In addition, to use sources that require an API key, add them using the following example.</p>
+<p>This will create a <code>api_keys.yaml</code> file in your telliot folder if it doesn't already exist. Add the necessary API keys (BraveNewCoin/Rapid &amp; AnyBlock) to <code>~/telliot/api_keys.yaml</code>. (Most reporters need not do this)</p>
+<p>Additionally, if you're going to be reporting data using sources that require API keys, add them using the following example. </p>
 <p><em>Example <code>api_keys.yaml</code> file:</em>
 <div class="highlight"><pre><span></span><code><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ApiKey</span><span class="w"></span>
 <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;anyblock&#39;</span><span class="w"></span>
