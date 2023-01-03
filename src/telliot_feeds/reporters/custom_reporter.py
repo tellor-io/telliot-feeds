@@ -190,7 +190,12 @@ class CustomXReporter(IntervalReporter):
             _nonce=report_count,
             _queryData=query_data,
         )
-        acc_nonce = self.endpoint._web3.eth.get_transaction_count(address)
+        try:
+            acc_nonce = self.endpoint._web3.eth.get_transaction_count(address)
+        except ValueError as e:
+            return None, error_status("Account nonce request timed out", e=e, log=logger.warning)
+        except Exception as e:
+            return None, error_status("Unable to retrieve account nonce", e=e, log=logger.error)
 
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:
