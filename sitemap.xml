@@ -36,6 +36,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://tellor-io.github.io/telliot-feeds/new-release/</loc>
+         <lastmod>2023-01-03</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://tellor-io.github.io/telliot-feeds/usage/</loc>
          <lastmod>2023-01-03</lastmod>
          <changefreq>daily</changefreq>

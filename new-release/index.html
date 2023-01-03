@@ -12,14 +12,14 @@
         <meta name="author" content="Tellor Development Community">
       
       
-        <link rel="canonical" href="https://tellor-io.github.io/telliot-feeds/add-chain/">
+        <link rel="canonical" href="https://tellor-io.github.io/telliot-feeds/new-release/">
       
       <link rel="icon" href="../assets/favicon-32x32.png">
       <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
     
     
       
-        <title>Add New Chain - Telliot Feed Examples Documentation</title>
+        <title>New Release Steps - Telliot Feed Examples Documentation</title>
       
     
     
@@ -74,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#add-new-chain-support" class="md-skip">
+        <a href="#steps-for-releasing-a-new-version-of-telliot-feeds" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Add New Chain
+              New Release Steps
             
           </span>
         </div>
@@ -316,52 +316,11 @@
               
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Add New Chain
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../add-chain/" class="md-nav__link">
         Add New Chain
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    Prerequisites
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -399,11 +358,21 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="../new-release/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         New Release Steps
       </a>
+      
     </li>
   
 
@@ -574,21 +543,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    Prerequisites
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -602,18 +556,24 @@
                   
 
 
-<h1 id="add-new-chain-support">Add New Chain Support<a class="headerlink" href="#add-new-chain-support" title="Permanent link">&para;</a></h1>
-<h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Complete steps in telliot-core for supporting a new chain <a href="https://tellor-io.github.io/telliot-core/add-chain/">here</a>.</li>
-<li>
-<p>Install telliot-core in editable mode <code>pip install -e ~/path/to/telliot-core</code> to include new chain support in that dependency.</p>
-</li>
-<li>
-<p>Add multicall support <code>src/telliot_feeds/reporters/tips/__init__.py</code> (assuming Multicall contract is deployed on chain).</p>
-</li>
-<li>Add chain ID to <code>AUTOPAY_CHAINS</code> constant in <code>src/telliot_feeds/reporters/reporter_autopay_utils.py</code>.</li>
+<h1 id="steps-for-releasing-a-new-version-of-telliot-feeds">Steps for releasing a new version of telliot-feeds<a class="headerlink" href="#steps-for-releasing-a-new-version-of-telliot-feeds" title="Permanent link">&para;</a></h1>
+<ol>
+<li>Make sure the latest changes in <code>telliot-core</code> are released to PyPI. Follow the steps <a href="https://tellor-io.github.io/telliot-core/contributing/#new-release-processchecklist">here</a> to release a new version of <code>telliot-core</code>.</li>
+<li>Update the <code>telliot-core</code> dependency version in <code>setup.cfg</code> to the latest version.</li>
+<li>The steps for releasing a new version of <code>telliot-feeds</code> are very similar to the steps for <code>telliot-core</code> releases, so follow the steps in the link above, after you've completed step 2.</li>
+<li>Now, release a new image to Docker Hub. Here are the commands to do so once in the home directory of the repo:<ul>
+<li>login to docker hub: <code>docker login --username=tellorofficial</code> (asks for password)</li>
+<li>build image: <code>docker build -t tellorofficial/telliot:latest .</code></li>
+<li>setup image builder: <code>docker buildx create --name mybuilder</code></li>
+<li>use image builder: <code>docker buildx use mybuilder</code></li>
+<li>build image for multiple platforms: <code>docker buildx build --platform linux/amd64,linux/arm64 -t tellorofficial/telliot:latest --push .</code></li>
+<li>get image id: <code>docker images</code></li>
+<li>tag image: <code>docker tag {img_id} tellorofficial/telliot:latest</code> (replace {img_id} with the image id)</li>
+<li>push image: <code>docker push tellorofficial/telliot:latest</code></li>
 </ul>
+</li>
+<li>Test the new image using the steps in the docker getting started section of the docs <a href="https://tellor-io.github.io/telliot-feeds/getting-started/#optional-docker-setup">here</a>.</li>
+</ol>
 
 
 
@@ -634,7 +594,7 @@
     <nav class="md-footer__inner md-grid" aria-label="Footer" >
       
         
-        <a href="../add-spot-price/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Add New Spot Price" rel="prev">
+        <a href="../documentation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Documentation" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
           </div>
@@ -643,20 +603,20 @@
               <span class="md-footer__direction">
                 Previous
               </span>
-              Add New Spot Price
+              Documentation
             </div>
           </div>
         </a>
       
       
         
-        <a href="../new-query/" class="md-footer__link md-footer__link--next" aria-label="Next: Add New Data Type (query type)" rel="next">
+        <a href="../code/query-types/" class="md-footer__link md-footer__link--next" aria-label="Next: Query Types" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Add New Data Type (query type)
+              Query Types
             </div>
           </div>
           <div class="md-footer__button md-icon">
