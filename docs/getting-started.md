@@ -8,7 +8,7 @@
 
 ## Install Telliot Feeds
 
-It's generally considered good practice to run telliot from a python [virtual environment](https://docs.python.org/3/library/venv.html). This is not required, but it can help with avoiding dependancy any conficts with other python programs running on your computer. 
+It's generally considered good practice to run telliot from a python [virtual environment](https://docs.python.org/3/library/venv.html). This is not required, but it helps prevent dependency conflicts with other Python programs running on your computer. 
 
 In this example, the virtual environment will be created in a subfolder called `tenv`:
 
@@ -37,7 +37,7 @@ Once the virtual environment is activated, install telliot feeds with pip:
 
     pip install telliot-feeds
 
-*If your log shows no errors, that's it! Next, please scroll down to the section titled **"Telliot Configuration"**.*
+*If your log shows no errors, that's it! Next, follow the instructions for [configuring telliot](#telliot-configuration).*
 
 ## (Optional) Docker Setup
 If you want to configure and run telliot in a docker container:
@@ -145,7 +145,7 @@ If you'd like to report legacy AMPL values, generate default AMPL configs from t
 python3 src/telliot_feeds/config.py
 ```
 
-This will create a `api_keys.yaml` file in your telliot folder if it doesn't already exist. Add the necessary api keys (BraveNewCoin/Rapid & AnyBlock) to `~/telliot/api_keys.yaml`. (Most reporters need not do this)
+This will create a `api_keys.yaml` file in your telliot folder if it doesn't already exist. Add the necessary API keys (BraveNewCoin/Rapid & AnyBlock) to `~/telliot/api_keys.yaml`. (Most reporters need not do this)
 
 Additionally, if you're going to be reporting data using sources that require API keys, add them using the following example. 
 
