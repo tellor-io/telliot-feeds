@@ -6,6 +6,9 @@ from multicall.constants import Network
 from multicall.constants import NO_STATE_OVERRIDE
 
 from telliot_feeds.queries.query_catalog import query_catalog
+from telliot_feeds.utils.log import get_logger
+
+logger = get_logger(__name__)
 
 
 # add testnet support for multicall that aren't avaialable in the package
@@ -29,8 +32,8 @@ def add_multicall_support(
             MULTICALL2_ADDRESSES[attr] = multicall2_address
         else:
             MULTICALL3_ADDRESSES[attr] = multicall3_address
-
-    return None
+    else:
+        logger.warning(f"Network {network} already exists in multicall package")
 
 
 add_multicall_support(
