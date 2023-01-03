@@ -1,3 +1,5 @@
+from unittest import mock
+
 import pytest
 
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
@@ -57,6 +59,47 @@ async def test_report(tellor_360, caplog, guaranteed_price_source):
 
     await r.report_once()
     assert "Currently in reporter lock. Time left: 5:59" in caplog.text  # 6hr
+
+
+@pytest.mark.asyncio
+async def test_fail_get_account_nonce(tellor_360, caplog, guaranteed_price_source, monkeypatch):
+    """Test 360 reporter fails to retrieve account nonce"""
+    contracts, account = tellor_360
+    feed = eth_usd_median_feed
+    feed.source = guaranteed_price_source
+
+    r = Tellor360Reporter(
+        oracle=contracts.oracle,
+        token=contracts.token,
+        autopay=contracts.autopay,
+        endpoint=contracts.oracle.node,
+        account=account,
+        chain_id=CHAIN_ID,
+        transaction_type=0,
+        min_native_token_balance=0,
+        datafeed=feed,
+    )
+
+    def mock_raise(*args, **kwargs):
+        raise ValueError()
+
+    with mock.patch("web3.eth.Eth.get_transaction_count", side_effect=mock_raise):
+        val, status = r.get_acct_nonce()
+        assert not status.ok
+        assert val is None
+        assert "Account nonce request timed out" in caplog.text
+
+    class UnknownException(Exception):
+        pass
+
+    def mock_raise_unknown(*args, **kwargs):
+        raise UnknownException()
+
+    with mock.patch("web3.eth.Eth.get_transaction_count", side_effect=mock_raise_unknown):
+        val, status = r.get_acct_nonce()
+        assert not status.ok
+        assert val is None
+        assert "Unable to retrieve account nonce: UnknownException" in caplog.text
 
 
 @pytest.mark.asyncio
