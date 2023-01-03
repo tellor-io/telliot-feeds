@@ -1,8 +1,11 @@
+import asyncio
 from dataclasses import dataclass
 
 from telliot_feeds.datasource import DataSource
-from telliot_feeds.dtypes.datapoint import DataPoint
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
+from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.utils.input_timeout import input_timeout
+from telliot_feeds.utils.input_timeout import TimeoutOccurred
 from telliot_feeds.utils.log import get_logger
 
 
@@ -21,10 +24,10 @@ class SpotPriceManualSource(DataSource[float]):
         spot = None
 
         while spot is None:
-            usr_inpt = input()
+            usr_inpt = input_timeout()
 
             try:
-                usr_inpt = float(usr_inpt)  # type: ignore
+                usr_inpt = float(usr_inpt)
             except ValueError:
                 print("Invalid input. Enter decimal value (float).")
                 continue
@@ -32,19 +35,23 @@ class SpotPriceManualSource(DataSource[float]):
             print(f"\nSpot price (with 18 decimals of precision) to be submitted on chain: {usr_inpt*10**18:.0f}")
             print("Press [ENTER] to confirm.")
 
-            _ = input()
+            _ = input_timeout()
 
             spot = usr_inpt
 
         return spot
 
-    async def fetch_new_datapoint(self) -> DataPoint[float]:
+    async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
         """Update current value with time-stamped value fetched from user input.
 
         Returns:
             Current time-stamped value
         """
-        price = self.parse_user_val()
+        try:
+            price = self.parse_user_val()
+        except TimeoutOccurred:
+            logger.info("Timeout occurred while waiting for user input")
+            return None, None
 
         datapoint = (price, datetime_now_utc())
         self.store_datapoint(datapoint)
@@ -52,3 +59,9 @@ class SpotPriceManualSource(DataSource[float]):
         logger.info(f"Spot price {datapoint[0]} retrieved at time {datapoint[1]}")
 
         return datapoint
+
+
+if __name__ == "__main__":
+    spot = SpotPriceManualSource()
+    v, t = asyncio.run(spot.fetch_new_datapoint())
+    print("datapoint:", v, t)

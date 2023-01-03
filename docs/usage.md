@@ -94,7 +94,7 @@ Options:
 
 ### Account Flag
 
-You must select an account to use for reporting. The account flag (`--account`/`-a`) is used to retrieve a [ChainedAccount](https://github.com/pydefi/chained-accounts) with a corresponding name. This `ChainedAccount` stores the account's checksum address, private key, and chain IDs. Example usage:
+You must select an account (funds address) to use for reporting. To do so, use the `--account`/`-a` flags:
 
 ```
 telliot --account acct1 report

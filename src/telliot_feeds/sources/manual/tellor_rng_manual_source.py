@@ -6,7 +6,10 @@ from eth_abi.exceptions import ValueOutOfBounds
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.utils.input_timeout import input_timeout
+from telliot_feeds.utils.input_timeout import TimeoutOccurred
 from telliot_feeds.utils.log import get_logger
+
 
 logger = get_logger(__name__)
 
@@ -21,7 +24,7 @@ class TellorRNGManualInputSource(DataSource[bytes]):
         response = None
 
         while response is None:
-            user_input = input()
+            user_input = input_timeout()
             if len(user_input) < 2:
                 print(
                     "Invalid input! Not enough characters, "
@@ -41,7 +44,7 @@ class TellorRNGManualInputSource(DataSource[bytes]):
                 continue
             print(f"\nTellorRNG value to be submitted on chain: {user_input}")
             print("Press [ENTER] to continue")
-            _ = input()
+            _ = input_timeout()
             response = val
 
         return response
@@ -52,7 +55,11 @@ class TellorRNGManualInputSource(DataSource[bytes]):
         Returns:
             Current time-stamped value
         """
-        response = self.parse_user_input()
+        try:
+            response = self.parse_user_input()
+        except TimeoutOccurred:
+            logger.info("Timeout occurred while waiting for user input")
+            return None, None
 
         datapoint = (response, datetime_now_utc())
         self.store_datapoint(datapoint)

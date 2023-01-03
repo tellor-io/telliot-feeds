@@ -1,8 +1,11 @@
+import asyncio
 from dataclasses import dataclass
 
 from telliot_feeds.datasource import DataSource
-from telliot_feeds.dtypes.datapoint import DataPoint
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
+from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.utils.input_timeout import input_timeout
+from telliot_feeds.utils.input_timeout import TimeoutOccurred
 from telliot_feeds.utils.log import get_logger
 
 
@@ -20,7 +23,7 @@ class ManualSnapshotInputSource(DataSource[float]):
         err_msg = "Invalid input. " + msg
         val = None
         while val is None:
-            inpt = input().lower()
+            inpt = input_timeout().lower()
 
             if inpt == "y":
                 val = True
@@ -31,18 +34,28 @@ class ManualSnapshotInputSource(DataSource[float]):
                 continue
 
             print(f"Submitting result: {inpt}\nPress [ENTER] to confirm.")
-            _ = input()
+            _ = input_timeout()
 
         return val
 
-    async def fetch_new_datapoint(self) -> DataPoint[float]:
+    async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
         """Update current value with time-stamped value fetched from user input.
 
         Returns:
             Current time-stamped value
         """
-        vote = self.parse_user_val()
+        try:
+            vote = self.parse_user_val()
+        except TimeoutOccurred:
+            logger.info("Timeout occurred while waiting for user input")
+            return None, None
         datapoint = (vote, datetime_now_utc())
         self.store_datapoint(datapoint)
 
         return datapoint
+
+
+if __name__ == "__main__":
+    s = ManualSnapshotInputSource()
+    v, t = asyncio.run(s.fetch_new_datapoint())
+    print("datapoint:", v, t)
