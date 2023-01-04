@@ -7,6 +7,7 @@ from web3 import Web3
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
+from telliot_feeds.feeds.dai_usd_feed import dai_usd_median_feed
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.queries.query import OracleQuery
@@ -87,6 +88,9 @@ def test_get_native_token_feed():
 
     f = get_native_token_feed(137)
     assert f == matic_usd_median_feed
+
+    f = get_native_token_feed(10200)
+    assert f == dai_usd_median_feed
 
     with pytest.raises(ValueError):
         _ = get_native_token_feed(0)

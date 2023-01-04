@@ -1,13 +1,16 @@
 # Getting Started
 
 ## Prerequisites
-Python 3.9 is required to install and use`telliot-feeds`. You can do yourself or use [docker](#setup-environment-with-docker). If you follow the docker instructions, you can skip the install and environment setup steps.
+[Python 3.9](https://www.python.org/downloads/release/python-3915/) is required to install and use`telliot-feeds`. Alternatively, you can use our [docker](https://docs.docker.com/get-started/) release. 
+
+*If you're using docker, please follow the [Docker setup instructions](#optional-docker-setup).*
 
 
 ## Install Telliot Feeds
 
-*Optional*: Create and activate a [virtual environment](https://docs.python.org/3/library/venv.html). It doesn't matter where you create the virtual environment, but your home directory is fine.
-In this example, the virtual environment is located in a subfolder called `tenv`:
+It's generally considered good practice to run telliot from a python [virtual environment](https://docs.python.org/3/library/venv.html). This is not required, but it helps prevent dependency conflicts with other Python programs running on your computer. 
+
+In this example, the virtual environment will be created in a subfolder called `tenv`:
 
 === "Linux"
 
@@ -30,12 +33,14 @@ In this example, the virtual environment is located in a subfolder called `tenv`
     source tenv/bin/activate
     ```
 
-You can install the needed dependencies with pip:
+Once the virtual environment is activated, install telliot feeds with pip:
 
     pip install telliot-feeds
 
-## (Optional) Setup environment with Docker
-If you want to configure and run telliot in a docker container (skip environment setup):
+*If your log shows no errors, that's it! Next, follow the instructions for [configuring telliot](#telliot-configuration).*
+
+## (Optional) Docker Setup
+If you want to configure and run telliot in a docker container:
 
 - pull image from docker hub `docker pull tellorofficial/telliot`
 - create the following `docker-compose.yml` using the command `echo "below text" > docker-compose.yml`:
@@ -61,20 +66,20 @@ First, create the default configuration files:
 
     telliot config init
 
-The default configuration files are created in a folder called `telliot` in the user home folder:
+The default configuration files are created in a folder called `telliot` in the user's home folder:
 
     ~/telliot
         ├── chains.json
         ├── endpoints.yaml
         └── main.yaml
 
-To show the current configuration:
+To view your current configuration at any time:
 
     telliot config show
 
 ### Add Reporting Accounts
 
-The reporter needs to know which accounts are available for submitting values to the oracle.
+The reporter (telliot) needs to know which accounts (wallet addresses) are available for submitting values to the oracle.
 Use the command line to add necessary reporting accounts/private keys.
 
 For example, to add an account called `my-matic-acct` for reporting on Polygon mainnet (chain ID 137):
@@ -99,13 +104,13 @@ You can add your RPC endpoints via the command line or by editing the `endpoints
 
 Edit `~/telliot/endpoints.yaml` to configure Telliot to use your own endpoints.
 
-If you don't have an endpoint, a free one is available at [Infura.io](http://www.infura.io).  Simply replace `INFURA_API_KEY` with the one provided by Infura.
+If you don't have your own endpoint, a free one can be obtained at [Infura.io](http://www.infura.io).  Simply replace `INFURA_API_KEY` with the one provided by Infura.
 
-Endpoints should be configured for both Ethereum mainnet and Goerli testnet.
+For the funcitonality of telliot feeds, Endpoints should be configured for both Ethereum mainnet and Goerli testnet. (even if you don't plan on reporting oracle data on those networks)
 
 **Warning! All telliot software and reporter feeds should be validated on testnets prior to deploying on mainnet.**
 
-Note that endpoints must use the websocket protocol because HTTPS endpoints do not support event listeners. If reporting on Polygon, websockets are not supported, so use an HTTPS endpoint
+Note that endpoints should use the websocket (wss) protocol because HTTPS endpoints do not support event listeners. (If reporting on Polygon, websockets are not supported, so the HTTPS endpoint is fine.)
 
 *Example `endpoints.yaml` file:*
 ```yaml
@@ -140,8 +145,9 @@ If you'd like to report legacy AMPL values, generate default AMPL configs from t
 python3 src/telliot_feeds/config.py
 ```
 
-After, add AMPL api keys (BraveNewCoin/Rapid & AnyBlock) to `~/telliot/api_keys.yaml`
-In addition, to use sources that require an API key, add them using the following example.
+This will create a `api_keys.yaml` file in your telliot folder if it doesn't already exist. Add the necessary API keys (BraveNewCoin/Rapid & AnyBlock) to `~/telliot/api_keys.yaml`. (Most reporters need not do this)
+
+Additionally, if you're going to be reporting data using sources that require API keys, add them using the following example. 
 
 *Example `api_keys.yaml` file:*
 ```yaml
