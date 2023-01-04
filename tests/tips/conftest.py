@@ -118,7 +118,11 @@ async def setup_one_time_tips(autopay_contract_setup):
     """Tip all query ids in telliot"""
     flex = await autopay_contract_setup
     count = 1  # tip must be greater than zero
-    queries = [item for item in zip(CATALOG_QUERY_IDS, CATALOG_QUERY_DATA) if CATALOG_QUERY_IDS[item[0]] != 'tellor-rng-example']
+    queries = [
+        item
+        for item in zip(CATALOG_QUERY_IDS, CATALOG_QUERY_DATA)
+        if CATALOG_QUERY_IDS[item[0]] != "tellor-rng-example"
+    ]
     for query_id, query_data in queries:
 
         _, status = await flex.autopay.write(

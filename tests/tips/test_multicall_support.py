@@ -1,5 +1,7 @@
 from multicall.constants import MULTICALL2_ADDRESSES
+
 from telliot_feeds.reporters.tips import add_multicall_support
+
 
 def test_add_multicall_support(caplog):
     # add testnet support for multicall that aren't avaialable in the package
