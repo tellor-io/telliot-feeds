@@ -154,8 +154,6 @@ class CustomXReporter(IntervalReporter):
 
         status = ResponseStatus()
 
-        address = to_checksum_address(self.account.address)
-
         # Update datafeed value
         await datafeed.source.fetch_new_datapoint()
         latest_data = datafeed.source.latest
@@ -190,7 +188,9 @@ class CustomXReporter(IntervalReporter):
             _nonce=report_count,
             _queryData=query_data,
         )
-        acc_nonce = self.endpoint._web3.eth.get_transaction_count(address)
+        acc_nonce, nonce_status = self.get_acct_nonce()
+        if not nonce_status.ok:
+            return None, nonce_status
 
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:

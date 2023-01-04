@@ -7,7 +7,6 @@ from typing import Any
 from typing import Optional
 from typing import Tuple
 
-from eth_utils import to_checksum_address
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
@@ -235,8 +234,6 @@ class DIVAProtocolReporter(Tellor360Reporter):
 
         status = ResponseStatus()
 
-        address = to_checksum_address(self.account.address)
-
         # Update datafeed value
         latest_data = await datafeed.source.fetch_new_datapoint()
         if latest_data[0] is None:
@@ -270,7 +267,9 @@ class DIVAProtocolReporter(Tellor360Reporter):
             _nonce=report_count,
             _queryData=query_data,
         )
-        acc_nonce = self.endpoint._web3.eth.get_transaction_count(address)
+        acc_nonce, nonce_status = self.get_acct_nonce()
+        if not nonce_status.ok:
+            return None, nonce_status
 
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:

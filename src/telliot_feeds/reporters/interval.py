@@ -303,6 +303,15 @@ class IntervalReporter:
     def has_native_token(self) -> bool:
         return has_native_token_funds(self.acct_addr, self.endpoint._web3, min_balance=self.min_native_token_balance)
 
+    def get_acct_nonce(self) -> tuple[Optional[int], ResponseStatus]:
+        """Get transaction count for an address"""
+        try:
+            return self.endpoint._web3.eth.get_transaction_count(self.acct_addr), ResponseStatus()
+        except ValueError as e:
+            return None, error_status("Account nonce request timed out", e=e, log=logger.warning)
+        except Exception as e:
+            return None, error_status("Unable to retrieve account nonce", e=e, log=logger.error)
+
     async def report_once(
         self,
     ) -> Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]:
@@ -334,8 +343,6 @@ class IntervalReporter:
             return None, status
 
         status = ResponseStatus()
-
-        address = to_checksum_address(self.account.address)
 
         # Update datafeed value
         await datafeed.source.fetch_new_datapoint()
@@ -371,7 +378,9 @@ class IntervalReporter:
             _nonce=report_count,
             _queryData=query_data,
         )
-        acc_nonce = self.endpoint._web3.eth.get_transaction_count(address)
+        acc_nonce, nonce_status = self.get_acct_nonce()
+        if not nonce_status.ok:
+            return None, nonce_status
 
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:
