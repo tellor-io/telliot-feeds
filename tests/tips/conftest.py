@@ -118,20 +118,19 @@ async def setup_one_time_tips(autopay_contract_setup):
     """Tip all query ids in telliot"""
     flex = await autopay_contract_setup
     count = 1  # tip must be greater than zero
-    for query_id, query_data in zip(CATALOG_QUERY_IDS, CATALOG_QUERY_DATA):
-        # legacy is query ids are not encoded the same way as the current query ids
-        # so we just avoid it here
-        if "legacy" not in CATALOG_QUERY_IDS[query_id]:
-            _, status = await flex.autopay.write(
-                "tip",
-                gas_limit=3500000,
-                legacy_gas_price=1,
-                _queryId=query_id,
-                _amount=int(count * 10**18),
-                _queryData=query_data,
-            )
-            assert status.ok
-            count += 1
+    queries = [item for item in zip(CATALOG_QUERY_IDS, CATALOG_QUERY_DATA) if CATALOG_QUERY_IDS[item[0]] != 'tellor-rng-example']
+    for query_id, query_data in queries:
+
+        _, status = await flex.autopay.write(
+            "tip",
+            gas_limit=3500000,
+            legacy_gas_price=1,
+            _queryId=query_id,
+            _amount=int(count * 10**18),
+            _queryData=query_data,
+        )
+        assert status.ok
+        count += 1
     return flex
 
 
