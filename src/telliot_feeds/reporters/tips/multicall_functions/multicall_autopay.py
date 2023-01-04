@@ -24,11 +24,14 @@ class MulticallAutopay(CallFunctions):
         Return: a list of QueryIdandFeedDetails
         to be used in the next batch call that fetches a list of timestamps for each queryId
         """
+
+        unique_ids = {feed.query_id for feed in feeds}
+
         calls = [
             self.get_multiple_values_before(
-                query_id=feed.query_id, now_timestamp=now_timestamp, max_age=max_age, max_count=max_count
+                query_id=qid, now_timestamp=now_timestamp, max_age=max_age, max_count=max_count
             )
-            for feed in feeds
+            for qid in unique_ids
         ]
         if not len(calls):
             return None, error_status("Unable to assemble getMultipleValues Call object")
