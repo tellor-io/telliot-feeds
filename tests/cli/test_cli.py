@@ -202,6 +202,7 @@ def test_account_cmd():
 
 def test_no_accounts_msg():
     """Test no accounts message appears."""
+
     def mock_find_accounts(*args, **kwargs):
         click.echo("mocking find_accounts")
         return []
