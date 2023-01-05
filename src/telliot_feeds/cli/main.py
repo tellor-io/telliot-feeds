@@ -63,7 +63,7 @@ def main(
     # Pull chain from account
     # Note: this is not be reliable because accounts can be associated with
     # multiple chains.
-    accounts = find_accounts(name=account)
+    accounts = find_accounts(name=account) if account else find_accounts()
     if len(accounts) == 0:
         logger.warning(
             "No accounts found. Add one with the account subcommand. For more info run: telliot account add --help"
