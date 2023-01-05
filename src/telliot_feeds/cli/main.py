@@ -65,7 +65,7 @@ def main(
     # multiple chains.
     accounts = find_accounts(name=account) if account else find_accounts()
     if len(accounts) == 0:
-        logger.warning(
+        click.echo(
             "No accounts found. Add one with the account subcommand. For more info run: telliot account add --help"
         )
     else:
