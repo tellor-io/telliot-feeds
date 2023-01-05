@@ -1,8 +1,9 @@
 # Add support for reporting a new spot price
-## Prerequisites
+### Prerequisites
 - Python >= 3.9, < 3.10
 - Setup environment (see [here](contributing.md))
 
+### Steps
 1. Add spot price to catalog. See `src/telliot_feeds/queries/query_catalog.py`. For example adding `TWTR/USD`:
 ```python
 query_catalog.add_entry(
@@ -40,5 +41,3 @@ SPOT_PRICE_PAIRS = [
     "TWTR/USD",
 ]
 ```
-
-Add spot price with a bunch of different sources
