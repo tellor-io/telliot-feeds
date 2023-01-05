@@ -15,6 +15,10 @@ from telliot_feeds.cli.commands.integrations import integrations
 from telliot_feeds.cli.commands.query import query
 from telliot_feeds.cli.commands.report import report
 from telliot_feeds.cli.commands.settle import settle
+from telliot_feeds.utils.log import get_logger
+
+
+logger = get_logger(__name__)
 
 # from telliot_feeds.cli.commands.tip import tip
 
@@ -60,7 +64,12 @@ def main(
     # Note: this is not be reliable because accounts can be associated with
     # multiple chains.
     accounts = find_accounts(name=account)
-    ctx.obj["CHAIN_ID"] = accounts[0].chains[0]
+    if len(accounts) == 0:
+        logger.warning(
+            "No accounts found. Add one with the account subcommand. For more info run: telliot account add --help"
+        )
+    else:
+        ctx.obj["CHAIN_ID"] = accounts[0].chains[0]
 
 
 main.add_command(report)
