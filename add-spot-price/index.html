@@ -344,6 +344,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#steps" class="md-nav__link">
+    Steps
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -587,6 +594,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#steps" class="md-nav__link">
+    Steps
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -603,12 +617,13 @@
 
 
 <h1 id="add-support-for-reporting-a-new-spot-price">Add support for reporting a new spot price<a class="headerlink" href="#add-support-for-reporting-a-new-spot-price" title="Permanent link">&para;</a></h1>
-<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Python &gt;= 3.9, &lt; 3.10</li>
-<li>
-<p>Setup environment (see <a href="../contributing/">here</a>)</p>
-</li>
+<li>Setup environment (see <a href="../contributing/">here</a>)</li>
+</ul>
+<h3 id="steps">Steps<a class="headerlink" href="#steps" title="Permanent link">&para;</a></h3>
+<ol>
 <li>
 <p>Add spot price to catalog. See <code>src/telliot_feeds/queries/query_catalog.py</code>. For example adding <code>TWTR/USD</code>:
 <div class="highlight"><pre><span></span><code><span class="n">query_catalog</span><span class="o">.</span><span class="n">add_entry</span><span class="p">(</span>
@@ -647,8 +662,7 @@
 <span class="p">]</span>
 </code></pre></div></p>
 </li>
-</ul>
-<p>Add spot price with a bunch of different sources</p>
+</ol>
 
 
 

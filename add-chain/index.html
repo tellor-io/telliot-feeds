@@ -358,6 +358,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#steps" class="md-nav__link">
+    Steps
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -587,6 +594,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#steps" class="md-nav__link">
+    Steps
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -605,15 +619,17 @@
 <h1 id="add-new-chain-support">Add New Chain Support<a class="headerlink" href="#add-new-chain-support" title="Permanent link">&para;</a></h1>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Complete steps in telliot-core for supporting a new chain <a href="https://tellor-io.github.io/telliot-core/add-chain/">here</a>.</li>
-<li>
-<p>Install telliot-core in editable mode <code>pip install -e ~/path/to/telliot-core</code> to include new chain support in that dependency.</p>
-</li>
-<li>
-<p>Add multicall support <code>src/telliot_feeds/reporters/tips/__init__.py</code> (assuming Multicall contract is deployed on chain).</p>
-</li>
-<li>Add chain ID to <code>AUTOPAY_CHAINS</code> constant in <code>src/telliot_feeds/reporters/reporter_autopay_utils.py</code>.</li>
+<li>Complete steps in <code>telliot-core</code> for supporting a new chain <a href="https://tellor-io.github.io/telliot-core/add-chain/">here</a>.</li>
+<li>For testing reporting on your new chain, install <code>telliot-core</code> in editable mode <code>pip install -e ~/path/to/telliot-core</code> to include new chain support in that dependency. You may need to comment out the locked version of <code>telliot-core</code> in <code>setup.cfg</code> to do this, then install <code>telliot-feeds</code> in editable mode as well.</li>
 </ul>
+<h3 id="steps">Steps<a class="headerlink" href="#steps" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Skip this step if your chain is listed <a href="https://github.com/mds1/multicall#multicall3-contract-addresses">here</a>. If not, then deploy your own Multicall contract on your new chain. After, update <code>src/telliot_feeds/reporters/tips/__init__.py</code> to include that contract's address.</li>
+<li>Add chain ID to <code>AUTOPAY_CHAINS</code> constant in <code>src/telliot_feeds/reporters/reporter_autopay_utils.py</code>.</li>
+<li>Make sure there's a datafeed for the chain's native token in <code>src/telliot_feeds/feeds/</code>. If there isn't, add one by following the steps <a href="https://tellor-io.github.io/telliot-feeds/add-spot-price/">here</a>.</li>
+<li>Support profit checks by updating <code>get_native_token_feed</code> in <code>src/telliot_feeds/utils/reporter_utils.py</code> to return the datafeed for your new chain's native token.</li>
+<li>Once you've done a new release of <code>telliot-core</code>, update that dependency in this package's <code>setup.cfg</code> to the new version.</li>
+</ol>
 
 
 
