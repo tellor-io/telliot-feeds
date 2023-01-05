@@ -37,6 +37,7 @@ from telliot_feeds.feeds.twap_manual_feed import twap_manual_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.feeds.vesq import vsq_usd_median_feed
+from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 
 
 CATALOG_FEEDS = {
@@ -68,6 +69,7 @@ CATALOG_FEEDS = {
     "trb-usd-spot": trb_usd_median_feed,
     "albt-usd-spot": albt_usd_median_feed,
     "rai-usd-spot": rai_usd_median_feed,
+    "xdai-usd-spot": xdai_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
