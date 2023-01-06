@@ -42,8 +42,7 @@ class Snapshot(AbiQuery):
 
         return ValueType(abi_type="bool", packed=False)
 ```
-
-- Add sources (subclass `DataSource`)
+3. Next you'll need to add a data source for your query type in `src/telliot_feeds/sources/`. For an example of an automated data source, see `src/telliot_feeds/sources/etherscan_gas.py`. For an example of a data source that requires manual entry, see `src/telliot_feeds/sources/manual/snapshot.py`.
 - Add feed (instance of `DataFeed`)
 - Add example instance of the query type to catalog
 - Add support for building custom instances of the new query type (using the `--build-feed` flag)
