@@ -624,15 +624,13 @@
 </ul>
 <h3 id="steps">Steps<a class="headerlink" href="#steps" title="Permanent link">&para;</a></h3>
 <ol>
-<li>
-<p>Add spot price to catalog. See <code>src/telliot_feeds/queries/query_catalog.py</code>. For example adding <code>ETH/USD</code>:
+<li>Add spot price to catalog. See <code>src/telliot_feeds/queries/query_catalog.py</code>. For example adding <code>ETH/USD</code>:
 <div class="highlight"><pre><span></span><code><span class="n">query_catalog</span><span class="o">.</span><span class="n">add_entry</span><span class="p">(</span>
     <span class="n">tag</span><span class="o">=</span><span class="s2">&quot;eth-usd-spot&quot;</span><span class="p">,</span>
     <span class="n">title</span><span class="o">=</span><span class="s2">&quot;ETH/USD spot price&quot;</span><span class="p">,</span>
     <span class="n">q</span><span class="o">=</span><span class="n">SpotPrice</span><span class="p">(</span><span class="n">asset</span><span class="o">=</span><span class="s2">&quot;eth&quot;</span><span class="p">,</span> <span class="n">currency</span><span class="o">=</span><span class="s2">&quot;usd&quot;</span><span class="p">),</span>
 <span class="p">)</span>
-</code></pre></div></p>
-</li>
+</code></pre></div></li>
 <li>
 <p>Add data feed in <code>src/telliot_feeds/feeds/</code>. For example, for adding <code>ETH/USD</code>, create file <code>src/telliot_feeds/feeds/eth_usd_feed.py</code>:
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">telliot_feeds.datafeed</span> <span class="kn">import</span> <span class="n">DataFeed</span>
@@ -659,12 +657,10 @@
         <span class="p">],</span>
     <span class="p">),</span>
 <span class="p">)</span>
-</code></pre></div></p>
-</li>
-</ol>
-<p>Above, we use the <code>PriceAggregator</code> to aggregate the price from multiple sources (automatic API fetches, not sources that require manual entry). The <code>algorithm</code> can be <code>median</code> or <code>mean</code>. The <code>sources</code> can be any combination of those found in <code>src/telliot_feeds/sources/price/spot/</code>, or you can add your own.</p>
+</code></pre></div>
+    Above, we use the <code>PriceAggregator</code> to aggregate the price from multiple sources (automatic API fetches, not sources that require manual entry). The <code>algorithm</code> can be <code>median</code> or <code>mean</code>. The <code>sources</code> can be any combination of those found in <code>src/telliot_feeds/sources/price/spot/</code>, or you can add your own.</p>
 <p>You're limited by what asset and currency pairs are supported by the underlying APIs (data providers). For example, if you want to add <code>ETH/JPY</code>, you might use the <code>CoinGeckoSpotPriceSource</code> and <code>BinanceSpotPriceSource</code> (which support <code>ETH/JPY</code>), but not the <code>CoinbaseSpotPriceSource</code> (which does not support <code>ETH/JPY</code>). You'll have to check the documentation of the underlying APIs for which pairs they support.</p>
-<ol>
+</li>
 <li>
 <p>Add feed to <code>CATALOG_FEEDS</code> constant in <code>src/telliot_feeds/feeds/__init__.py</code>:
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">telliot_feeds.feeds.eth_usd_feed</span> <span class="kn">import</span> <span class="n">eth_usd_manual_feed</span>
@@ -675,15 +671,13 @@
 <span class="p">}</span>
 </code></pre></div></p>
 </li>
-<li>
-<p>Add currency/asset to supported lists in <code>src/telliot_feeds/queries/price/spot_price.py</code>. For example, for adding <code>ETH/USD</code>:
+<li>Add currency/asset to supported lists in <code>src/telliot_feeds/queries/price/spot_price.py</code>. For example, for adding <code>ETH/USD</code>:
 <div class="highlight"><pre><span></span><code><span class="n">CURRENCIES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;usd&quot;</span><span class="p">,</span> <span class="s2">&quot;jpy&quot;</span><span class="p">,</span> <span class="s2">&quot;eth&quot;</span><span class="p">]</span>
 <span class="n">SPOT_PRICE_PAIRS</span> <span class="o">=</span> <span class="p">[</span>
     <span class="o">...</span>
     <span class="s2">&quot;ETH/USD&quot;</span><span class="p">,</span>
 <span class="p">]</span>
-</code></pre></div></p>
-</li>
+</code></pre></div></li>
 </ol>
 
 
