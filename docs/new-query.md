@@ -1,9 +1,48 @@
 # Add New Data Type (Custom Oracle Query)
 ## Steps
-1. Your new data type, or query, should be defined in the [dataSpecs](https:://github.com/tellor-io/dataSpecs) repo. If not, start creating the spec [there](https://github.com/tellor-io/dataSpecs/issues/new?assignees=&labels=&template=new_query_type.yaml&title=%5BNew+Query+Type%5D%3A+) first. Once that's done, follow the steps below.
-2. Subclass `AbiQuery` in `src/telliot_feeds/queries/abi_query.py`. For example, if you 
-- Links to [dataSpecs](https://github.com/tellor-io/dataSpecs) issue & new query type file
-- Add query type (subclass `AbiQuery`)
+1. Your new data type, or query, should be defined in the [dataSpecs](https:://github.com/tellor-io/dataSpecs) repo. If not, [create the spec there](https://github.com/tellor-io/dataSpecs/issues/new?assignees=&labels=&template=new_query_type.yaml&title=%5BNew+Query+Type%5D%3A+) first. Once that's done, follow the steps below.
+2. Create a subclass of `AbiQuery` in `src/telliot_feeds/queries/`. For example, if you wanted to implement the [Snapshot query type](https://github.com/tellor-io/dataSpecs/blob/main/types/Snapshot.md), it would look like this:
+```python
+import logging
+from dataclasses import dataclass
+from typing import Optional
+
+from telliot_feeds.dtypes.value_type import ValueType
+from telliot_feeds.queries.abi_query import AbiQuery
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class Snapshot(AbiQuery):
+    """Returns the proposal result for a given proposal id (an IPFS hash for a certain proposal) coming from Snapshot.
+       A boolean value indicating whether a proposal succeeded (True) or failed (False) should be returned.
+
+    Attributes:
+        proposal_id:
+            Specifies the requested data a of a valid proposal on Snapshot.
+
+    See https://snapshot.org/ for proposal results.
+    See the data spec for more info about this query type:
+    https://github.com/tellor-io/dataSpecs/blob/main/types/Snapshot.md
+    """
+
+    proposalId: Optional[str]
+
+    #: ABI used for encoding/decoding parameters
+    abi = [{"name": "proposalId", "type": "string"}]
+
+    @property
+    def value_type(self) -> ValueType:
+        """Data type returned for a Snapshot query.
+
+        - `bool`: a boolean value true or false equivalent to uint8 restricted to the values 0 and 1
+        - `packed`: false
+        """
+
+        return ValueType(abi_type="bool", packed=False)
+```
+
 - Add sources (subclass `DataSource`)
 - Add feed (instance of `DataFeed`)
 - Add example instance of the query type to catalog
