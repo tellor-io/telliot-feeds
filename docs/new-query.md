@@ -1,5 +1,7 @@
-# Add New Data Type (Custom Oracle Queries)
-## Checklist
+# Add New Data Type (Custom Oracle Query)
+## Steps
+1. Your new data type, or query, should be defined in the [dataSpecs](https:://github.com/tellor-io/dataSpecs) repo. If not, start creating the spec [there](https://github.com/tellor-io/dataSpecs/issues/new?assignees=&labels=&template=new_query_type.yaml&title=%5BNew+Query+Type%5D%3A+) first. Once that's done, follow the steps below.
+2. Subclass `AbiQuery` in `src/telliot_feeds/queries/abi_query.py`. For example, if you 
 - Links to [dataSpecs](https://github.com/tellor-io/dataSpecs) issue & new query type file
 - Add query type (subclass `AbiQuery`)
 - Add sources (subclass `DataSource`)
