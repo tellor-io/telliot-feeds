@@ -44,8 +44,42 @@ class Snapshot(AbiQuery):
         return ValueType(abi_type="bool", packed=False)
 ```
 3. Next you'll need to add a data source for your query type in `src/telliot_feeds/sources/`. For an example of an automated data source, see `src/telliot_feeds/sources/etherscan_gas.py`. For an example of a data source that requires manual entry, see `src/telliot_feeds/sources/manual/snapshot.py`.
-4. Add feed (instance of `DataFeed`)
-5. Add example instance of the query type to catalog
-6. Add support for building custom instances of the new query type (using the `--build-feed` flag)
+4. Create an instance of the `DataFeed` class in `src/telliot_feeds/feeds/`. For example, if you had implemented the `SpotPrice` query type and added sources for `MATIC/USD`, the `DataFeed` subclass would look like this (`src/telliot_feeds/feeds/matic_usd_feed.py`):
+```python
+from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.queries.price.spot_price import SpotPrice
+from telliot_feeds.sources.price.spot.binance import BinanceSpotPriceSource
+from telliot_feeds.sources.price.spot.bittrex import BittrexSpotPriceSource
+from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceSource
+from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
+from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceSource
+from telliot_feeds.sources.price.spot.kraken import KrakenSpotPriceSource
+from telliot_feeds.sources.price_aggregator import PriceAggregator
+
+matic_usd_median_feed = DataFeed(
+    query=SpotPrice(asset="MATIC", currency="USD"),
+    source=PriceAggregator(
+        asset="matic",
+        currency="usd",
+        algorithm="median",
+        sources=[
+            CoinGeckoSpotPriceSource(asset="matic", currency="usd"),
+            BittrexSpotPriceSource(asset="matic", currency="usd"),
+            BinanceSpotPriceSource(asset="matic", currency="usdt"),
+            CoinbaseSpotPriceSource(asset="matic", currency="usd"),
+            GeminiSpotPriceSource(asset="matic", currency="usd"),
+            KrakenSpotPriceSource(asset="matic", currency="usd"),
+        ],
+    ),
+)
+```
+5. Add example instance of the query type to catalog. For example, if you wanted an example `Snapshot` query instance in the catalog, edit `src/telliot_feeds/queries/query_catalog.py` to include:
+```python
+query_catalog.add_entry(
+    tag="snapshot-proposal-example",
+    title="Snapshot proposal example",
+    q=Snapshot(proposalId="cce9760adea906176940ae5fd05bc007cc9252b524832065800635484cb5cb57"),
+)
+```
 7. Make sure you've added tests for your new query type, data sources, data feed, & changes to the CLI.
 8. Submit a PR to the `telliot-feeds` repo. Included an example `submitValue` transaction for your new query type in the PR description. For example [this PR]().
