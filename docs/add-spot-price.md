@@ -40,6 +40,7 @@ eth_usd_median_feed = DataFeed(
     ),
 )
 ```
+
 Above, we use the `PriceAggregator` to aggregate the price from multiple sources (automatic API fetches, not sources that require manual entry). The `algorithm` can be `median` or `mean`. The `sources` can be any combination of those found in `src/telliot_feeds/sources/price/spot/`, or you can add your own.
 
 You're limited by what asset and currency pairs are supported by the underlying APIs (data providers). For example, if you want to add `ETH/JPY`, you might use the `CoinGeckoSpotPriceSource` and `BinanceSpotPriceSource` (which support `ETH/JPY`), but not the `CoinbaseSpotPriceSource` (which does not support `ETH/JPY`). You'll have to check the documentation of the underlying APIs for which pairs they support.
