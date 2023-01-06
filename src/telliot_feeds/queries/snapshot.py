@@ -17,7 +17,9 @@ class Snapshot(AbiQuery):
         proposal_id:
             Specifies the requested data a of a valid proposal on Snapshot.
 
-    see https://snapshot.org/ for proposal results.
+    See https://snapshot.org/ for proposal results.
+    See the data spec for more info about this query type:
+    https://github.com/tellor-io/dataSpecs/blob/main/types/Snapshot.md
     """
 
     proposalId: Optional[str]
