@@ -101,8 +101,6 @@ class TransactionList:
 
         print("num transactions before filter: ", len(self.transactions))
 
-        valid_transactions = []
-
         for transaction in self.transactions:
             if transaction.item_id not in inclusion_dict:
                 inclusion_dict[transaction.item_id]: Dict[str, Any] = {}
