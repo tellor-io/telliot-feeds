@@ -85,17 +85,17 @@ class FundedFeedFilter:
         else:
             logger.info(f"No Api source found for {query_tag} to check priceThreshold")
             return None
+        if query_id not in self.prices:
+            value_now = await datafeed.source.fetch_new_datapoint()  # type: ignore
 
-        value_now = await datafeed.source.fetch_new_datapoint()  # type: ignore
+            if not value_now:
+                note = f"Unable to fetch {datafeed} price for tip calculation"
+                _ = error_status(note=note, log=logger.warning)
+                return None
 
-        if not value_now:
-            note = f"Unable to fetch {datafeed} price for tip calculation"
-            _ = error_status(note=note, log=logger.warning)
-            return None
+            self.prices[query_id] = value_now[0]
 
-        value_now = value_now[0]
-
-        return _get_price_change(previous_val=value_before, current_val=value_now)
+        return _get_price_change(previous_val=value_before, current_val=self.prices[query_id])
 
     def api_support_check(self, feeds: list[QueryIdandFeedDetails]) -> list[QueryIdandFeedDetails]:
         """Filter funded feeds where threshold is gt zero and no telliot catalog feeds support"""
@@ -124,6 +124,10 @@ class FundedFeedFilter:
             for current, previous in zip(
                 feed.queryid_timestamps_values_list[::-1], feed.queryid_timestamps_values_list[-2::-1]
             ):
+                # if current timestamp is before feed start then no need to check
+                if feed.params.startTime > current.timestamp:
+                    feed.queryid_timestamps_values_list.remove(current)
+                    continue
                 in_eligibile_window = self.is_timestamp_first_in_window(
                     timestamp_before=previous.timestamp,
                     timestamp_to_check=current.timestamp,
@@ -183,6 +187,7 @@ class FundedFeedFilter:
 
         Returns: list of feeds that could possibly reward a tip
         """
+        self.prices: dict[bytes, float] = {}
         for feed in list(feeds):
             # check if your timestamp will be first in window for
             # this feed if not discard feed_details

@@ -104,7 +104,9 @@ class FlashbotsReporter(Tellor360Reporter):
             _nonce=timestamp_count,
             _queryData=query_data,
         )
-        acc_nonce = self.endpoint._web3.eth.get_transaction_count(self.acct_addr)
+        acc_nonce, nonce_status = self.get_acct_nonce()
+        if not nonce_status.ok:
+            return None, nonce_status
 
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:

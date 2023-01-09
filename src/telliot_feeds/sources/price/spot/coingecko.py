@@ -31,6 +31,7 @@ coingecko_coin_id = {
     "vsq": "vesq",
     "albt": "allianceblock",
     "rai": "rai",
+    "xdai": "xdai",
 }
 
 

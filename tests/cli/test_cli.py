@@ -198,3 +198,19 @@ def test_account_cmd():
     assert "create" in msg
     assert "key" in msg
     assert "delete" in msg
+
+
+def test_no_accounts_msg():
+    """Test no accounts message appears."""
+
+    def mock_find_accounts(*args, **kwargs):
+        click.echo("mocking find_accounts")
+        return []
+
+    with mock.patch("telliot_feeds.cli.main.find_accounts", side_effect=mock_find_accounts):
+        runner = CliRunner()
+        result = runner.invoke(cli_main, ["account", "--help"])
+        msg = result.stdout.lower()
+
+        assert not result.exception
+        assert "no accounts found" in msg
