@@ -1,7 +1,8 @@
 # Getting Started
 
 ## Prerequisites
-[Python 3.9](https://www.python.org/downloads/release/python-3915/) is required to install and use`telliot-feeds`. Alternatively, you can use our [docker](https://docs.docker.com/get-started/) release. 
+- An account with test TRB and your chain's native token. You can get test TRB from any Tellor playground contract [here](https://docs.tellor.io/tellor/the-basics/contracts-reference) by calling the `faucet` function with your address as the argument. For your chain's native token, there's usually a faucet available. For example, [Polygon's faucet](https://faucet.polygon.technology/) for reporting on Mumbai testnet.
+- [Python 3.9](https://www.python.org/downloads/release/python-3915/) is required to install and use`telliot-feeds`. Alternatively, you can use our [docker](https://docs.docker.com/get-started/) release. 
 
 *If you're using docker, please follow the [Docker setup instructions](#optional-docker-setup).*
 
