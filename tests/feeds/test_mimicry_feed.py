@@ -7,7 +7,7 @@ from telliot_feeds.feeds.mimicry_feed import mimicry_collection_stat_datafeed
 async def test_fetch_new_datapoint():
     """Retrieve TAMI index and NFT market cap from source"""
 
-    crypto_coven_address = "0x5180db8f5c931aae63c74266b211f580155ecac8"
+    crypto_coven_address = "0x5180db8F5c931aaE63c74266b211F580155ecac8"
 
     mimicry_collection_stat_datafeed.source.chainId = 1
     mimicry_collection_stat_datafeed.source.collectionAddress = crypto_coven_address

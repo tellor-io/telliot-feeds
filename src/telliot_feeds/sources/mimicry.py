@@ -99,6 +99,10 @@ class TransactionList:
 
         inclusion_dict: Dict[Union[str, int], Dict[str, Any]] = {}
 
+        print("num transactions before filter: ", len(self.transactions))
+
+        valid_transactions = []
+
         for transaction in self.transactions:
             if transaction.item_id not in inclusion_dict:
                 inclusion_dict[transaction.item_id]: Dict[str, Any] = {}
@@ -123,6 +127,7 @@ class TransactionList:
                 inclusion_dict[transaction.item_id]["is_valid"] = True
 
         self.transactions = [tx for tx in self.transactions if inclusion_dict[tx.item_id]["is_valid"]]
+        print(len(self.transactions))
 
     def create_index_value_history(self) -> IndexValueHistoryList:
         """
@@ -146,6 +151,7 @@ class TransactionList:
 
         count = 0
 
+        print("number of transactions after filtering: ", len(self.transactions))
         for transaction in self.transactions:
 
             is_first_sale = transaction.item_id not in transactions_dict
@@ -153,10 +159,26 @@ class TransactionList:
             transactions_dict[transaction.item_id] = transaction
 
             item_count = len(transactions_dict.keys())
+            # print("item count:", item_count)
+
+            # all_last_sold_value = 0
+            # included = []
+
+            # for i in transactions_dict.values():
+
+            #     if i.item_id in included:
+            #         continue
+
+            #     all_last_sold_value += i.price
+
+            #     included.append(transaction.item_id)
 
             all_last_sold_value = sum([tx.price for tx in transactions_dict.values()])
+            # print("tx price: ", transaction.price)
+            # print("all_last_sold_value: ", all_last_sold_value)
 
             index_value = all_last_sold_value / (item_count * last_divisor)
+            # print("index value: ", index_value)
 
             if count == 0:
                 last_index_value = index_value
@@ -208,6 +230,7 @@ class MimicryCollectionStatSource(DataSource[str]):
             return None
 
         index_value = index_value_history.get_index_value()
+        print("index value ", index_value)
         index_ratios = index_value_history.get_index_ratios()
 
         time_adjusted_values = [ratio * index_value for ratio in index_ratios]
@@ -331,6 +354,7 @@ class MimicryCollectionStatSource(DataSource[str]):
                 logger.error(f"Unable to parse price from Reservoir FloorPrice API response: {str(e)}")
                 return None
 
+        print("we want to see all values: ", all, " length of list ", len(tx_list.transactions))
         return tx_list
 
     async def fetch_new_datapoint(
@@ -348,7 +372,7 @@ class MimicryCollectionStatSource(DataSource[str]):
             return None, None
 
         if self.metric == 0:
-            past_year_sales_data = await self.request_historical_sales_data(contract=self.collectionAddress, all=False)
+            past_year_sales_data = await self.request_historical_sales_data(contract=self.collectionAddress, all=True)
             if past_year_sales_data:
                 tami = self.tami(past_year_sales_data)
 
