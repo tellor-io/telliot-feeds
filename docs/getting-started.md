@@ -99,7 +99,11 @@ then you'll be set to report.
 
 ### Configure endpoints
 
-You can add your RPC endpoints via the command line or by editing the `endpoints.yaml` file. To edit them via the command line, use the following command:
+You can add your RPC endpoints via the command line or by editing the `endpoints.yaml` file. For example, using [nano](https://www.nano-editor.org/):
+    
+    nano ~/telliot/endpoints.yaml
+
+To edit them via the command line, use the following command:
 
     telliot -a myacct report
 
