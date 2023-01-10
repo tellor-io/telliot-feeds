@@ -32,7 +32,7 @@ retry_strategy = Retry(
 adapter = HTTPAdapter(max_retries=retry_strategy)
 
 
-def get_mainnet_web3() -> Optional[Web3]:
+def get_mainnet_web3() -> Any:
     """Get mainnet TelliotConfig."""
     cfg = TelliotConfig()
     cfg.main.chain_id = 1
