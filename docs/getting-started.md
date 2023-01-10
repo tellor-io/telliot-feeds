@@ -103,13 +103,11 @@ You can add your RPC endpoints via the command line or by editing the `endpoints
     
     nano ~/telliot/endpoints.yaml
 
-To edit them via the command line, use the following command:
+To configure your endpoint via the CLI, use the following command:
 
     telliot -a myacct report
 
-Edit `~/telliot/endpoints.yaml` to configure Telliot to use your own endpoints.
-
-If you don't have your own endpoint, a free one can be obtained at [Infura.io](http://www.infura.io).  Simply replace `INFURA_API_KEY` with the one provided by Infura.
+If you don't have your own node URL, a free one can be obtained at [Infura.io](http://www.infura.io).  Simply replace `INFURA_API_KEY` with the one provided by Infura.
 
 For the funcitonality of telliot feeds, Endpoints should be configured for both Ethereum mainnet and Goerli testnet. (even if you don't plan on reporting oracle data on those networks)
 
