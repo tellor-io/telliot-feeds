@@ -29,7 +29,7 @@ def test_no_mainnet_endpoint():
         w3 = get_mainnet_web3()
         assert w3 is None
 
-     
+
 @pytest.mark.asyncio
 async def test_no_mainnet_configured(caplog, monkeypatch):
     """Test that no eth blockhash is fetched if no mainnet endpoint is configured."""
