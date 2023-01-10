@@ -56,6 +56,15 @@ def reporter() -> None:
     pass
 
 
+@click.option(
+    "--signature-account",
+    "-sa",
+    "signature_account",
+    help="Name of signature account used for reporting with Flashbots.",
+    required=False,
+    nargs=1,
+    type=str,
+)
 @reporter.command()
 @click.option(
     "--build-feed",
@@ -292,17 +301,17 @@ async def report(
     custom_autopay_contract: Optional[ChecksumAddress],
     tellor_360: bool,
     stake: float,
+    signature_account: str,
     check_rewards: bool,
     use_random_feeds: bool,
 ) -> None:
     """Report values to Tellor oracle"""
     name = ctx.obj["ACCOUNT_NAME"]
-    sig_acct_name = ctx.obj["SIGNATURE_ACCOUNT_NAME"]
 
-    if sig_acct_name is not None:
+    if signature_account is not None:
         try:
             if not signature_password:
-                signature_password = getpass.getpass(f"Enter password for {sig_acct_name} keyfile: ")
+                signature_password = getpass.getpass(f"Enter password for {signature_account} keyfile: ")
         except ValueError:
             click.echo("Invalid Password")
 
@@ -323,13 +332,13 @@ async def report(
         if not account.is_unlocked:
             account.unlock(password)
 
-        if sig_acct_name is not None:
-            sig_account = find_accounts(name=sig_acct_name)[0]
+        if signature_account is not None:
+            sig_account = find_accounts(name=signature_account)[0]
             if not sig_account.is_unlocked:
                 sig_account.unlock(password)
             sig_acct_addr = to_checksum_address(sig_account.address)
         else:
-            sig_acct_addr = ""  # type: ignore
+            sig_acct_addr = ""
 
         # If we need to build a datafeed
         if build_feed:

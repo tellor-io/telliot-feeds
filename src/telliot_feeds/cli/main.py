@@ -20,24 +20,13 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
-# from telliot_feeds.cli.commands.tip import tip
-
 
 @click.group()
 @click.option(
     "--account",
     "-a",
     "account",
-    help="Name of account used for reporting.",
-    required=False,
-    nargs=1,
-    type=str,
-)
-@click.option(
-    "--signature-account",
-    "-sa",
-    "signature_account",
-    help="Name of signature account used for reporting with Flashbots.",
+    help="Name of account used for reporting, staking, etc.",
     required=False,
     nargs=1,
     type=str,
@@ -51,13 +40,11 @@ logger = get_logger(__name__)
 def main(
     ctx: Context,
     account: str,
-    signature_account: str,
     test_config: bool,
 ) -> None:
     """Telliot command line interface"""
     ctx.ensure_object(dict)
     ctx.obj["ACCOUNT_NAME"] = account
-    ctx.obj["SIGNATURE_ACCOUNT_NAME"] = signature_account
     ctx.obj["TEST_CONFIG"] = test_config
 
     # Pull chain from account
@@ -73,7 +60,6 @@ def main(
 
 
 main.add_command(report)
-# main.add_command(tip)
 main.add_command(query)
 main.add_command(catalog)
 main.add_command(settle)
