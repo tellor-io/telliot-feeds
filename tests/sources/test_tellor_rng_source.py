@@ -24,6 +24,15 @@ async def test_rng():
 
 
 @pytest.mark.asyncio
+async def test_no_mainnet_configured(monkeypatch, caplog):
+    """Test that no eth blockhash is fetched if no mainnet endpoint is configured."""
+    monkeypatch.setattr("telliot_feeds.sources.blockhash_aggregator.ETHEREUM_CHAIN_ID", 123456789)
+    v = await get_eth_hash(0)
+    assert v is None
+    assert "Web3 not connected" in caplog.text
+
+
+@pytest.mark.asyncio
 async def test_rng_failures(caplog):
     """Simulate API failures."""
     timestamp = 1649769707
