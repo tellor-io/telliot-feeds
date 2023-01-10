@@ -18,6 +18,8 @@ $ telliot -a acct1 report -ncr -qt trb-usd-spot
 
 # Reporting Basics
 
+**Note: When using the `report` command, `telliot` will automatically attempt to stake the minimum required to report. To see the current stake amount, find the oracle contract on your desired chain [here](https://docs.tellor.io/tellor/the-basics/contracts-reference), then call `getStakeAmount` in the contract's read functions section on the block explorer. The returned value is denominated in wei.**
+
 ## Help flag
 
 Use the help flag to view all available commands and option flags:
