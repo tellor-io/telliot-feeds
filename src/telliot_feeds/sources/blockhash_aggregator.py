@@ -86,7 +86,7 @@ def block_num_from_timestamp(timestamp: int) -> Optional[int]:
 async def get_eth_hash(timestamp: int) -> Optional[str]:
     """Fetches next Ethereum blockhash after timestamp from API."""
     if w3 is None:
-        logger.error("Web3 not connected")
+        logger.warning("Web3 not connected")
         return None
 
     try:
