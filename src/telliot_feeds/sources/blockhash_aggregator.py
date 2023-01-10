@@ -23,10 +23,14 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
+ETHEREUM_CHAIN_ID = 1
 cfg = TelliotConfig()
-cfg.main.chain_id = 1
-cfg.get_endpoint().connect()
-w3 = cfg.get_endpoint().web3
+cfg.main.chain_id = ETHEREUM_CHAIN_ID
+try:
+    cfg.get_endpoint().connect()
+    w3 = cfg.get_endpoint().web3
+except ValueError:
+    w3 = None
 
 retry_strategy = Retry(
     total=3,
@@ -81,6 +85,9 @@ def block_num_from_timestamp(timestamp: int) -> Optional[int]:
 
 async def get_eth_hash(timestamp: int) -> Optional[str]:
     """Fetches next Ethereum blockhash after timestamp from API."""
+    if w3 is None:
+        logger.error("Web3 not connected")
+        return None
 
     try:
         this_block = w3.eth.get_block("latest")
