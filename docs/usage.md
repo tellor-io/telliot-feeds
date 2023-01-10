@@ -110,6 +110,26 @@ Use the `report` command to submit data to Tellor oracles. Example `report` comm
 telliot -a acct2 report
 ```
 
+When calling the `report` command, `telliot` will ask you to confirm the reporter's settings:
+  
+```
+...
+Reporting query tag: eth-usd-spot
+Current chain ID: 80001
+Expected percent profit: 100.0%
+Transaction type: 0
+Gas Limit: 350000
+Legacy gas price (gwei): None
+Max fee (gwei): None
+Priority fee (gwei): None
+Gas price speed: fast
+Desired stake amount: 10.0
+Minimum native token balance: 0.25 MATIC
+
+Press [ENTER] to confirm settings.
+```
+The default settings are probably fine to use on testnets, but you may want to adjust them for mainnet using the `report` command flags/options.
+
 By default, the reporter will continue to attempt reporting whenever out of reporting lock. Use the `--submit-once` flag to only report once:
 
 ```
