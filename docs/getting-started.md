@@ -1,7 +1,7 @@
 # Getting Started
 
 ## Prerequisites
-- An account with test TRB and your chain's native token. You can get test TRB from any Tellor playground contract [here](https://docs.tellor.io/tellor/the-basics/contracts-reference) by calling the `faucet` function with your address as the argument. For your chain's native token, there's usually a faucet available. For example, [Polygon's faucet](https://faucet.polygon.technology/) for reporting on Mumbai testnet.
+- An account with test TRB and your chain's native token. You can get test TRB from any Tellor playground contract [here](https://docs.tellor.io/tellor/the-basics/contracts-reference) by calling the `faucet` function with your address as the argument; however, for Polygon's Mumbai testnet and Ethereum's Goerli testnet, tweet @trbfaucet for test TRB on those chains. For your chain's native token, there's usually a faucet available. For example, [Polygon's faucet](https://faucet.polygon.technology/) for reporting on Mumbai testnet.
 - [Python 3.9](https://www.python.org/downloads/release/python-3915/) is required to install and use`telliot-feeds`. Alternatively, you can use our [docker](https://docs.docker.com/get-started/) release. 
 
 *If you're using docker, please follow the [Docker setup instructions](#optional-docker-setup).*
@@ -83,7 +83,7 @@ To view your current configuration at any time:
 The reporter (telliot) needs to know which accounts (wallet addresses) are available for submitting values to the oracle.
 Use the command line to add necessary reporting accounts/private keys.
 
-For example, to add an account called `my-matic-acct` for reporting on Polygon mainnet (chain ID 137):
+For example, to add an account called `my-matic-acct` for reporting on Polygon mainnet (chain ID 137). You'll need to replace the private key in this example with the private key that holds your TRB for reporting:
 
     >> telliot account add my-matic-acct 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
     Enter encryption password for my-matic-acct: 
