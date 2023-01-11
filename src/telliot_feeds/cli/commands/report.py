@@ -59,7 +59,7 @@ def reporter() -> None:
 @click.option(
     "--account",
     "-a",
-    "account",
+    "account_str",
     help="Name of account used for reporting, staking, etc.",
     required=False,
     nargs=1,
@@ -317,6 +317,7 @@ async def report(
 ) -> None:
     """Report values to Tellor oracle"""
     ctx.obj["ACCOUNT_NAME"] = account_str
+    ctx.obj["SIGNATURE_ACCOUNT_NAME"] = signature_account
     # Pull chain from account
     # Note: this is not be reliable because accounts can be associated with
     # multiple chains.
