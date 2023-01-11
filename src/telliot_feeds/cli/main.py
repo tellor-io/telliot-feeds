@@ -5,7 +5,6 @@ Configure telliot_feeds's settings via this interface's command line flags
 or in the configuration file.
 """
 import click
-from chained_accounts import find_accounts
 from click.core import Context
 
 from telliot_feeds.cli.commands.account import account
@@ -23,15 +22,6 @@ logger = get_logger(__name__)
 
 @click.group()
 @click.option(
-    "--account",
-    "-a",
-    "account",
-    help="Name of account used for reporting, staking, etc.",
-    required=False,
-    nargs=1,
-    type=str,
-)
-@click.option(
     "--test-config",
     is_flag=True,
     help="Runs command with test configuration (developer use only)",
@@ -39,24 +29,11 @@ logger = get_logger(__name__)
 @click.pass_context
 def main(
     ctx: Context,
-    account: str,
     test_config: bool,
 ) -> None:
     """Telliot command line interface"""
     ctx.ensure_object(dict)
-    ctx.obj["ACCOUNT_NAME"] = account
     ctx.obj["TEST_CONFIG"] = test_config
-
-    # Pull chain from account
-    # Note: this is not be reliable because accounts can be associated with
-    # multiple chains.
-    accounts = find_accounts(name=account) if account else find_accounts()
-    if len(accounts) == 0:
-        click.echo(
-            "No accounts found. Add one with the account subcommand. For more info run: telliot account add --help"
-        )
-    else:
-        ctx.obj["CHAIN_ID"] = accounts[0].chains[0]
 
 
 main.add_command(report)

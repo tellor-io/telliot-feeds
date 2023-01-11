@@ -57,6 +57,15 @@ def reporter() -> None:
 
 
 @click.option(
+    "--account",
+    "-a",
+    "account",
+    help="Name of account used for reporting, staking, etc.",
+    required=False,
+    nargs=1,
+    type=str,
+)
+@click.option(
     "--signature-account",
     "-sa",
     "signature_account",
@@ -301,12 +310,23 @@ async def report(
     custom_autopay_contract: Optional[ChecksumAddress],
     tellor_360: bool,
     stake: float,
+    account_str: str,
     signature_account: str,
     check_rewards: bool,
     use_random_feeds: bool,
 ) -> None:
     """Report values to Tellor oracle"""
-    name = ctx.obj["ACCOUNT_NAME"]
+    ctx.obj["ACCOUNT_NAME"] = account_str
+    # Pull chain from account
+    # Note: this is not be reliable because accounts can be associated with
+    # multiple chains.
+    accounts = find_accounts(name=account_str) if account_str else find_accounts()
+    if len(accounts) == 0:
+        click.echo(
+            "No accounts found. Add one with the account subcommand. For more info run: telliot account add --help"
+        )
+    else:
+        ctx.obj["CHAIN_ID"] = accounts[0].chains[0]  # used in reporter_cli_core
 
     if signature_account is not None:
         try:
@@ -318,7 +338,7 @@ async def report(
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
-        core._config, account = setup_config(core.config, account_name=name)
+        core._config, account = setup_config(core.config, account_name=account_str)
 
         endpoint = check_endpoint(core._config)
 
