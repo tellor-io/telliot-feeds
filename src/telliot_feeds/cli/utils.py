@@ -68,7 +68,7 @@ def print_reporter_settings(
     click.echo(f"Priority fee (gwei): {priority_fee}")
     click.echo(f"Gas price speed: {gas_price_speed}")
     click.echo(f"Desired stake amount: {stake_amount}")
-    click.echo(f"Minimum native token balance: {min_native_token_balance} ETH")
+    click.echo(f"Minimum native token balance (e.g. ETH if on Ethereum mainnet): {min_native_token_balance}")
     click.echo("\n")
 
 
