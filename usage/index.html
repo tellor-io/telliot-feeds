@@ -567,6 +567,7 @@
 <li><a href="#reporting-on-polygon">Reporting on Polygon</a></li>
 </ul>
 <h1 id="reporting-basics">Reporting Basics<a class="headerlink" href="#reporting-basics" title="Permanent link">&para;</a></h1>
+<p><strong>Note: When using the <code>report</code> command, <code>telliot</code> will automatically attempt to stake the minimum required to report. To see the current stake amount, find the oracle contract on your desired chain <a href="https://docs.tellor.io/tellor/the-basics/contracts-reference">here</a>, then call <code>getStakeAmount</code> in the contract's read functions section on the block explorer. The returned value is denominated in wei.</strong></p>
 <h2 id="help-flag">Help flag<a class="headerlink" href="#help-flag" title="Permanent link">&para;</a></h2>
 <p>Use the help flag to view all available commands and option flags:</p>
 <div class="highlight"><pre><span></span><code>$ telliot --help
@@ -642,6 +643,23 @@ Options:
 <p>Use the <code>report</code> command to submit data to Tellor oracles. Example <code>report</code> command usage:</p>
 <div class="highlight"><pre><span></span><code>telliot -a acct2 report
 </code></pre></div>
+<p>When calling the <code>report</code> command, <code>telliot</code> will ask you to confirm the reporter's settings:</p>
+<p><div class="highlight"><pre><span></span><code>...
+Reporting query tag: eth-usd-spot
+Current chain ID: 80001
+Expected percent profit: 100.0%
+Transaction type: 0
+Gas Limit: 350000
+Legacy gas price (gwei): None
+Max fee (gwei): None
+Priority fee (gwei): None
+Gas price speed: fast
+Desired stake amount: 10.0
+Minimum native token balance: 0.25 MATIC
+
+Press [ENTER] to confirm settings.
+</code></pre></div>
+The default settings are probably fine to use on testnets, but you may want to adjust them for mainnet using the <code>report</code> command flags/options.</p>
 <p>By default, the reporter will continue to attempt reporting whenever out of reporting lock. Use the <code>--submit-once</code> flag to only report once:</p>
 <div class="highlight"><pre><span></span><code>telliot -a staker1 report --submit-once
 </code></pre></div>

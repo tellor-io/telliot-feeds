@@ -724,7 +724,10 @@
 
 <h1 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h1>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
-<p><a href="https://www.python.org/downloads/release/python-3915/">Python 3.9</a> is required to install and use<code>telliot-feeds</code>. Alternatively, you can use our <a href="https://docs.docker.com/get-started/">docker</a> release. </p>
+<ul>
+<li>An account with test TRB and your chain's native token. You can get test TRB from any Tellor playground contract <a href="https://docs.tellor.io/tellor/the-basics/contracts-reference">here</a> by calling the <code>faucet</code> function with your address as the argument; however, for Polygon's Mumbai testnet and Ethereum's Goerli testnet, tweet @trbfaucet for test TRB on those chains. For your chain's native token, there's usually a faucet available. For example, <a href="https://faucet.polygon.technology/">Polygon's faucet</a> for reporting on Mumbai testnet.</li>
+<li><a href="https://www.python.org/downloads/release/python-3915/">Python 3.9</a> is required to install and use<code>telliot-feeds</code>. Alternatively, you can use our <a href="https://docs.docker.com/get-started/">docker</a> release. </li>
+</ul>
 <p><em>If you're using docker, please follow the <a href="#optional-docker-setup">Docker setup instructions</a>.</em></p>
 <h2 id="install-telliot-feeds">Install Telliot Feeds<a class="headerlink" href="#install-telliot-feeds" title="Permanent link">&para;</a></h2>
 <p>It's generally considered good practice to run telliot from a python <a href="https://docs.python.org/3/library/venv.html">virtual environment</a>. This is not required, but it helps prevent dependency conflicts with other Python programs running on your computer. </p>
@@ -787,7 +790,7 @@ source tenv/bin/activate
 <h3 id="add-reporting-accounts">Add Reporting Accounts<a class="headerlink" href="#add-reporting-accounts" title="Permanent link">&para;</a></h3>
 <p>The reporter (telliot) needs to know which accounts (wallet addresses) are available for submitting values to the oracle.
 Use the command line to add necessary reporting accounts/private keys.</p>
-<p>For example, to add an account called <code>my-matic-acct</code> for reporting on Polygon mainnet (chain ID 137):</p>
+<p>For example, to add an account called <code>my-matic-acct</code> for reporting on Polygon mainnet (chain ID 137). You'll need to replace the private key in this example with the private key that holds your TRB for reporting:</p>
 <div class="highlight"><pre><span></span><code>&gt;&gt; telliot account add my-matic-acct 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
 Enter encryption password for my-matic-acct: 
 Confirm password: 
@@ -799,11 +802,13 @@ Added new account my-matic-acct (address= 0xcd19cf65af3a3aea1f44a7cb0257fc7455f2
 <p>After configuring accounts, read the <a href="https://tellor-io.github.io/telliot-feeds/usage/">Usage</a> section,
 then you'll be set to report.</p>
 <h3 id="configure-endpoints">Configure endpoints<a class="headerlink" href="#configure-endpoints" title="Permanent link">&para;</a></h3>
-<p>You can add your RPC endpoints via the command line or by editing the <code>endpoints.yaml</code> file. To edit them via the command line, use the following command:</p>
+<p>You can add your RPC endpoints via the command line or by editing the <code>endpoints.yaml</code> file. For example, using <a href="https://www.nano-editor.org/">nano</a>:</p>
+<div class="highlight"><pre><span></span><code>nano ~/telliot/endpoints.yaml
+</code></pre></div>
+<p>To configure your endpoint via the CLI, use the following command:</p>
 <div class="highlight"><pre><span></span><code>telliot -a myacct report
 </code></pre></div>
-<p>Edit <code>~/telliot/endpoints.yaml</code> to configure Telliot to use your own endpoints.</p>
-<p>If you don't have your own endpoint, a free one can be obtained at <a href="http://www.infura.io">Infura.io</a>.  Simply replace <code>INFURA_API_KEY</code> with the one provided by Infura.</p>
+<p>If you don't have your own node URL, a free one can be obtained at <a href="http://www.infura.io">Infura.io</a>.  Simply replace <code>INFURA_API_KEY</code> with the one provided by Infura.</p>
 <p>For the funcitonality of telliot feeds, Endpoints should be configured for both Ethereum mainnet and Goerli testnet. (even if you don't plan on reporting oracle data on those networks)</p>
 <p><strong>Warning! All telliot software and reporter feeds should be validated on testnets prior to deploying on mainnet.</strong></p>
 <p>Note that endpoints should use the websocket (wss) protocol because HTTPS endpoints do not support event listeners. (If reporting on Polygon, websockets are not supported, so the HTTPS endpoint is fine.)</p>
