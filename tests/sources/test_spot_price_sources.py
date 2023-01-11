@@ -103,6 +103,8 @@ async def test_coingecko():
     """Test retrieving from Coingecko price source."""
     v, t = await get_price("btc", "usd", service["coingecko"])
     validate_price(v, t)
+    v, t = await get_price("xmr", "usd", service["coingecko"])
+    validate_price(v, t)
 
 
 @pytest.mark.asyncio

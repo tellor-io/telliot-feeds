@@ -168,3 +168,9 @@ query_catalog.add_entry(
     title="XDAI/USD spot price",
     q=SpotPrice(asset="xdai", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="xmr-usd-spot",
+    title="XMR/USD spot price",
+    q=SpotPrice(asset="XMR", currency="usd"),
+)

@@ -34,6 +34,7 @@ SPOT_PRICE_PAIRS = [
     "ALBT/USD",
     "RAI/USD",
     "XDAI/USD",
+    "XMR/USD"
 ]
 
 

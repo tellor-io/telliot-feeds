@@ -70,6 +70,7 @@ CATALOG_FEEDS = {
     "albt-usd-spot": albt_usd_median_feed,
     "rai-usd-spot": rai_usd_median_feed,
     "xdai-usd-spot": xdai_usd_median_feed,
+    "xmr-usd-spot": xmr_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

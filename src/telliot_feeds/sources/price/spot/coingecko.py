@@ -32,6 +32,7 @@ coingecko_coin_id = {
     "albt": "allianceblock",
     "rai": "rai",
     "xdai": "xdai",
+    "xmr": "monero"
 }
 
 
