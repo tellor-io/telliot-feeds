@@ -83,7 +83,7 @@ To view your current configuration at any time:
 The reporter (telliot) needs to know which accounts (wallet addresses) are available for submitting values to the oracle.
 Use the command line to add necessary reporting accounts/private keys.
 
-For example, to add an account called `my-matic-acct` for reporting on Polygon mainnet (chain ID 137):
+For example, to add an account called `my-matic-acct` for reporting on Polygon mainnet (chain ID 137). You'll need to replace the private key in this example with the private key that holds your TRB for reporting:
 
     >> telliot account add my-matic-acct 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
     Enter encryption password for my-matic-acct: 
