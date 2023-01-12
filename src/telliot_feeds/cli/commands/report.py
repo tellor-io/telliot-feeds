@@ -60,8 +60,8 @@ def reporter() -> None:
     "--account",
     "-a",
     "account_str",
-    help="Name of account used for reporting, staking, etc.",
-    required=False,
+    help="Name of account used for reporting, staking, etc. More info: run `telliot account --help`",
+    required=True,
     nargs=1,
     type=str,
 )
@@ -322,10 +322,11 @@ async def report(
     # Note: this is not be reliable because accounts can be associated with
     # multiple chains.
     accounts = find_accounts(name=account_str) if account_str else find_accounts()
-    if len(accounts) == 0:
+    if not accounts:
         click.echo(
-            "No accounts found. Add one with the account subcommand. For more info run: telliot account add --help"
+            f"No account found named: \"{account_str}\".\nAdd one with the account subcommand.\nFor more info run: `telliot account add --help`"
         )
+        return
     else:
         ctx.obj["CHAIN_ID"] = accounts[0].chains[0]  # used in reporter_cli_core
 
