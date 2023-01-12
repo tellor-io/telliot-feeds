@@ -207,10 +207,10 @@ def test_no_accounts_msg():
         click.echo("mocking find_accounts")
         return []
 
-    with mock.patch("telliot_feeds.cli.main.find_accounts", side_effect=mock_find_accounts):
+    with mock.patch("telliot_feeds.cli.commands.report.find_accounts", side_effect=mock_find_accounts):
         runner = CliRunner()
-        result = runner.invoke(cli_main, ["account", "--help"])
+        result = runner.invoke(cli_main, ["report", "-a", "noaccountassociatedwiththisname"])
         msg = result.stdout.lower()
 
         assert not result.exception
-        assert "no accounts found" in msg
+        assert "no account found" in msg
