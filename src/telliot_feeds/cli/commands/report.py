@@ -4,6 +4,7 @@ from typing import Optional
 
 import click
 from chained_accounts import find_accounts
+from chained_accounts import ChainedAccount
 from click.core import Context
 from eth_typing import ChecksumAddress
 from eth_utils import to_checksum_address
@@ -32,6 +33,7 @@ from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import create_custom_contract
 from telliot_feeds.utils.reporter_utils import prompt_for_abi
+from telliot_feeds.cli.utils import get_account_from_name
 
 
 logger = get_logger(__name__)
@@ -318,18 +320,12 @@ async def report(
     """Report values to Tellor oracle"""
     ctx.obj["ACCOUNT_NAME"] = account_str
     ctx.obj["SIGNATURE_ACCOUNT_NAME"] = signature_account
-    # Pull chain from account
-    # Note: this is not be reliable because accounts can be associated with
-    # multiple chains.
-    accounts = find_accounts(name=account_str) if account_str else find_accounts()
+
+    accounts = get_account_from_name(account_str)
     if not accounts:
-        click.echo(
-            f'No account found named: "{account_str}".\nAdd one with the account subcommand.'
-            "\nFor more info run: `telliot account add --help`"
-        )
         return
-    else:
-        ctx.obj["CHAIN_ID"] = accounts[0].chains[0]  # used in reporter_cli_core
+
+    ctx.obj["CHAIN_ID"] = accounts[0].chains[0]  # used in reporter_cli_core
 
     if signature_account is not None:
         try:

@@ -261,3 +261,14 @@ def valid_transaction_type(ctx: click.Context, param: Any, value: str) -> int:
         raise click.BadParameter(f"Transaction type given ({value}) is not supported ({supported}).")
     except ValueError:
         raise click.BadParameter("Transaction type must be an integer.")
+
+
+def get_account_from_name(name: Optional[str]) -> list[ChainedAccount]:
+    """Get account from name or return any account if no name is given."""
+    accounts = find_accounts(name=name) if name else find_accounts()
+    if not accounts:
+        click.echo(
+            f'No account found named: "{name}".\nAdd one with the account subcommand.'
+            "\nFor more info run: `telliot account add --help`"
+        )
+    return accounts
