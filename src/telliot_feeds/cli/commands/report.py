@@ -324,7 +324,8 @@ async def report(
     accounts = find_accounts(name=account_str) if account_str else find_accounts()
     if not accounts:
         click.echo(
-            f"No account found named: \"{account_str}\".\nAdd one with the account subcommand.\nFor more info run: `telliot account add --help`"
+            f'No account found named: "{account_str}".\nAdd one with the account subcommand.'
+            "\nFor more info run: `telliot account add --help`"
         )
         return
     else:
