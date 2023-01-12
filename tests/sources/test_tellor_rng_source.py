@@ -6,6 +6,7 @@ import requests
 
 from telliot_feeds.sources.blockhash_aggregator import get_btc_hash
 from telliot_feeds.sources.blockhash_aggregator import get_eth_hash
+from telliot_feeds.sources.blockhash_aggregator import get_mainnet_web3
 from telliot_feeds.sources.blockhash_aggregator import TellorRNGManualSource
 
 
@@ -21,6 +22,21 @@ async def test_rng():
 
         assert isinstance(v, bytes)
         assert isinstance(t, datetime)
+
+
+def test_no_mainnet_endpoint():
+    with mock.patch("telliot_core.apps.telliot_config.TelliotConfig.get_endpoint", side_effect=ValueError):
+        w3 = get_mainnet_web3()
+        assert w3 is None
+
+
+@pytest.mark.asyncio
+async def test_no_mainnet_configured(caplog, monkeypatch):
+    """Test that no eth blockhash is fetched if no mainnet endpoint is configured."""
+    monkeypatch.setattr("telliot_feeds.sources.blockhash_aggregator.get_mainnet_web3", lambda: None)
+    v = await get_eth_hash(0)
+    assert v is None
+    assert "Web3 not connected" in caplog.text
 
 
 @pytest.mark.asyncio

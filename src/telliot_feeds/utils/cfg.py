@@ -1,4 +1,3 @@
-import os
 from typing import List
 from typing import Optional
 from typing import Tuple
@@ -14,27 +13,6 @@ from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
-
-
-def mainnet_config() -> Optional[TelliotConfig]:
-    cfg = TelliotConfig()
-    cfg.main.chain_id = 1
-    endpoint = cfg.get_endpoint()
-
-    if "INFURA_API_KEY" in endpoint.url:
-        endpoint.url = f'wss://mainnet.infura.io/ws/v3/{os.environ["INFURA_API_KEY"]}'
-
-    accounts = find_accounts(chain_id=1)
-    if not accounts:
-        # Create a test account using PRIVATE_KEY defined on github.
-        key = os.getenv("PRIVATE_KEY", None)
-        if key:
-            ChainedAccount.add("git-mainnet-key", chains=1, key=os.environ["PRIVATE_KEY"], password="")
-        else:
-            logger.warning("No mainnet account added!")
-            return None
-
-    return cfg
 
 
 def setup_config(cfg: TelliotConfig, account_name: str) -> Tuple[TelliotConfig, ChainedAccount]:
