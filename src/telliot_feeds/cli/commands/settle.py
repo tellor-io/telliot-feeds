@@ -4,6 +4,7 @@ import click
 from click.core import Context
 from telliot_core.cli.utils import async_run
 
+from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.cli.utils import valid_diva_chain
 from telliot_feeds.integrations.diva_protocol.contract import DivaOracleTellorContract
@@ -38,21 +39,34 @@ def diva() -> None:
     required=False,
     default=100,
 )
+@click.option(
+    "--account",
+    "-a",
+    "account_str",
+    help="Name of account used for reporting, staking, etc. More info: run `telliot account --help`",
+    required=True,
+    nargs=1,
+    type=str,
+)
 @click.option("-pswd", "--password", type=str)
 @click.pass_context
 @async_run
 async def settle(
     ctx: Context,
+    account_str: str,
     pool_id: int,
     password: str,
     legacy_gas_price: int = 100,
 ) -> None:
     """Settle a derivative pool in DIVA Protocol."""
+    ctx.obj["ACCOUNT_NAME"] = account_str
+    accounts = get_accounts_from_name(account_str)
+    if not accounts:
+        return
 
-    name = ctx.obj["ACCOUNT_NAME"]
     try:
         if not password:
-            password = getpass.getpass(f"Enter password for {name} keyfile: ")
+            password = getpass.getpass(f"Enter password for {account_str} keyfile: ")
     except ValueError:
         click.echo("Invalid Password")
 

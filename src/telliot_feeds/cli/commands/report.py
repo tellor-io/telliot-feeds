@@ -10,6 +10,7 @@ from eth_utils import to_checksum_address
 from telliot_core.cli.utils import async_run
 
 from telliot_feeds.cli.utils import build_feed_from_input
+from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import parse_profit_input
 from telliot_feeds.cli.utils import print_reporter_settings
 from telliot_feeds.cli.utils import reporter_cli_core
@@ -56,6 +57,15 @@ def reporter() -> None:
     pass
 
 
+@click.option(
+    "--account",
+    "-a",
+    "account_str",
+    help="Name of account used for reporting, staking, etc. More info: run `telliot account --help`",
+    required=True,
+    nargs=1,
+    type=str,
+)
 @click.option(
     "--signature-account",
     "-sa",
@@ -301,12 +311,20 @@ async def report(
     custom_autopay_contract: Optional[ChecksumAddress],
     tellor_360: bool,
     stake: float,
+    account_str: str,
     signature_account: str,
     check_rewards: bool,
     use_random_feeds: bool,
 ) -> None:
     """Report values to Tellor oracle"""
-    name = ctx.obj["ACCOUNT_NAME"]
+    ctx.obj["ACCOUNT_NAME"] = account_str
+    ctx.obj["SIGNATURE_ACCOUNT_NAME"] = signature_account
+
+    accounts = get_accounts_from_name(account_str)
+    if not accounts:
+        return
+
+    ctx.obj["CHAIN_ID"] = accounts[0].chains[0]  # used in reporter_cli_core
 
     if signature_account is not None:
         try:
@@ -318,7 +336,7 @@ async def report(
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
-        core._config, account = setup_config(core.config, account_name=name)
+        core._config, account = setup_config(core.config, account_name=account_str)
 
         endpoint = check_endpoint(core._config)
 

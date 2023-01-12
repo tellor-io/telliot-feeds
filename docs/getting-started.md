@@ -105,7 +105,7 @@ You can add your RPC endpoints via the command line or by editing the `endpoints
 
 To configure your endpoint via the CLI, use the following command:
 
-    telliot -a myacct report
+    telliot report -a myacct
 
 If you don't have your own node URL, a free one can be obtained at [Infura.io](http://www.infura.io).  Simply replace `INFURA_API_KEY` with the one provided by Infura.
 
