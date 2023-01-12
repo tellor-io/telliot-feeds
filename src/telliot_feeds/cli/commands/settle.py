@@ -4,11 +4,11 @@ import click
 from click.core import Context
 from telliot_core.cli.utils import async_run
 
+from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.cli.utils import valid_diva_chain
 from telliot_feeds.integrations.diva_protocol.contract import DivaOracleTellorContract
 from telliot_feeds.utils.log import get_logger
-from telliot_feeds.cli.utils import get_account_from_name
 
 logger = get_logger(__name__)
 
@@ -60,7 +60,7 @@ async def settle(
 ) -> None:
     """Settle a derivative pool in DIVA Protocol."""
     ctx.obj["ACCOUNT_NAME"] = account_str
-    accounts = get_account_from_name(account_str)
+    accounts = get_accounts_from_name(account_str)
     if not accounts:
         return
 

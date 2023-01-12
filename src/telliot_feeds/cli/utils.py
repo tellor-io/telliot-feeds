@@ -263,9 +263,9 @@ def valid_transaction_type(ctx: click.Context, param: Any, value: str) -> int:
         raise click.BadParameter("Transaction type must be an integer.")
 
 
-def get_account_from_name(name: Optional[str]) -> list[ChainedAccount]:
+def get_accounts_from_name(name: Optional[str]) -> list[ChainedAccount]:
     """Get account from name or return any account if no name is given."""
-    accounts = find_accounts(name=name) if name else find_accounts()
+    accounts: list[ChainedAccount] = find_accounts(name=name) if name else find_accounts()
     if not accounts:
         click.echo(
             f'No account found named: "{name}".\nAdd one with the account subcommand.'

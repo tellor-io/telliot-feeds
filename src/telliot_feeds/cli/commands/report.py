@@ -4,13 +4,13 @@ from typing import Optional
 
 import click
 from chained_accounts import find_accounts
-from chained_accounts import ChainedAccount
 from click.core import Context
 from eth_typing import ChecksumAddress
 from eth_utils import to_checksum_address
 from telliot_core.cli.utils import async_run
 
 from telliot_feeds.cli.utils import build_feed_from_input
+from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import parse_profit_input
 from telliot_feeds.cli.utils import print_reporter_settings
 from telliot_feeds.cli.utils import reporter_cli_core
@@ -33,7 +33,6 @@ from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import create_custom_contract
 from telliot_feeds.utils.reporter_utils import prompt_for_abi
-from telliot_feeds.cli.utils import get_account_from_name
 
 
 logger = get_logger(__name__)
@@ -321,7 +320,7 @@ async def report(
     ctx.obj["ACCOUNT_NAME"] = account_str
     ctx.obj["SIGNATURE_ACCOUNT_NAME"] = signature_account
 
-    accounts = get_account_from_name(account_str)
+    accounts = get_accounts_from_name(account_str)
     if not accounts:
         return
 
