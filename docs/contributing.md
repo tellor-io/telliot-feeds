@@ -2,7 +2,7 @@
 
 ## Development Environment Setup
 
-*These instructions assume that a working Python interpreter (version >=3.8)
+*These instructions assume that a working Python interpreter (version >=3.9 & <3.10)
 is already installed on the system.*
 
 Clone telliot repositories to a local working directory:
@@ -15,6 +15,13 @@ Change directories:
 
 Create and activate a [virtual environment](https://docs.python.org/3/library/venv.html).  In this example, the virtual environment is 
 located in a subfolder called `tenv`:
+
+=== "Mac"
+
+    ```
+    python3.9 -m venv tenv
+    source tenv/bin/activate
+    ```
 
 === "Linux"
 
