@@ -624,7 +624,7 @@
 </ul>
 <h3 id="steps">Steps<a class="headerlink" href="#steps" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Skip this step if your chain is listed <a href="https://github.com/mds1/multicall#multicall3-contract-addresses">here</a>. If not, then deploy your own Multicall contract on your new chain. After, update <code>src/telliot_feeds/reporters/tips/__init__.py</code> to include that contract's address.</li>
+<li>Skip this entire first step if your chain is listed <a href="https://github.com/mds1/multicall#multicall3-contract-addresses">here</a>. If your chain was not listed at that link (already supported in the multicall package), then deploy your own Multicall contract on your new chain, and after, update <code>src/telliot_feeds/reporters/tips/__init__.py</code> to include that contract's address. Again, skip this step if your chain is listed <a href="https://github.com/mds1/multicall#multicall3-contract-addresses">here</a>.</li>
 <li>Add chain ID to <code>AUTOPAY_CHAINS</code> constant in <code>src/telliot_feeds/reporters/reporter_autopay_utils.py</code>.</li>
 <li>Make sure there's a datafeed for the chain's native token in <code>src/telliot_feeds/feeds/</code>. If there isn't, add one by following the steps <a href="https://tellor-io.github.io/telliot-feeds/add-spot-price/">here</a>.</li>
 <li>Support profit checks by updating <code>get_native_token_feed</code> in <code>src/telliot_feeds/utils/reporter_utils.py</code> to return the datafeed for your new chain's native token.</li>

@@ -806,10 +806,9 @@ then you'll be set to report.</p>
 <div class="highlight"><pre><span></span><code>nano ~/telliot/endpoints.yaml
 </code></pre></div>
 <p>To configure your endpoint via the CLI, use the following command:</p>
-<div class="highlight"><pre><span></span><code>telliot -a myacct report
+<div class="highlight"><pre><span></span><code>telliot report -a myacct
 </code></pre></div>
 <p>If you don't have your own node URL, a free one can be obtained at <a href="http://www.infura.io">Infura.io</a>.  Simply replace <code>INFURA_API_KEY</code> with the one provided by Infura.</p>
-<p>For the funcitonality of telliot feeds, Endpoints should be configured for both Ethereum mainnet and Goerli testnet. (even if you don't plan on reporting oracle data on those networks)</p>
 <p><strong>Warning! All telliot software and reporter feeds should be validated on testnets prior to deploying on mainnet.</strong></p>
 <p>Note that endpoints should use the websocket (wss) protocol because HTTPS endpoints do not support event listeners. (If reporting on Polygon, websockets are not supported, so the HTTPS endpoint is fine.)</p>
 <p><em>Example <code>endpoints.yaml</code> file:</em>

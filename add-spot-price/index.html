@@ -663,7 +663,7 @@
 </li>
 <li>
 <p>Add feed to <code>CATALOG_FEEDS</code> constant in <code>src/telliot_feeds/feeds/__init__.py</code>:
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">telliot_feeds.feeds.eth_usd_feed</span> <span class="kn">import</span> <span class="n">eth_usd_manual_feed</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">telliot_feeds.feeds.eth_usd_feed</span> <span class="kn">import</span> <span class="n">eth_usd_median_feed</span>
 
 <span class="n">CATALOG_FEEDS</span> <span class="o">=</span> <span class="p">{</span>
     <span class="o">...</span>
@@ -678,6 +678,33 @@
     <span class="s2">&quot;ETH/USD&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 </code></pre></div></li>
+<li>Test your new feed in <code>tests/feeds/</code>. For example, once you've created a datafeed for an <code>ETH/USD</code> spot price using an aggregate of a few price sourcees, create file <code>tests/feeds/test_eth_usd_feed.py</code>:
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">statistics</span>
+
+<span class="kn">import</span> <span class="nn">pytest</span>
+
+<span class="kn">from</span> <span class="nn">telliot_feeds.feeds.eth_usd_feed</span> <span class="kn">import</span> <span class="n">eth_usd_median_feed</span>
+
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">asyncio</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">test_eth_usd_median_feed</span><span class="p">(</span><span class="n">caplog</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve median ETH/USD price.&quot;&quot;&quot;</span>
+    <span class="n">v</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="k">await</span> <span class="n">eth_usd_median_feed</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">fetch_new_datapoint</span><span class="p">()</span>
+
+    <span class="k">assert</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="k">assert</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="p">(</span>
+        <span class="s2">&quot;sources used in aggregate: 4&quot;</span> <span class="ow">in</span> <span class="n">caplog</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">or</span> <span class="s2">&quot;sources used in aggregate: 5&quot;</span> <span class="ow">in</span> <span class="n">caplog</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ETH/USD Price: </span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Get list of data sources from sources dict</span>
+    <span class="n">source_prices</span> <span class="o">=</span> <span class="p">[</span><span class="n">source</span><span class="o">.</span><span class="n">latest</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">eth_usd_median_feed</span><span class="o">.</span><span class="n">source</span><span class="o">.</span><span class="n">sources</span> <span class="k">if</span> <span class="n">source</span><span class="o">.</span><span class="n">latest</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+    <span class="c1"># Make sure error is less than decimal tolerance</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">v</span> <span class="o">-</span> <span class="n">statistics</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">source_prices</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">6</span>
+</code></pre></div></li>
+<li>Create a pull request to merge your changes into the <code>main</code> branch <a href="https://github.com/tellor-io/telliot-feeds/compare">here</a>.</li>
 </ol>
 
 

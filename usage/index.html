@@ -557,7 +557,7 @@
 <h1 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h1>
 <p>Prerequisites: <a href="https://tellor-io.github.io/telliot-feeds/getting-started/">Getting Started</a></p>
 <p>To report data to Tellor oracles, or access any other functionality, use the <code>telliot</code> CLI. A basic example:</p>
-<div class="highlight"><pre><span></span><code>$ telliot -a acct1 report -ncr -qt trb-usd-spot
+<div class="highlight"><pre><span></span><code>$ telliot report -a acct1 -ncr -qt trb-usd-spot
 </code></pre></div>
 <p><strong>Be sure to always confirm the correct settings when prompted and read chain-specific usage sections before setting up your reporter!</strong></p>
 <h1 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h1>
@@ -641,7 +641,7 @@ Options:
 </code></pre></div>
 <h2 id="report-command">Report Command<a class="headerlink" href="#report-command" title="Permanent link">&para;</a></h2>
 <p>Use the <code>report</code> command to submit data to Tellor oracles. Example <code>report</code> command usage:</p>
-<div class="highlight"><pre><span></span><code>telliot -a acct2 report
+<div class="highlight"><pre><span></span><code>telliot report -a acct2
 </code></pre></div>
 <p>When calling the <code>report</code> command, <code>telliot</code> will ask you to confirm the reporter's settings:</p>
 <p><div class="highlight"><pre><span></span><code>...
@@ -661,35 +661,32 @@ Press [ENTER] to confirm settings.
 </code></pre></div>
 The default settings are probably fine to use on testnets, but you may want to adjust them for mainnet using the <code>report</code> command flags/options.</p>
 <p>By default, the reporter will continue to attempt reporting whenever out of reporting lock. Use the <code>--submit-once</code> flag to only report once:</p>
-<div class="highlight"><pre><span></span><code>telliot -a staker1 report --submit-once
+<div class="highlight"><pre><span></span><code>telliot report -a staker1 --submit-once
 </code></pre></div>
 <h3 id="build-feed-flag">Build Feed Flag<a class="headerlink" href="#build-feed-flag" title="Permanent link">&para;</a></h3>
 <p>Use the build-a-feed flag (<code>--build-feed</code>) to build a DataFeed of a QueryType with one or more QueryParameters. When reporting, the CLI will list the QueryTypes this flag supports. To select a QueryType, enter a type from the list provided. Then, enter in the corresponding QueryParameters for the QueryType you have selected, and telliot will build the Query and select the appropriate source.</p>
-<div class="highlight"><pre><span></span><code>telliot -a staker1 report --build-feed --submit-once -p YOLO
+<div class="highlight"><pre><span></span><code>telliot report -a staker1 --build-feed --submit-once -p YOLO
 </code></pre></div>
 <h2 id="profit-flag">Profit Flag<a class="headerlink" href="#profit-flag" title="Permanent link">&para;</a></h2>
 <p><strong>Reporting for profit is extremely competitive and profit estimates aren't guarantees that you won't lose money!</strong></p>
 <p>Use this flag (<code>--profit/-p</code>) to set an expected profit. The default is 100%, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use the <code>"YOLO"</code> string:</p>
-<div class="highlight"><pre><span></span><code>telliot -a acct1 report -p YOLO
+<div class="highlight"><pre><span></span><code>telliot report -a acct1 -p YOLO
 </code></pre></div>
 <p>Normal profit flag usage:</p>
-<div class="highlight"><pre><span></span><code>telliot -a acct4 report -p 2
+<div class="highlight"><pre><span></span><code>telliot report -a acct4 -p 2
 </code></pre></div>
 <p><strong>Note: Skipping profit checks does not skip checks for tips on the <a href="https://github.com/tellor-io/autoPay">AutoPay contract</a>. If you'd like to skip these checks as well, use the <code>--no-check-rewards/-ncr</code> flag.</strong></p>
 <h2 id="gas-fee-transaction-type-flags">Gas, Fee, &amp; Transaction Type Flags<a class="headerlink" href="#gas-fee-transaction-type-flags" title="Permanent link">&para;</a></h2>
 <p>If gas fees and transaction types (<code>--tx-type/-tx</code>) aren't specified by the user, defaults and estimates will be used/retrieved.</p>
 <p>The <code>--gas-price/-gp</code> flag is for legacy transactions, while the <code>--max-fee/-mf</code> and <code>--priority-fee/-pf</code> flags are for type 2 transactions (EIP-1559). If sending legacy transactions, you can also override the gas price estimate speed using the <code>--gas-price-speed/-gps</code> flag. To set the gas limit used for the actual <code>submitValue()</code> transaction, use the <code>--gas-limit/-gl</code> flag.</p>
 <p>Example usage:</p>
-<div class="highlight"><pre><span></span><code>telliot -a acct3 report -tx 0 -gl 310000 -gp 9001 -p 22
+<div class="highlight"><pre><span></span><code>telliot report -a acct3 -tx 0 -gl 310000 -gp 9001 -p 22
 </code></pre></div>
 <h1 id="reporting-on-ethereum">Reporting on Ethereum<a class="headerlink" href="#reporting-on-ethereum" title="Permanent link">&para;</a></h1>
 <p>Both transaction types (0 &amp; 2) are supported for reporting.</p>
 <h2 id="regular-usage">Regular Usage<a class="headerlink" href="#regular-usage" title="Permanent link">&para;</a></h2>
 <p>It's not advised to report without Flashbots, unless on a testnet like Goerli, because transactions sent to the public mempool on Ethereum mainnet will most likely be <a href="https://www.paradigm.xyz/2020/08/ethereum-is-a-dark-forest/">front-run</a>, so you'll lose money.</p>
-<p>If you want to report without flashbots on Ethereum mainnet, use the <code>--no-flashbots/-nfb</code> flag.</p>
-<p>Example usage:</p>
-<div class="highlight"><pre><span></span><code>telliot -a acct1 -nfb report
-</code></pre></div>
+<p>By default, <code>telliot</code> will report without Flashbots. You need to use the signature account flag (<code>--signature-account/-sa</code>) to report with Flashbots. See <a href="#using-flashbots">below</a> for more info.</p>
 <h2 id="using-flashbots">Using Flashbots<a class="headerlink" href="#using-flashbots" title="Permanent link">&para;</a></h2>
 <p>The Flashbots organization provides an endpoint, or relay, to bypass the public mempool and submit transaction bundles directly to miners. More info <a href="https://github.com/flashbots/pm">here</a>.</p>
 <p>Even using Flashbots, reporting on Ethereum mainnet is competitive. Other endpoints are available to experiment with (<a href="https://github.com/Mining-DAO/mev-geth#quick-start">MiningDAO</a>, <a href="https://mistx.stoplight.io/">mistX</a>).</p>
@@ -699,12 +696,12 @@ The default settings are probably fine to use on testnets, but you may want to a
 <p>In order to submit transactions through the <a href="https://docs.flashbots.net/flashbots-auction/searchers/quick-start/">Flashbots</a> relay, you need an additional Ethereum acccount. The Flashbots organization uses this signatory account's address to identify you and build your historical reputation as a MEV <a href="https://docs.flashbots.net/flashbots-auction/searchers/quick-start">"searcher"</a>. This signatory account doesn't need any funds in it. Store it it as a <code>ChainedAccount</code> in the same way you would any other (see <a href="https://tellor-io.github.io/telliot-feeds/getting-started/">Getting Started</a>).</p>
 <p>When reporting, select your signatory account by tag as well as your staked mainnet account. Use the <code>--account/-a</code> and <code>--signature-tag/-sgt</code> flags.</p>
 <p>Example usage:</p>
-<div class="highlight"><pre><span></span><code>telliot -a acct2 -sgt sigacct -fb report
+<div class="highlight"><pre><span></span><code>telliot report -a acct2 -sgt sigacct
 </code></pre></div>
 <h2 id="staking">Staking<a class="headerlink" href="#staking" title="Permanent link">&para;</a></h2>
 <p>If reporting to Tellor360 oracles, reporters can stake multiple times. Each stake is 10 TRB, so if you stake 140 TRB, you've staked 14 times.</p>
 <p>The reporter will automatically attempt to stake the required amount, but if you'd like to stake more than the current minimum, use the <code>--stake/-s</code> flag.</p>
-<div class="highlight"><pre><span></span><code>telliot -a acct1 report -s 2000 -ncr -rf
+<div class="highlight"><pre><span></span><code>telliot report -a acct1 -s 2000 -ncr -rf
 </code></pre></div>
 <p>If the reporter account's actual stake is reduced after a dispute, the reporter will attempt to stake the difference in TRB to return to the original desired stake amount.</p>
 <h3 id="withdraw-stake">Withdraw Stake<a class="headerlink" href="#withdraw-stake" title="Permanent link">&para;</a></h3>
