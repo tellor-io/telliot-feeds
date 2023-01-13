@@ -45,7 +45,7 @@ eth_usd_median_feed = DataFeed(
 
 3. Add feed to `CATALOG_FEEDS` constant in `src/telliot_feeds/feeds/__init__.py`:
 ```python
-from telliot_feeds.feeds.eth_usd_feed import eth_usd_manual_feed
+from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 
 CATALOG_FEEDS = {
     ...
