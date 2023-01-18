@@ -1,6 +1,7 @@
 import click
 import yaml
 from telliot_core.apps.telliot_config import TelliotConfig
+
 from telliot_feeds.utils.cfg import setup_config
 
 
@@ -36,8 +37,7 @@ def show() -> None:
 )
 @config.command()
 def update(
-        account_str: str,
+    account_str: str,
 ) -> None:
     """Update configuration."""
     _, _ = setup_config(None, account_str)
-    
