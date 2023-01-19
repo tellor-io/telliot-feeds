@@ -46,7 +46,7 @@ Once the virtual environment is activated, install telliot feeds with pip:
     - 2 vCPUs
     - 4 GB RAM
 
-*If you get errors with the Ubuntu install, run the commands as root with `sudo`. Also, if you get a `docker.service could not be found` error, run `sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin`.*
+*If you get permission errors with the Ubuntu install commands or using docker, run them as root with `sudo ` prefixed to your command. Also, if you get a `docker.service could not be found` error, run `sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin`.*
 
 ### Install Telliot Feeds Using Docker
 Once Docker Desktop (which includes the Docker Engine, Docker Compose, and the Docker CLI) is installed, you can use the following commands to create and run a container with the correct Python version and dependencies to configure and run Telliot:
@@ -71,7 +71,7 @@ echo "above text pasted here" > docker-compose.yml
 ```
 3. Create & start container in background:
 ```
-docker-compose up -d
+docker compose up -d
 ```
 4. Open shell to container: 
 ```
