@@ -3,6 +3,7 @@ from brownie import chain
 from eth_utils import to_bytes
 from web3 import Web3
 
+from telliot_feeds.feeds.albt_usd_feed import albt_usd_median_feed
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.utils import log
 
@@ -44,11 +45,13 @@ async def test_feed_suggestion(autopay_contract_setup, caplog):
     query, tip_amount = await get_feed_and_tip(autopay=flex.autopay, current_timestamp=chain.time())
     assert query.get_state()["query"] == {"type": "SpotPrice", "asset": "albt", "currency": "usd"}
     assert tip_amount == int(0.5 * 1e18)
+    get_price = await albt_usd_median_feed.source.fetch_new_datapoint()
+    price = get_price[0]
     # First submission that is eligible for tip
     _, status = await flex.oracle.write(
         "submitValue",
         **txn_kwargs,
-        _value="0x" + (int(0.04812616 * 1e18)).to_bytes(32, byteorder="big").hex(),
+        _value=to_bytes(int(price * 1e18)).rjust(32, b"\0"),
         _nonce=0,
     )
     assert status.ok
