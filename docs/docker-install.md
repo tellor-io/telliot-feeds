@@ -1,8 +1,0 @@
-- sudo yum update -y
-- sudo yum install docker -y
-- service docker start
-- sudo usermod -a -G docker ec2-user
-- id ec2-user
-- newgrp docker
-- sudo systemctl enable docker
-- sudo pip3 install docker-compose
