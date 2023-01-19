@@ -282,6 +282,26 @@
     (Optional) Docker Setup
   </a>
   
+    <nav class="md-nav" aria-label="(Optional) Docker Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites_1" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-telliot-feeds-using-docker" class="md-nav__link">
+    Install Telliot Feeds Using Docker
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -658,6 +678,26 @@
     (Optional) Docker Setup
   </a>
   
+    <nav class="md-nav" aria-label="(Optional) Docker Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites_1" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-telliot-feeds-using-docker" class="md-nav__link">
+    Install Telliot Feeds Using Docker
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -726,9 +766,8 @@
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <ul>
 <li>An account with test TRB and your chain's native token. You can get test TRB from any Tellor playground contract <a href="https://docs.tellor.io/tellor/the-basics/contracts-reference">here</a> by calling the <code>faucet</code> function with your address as the argument; however, for Polygon's Mumbai testnet and Ethereum's Goerli testnet, tweet @trbfaucet for test TRB on those chains. For your chain's native token, there's usually a faucet available. For example, <a href="https://faucet.polygon.technology/">Polygon's faucet</a> for reporting on Mumbai testnet.</li>
-<li><a href="https://www.python.org/downloads/release/python-3915/">Python 3.9</a> is required to install and use<code>telliot-feeds</code>. Alternatively, you can use our <a href="https://docs.docker.com/get-started/">docker</a> release. </li>
+<li><a href="https://www.python.org/downloads/release/python-3915/">Python 3.9</a> is required to install and use<code>telliot-feeds</code>. Alternatively, you can use our <a href="https://docs.docker.com/get-started/">docker</a> release. If using Docker, please follow the <a href="#optional-docker-setup">Docker setup instructions</a>.</li>
 </ul>
-<p><em>If you're using docker, please follow the <a href="#optional-docker-setup">Docker setup instructions</a>.</em></p>
 <h2 id="install-telliot-feeds">Install Telliot Feeds<a class="headerlink" href="#install-telliot-feeds" title="Permanent link">&para;</a></h2>
 <p>It's generally considered good practice to run telliot from a python <a href="https://docs.python.org/3/library/venv.html">virtual environment</a>. This is not required, but it helps prevent dependency conflicts with other Python programs running on your computer. </p>
 <p>In this example, the virtual environment will be created in a subfolder called <code>tenv</code>:</p>
@@ -756,10 +795,24 @@ source tenv/bin/activate
 </code></pre></div>
 <p><em>If your log shows no errors, that's it! Next, follow the instructions for <a href="#telliot-configuration">configuring telliot</a>.</em></p>
 <h2 id="optional-docker-setup">(Optional) Docker Setup<a class="headerlink" href="#optional-docker-setup" title="Permanent link">&para;</a></h2>
-<p>If you want to configure and run telliot in a docker container:</p>
+<p><em>Skip this section if you already have Python 3.9 and and the correct dependencies installed.</em></p>
+<h3 id="prerequisites_1">Prerequisites<a class="headerlink" href="#prerequisites_1" title="Permanent link">&para;</a></h3>
 <ul>
-<li>pull image from docker hub <code>docker pull tellorofficial/telliot</code></li>
-<li>create the following <code>docker-compose.yml</code> using the command <code>echo "below text" &gt; docker-compose.yml</code>:
+<li>Install <a href="https://docs.docker.com/desktop/">Docker Desktop</a> on <a href="https://docs.docker.com/desktop/install/windows-install/">Windows</a>, <a href="https://docs.docker.com/desktop/install/mac-install/">Mac</a>, or <a href="https://docs.docker.com/engine/install/ubuntu/">Linux</a>. If you choose Linux, use Ubuntu. For example, an AWS instance (t2.medium) with the following specs:<ul>
+<li>Ubuntu 20.04</li>
+<li>2 vCPUs</li>
+<li>4 GB RAM</li>
+</ul>
+</li>
+</ul>
+<p><em>If you get permission errors with the Ubuntu install commands or using docker, run them as root with <code>sudo</code> prefixed to your command. Also, if you get a <code>docker.service could not be found</code> error, run <code>sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin</code>.</em></p>
+<h3 id="install-telliot-feeds-using-docker">Install Telliot Feeds Using Docker<a class="headerlink" href="#install-telliot-feeds-using-docker" title="Permanent link">&para;</a></h3>
+<p>Once Docker Desktop (which includes the Docker Engine, Docker Compose, and the Docker CLI) is installed, you can use the following commands to create and run a container with the correct Python version and dependencies to configure and run Telliot:</p>
+<ol>
+<li>Pull image from docker hub:
+<div class="highlight"><pre><span></span><code>docker pull tellorofficial/telliot
+</code></pre></div></li>
+<li>Create the following <code>docker-compose.yml</code> file:
 <div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span><span class="w"></span>
 <span class="w">  </span><span class="nt">telliot</span><span class="p">:</span><span class="w"></span>
 <span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tellorofficial/telliot</span><span class="w"></span>
@@ -767,12 +820,18 @@ source tenv/bin/activate
 <span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span><span class="w"></span>
 <span class="w">    </span><span class="nt">tty</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
 <span class="w">    </span><span class="nt">entrypoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sh</span><span class="w"></span>
+</code></pre></div>
+One way of creating the file is using the <code>echo</code> command:
+<div class="highlight"><pre><span></span><code>echo &quot;above text pasted here&quot; &gt; docker-compose.yml
 </code></pre></div></li>
-<li>create &amp; start container in background: <code>docker-compose up -d</code></li>
-<li>open shell to container: <code>docker exec -it telliot_container sh</code></li>
-<li>configure telliot (see below)</li>
-<li>close shell to container: <code>exit</code></li>
-</ul>
+<li>Create &amp; start container in background:
+<div class="highlight"><pre><span></span><code>docker compose up -d
+</code></pre></div></li>
+<li>Open shell to container: 
+<div class="highlight"><pre><span></span><code>docker exec -it telliot_container sh
+</code></pre></div></li>
+<li>Next <a href="#telliot-configuration">configure telliot</a> inside the container. To close shell to the container run: <code>exit</code>. If you exit the shell, the container will still be running in the background, so you can open a new shell to the container at any time with the command above. This is useful if running telliot from a remote server like an AWS instance. You can close the shell and disconnect from the server, but the container can still be running Telliot in the background.</li>
+</ol>
 <h2 id="telliot-configuration">Telliot Configuration<a class="headerlink" href="#telliot-configuration" title="Permanent link">&para;</a></h2>
 <p>After installation, Telliot must be personalized to use your own private keys and endpoints.</p>
 <p>First, create the default configuration files:</p>
