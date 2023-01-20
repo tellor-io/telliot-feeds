@@ -1,7 +1,8 @@
 # Getting Started
 
 ## Prerequisites
-- An account with test TRB and your chain's native token. You can get test TRB from any Tellor playground contract [here](https://docs.tellor.io/tellor/the-basics/contracts-reference) by calling the `faucet` function with your address as the argument; however, for Polygon's Mumbai testnet and Ethereum's Goerli testnet, tweet @trbfaucet for test TRB on those chains. For your chain's native token, there's usually a faucet available. For example, [Polygon's faucet](https://faucet.polygon.technology/) for reporting on Mumbai testnet.
+- An account with your chain's native token for gas fees. Testnets often have a faucet. For example, [here is Polygon's](https://faucet.polygon.technology/) for Mumbai testnet.
+- [Test TRB](https://docs.tellor.io/tellor/the-basics/readme#need-testnet-tokens-trb) for staking.
 - [Python 3.9](https://www.python.org/downloads/release/python-3915/) is required to install and use`telliot-feeds`. Alternatively, you can use our [docker](https://docs.docker.com/get-started/) release. If using Docker, please follow the [Docker setup instructions](#optional-docker-setup).
 
 
@@ -55,19 +56,15 @@ Once Docker Desktop (which includes the Docker Engine, Docker Compose, and the D
 ```
 docker pull tellorofficial/telliot
 ```
-2. Create the following `docker-compose.yml` file:
-```yaml
-services:
+2. Create the following `docker-compose.yml` file using the command:
+```
+echo "services:
   telliot:
     image: tellorofficial/telliot
     container_name: telliot_container
     build: .
     tty: true
-    entrypoint: sh
-```
-One way of creating the file is using the `echo` command:
-```
-echo "above text pasted here" > docker-compose.yml
+    entrypoint: sh" > docker-compose.yml
 ```
 3. Create & start container in background:
 ```
