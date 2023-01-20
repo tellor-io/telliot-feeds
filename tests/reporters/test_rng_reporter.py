@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 import pytest_asyncio
 from telliot_core.apps.core import TelliotCore
@@ -101,3 +103,25 @@ async def test_missing_blockhash(rng_reporter, monkeypatch, caplog):
     await r.report(report_count=3)
 
     assert caplog.text.count("bazinga") == 3
+
+
+@pytest.mark.asyncio
+async def test_invalid_timestamp(rng_reporter, monkeypatch):
+    """Test reporting Tellor RNG value."""
+    r = rng_reporter
+
+    # mock datasource failure
+    def mock_zero_timestamp():
+        """Mock get_next_timestamp to return 0."""
+        return 0
+
+    invalid_timestamp = 12345
+    valid_timestamp = 1438269973
+    monkeypatch.setattr("telliot_feeds.reporters.rng_interval.get_next_timestamp", mock_zero_timestamp)
+    with patch(
+        "telliot_feeds.sources.blockhash_aggregator.input_timeout",
+        side_effect=[invalid_timestamp, valid_timestamp, "\n"],
+    ):
+        receipt, status = await r.report_once()
+        assert status.ok
+        assert receipt["status"] == 1

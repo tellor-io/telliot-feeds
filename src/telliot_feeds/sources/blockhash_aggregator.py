@@ -179,6 +179,8 @@ class TellorRNGManualSource(DataSource[Any]):
 
             try:
                 inpt = int(inpt)
+                if not self.is_valid_timestamp(inpt):
+                    continue
             except ValueError:
                 print("Invalid input. Enter decimal value (int).")
                 continue
@@ -196,11 +198,11 @@ class TellorRNGManualSource(DataSource[Any]):
             # Checking if timestamp is valid first
             _ = datetime.fromtimestamp(timestamp)
             # Timestamp should >= ethereum genesis block timestamp
-            if timestamp >= 1438284388:
+            if timestamp >= 1438269973:
                 return True
             else:
                 logger.info(
-                    f"Invalid timestamp: {timestamp}, should be greater than 1438284388 (eth genesis block timestamp)"
+                    f"Invalid timestamp: {timestamp}, should be greater than 1438269973 (eth genesis block timestamp)"
                 )
                 return False
         except ValueError:
