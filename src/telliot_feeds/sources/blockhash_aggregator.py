@@ -197,12 +197,11 @@ class TellorRNGManualSource(DataSource[Any]):
             _ = datetime.fromtimestamp(timestamp)
             # Timestamp should >= ethereum genesis block timestamp
             if timestamp >= 1438284388:
+                return True
+            else:
                 logger.info(
                     f"Invalid timestamp: {timestamp}, should be greater than 1438284388 (eth genesis block timestamp)"
                 )
-                return True
-            else:
-                logger.info("Timestamp is valid but less than 123 seconds")
                 return False
         except ValueError:
             logger.info(f"Invalid timestamp: {timestamp}")
