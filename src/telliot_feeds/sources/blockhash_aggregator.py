@@ -190,14 +190,31 @@ class TellorRNGManualSource(DataSource[Any]):
         self.timestamp = data
         return data
 
+    def is_valid_timestamp(self, timestamp: int) -> bool:
+        """Check if timestamp is valid."""
+        try:
+            # Checking if timestamp is valid first
+            _ = datetime.fromtimestamp(timestamp)
+            # Timestamp should >= ethereum genesis block timestamp
+            if timestamp >= 1438284388:
+                logger.info(
+                    f"Invalid timestamp: {timestamp}, should be greater than 1438284388 (eth genesis block timestamp)"
+                )
+                return True
+            else:
+                logger.info("Timestamp is valid but less than 123 seconds")
+                return False
+        except ValueError:
+            logger.info(f"Invalid timestamp: {timestamp}")
+            return False
+
     async def fetch_new_datapoint(self) -> OptionalDataPoint[bytes]:
         """Update current value with time-stamped value fetched from user input.
 
         Returns:
             Current time-stamped value
         """
-
-        if self.timestamp == 0:
+        if not self.is_valid_timestamp(self.timestamp):
             try:
                 timestamp = self.parse_user_val()
             except TimeoutOccurred:
