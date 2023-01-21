@@ -1,4 +1,5 @@
 import asyncio
+import time
 from dataclasses import dataclass
 from datetime import datetime
 from datetime import timezone
@@ -195,18 +196,18 @@ class TellorRNGManualSource(DataSource[Any]):
     def is_valid_timestamp(self, timestamp: int) -> bool:
         """Check if timestamp is valid."""
         try:
-            # Checking if timestamp is valid first
             _ = datetime.fromtimestamp(timestamp)
-            # Timestamp should >= ethereum genesis block timestamp
-            if timestamp >= 1438269973:
-                return True
-            else:
-                logger.info(
-                    f"Invalid timestamp: {timestamp}, should be greater than 1438269973 (eth genesis block timestamp)"
-                )
-                return False
         except ValueError:
             logger.info(f"Invalid timestamp: {timestamp}")
+            return False
+
+        if 1438269973 <= timestamp <= int(time.time()):
+            return True
+        else:
+            logger.info(
+                f"Invalid timestamp: {timestamp}, should be greater than eth genesis block timestamp"
+                "and less than current time"
+            )
             return False
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[bytes]:
