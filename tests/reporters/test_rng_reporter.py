@@ -1,3 +1,6 @@
+import time
+from unittest.mock import patch
+
 import pytest
 import pytest_asyncio
 from telliot_core.apps.core import TelliotCore
@@ -6,6 +9,12 @@ from web3.datastructures import AttributeDict
 
 from telliot_feeds.reporters.rng_interval import logger
 from telliot_feeds.reporters.rng_interval import RNGReporter
+
+
+# mock datasource failure
+def mock_zero_timestamp():
+    """Mock get_next_timestamp to return 0."""
+    return 0
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -101,3 +110,38 @@ async def test_missing_blockhash(rng_reporter, monkeypatch, caplog):
     await r.report(report_count=3)
 
     assert caplog.text.count("bazinga") == 3
+
+
+@pytest.mark.asyncio
+async def test_invalid_timestamp(rng_reporter, monkeypatch, caplog):
+    """Test reporting Tellor RNG value."""
+    r = rng_reporter
+
+    invalid_timestamp = 12345
+    valid_timestamp = 1438269973
+    monkeypatch.setattr("telliot_feeds.reporters.rng_interval.get_next_timestamp", mock_zero_timestamp)
+    with patch(
+        "telliot_feeds.sources.blockhash_aggregator.input_timeout",
+        side_effect=[invalid_timestamp, valid_timestamp, "\n"],
+    ):
+        receipt, status = await r.report_once()
+        assert status.ok
+        assert receipt["status"] == 1
+        assert "should be greater than eth genesis block timestamp" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_invalid_timestamp_in_future(rng_reporter, monkeypatch, caplog):
+    """Test invalid timestamp in the future."""
+    r = rng_reporter
+    invalid_timestamp2 = int(time.time()) + 100000
+    valid_timestamp = 1438269973
+    monkeypatch.setattr("telliot_feeds.reporters.rng_interval.get_next_timestamp", mock_zero_timestamp)
+    with patch(
+        "telliot_feeds.sources.blockhash_aggregator.input_timeout",
+        side_effect=[invalid_timestamp2, valid_timestamp, "\n"],
+    ):
+        receipt, status = await r.report_once()
+        assert status.ok
+        assert receipt["status"] == 1
+        assert "less than current time" in caplog.text
