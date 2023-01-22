@@ -52,11 +52,15 @@ class BittrexSpotPriceService(WebPriceService):
                 logger.error("Unable to decode Bittrex JSON")
                 return None, None
 
-            if "restrictions that prevent you from accessing the site" in d["exception"].strerror:
+            rate_limit_conditions = (
+                "exception" in d,
+                "restrictions that prevent you from accessing the site" in str(d["exception"]),
+            )
+            if all(rate_limit_conditions):
                 logger.warning("Bittrex API rate limit exceeded")
                 return None, None
 
-            logger.error(d)
+            logger.error(str(d))
             return None, None
 
         else:
