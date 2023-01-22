@@ -158,6 +158,30 @@ async def test_bittrex(caplog):
     else:
         validate_price(v, t)
 
+    # test rate limiting
+    def mock_get_url(*args, **kwargs):
+        return {"error": "blah", "exception": Exception("restrictions that prevent you from accessing the site")}
+
+    with mock.patch(
+        "telliot_feeds.sources.price.spot.bittrex.BittrexSpotPriceService.get_url", side_effect=mock_get_url
+    ):
+        v, t = await get_price("btc", "usd", service["bittrex"])
+        assert v is None
+        assert t is None
+        assert "Bittrex API rate limit exceeded" in caplog.text
+
+    # test unknown error
+    def mock_get_url2(*args, **kwargs):
+        return {"error": "bingo", "exception": Exception("bango")}
+
+    with mock.patch(
+        "telliot_feeds.sources.price.spot.bittrex.BittrexSpotPriceService.get_url", side_effect=mock_get_url2
+    ):
+        v, t = await get_price("btc", "usd", service["bittrex"])
+        assert v is None
+        assert t is None
+        assert "Exception('bango')" in caplog.text
+
 
 @pytest.mark.asyncio
 async def test_gemini(caplog, monkeypatch):
