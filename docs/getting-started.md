@@ -42,19 +42,23 @@ Once the virtual environment is activated, install telliot feeds with pip:
 ## (Optional) Docker Setup
 *Skip this section if you already have Python 3.9 and and the correct dependencies installed.*
 ### Prerequisites
-- Install [Docker Desktop](https://docs.docker.com/desktop/) on [Windows](https://docs.docker.com/desktop/install/windows-install/), [Mac](https://docs.docker.com/desktop/install/mac-install/), or [Linux](https://docs.docker.com/engine/install/ubuntu/). If you choose Linux, use Ubuntu. For example, an AWS instance (t2.medium) with the following specs:
+- Follow the Step 1 instructions [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04) for installing Docker on Linux Ubuntu. For example, an Ubuntu AWS instance (t2.medium) with the following specs:
     - Ubuntu 20.04
     - 2 vCPUs
     - 4 GB RAM
+- Install Docker Compose & Docker CLI:
+    ```
+    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    ```
 
-*If you get permission errors with the Ubuntu install commands or using docker, run them as root with `sudo ` prefixed to your command. Also, if you get a `docker.service could not be found` error, run `sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin`.*
+*If you get permission errors with the Ubuntu install commands or using docker, run them as root with `sudo ` prefixed to your command.*
 
 ### Install Telliot Feeds Using Docker
-Once Docker Desktop (which includes the Docker Engine, Docker Compose, and the Docker CLI) is installed, you can use the following commands to create and run a container with the correct Python version and dependencies to configure and run Telliot:
+Use the following commands to create and run a container with the correct Python version and dependencies to configure and run Telliot:
 
 1. Pull image from docker hub:
 ```
-docker pull tellorofficial/telliot
+sudo docker pull tellorofficial/telliot
 ```
 2. Create the following `docker-compose.yml` file using the command:
 ```
@@ -68,11 +72,11 @@ echo "services:
 ```
 3. Create & start container in background:
 ```
-docker compose up -d
+sudo docker compose up -d
 ```
 4. Open shell to container: 
 ```
-docker exec -it telliot_container sh
+sudo docker exec -it telliot_container sh
 ```
 5. Next [configure telliot](#telliot-configuration) inside the container. To close shell to the container run: `exit`. If you exit the shell, the container will still be running in the background, so you can open a new shell to the container at any time with the command above. This is useful if running telliot from a remote server like an AWS instance. You can close the shell and disconnect from the server, but the container can still be running Telliot in the background.
 
