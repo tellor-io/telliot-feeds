@@ -9,7 +9,7 @@
     - build image: `docker build -t tellorofficial/telliot:latest .`
     - setup image builder: `docker buildx create --name mybuilder`
     - use image builder: `docker buildx use mybuilder`
-    - build image for multiple platforms: `docker buildx build --platform linux/amd64,linux/arm64 -t tellorofficial/telliot:latest --push .`
+    - build image for multiple platforms: `docker buildx build --platform linux/arm64,linux/amd64 -t tellorofficial/telliot:latest --push .`
     - get image id: `docker images`
     - tag image: `docker tag {img_id} tellorofficial/telliot:latest` (replace {img_id} with the image id)
     - push image: `docker push tellorofficial/telliot:latest`
