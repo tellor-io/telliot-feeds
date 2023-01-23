@@ -765,7 +765,8 @@
 <h1 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h1>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <ul>
-<li>An account with test TRB and your chain's native token. You can get test TRB from any Tellor playground contract <a href="https://docs.tellor.io/tellor/the-basics/contracts-reference">here</a> by calling the <code>faucet</code> function with your address as the argument; however, for Polygon's Mumbai testnet and Ethereum's Goerli testnet, tweet @trbfaucet for test TRB on those chains. For your chain's native token, there's usually a faucet available. For example, <a href="https://faucet.polygon.technology/">Polygon's faucet</a> for reporting on Mumbai testnet.</li>
+<li>An account with your chain's native token for gas fees. Testnets often have a faucet. For example, <a href="https://faucet.polygon.technology/">here is Polygon's</a> for Mumbai testnet.</li>
+<li><a href="https://docs.tellor.io/tellor/the-basics/readme#need-testnet-tokens-trb">Test TRB</a> for staking.</li>
 <li><a href="https://www.python.org/downloads/release/python-3915/">Python 3.9</a> is required to install and use<code>telliot-feeds</code>. Alternatively, you can use our <a href="https://docs.docker.com/get-started/">docker</a> release. If using Docker, please follow the <a href="#optional-docker-setup">Docker setup instructions</a>.</li>
 </ul>
 <h2 id="install-telliot-feeds">Install Telliot Feeds<a class="headerlink" href="#install-telliot-feeds" title="Permanent link">&para;</a></h2>
@@ -798,37 +799,37 @@ source tenv/bin/activate
 <p><em>Skip this section if you already have Python 3.9 and and the correct dependencies installed.</em></p>
 <h3 id="prerequisites_1">Prerequisites<a class="headerlink" href="#prerequisites_1" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Install <a href="https://docs.docker.com/desktop/">Docker Desktop</a> on <a href="https://docs.docker.com/desktop/install/windows-install/">Windows</a>, <a href="https://docs.docker.com/desktop/install/mac-install/">Mac</a>, or <a href="https://docs.docker.com/engine/install/ubuntu/">Linux</a>. If you choose Linux, use Ubuntu. For example, an AWS instance (t2.medium) with the following specs:<ul>
+<li>Follow the Step 1 instructions <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04">here</a> for installing Docker on Linux Ubuntu. For example, an Ubuntu AWS instance (t2.medium) with the following specs:<ul>
 <li>Ubuntu 20.04</li>
 <li>2 vCPUs</li>
 <li>4 GB RAM</li>
 </ul>
 </li>
+<li>Install Docker Compose &amp; Docker CLI:
+    <div class="highlight"><pre><span></span><code>sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+</code></pre></div></li>
 </ul>
-<p><em>If you get permission errors with the Ubuntu install commands or using docker, run them as root with <code>sudo</code> prefixed to your command. Also, if you get a <code>docker.service could not be found</code> error, run <code>sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin</code>.</em></p>
+<p><em>If you get permission errors with the Ubuntu install commands or using docker, run them as root with <code>sudo</code> prefixed to your command.</em></p>
 <h3 id="install-telliot-feeds-using-docker">Install Telliot Feeds Using Docker<a class="headerlink" href="#install-telliot-feeds-using-docker" title="Permanent link">&para;</a></h3>
-<p>Once Docker Desktop (which includes the Docker Engine, Docker Compose, and the Docker CLI) is installed, you can use the following commands to create and run a container with the correct Python version and dependencies to configure and run Telliot:</p>
+<p>Use the following commands to create and run a container with the correct Python version and dependencies to configure and run Telliot:</p>
 <ol>
 <li>Pull image from docker hub:
-<div class="highlight"><pre><span></span><code>docker pull tellorofficial/telliot
+<div class="highlight"><pre><span></span><code>sudo docker pull tellorofficial/telliot
 </code></pre></div></li>
-<li>Create the following <code>docker-compose.yml</code> file:
-<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span><span class="w"></span>
-<span class="w">  </span><span class="nt">telliot</span><span class="p">:</span><span class="w"></span>
-<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tellorofficial/telliot</span><span class="w"></span>
-<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">telliot_container</span><span class="w"></span>
-<span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span><span class="w"></span>
-<span class="w">    </span><span class="nt">tty</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w"></span>
-<span class="w">    </span><span class="nt">entrypoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sh</span><span class="w"></span>
-</code></pre></div>
-One way of creating the file is using the <code>echo</code> command:
-<div class="highlight"><pre><span></span><code>echo &quot;above text pasted here&quot; &gt; docker-compose.yml
+<li>Create the following <code>docker-compose.yml</code> file using the command:
+<div class="highlight"><pre><span></span><code>echo &quot;services:
+  telliot:
+    image: tellorofficial/telliot
+    container_name: telliot_container
+    build: .
+    tty: true
+    entrypoint: sh&quot; &gt; docker-compose.yml
 </code></pre></div></li>
 <li>Create &amp; start container in background:
-<div class="highlight"><pre><span></span><code>docker compose up -d
+<div class="highlight"><pre><span></span><code>sudo docker compose up -d
 </code></pre></div></li>
 <li>Open shell to container: 
-<div class="highlight"><pre><span></span><code>docker exec -it telliot_container sh
+<div class="highlight"><pre><span></span><code>sudo docker exec -it telliot_container sh
 </code></pre></div></li>
 <li>Next <a href="#telliot-configuration">configure telliot</a> inside the container. To close shell to the container run: <code>exit</code>. If you exit the shell, the container will still be running in the background, so you can open a new shell to the container at any time with the command above. This is useful if running telliot from a remote server like an AWS instance. You can close the shell and disconnect from the server, but the container can still be running Telliot in the background.</li>
 </ol>

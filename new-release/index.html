@@ -561,12 +561,13 @@
 <li>Make sure the latest changes in <code>telliot-core</code> are released to PyPI. Follow the steps <a href="https://tellor-io.github.io/telliot-core/contributing/#new-release-processchecklist">here</a> to release a new version of <code>telliot-core</code>.</li>
 <li>Update the <code>telliot-core</code> dependency version in <code>setup.cfg</code> to the latest version.</li>
 <li>The steps for releasing a new version of <code>telliot-feeds</code> are very similar to the steps for <code>telliot-core</code> releases, so follow the steps in the link above, after you've completed step 2.</li>
+<li>Update the <code>telliot-feeds</code> version in the <code>Dockerfile</code> to the latest version. For example, if the latest version is <code>0.1.0</code>, then the line in the <code>Dockerfile</code> should be <code>RUN pip install telliot-feeds==0.1.0</code>.</li>
 <li>Now, release a new image to Docker Hub. Here are the commands to do so once in the home directory of the repo:<ul>
 <li>login to docker hub: <code>docker login --username=tellorofficial</code> (asks for password)</li>
 <li>build image: <code>docker build -t tellorofficial/telliot:latest .</code></li>
 <li>setup image builder: <code>docker buildx create --name mybuilder</code></li>
 <li>use image builder: <code>docker buildx use mybuilder</code></li>
-<li>build image for multiple platforms: <code>docker buildx build --platform linux/amd64,linux/arm64 -t tellorofficial/telliot:latest --push .</code></li>
+<li>build image for multiple platforms: <code>docker buildx build --platform linux/arm64,linux/amd64 -t tellorofficial/telliot:latest --push .</code></li>
 <li>get image id: <code>docker images</code></li>
 <li>tag image: <code>docker tag {img_id} tellorofficial/telliot:latest</code> (replace {img_id} with the image id)</li>
 <li>push image: <code>docker push tellorofficial/telliot:latest</code></li>
