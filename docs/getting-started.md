@@ -120,13 +120,34 @@ then you'll be set to report.
 
 ### Configure endpoints
 
-You can add your RPC endpoints via the command line or by editing the `endpoints.yaml` file. For example, using [nano](https://www.nano-editor.org/):
+You can add your RPC endpoints via the command line or by editing the `endpoints.yaml` file. It's easier to do via the command line, but here's an example command using the [nano](https://www.nano-editor.org/) text editor to edit the YAML file directly:
     
     nano ~/telliot/endpoints.yaml
 
-To configure your endpoint via the CLI, use the following command:
+To configure your endpoint via the CLI, use the `report` command and enter `n` when asked if you want to keep the default settings:
+```
+$ telliot report -a myacct
+INFO    | telliot_core | telliot-core 0.1.9
+INFO    | telliot_core | Connected to polygon-mumbai [default account: myacct], time: 2023-01-24 08:25:36.676658
+Your current settings...
+Your chain id: 80001
 
-    telliot report -a myacct
+Your mumbai endpoint: 
+ - provider: Infura
+ - RPC url: https://polygon-mumbai.infura.io/v3/****
+ - explorer url: https://mumbai.polygonscan.com/
+Your account: myacct at address 0x1234...
+Proceed with current settings (y) or update (n)? [Y/n]:
+...
+```
+Once you enter your endpoint via the CLI, it will be saved in the `endpoints.yaml` file.
+
+To skip reporting after you've updated your configuration, press `Ctrl+C` to exit once it prompts you to confirm your settings:
+```
+...
+Press [ENTER] to confirm settings.
+...
+```
 
 If you don't have your own node URL, a free one can be obtained at [Infura.io](http://www.infura.io).  Simply replace `INFURA_API_KEY` with the one provided by Infura.
 
@@ -160,6 +181,8 @@ endpoints:
 ```
 
 ## Other possible configs
+*Note: These configs are not necessary to run Telliot, so you can skip this section and move on to [Usage](./usage.md) if you've already finished installing Telliot, adding accounts, and adding endpoints.*
+
 ### AMPL
 
 If you'd like to report legacy AMPL values, generate default AMPL configs from the repository's home directory:
