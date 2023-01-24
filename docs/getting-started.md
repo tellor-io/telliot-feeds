@@ -181,6 +181,8 @@ endpoints:
 ```
 
 ## Other possible configs
+*Note: These configs are not necessary to run Telliot, so you can skip this section and move on to [Usage](./usage.md) if you've already finished installing Telliot, adding accounts, and adding endpoints.*
+
 ### AMPL
 
 If you'd like to report legacy AMPL values, generate default AMPL configs from the repository's home directory:
