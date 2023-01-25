@@ -41,7 +41,9 @@ Once the virtual environment is activated, install telliot feeds with pip:
 
 ## (Optional) Docker Setup
 *Skip this section if you already have Python 3.9 and and the correct dependencies installed.*
+*This Docker Setup guide is for Linux Ubuntu. The commands will be different for Windows, Mac, and other Linux distros.*
 ### Prerequisites
+- Linux Ubuntu 20.04
 - Follow the Step 1 instructions [here](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-20-04) for installing Docker on Linux Ubuntu. For example, an Ubuntu AWS instance (t2.medium) with the following specs:
     - Ubuntu 20.04
     - 2 vCPUs
