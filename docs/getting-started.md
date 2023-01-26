@@ -90,12 +90,7 @@ First, create the default configuration files:
 
     telliot config init
 
-The default configuration files are created in a folder called `telliot` in the user's home folder:
-
-    ~/telliot
-        ├── chains.json
-        ├── endpoints.yaml
-        └── main.yaml
+The default configuration files are created in a folder called `telliot` in the user's home folder.
 
 To view your current configuration at any time:
 
