@@ -114,14 +114,12 @@ def check_accounts(cfg: TelliotConfig, account_name: str) -> List[ChainedAccount
 
 
 def prompt_for_endpoint(chain_id: int) -> Optional[RPCEndpoint]:
-
-    network_name = click.prompt("Enter network name", type=str)
-    provider = click.prompt("Enter Provider", type=str)
-    rpc_url = click.prompt("Enter RPC url", type=str)
-    explorer_url = click.prompt("Enter Explorer url", type=str)
+    """Take user input to create a new RPCEndpoint"""
+    rpc_url = click.prompt("Enter RPC URL", type=str)
+    explorer_url = click.prompt("Enter block explorer URL", type=str)
 
     try:
-        return RPCEndpoint(chain_id, network_name, provider, rpc_url, explorer_url)
+        return RPCEndpoint(chain_id, "network name unset", "provider name unset", rpc_url, explorer_url)
     except Exception as e:
         click.echo("Cannot add endpoint: invalid endpoint properties" + str(e))
         return None
