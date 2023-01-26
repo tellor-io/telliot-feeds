@@ -840,37 +840,31 @@ source tenv/bin/activate
 <p>First, create the default configuration files:</p>
 <div class="highlight"><pre><span></span><code>telliot config init
 </code></pre></div>
-<p>The default configuration files are created in a folder called <code>telliot</code> in the user's home folder:</p>
-<div class="highlight"><pre><span></span><code>~/telliot
-    ├── chains.json
-    ├── endpoints.yaml
-    └── main.yaml
-</code></pre></div>
+<p>The default configuration files are created in a folder called <code>telliot</code> in the user's home folder.</p>
 <p>To view your current configuration at any time:</p>
 <div class="highlight"><pre><span></span><code>telliot config show
 </code></pre></div>
 <h3 id="add-reporting-accounts">Add Reporting Accounts<a class="headerlink" href="#add-reporting-accounts" title="Permanent link">&para;</a></h3>
 <p>The reporter (telliot) needs to know which accounts (wallet addresses) are available for submitting values to the oracle.
 Use the command line to add necessary reporting accounts/private keys.</p>
-<p>For example, to add an account called <code>my-matic-acct</code> for reporting on Polygon mainnet (chain ID 137). You'll need to replace the private key in this example with the private key that holds your TRB for reporting:</p>
-<div class="highlight"><pre><span></span><code>&gt;&gt; telliot account add my-matic-acct 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
-Enter encryption password for my-matic-acct: 
+<p>For example, to add an account called <code>myacct1</code> for reporting on Polygon mainnet (chain ID 137). You'll need to replace the private key in this example with the private key that holds your TRB for reporting:</p>
+<div class="highlight"><pre><span></span><code>&gt;&gt; telliot account add myacct1 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
+Enter encryption password for myacct1: 
 Confirm password: 
-Added new account my-matic-acct (address= 0xcd19cf65af3a3aea1f44a7cb0257fc7455f245f0) for use on chains (137,)
+Added new account myacct1 (address= 0xcd19cf65af3a3aea1f44a7cb0257fc7455f245f0) for use on chains (137,)
 </code></pre></div>
 <p>To view other options for managing accounts with telliot, use the command:</p>
 <div class="highlight"><pre><span></span><code>    telliot account --help
 </code></pre></div>
-<p>After configuring accounts, read the <a href="https://tellor-io.github.io/telliot-feeds/usage/">Usage</a> section,
-then you'll be set to report.</p>
+<p>After adding accounts, <a href="#configure-endpoints">configure your endpoints</a>.</p>
 <h3 id="configure-endpoints">Configure endpoints<a class="headerlink" href="#configure-endpoints" title="Permanent link">&para;</a></h3>
 <p>You can add your RPC endpoints via the command line or by editing the <code>endpoints.yaml</code> file. It's easier to do via the command line, but here's an example command using the <a href="https://www.nano-editor.org/">nano</a> text editor to edit the YAML file directly:</p>
 <div class="highlight"><pre><span></span><code>nano ~/telliot/endpoints.yaml
 </code></pre></div>
 <p>To configure your endpoint via the CLI, use the <code>report</code> command and enter <code>n</code> when asked if you want to keep the default settings:
-<div class="highlight"><pre><span></span><code>$ telliot report -a myacct
+<div class="highlight"><pre><span></span><code>$ telliot report -a myacct1
 INFO    | telliot_core | telliot-core 0.1.9
-INFO    | telliot_core | Connected to polygon-mumbai [default account: myacct], time: 2023-01-24 08:25:36.676658
+INFO    | telliot_core | Connected to polygon-mumbai [default account: myacct1], time: 2023-01-24 08:25:36.676658
 Your current settings...
 Your chain id: 80001
 
@@ -878,7 +872,7 @@ Your mumbai endpoint:
  - provider: Infura
  - RPC url: https://polygon-mumbai.infura.io/v3/****
  - explorer url: https://mumbai.polygonscan.com/
-Your account: myacct at address 0x1234...
+Your account: myacct1 at address 0x1234...
 Proceed with current settings (y) or update (n)? [Y/n]:
 ...
 </code></pre></div>
@@ -889,31 +883,9 @@ Press [ENTER] to confirm settings.
 ...
 </code></pre></div></p>
 <p>If you don't have your own node URL, a free one can be obtained at <a href="http://www.infura.io">Infura.io</a>.  Simply replace <code>INFURA_API_KEY</code> with the one provided by Infura.</p>
-<p><strong>Warning! All telliot software and reporter feeds should be validated on testnets prior to deploying on mainnet.</strong></p>
 <p>Note that endpoints should use the websocket (wss) protocol because HTTPS endpoints do not support event listeners. (If reporting on Polygon, websockets are not supported, so the HTTPS endpoint is fine.)</p>
-<p><em>Example <code>endpoints.yaml</code> file:</em>
-<div class="highlight"><pre><span></span><code><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">EndpointList</span><span class="w"></span>
-<span class="nt">endpoints</span><span class="p">:</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RPCEndpoint</span><span class="w"></span>
-<span class="w">  </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
-<span class="w">  </span><span class="nt">network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet</span><span class="w"></span>
-<span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Infura</span><span class="w"></span>
-<span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wss://mainnet.infura.io/ws/v3/{INFURA_API_KEY}</span><span class="w"></span>
-<span class="w">  </span><span class="nt">explorer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://etherscan.io</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RPCEndpoint</span><span class="w"></span>
-<span class="w">  </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">137</span><span class="w"></span>
-<span class="w">  </span><span class="nt">network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mainnet</span><span class="w"></span>
-<span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Matic</span><span class="w"></span>
-<span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://polygon-mainnet.infura.io/v3/{INFURA_API_KEY}</span><span class="w"></span>
-<span class="w">  </span><span class="nt">explorer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://polygonscan.com/</span><span class="w"></span>
-<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RPCEndpoint</span><span class="w"></span>
-<span class="w">  </span><span class="nt">chain_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80001</span><span class="w"></span>
-<span class="w">  </span><span class="nt">network</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mumbai</span><span class="w"></span>
-<span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Matic</span><span class="w"></span>
-<span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://polygon-mumbai.infura.io/v3/{INFURA_API_KEY}</span><span class="w"></span>
-<span class="w">  </span><span class="nt">explorer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://mumbai.polygonscan.com/</span><span class="w"></span>
-<span class="nn">...</span><span class="w"></span>
-</code></pre></div></p>
+<p><strong>Once you've added an endpoint, you can read the <a href="https://tellor-io.github.io/telliot-feeds/usage/">Usage</a> section,
+then you'll be set to report.</strong></p>
 <h2 id="other-possible-configs">Other possible configs<a class="headerlink" href="#other-possible-configs" title="Permanent link">&para;</a></h2>
 <p><em>Note: These configs are not necessary to run Telliot, so you can skip this section and move on to <a href="../usage/">Usage</a> if you've already finished installing Telliot, adding accounts, and adding endpoints.</em></p>
 <h3 id="ampl">AMPL<a class="headerlink" href="#ampl" title="Permanent link">&para;</a></h3>
