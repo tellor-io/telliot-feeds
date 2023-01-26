@@ -90,12 +90,7 @@ First, create the default configuration files:
 
     telliot config init
 
-The default configuration files are created in a folder called `telliot` in the user's home folder:
-
-    ~/telliot
-        ├── chains.json
-        ├── endpoints.yaml
-        └── main.yaml
+The default configuration files are created in a folder called `telliot` in the user's home folder.
 
 To view your current configuration at any time:
 
@@ -106,19 +101,18 @@ To view your current configuration at any time:
 The reporter (telliot) needs to know which accounts (wallet addresses) are available for submitting values to the oracle.
 Use the command line to add necessary reporting accounts/private keys.
 
-For example, to add an account called `my-matic-acct` for reporting on Polygon mainnet (chain ID 137). You'll need to replace the private key in this example with the private key that holds your TRB for reporting:
+For example, to add an account called `myacct1` for reporting on Polygon mainnet (chain ID 137). You'll need to replace the private key in this example with the private key that holds your TRB for reporting:
 
-    >> telliot account add my-matic-acct 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
-    Enter encryption password for my-matic-acct: 
+    >> telliot account add myacct1 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
+    Enter encryption password for myacct1: 
     Confirm password: 
-    Added new account my-matic-acct (address= 0xcd19cf65af3a3aea1f44a7cb0257fc7455f245f0) for use on chains (137,)
+    Added new account myacct1 (address= 0xcd19cf65af3a3aea1f44a7cb0257fc7455f245f0) for use on chains (137,)
 
 To view other options for managing accounts with telliot, use the command:
     
         telliot account --help
 
-After configuring accounts, read the [Usage](https://tellor-io.github.io/telliot-feeds/usage/) section,
-then you'll be set to report.
+After adding accounts, [configure your endpoints](#configure-endpoints).
 
 ### Configure endpoints
 
@@ -128,9 +122,9 @@ You can add your RPC endpoints via the command line or by editing the `endpoints
 
 To configure your endpoint via the CLI, use the `report` command and enter `n` when asked if you want to keep the default settings:
 ```
-$ telliot report -a myacct
+$ telliot report -a myacct1
 INFO    | telliot_core | telliot-core 0.1.9
-INFO    | telliot_core | Connected to polygon-mumbai [default account: myacct], time: 2023-01-24 08:25:36.676658
+INFO    | telliot_core | Connected to polygon-mumbai [default account: myacct1], time: 2023-01-24 08:25:36.676658
 Your current settings...
 Your chain id: 80001
 
@@ -138,7 +132,7 @@ Your mumbai endpoint:
  - provider: Infura
  - RPC url: https://polygon-mumbai.infura.io/v3/****
  - explorer url: https://mumbai.polygonscan.com/
-Your account: myacct at address 0x1234...
+Your account: myacct1 at address 0x1234...
 Proceed with current settings (y) or update (n)? [Y/n]:
 ...
 ```
@@ -153,34 +147,10 @@ Press [ENTER] to confirm settings.
 
 If you don't have your own node URL, a free one can be obtained at [Infura.io](http://www.infura.io).  Simply replace `INFURA_API_KEY` with the one provided by Infura.
 
-**Warning! All telliot software and reporter feeds should be validated on testnets prior to deploying on mainnet.**
-
 Note that endpoints should use the websocket (wss) protocol because HTTPS endpoints do not support event listeners. (If reporting on Polygon, websockets are not supported, so the HTTPS endpoint is fine.)
 
-*Example `endpoints.yaml` file:*
-```yaml
-type: EndpointList
-endpoints:
-- type: RPCEndpoint
-  chain_id: 1
-  network: mainnet
-  provider: Infura
-  url: wss://mainnet.infura.io/ws/v3/{INFURA_API_KEY}
-  explorer: https://etherscan.io
-- type: RPCEndpoint
-  chain_id: 137
-  network: mainnet
-  provider: Matic
-  url: https://polygon-mainnet.infura.io/v3/{INFURA_API_KEY}
-  explorer: https://polygonscan.com/
-- type: RPCEndpoint
-  chain_id: 80001
-  network: mumbai
-  provider: Matic
-  url: https://polygon-mumbai.infura.io/v3/{INFURA_API_KEY}
-  explorer: https://mumbai.polygonscan.com/
-...
-```
+**Once you've added an endpoint, you can read the [Usage](https://tellor-io.github.io/telliot-feeds/usage/) section,
+then you'll be set to report.**
 
 ## Other possible configs
 *Note: These configs are not necessary to run Telliot, so you can skip this section and move on to [Usage](./usage.md) if you've already finished installing Telliot, adding accounts, and adding endpoints.*
