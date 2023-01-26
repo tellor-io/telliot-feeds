@@ -101,12 +101,12 @@ To view your current configuration at any time:
 The reporter (telliot) needs to know which accounts (wallet addresses) are available for submitting values to the oracle.
 Use the command line to add necessary reporting accounts/private keys.
 
-For example, to add an account called `my-matic-acct` for reporting on Polygon mainnet (chain ID 137). You'll need to replace the private key in this example with the private key that holds your TRB for reporting:
+For example, to add an account called `myacct1` for reporting on Polygon mainnet (chain ID 137). You'll need to replace the private key in this example with the private key that holds your TRB for reporting:
 
-    >> telliot account add my-matic-acct 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
-    Enter encryption password for my-matic-acct: 
+    >> telliot account add myacct1 0x57fe7105302229455bcfd58a8b531b532d7a2bb3b50e1026afa455cd332bf706 137
+    Enter encryption password for myacct1: 
     Confirm password: 
-    Added new account my-matic-acct (address= 0xcd19cf65af3a3aea1f44a7cb0257fc7455f245f0) for use on chains (137,)
+    Added new account myacct1 (address= 0xcd19cf65af3a3aea1f44a7cb0257fc7455f245f0) for use on chains (137,)
 
 To view other options for managing accounts with telliot, use the command:
     
@@ -122,9 +122,9 @@ You can add your RPC endpoints via the command line or by editing the `endpoints
 
 To configure your endpoint via the CLI, use the `report` command and enter `n` when asked if you want to keep the default settings:
 ```
-$ telliot report -a myacct
+$ telliot report -a myacct1
 INFO    | telliot_core | telliot-core 0.1.9
-INFO    | telliot_core | Connected to polygon-mumbai [default account: myacct], time: 2023-01-24 08:25:36.676658
+INFO    | telliot_core | Connected to polygon-mumbai [default account: myacct1], time: 2023-01-24 08:25:36.676658
 Your current settings...
 Your chain id: 80001
 
@@ -132,7 +132,7 @@ Your mumbai endpoint:
  - provider: Infura
  - RPC url: https://polygon-mumbai.infura.io/v3/****
  - explorer url: https://mumbai.polygonscan.com/
-Your account: myacct at address 0x1234...
+Your account: myacct1 at address 0x1234...
 Proceed with current settings (y) or update (n)? [Y/n]:
 ...
 ```
