@@ -93,7 +93,7 @@ def setup_endpoint(cfg: TelliotConfig, chain_id: int) -> RPCEndpoint:
             return prompt_for_endpoint(chain_id)
 
     else:
-        click.echo(f"No endpoints are available for chain_id {chain_id}. Pleae add one")
+        click.echo(f"No endpoints are available for chain_id {chain_id}. Please add one:")
         return prompt_for_endpoint(chain_id)
 
 
@@ -119,7 +119,7 @@ def prompt_for_endpoint(chain_id: int) -> Optional[RPCEndpoint]:
     explorer_url = click.prompt("Enter block explorer URL", type=str)
 
     try:
-        return RPCEndpoint(chain_id, "network name unset", "provider name unset", rpc_url, explorer_url)
+        return RPCEndpoint(chain_id, "n/a", "n/a", rpc_url, explorer_url)
     except Exception as e:
         click.echo("Cannot add endpoint: invalid endpoint properties" + str(e))
         return None
