@@ -112,8 +112,7 @@ To view other options for managing accounts with telliot, use the command:
     
         telliot account --help
 
-After configuring accounts, read the [Usage](https://tellor-io.github.io/telliot-feeds/usage/) section,
-then you'll be set to report.
+After adding accounts, [configure your endpoints](#configure-endpoints).
 
 ### Configure endpoints
 
@@ -148,34 +147,10 @@ Press [ENTER] to confirm settings.
 
 If you don't have your own node URL, a free one can be obtained at [Infura.io](http://www.infura.io).  Simply replace `INFURA_API_KEY` with the one provided by Infura.
 
-**Warning! All telliot software and reporter feeds should be validated on testnets prior to deploying on mainnet.**
-
 Note that endpoints should use the websocket (wss) protocol because HTTPS endpoints do not support event listeners. (If reporting on Polygon, websockets are not supported, so the HTTPS endpoint is fine.)
 
-*Example `endpoints.yaml` file:*
-```yaml
-type: EndpointList
-endpoints:
-- type: RPCEndpoint
-  chain_id: 1
-  network: mainnet
-  provider: Infura
-  url: wss://mainnet.infura.io/ws/v3/{INFURA_API_KEY}
-  explorer: https://etherscan.io
-- type: RPCEndpoint
-  chain_id: 137
-  network: mainnet
-  provider: Matic
-  url: https://polygon-mainnet.infura.io/v3/{INFURA_API_KEY}
-  explorer: https://polygonscan.com/
-- type: RPCEndpoint
-  chain_id: 80001
-  network: mumbai
-  provider: Matic
-  url: https://polygon-mumbai.infura.io/v3/{INFURA_API_KEY}
-  explorer: https://mumbai.polygonscan.com/
-...
-```
+**Once you've added an endpoint, you can read the [Usage](https://tellor-io.github.io/telliot-feeds/usage/) section,
+then you'll be set to report.**
 
 ## Other possible configs
 *Note: These configs are not necessary to run Telliot, so you can skip this section and move on to [Usage](./usage.md) if you've already finished installing Telliot, adding accounts, and adding endpoints.*
