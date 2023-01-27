@@ -91,11 +91,11 @@ def test_update_all_configs(mock_config, mock_account):
 def test_prompt_for_endpoint():
     """Test endpoint prompts with click that build a new RPCEndpoint"""
 
-    rpc_url = "infura.com..."
-    explorer_url = "etherscan.io"
+    rpc_url = "bingo.com"
+    explorer_url = "bongo.com"
 
     with (mock.patch("click.prompt", side_effect=[rpc_url, explorer_url])):
-        chain_id = 5
+        chain_id = 12341234
         endpt = prompt_for_endpoint(chain_id)
 
         assert endpt.chain_id == chain_id
