@@ -21,9 +21,9 @@ def test_autopay_constructor():
     query_type, encoded_param_vals = decode_abi(["string", "bytes"], q.query_data)
     assert query_type == "AutopayAddresses"
 
-    phantom_string = decode_abi(["bytes"], encoded_param_vals)[0]
-    assert isinstance(phantom_string, bytes)
-    assert phantom_string == b""
+    phantom_bytes = decode_abi(["bytes"], encoded_param_vals)[0]
+    assert isinstance(phantom_bytes, bytes)
+    assert phantom_bytes == b""
 
     exp = "3ab34a189e35885414ac4e83c5a7faa9d8f03a4d530728ef516d203d91d6309c"
     assert q.query_id.hex() == exp
