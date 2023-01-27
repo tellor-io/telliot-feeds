@@ -57,9 +57,9 @@ def test_oracle_address_constructor():
     query_type, encoded_param_vals = decode_abi(["string", "bytes"], q.query_data)
     assert query_type == "TellorOracleAddress"
 
-    phantom_string = decode_abi(["bytes"], encoded_param_vals)[0]
-    assert isinstance(phantom_string, bytes)
-    assert phantom_string == b""
+    phantom_bytes = decode_abi(["bytes"], encoded_param_vals)[0]
+    assert isinstance(phantom_bytes, bytes)
+    assert phantom_bytes == b""
 
     exp = "cf0c5863be1cf3b948a9ff43290f931399765d051a60c3b23a4e098148b1f707"
     assert q.query_id.hex() == exp
