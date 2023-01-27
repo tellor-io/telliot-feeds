@@ -168,3 +168,6 @@ package.json
 
 # aws keys
 *.pem
+
+# ignore stray test files
+reported_pools.pickle
