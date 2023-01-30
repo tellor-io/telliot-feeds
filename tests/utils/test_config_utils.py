@@ -55,9 +55,7 @@ def test_update_all_configs(mock_config, mock_account):
     """test updating chain id, endpoint, and account"""
 
     cfg = mock_config
-    print("mock config chain id:", cfg.main.chain_id)
     mock_acct = mock_account
-    print("mock account:", mock_acct)
 
     # confirmations
     keep_current_settings = False
@@ -84,6 +82,8 @@ def test_update_all_configs(mock_config, mock_account):
         assert "_mock_fake_acct" in account.name
         file_after = cfg._ep_config_file.get_config()
         assert mock_endpoint in file_after.endpoints
+        print("file before ENDPOINTS:", [x.chain_id for x in file_before.endpoints])
+        print("file after ENDPOINTS:", [x.chain_id for x in file_after.endpoints])
         assert len(file_after.endpoints) > len(file_before.endpoints)
 
 
@@ -129,51 +129,24 @@ def test_setup_account(mock_config):
         assert "_mock_fake_acct" in [a.name for a in check_accounts(cfg, "_mock_fake_acct")]
 
 
-def test_not_updating_settings(mock_config, mock_account):
-    """test declining to update settings on click.confirm prompt"""
-
+def test_continue_with_incomplete_settings(mock_config):
+    """test declining to update settings when account and endpoints are unset"""
     cfg = mock_config
+    print("cfg.main.chain_id", cfg.main.chain_id)
 
     # confirmations
     keep_settings = True
-    # update_chain_id = False
 
     # other mocks
     mock_endpoint = RPCEndpoint(9999, "goerli", "infura", "myinfuraurl...", "etherscan.com")
 
     with (
         mock.patch("click.confirm", side_effect=[keep_settings]),
-        mock.patch("telliot_feeds.utils.cfg.setup_endpoint", side_effect=[mock_endpoint]),
-        mock.patch("telliot_feeds.utils.cfg.setup_account", side_effect=[mock_account]),
+        mock.patch("telliot_feeds.utils.cfg.check_endpoint", side_effect=[None]),
+        mock.patch("telliot_feeds.utils.cfg.check_accounts", side_effect=[[]]),
     ):
         file_before = cfg._ep_config_file.get_config()
-        cfg, account = setup_config(cfg=cfg, account_name="_mock_fake_acct")
-        assert check_endpoint(cfg) != mock_endpoint
-        assert "_mock_fake_acct" in account.name
-        file_after = cfg._ep_config_file.get_config()
-
-        assert len(file_after.endpoints) == len(file_before.endpoints)
-
-
-def test_continue_with_incomplete_settings(mock_config, mock_account):
-    """test declining to update settings when account and endpoints are unset"""
-    cfg = mock_config
-    print("cfg.main.chain_id", cfg.main.chain_id)
-
-    # confirmations
-    keep_settings = False
-    update_chain_id = False
-
-    # other mocks
-    mock_endpoint = RPCEndpoint(9999, "goerli", "infura", "myinfuraurl...", "etherscan.com")
-
-    with (
-        mock.patch("click.confirm", side_effect=[keep_settings, update_chain_id]),
-        mock.patch("telliot_feeds.utils.cfg.setup_endpoint", side_effect=[mock_endpoint]),
-        mock.patch("telliot_feeds.utils.cfg.setup_account", side_effect=[mock_account]),
-    ):
-        file_before = cfg._ep_config_file.get_config()
-        cfg, account = setup_config(cfg=cfg, account_name="_mock_fake_acct")
+        cfg, account = setup_config(cfg=cfg, account_name="thisdoesnotexist")
         assert check_endpoint(cfg) != mock_endpoint
         assert not account
         file_after = cfg._ep_config_file.get_config()
