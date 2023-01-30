@@ -68,7 +68,7 @@ def setup_config(cfg: TelliotConfig, account_name: str) -> Tuple[TelliotConfig, 
         cfg.endpoints.endpoints.insert(0, new_endpoint)
         click.echo(f"{new_endpoint} added!")
 
-    click.echo(f"Your account name: {accounts[0].name}")
+    click.echo(f"Your account name: {accounts[0].name if accounts else None}")
 
     new_account = setup_account(cfg.main.chain_id)
     if new_account is not None:
