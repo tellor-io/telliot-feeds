@@ -51,7 +51,6 @@ def mock_account():
         return find_accounts(chain_id=9999, name="_mock_fake_acct")[0]
 
 
-@pytest.mark.skip("it's not replacing the main default endpoint")
 def test_update_all_configs(mock_config, mock_account):
     """test updating chain id, endpoint, and account"""
 
@@ -61,7 +60,7 @@ def test_update_all_configs(mock_config, mock_account):
     print("mock account:", mock_acct)
 
     # confirmations
-    update_settings = True
+    keep_current_settings = False
     update_chain_id = True
     use_endpoint = False
 
@@ -72,7 +71,7 @@ def test_update_all_configs(mock_config, mock_account):
     mock_endpoint = RPCEndpoint(9999, "goerli", "infura", "myinfuraurl...", "etherscan.com")
 
     with (
-        mock.patch("click.confirm", side_effect=[update_settings, update_chain_id, use_endpoint]),
+        mock.patch("click.confirm", side_effect=[keep_current_settings, update_chain_id, use_endpoint]),
         mock.patch("click.prompt", side_effect=[new_chain_id]),
         mock.patch("telliot_feeds.utils.cfg.setup_endpoint", side_effect=[mock_endpoint]),
         mock.patch("telliot_feeds.utils.cfg.setup_account", return_value=mock_acct),
@@ -80,12 +79,12 @@ def test_update_all_configs(mock_config, mock_account):
         file_before = cfg._ep_config_file.get_config()
         assert mock_endpoint not in file_before.endpoints
         cfg, account = setup_config(cfg=cfg, account_name="_mock_fake_acct")
-        # assert cfg.main.chain_id == new_chain_id
+        assert cfg.main.chain_id == new_chain_id
         assert check_endpoint(cfg) == mock_endpoint
         assert "_mock_fake_acct" in account.name
         file_after = cfg._ep_config_file.get_config()
         assert mock_endpoint in file_after.endpoints
-        # assert len(file_after.endpoints) > len(file_before.endpoints)
+        assert len(file_after.endpoints) > len(file_before.endpoints)
 
 
 def test_prompt_for_endpoint():
@@ -130,22 +129,22 @@ def test_setup_account(mock_config):
         assert "_mock_fake_acct" in [a.name for a in check_accounts(cfg, "_mock_fake_acct")]
 
 
-@pytest.mark.skip("Fixture 'mock_account' called directly. Fixtures are not meant to be called directly")
-def test_not_updating_settings(mock_config):
+def test_not_updating_settings(mock_config, mock_account):
     """test declining to update settings on click.confirm prompt"""
 
     cfg = mock_config
 
     # confirmations
-    update_settings = False
+    keep_settings = True
+    # update_chain_id = False
 
     # other mocks
     mock_endpoint = RPCEndpoint(9999, "goerli", "infura", "myinfuraurl...", "etherscan.com")
 
     with (
-        mock.patch("click.confirm", side_effect=[update_settings]),
+        mock.patch("click.confirm", side_effect=[keep_settings]),
         mock.patch("telliot_feeds.utils.cfg.setup_endpoint", side_effect=[mock_endpoint]),
-        mock.patch("telliot_feeds.utils.cfg.setup_account", return_value=mock_account()),
+        mock.patch("telliot_feeds.utils.cfg.setup_account", side_effect=[mock_account]),
     ):
         file_before = cfg._ep_config_file.get_config()
         cfg, account = setup_config(cfg=cfg, account_name="_mock_fake_acct")
@@ -156,22 +155,22 @@ def test_not_updating_settings(mock_config):
         assert len(file_after.endpoints) == len(file_before.endpoints)
 
 
-@pytest.mark.skip("Fixture 'mock_account' called directly. Fixtures are not meant to be called directly")
-def test_continue_with_incomplete_settings(mock_config):
+def test_continue_with_incomplete_settings(mock_config, mock_account):
     """test declining to update settings when account and endpoints are unset"""
     cfg = mock_config
     print("cfg.main.chain_id", cfg.main.chain_id)
 
     # confirmations
-    update_settings = False
+    keep_settings = False
+    update_chain_id = False
 
     # other mocks
     mock_endpoint = RPCEndpoint(9999, "goerli", "infura", "myinfuraurl...", "etherscan.com")
 
     with (
-        mock.patch("click.confirm", side_effect=[update_settings]),
+        mock.patch("click.confirm", side_effect=[keep_settings, update_chain_id]),
         mock.patch("telliot_feeds.utils.cfg.setup_endpoint", side_effect=[mock_endpoint]),
-        mock.patch("telliot_feeds.utils.cfg.setup_account", return_value=mock_account()),
+        mock.patch("telliot_feeds.utils.cfg.setup_account", side_effect=[mock_account]),
     ):
         file_before = cfg._ep_config_file.get_config()
         cfg, account = setup_config(cfg=cfg, account_name="_mock_fake_acct")
