@@ -20,7 +20,7 @@ from telliot_feeds.utils.cfg import setup_config
 @pytest.fixture
 def mock_config():
 
-    ep = EndpointList()
+    ep = EndpointList(endpoints=[])
 
     cfg = TelliotConfig()
     mock_config_dir = os.path.join(os.getcwd(), ".mock_config")
@@ -34,6 +34,8 @@ def mock_config():
     cfg.config_dir = mock_path
     cfg._ep_config_file.config_dir = mock_path
     cfg._ep_config_file.save_config(ep)
+
+    cfg.endpoints = cfg._ep_config_file.get_config()
 
     yield cfg  # test happens here
 
@@ -82,9 +84,7 @@ def test_update_all_configs(mock_config, mock_account):
         assert "_mock_fake_acct" in account.name
         file_after = cfg._ep_config_file.get_config()
         assert mock_endpoint in file_after.endpoints
-        print("file before ENDPOINTS:", [x.chain_id for x in file_before.endpoints])
-        print("file after ENDPOINTS:", [x.chain_id for x in file_after.endpoints])
-        assert len(file_after.endpoints) > len(file_before.endpoints)
+        assert len(file_after.endpoints) == len(file_before.endpoints) + 1
 
 
 def test_prompt_for_endpoint():
@@ -132,7 +132,6 @@ def test_setup_account(mock_config):
 def test_continue_with_incomplete_settings(mock_config):
     """test declining to update settings when account and endpoints are unset"""
     cfg = mock_config
-    print("cfg.main.chain_id", cfg.main.chain_id)
 
     # confirmations
     keep_settings = True
