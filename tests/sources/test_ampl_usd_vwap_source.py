@@ -5,6 +5,7 @@ import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.sources.ampleforth.ampl_usd_vwap import AmpleforthCustomSpotPriceSource
+from telliot_feeds.sources.ampleforth.ampl_usd_vwap import BitfinexSource
 from telliot_feeds.sources.ampleforth.ampl_usd_vwap import BraveNewCoinSource
 
 
@@ -20,10 +21,28 @@ def keys_dict():
 
 
 @pytest.mark.asyncio
+async def test_bitfinex_source():
+    """Test retrieving AMPL/USD/VWAP data from Bitfinex."""
+
+    bitfinex_src = AmpleforthCustomSpotPriceSource().sources[0]
+    assert isinstance(bitfinex_src, BitfinexSource)
+
+    value, timestamp = await bitfinex_src.fetch_new_datapoint()
+
+    print("Bitfinex VWAP:", value)
+
+    assert isinstance(value, float)
+    assert isinstance(timestamp, datetime)
+    assert 0 < value < 1
+
+
+@pytest.mark.asyncio
 async def test_bravenewcoin_source(keys_dict):
     """Test retrieving AMPL/USD/VWAP data from BraveNewCoin/Rapid api.
 
     Retrieves bearer token and adds to headers of main data request."""
+    brave_src = AmpleforthCustomSpotPriceSource().sources[1]
+    assert isinstance(brave_src, BraveNewCoinSource)
 
     if keys_dict["bravenewcoin"]:
         ampl_source = BraveNewCoinSource(api_key=keys_dict["bravenewcoin"])
