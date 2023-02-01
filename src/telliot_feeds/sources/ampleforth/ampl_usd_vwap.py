@@ -227,11 +227,12 @@ class AmpleforthCustomSpotPriceSource(DataSource[float]):
             logger.warning("No prices retrieved for AMPL/USD/VWAP Source.")
             return None, None
 
+        logger.info(f"Nubmer of sources used for AMPL/USD VWAP: {len(prices)}")
         # Get median price
         result = statistics.median(prices)
         datapoint = (result, datetime_now_utc())
         self.store_datapoint(datapoint)
 
-        logger.info("AMPL/USD/VWAP {} retrieved at time {}".format(datapoint[0], datapoint[1]))
+        logger.info("AMPL/USD VWAP {} retrieved at time {}".format(datapoint[0], datapoint[1]))
 
         return datapoint
