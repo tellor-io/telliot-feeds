@@ -71,10 +71,8 @@ async def get_float_from_api(
 
 
 @dataclass
-class AnyBlockSource(DataSource[float]):
-    """Data source for retrieving AMPL/USD/VWAP from AnyBlock api."""
-
-    api_key: str = ""
+class BitfinexSource(DataSource[float]):
+    """Data source for retrieving AMPL/USD VWAP from Bitfinex API."""
 
     async def fetch_new_datapoint(
         self,
@@ -187,7 +185,7 @@ class AmpleforthCustomSpotPriceSource(DataSource[float]):
     def __post_init__(self) -> None:
         keys = TelliotConfig().api_keys
         self.sources = [
-            AnyBlockSource(api_key=keys.find("anyblock")[0].key),
+            BitfinexSource(),
             BraveNewCoinSource(api_key=keys.find("bravenewcoin")[0].key),
         ]
 
