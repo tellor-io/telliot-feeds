@@ -18,6 +18,8 @@ from telliot_core.utils.response import ResponseStatus
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.sources.ampleforth.bitfinex import get_value_from_bitfinex
+from telliot_feeds.sources.ampleforth.symbols import SYMBOLS
 from telliot_feeds.utils.log import get_logger
 
 
@@ -83,23 +85,29 @@ class BitfinexSource(DataSource[float]):
         start_milli = to_unix_milli(yesterday_start)
         end_milli = to_unix_milli(yesterday_end)
 
-        url = (
-            "https://api.anyblock.tools/market/AMPL_USD_via_ALL/daily-volume"
-            + "?roundDay=false"
-            + f"&start={start_milli}"
-            + f"&end={end_milli}"
-            + "&debug=false&access_token="
-            + self.api_key
-        )
-        params = ["overallVWAP"]
+        try:
+            dict_rsp = await get_value_from_bitfinex(
+                SYMBOLS["AMPL_USD_via_ALL"], start_milli, end_milli, True  # type: ignore
+            )
+        except Exception as e:
+            logger.error(f"Error getting VWAP from Bitfinex: {e}")
+            return (None, None)
 
-        datapoint = await get_float_from_api(url, params)
+        if dict_rsp is None:
+            logger.warning("No response from Bitfinex")
+            return (None, None)
 
-        v, t = datapoint
+        try:
+            v = float(dict_rsp["overall_vwap"])
+        except Exception as e:
+            logger.error(f"Error parsing VWAP from Bitfinex: {e}")
+            return (None, None)
+
+        t = datetime_now_utc()
         if v is not None and t is not None:
             self.store_datapoint((v, t))
 
-        return datapoint
+        return (v, t)
 
 
 @dataclass

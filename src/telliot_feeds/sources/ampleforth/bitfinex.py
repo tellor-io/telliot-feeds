@@ -5,7 +5,7 @@ from typing import Any
 
 import requests
 
-from telliot_feeds.sources.apmpleforth.symbols import SYMBOLS
+from telliot_feeds.sources.ampleforth.symbols import SYMBOLS
 
 
 logger = logging.getLogger(__name__)
@@ -171,9 +171,9 @@ def calculate_vwap_via(symbol: dict[str, Any], start: int, end: int, show_debug:
 
 def calculate_vwap_via_all(symbol: dict[str, Any], start: int, end: int, show_debug: bool) -> dict[str, Any]:
     """Calculate VWAP for a single symbol via all symbols."""
-    p_result = [calculate_vwap_direct(SYMBOLS[symbol["direct"]], start, end)]
+    p_result = [calculate_vwap_direct(SYMBOLS[symbol["direct"]], start, end)]  # type: ignore
     for h in symbol["viaHops"]:
-        p_result.append(calculate_all_single_via(SYMBOLS[h], start, end, show_debug))
+        p_result.append(calculate_all_single_via(SYMBOLS[h], start, end, show_debug))  # type: ignore
     result = {"bitFinexVwapDirect": p_result[0]}
 
     if show_debug:
@@ -194,7 +194,7 @@ def calculate_vwap_via_all(symbol: dict[str, Any], start: int, end: int, show_de
     return result
 
 
-def get_value_from_bitfinex(symbol: dict[str, Any], start: int, end: int, show_debug: bool) -> dict[str, Any]:
+async def get_value_from_bitfinex(symbol: dict[str, Any], start: int, end: int, show_debug: bool) -> dict[str, Any]:
     """Get VWAP for any symbol or group of symbols in SYMBOLS."""
     if "direct" not in symbol:
         result = calculate_vwap_direct(symbol, start, end)
@@ -210,7 +210,7 @@ def main() -> None:
     # get ampl vwap
     current_ts = int(time.time()) * 1000
     ts_24hr_ago = current_ts - 86400000
-    result = get_value_from_bitfinex(SYMBOLS["AMPL_USD_via_ALL"], ts_24hr_ago, current_ts, True)
+    result = get_value_from_bitfinex(SYMBOLS["AMPL_USD_via_ALL"], ts_24hr_ago, current_ts, True)  # type: ignore
     print(result)
 
 
