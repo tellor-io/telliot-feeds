@@ -9,6 +9,7 @@ from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feeds.feeds.dai_usd_feed import dai_usd_median_feed
 from telliot_feeds.feeds.daily_volatility_manual_feed import daily_volatility_manual_feed
 from telliot_feeds.feeds.diva_manual_feed import diva_manual_feed
+from telliot_feeds.feeds.eth_btc_feed import eth_btc_median_feed
 from telliot_feeds.feeds.eth_jpy_feed import eth_jpy_median_feed
 from telliot_feeds.feeds.eth_usd_30day_volatility import eth_usd_30day_volatility
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
@@ -70,6 +71,7 @@ CATALOG_FEEDS = {
     "albt-usd-spot": albt_usd_median_feed,
     "rai-usd-spot": rai_usd_median_feed,
     "xdai-usd-spot": xdai_usd_median_feed,
+    "eth-btc-spot": eth_btc_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

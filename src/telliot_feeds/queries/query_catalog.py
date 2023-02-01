@@ -168,3 +168,9 @@ query_catalog.add_entry(
     title="XDAI/USD spot price",
     q=SpotPrice(asset="xdai", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="eth-btc-spot",
+    title="ETH/BTC spot price",
+    q=SpotPrice(asset="eth", currency="btc"),
+)
