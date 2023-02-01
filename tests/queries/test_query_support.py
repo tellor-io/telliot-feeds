@@ -24,3 +24,14 @@ def test_all_query_types_in_catalog():
     for q in JsonQuery.__subclasses__():
         print("Checking", q.__name__)
         assert q.__name__ in q_types
+
+
+def test_gen_all_query_ids():
+    """Test that all query IDs can be generated."""
+    for q in AbiQuery.__subclasses__():
+        print("Checking", q.__name__)
+        q.query_id
+
+    for q in JsonQuery.__subclasses__():
+        print("Checking", q.__name__)
+        q.query_id
