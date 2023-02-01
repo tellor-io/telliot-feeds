@@ -1,4 +1,5 @@
 """Bitfinex data source."""
+import asyncio
 import logging
 import time
 from typing import Any
@@ -210,7 +211,9 @@ def main() -> None:
     # get ampl vwap
     current_ts = int(time.time()) * 1000
     ts_24hr_ago = current_ts - 86400000
-    result = get_value_from_bitfinex(SYMBOLS["AMPL_USD_via_ALL"], ts_24hr_ago, current_ts, True)  # type: ignore
+    result = asyncio.run(
+        get_value_from_bitfinex(SYMBOLS["AMPL_USD_via_ALL"], ts_24hr_ago, current_ts, True)  # type: ignore
+    )
     print(result)
 
 
