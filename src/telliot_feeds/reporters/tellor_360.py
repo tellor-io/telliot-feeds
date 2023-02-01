@@ -6,6 +6,7 @@ from typing import Any
 from typing import Optional
 from typing import Tuple
 
+from eth_abi.exceptions import EncodingTypeError
 from eth_utils import to_checksum_address
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
@@ -198,7 +199,13 @@ class Tellor360Reporter(TellorFlexReporter):
         total_rewards: int = 0
 
         if self.datafeed is not None:
-            fetch_autopay_tip = await fetch_feed_tip(self.autopay, self.datafeed.query.query_id)
+            try:
+                qid = self.datafeed.query.query_id
+                fetch_autopay_tip = await fetch_feed_tip(self.autopay, qid)
+            except EncodingTypeError:
+                logger.warning("Unable to generate query data/id for datafeed")
+                fetch_autopay_tip = 0
+
             if fetch_autopay_tip is not None:
                 total_rewards += fetch_autopay_tip
 

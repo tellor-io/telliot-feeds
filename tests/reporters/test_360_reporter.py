@@ -238,3 +238,33 @@ async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, 
     reporter.datafeed = None
     await reporter.report(report_count=1)
     assert "Currently in reporter lock. Time left: 11:59" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_fail_gen_query_id(tellor_360, monkeypatch, caplog, guaranteed_price_source):
+    """Test failure to generate query id when calling rewards() method."""
+    contracts, account = tellor_360
+    feed = eth_usd_median_feed
+    feed.source = guaranteed_price_source
+
+    reporter_kwargs = {
+        "oracle": contracts.oracle,
+        "token": contracts.token,
+        "autopay": contracts.autopay,
+        "endpoint": contracts.oracle.node,
+        "account": account,
+        "chain_id": CHAIN_ID,
+        "transaction_type": 0,
+        "wait_period": 0,
+        "min_native_token_balance": 0,
+        "datafeed": feed,
+    }
+
+    # This will cause the SpotPrice query to throw an eth_abi.exceptions.EncodingTypeError when
+    # trying to generate the query data for the query id.
+    eth_usd_median_feed.query.asset = None
+
+    reporter = Tellor360Reporter(**reporter_kwargs)
+    _ = await reporter.rewards()
+
+    assert "Unable to generate query data/id for datafeed" in caplog.text
