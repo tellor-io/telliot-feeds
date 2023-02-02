@@ -267,4 +267,4 @@ async def test_fail_gen_query_id(tellor_360, monkeypatch, caplog, guaranteed_pri
     reporter = Tellor360Reporter(**reporter_kwargs)
     _ = await reporter.rewards()
 
-    assert "Unable to generate query data/id for datafeed" in caplog.text
+    assert "Unable to generate data/id for query" in caplog.text

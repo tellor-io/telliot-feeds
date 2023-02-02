@@ -240,7 +240,7 @@ class TellorFlexReporter(IntervalReporter):
             try:
                 qid = self.datafeed.query.query_id
             except EncodingTypeError:
-                logger.warning("Unable to generate query data/id for datafeed")
+                logger.warning(f"Unable to generate data/id for query: {self.datafeed.query}")
                 return None
             if qid not in CATALOG_QUERY_IDS:
                 CATALOG_QUERY_IDS[qid] = self.datafeed.query.descriptor
