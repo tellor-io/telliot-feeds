@@ -8,6 +8,7 @@ from typing import Tuple
 from typing import Union
 
 from chained_accounts import ChainedAccount
+from eth_abi.exceptions import EncodingTypeError
 from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
 from telliot_core.gas.legacy_gas import legacy_gas_station
@@ -236,8 +237,13 @@ class TellorFlexReporter(IntervalReporter):
         if query tag is selected fetches the rewards, if any, for that query tag"""
         if self.datafeed:
             # add query id to catalog to fetch tip for legacy autopay
-            if self.datafeed.query.query_id not in CATALOG_QUERY_IDS:
-                CATALOG_QUERY_IDS[self.datafeed.query.query_id] = self.datafeed.query.descriptor
+            try:
+                qid = self.datafeed.query.query_id
+            except EncodingTypeError:
+                logger.warning(f"Unable to generate data/id for query: {self.datafeed.query}")
+                return None
+            if qid not in CATALOG_QUERY_IDS:
+                CATALOG_QUERY_IDS[qid] = self.datafeed.query.descriptor
             self.autopaytip = await self.rewards()
             return self.datafeed
 
