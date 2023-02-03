@@ -2,7 +2,6 @@ import asyncio
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.price.spot_price import SpotPrice
-from telliot_feeds.sources.price.spot.bitfinex import BitfinexSpotPriceSource
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.coinmarketcap import (
     CoinMarketCapSpotPriceSource,
@@ -18,7 +17,6 @@ albt_usd_median_feed = DataFeed(
         sources=[
             CoinGeckoSpotPriceSource(asset="albt", currency="usd"),
             CoinMarketCapSpotPriceSource(asset="albt", currency="usd"),
-            BitfinexSpotPriceSource(asset="albt:", currency="usd"),
         ],
     ),
 )
