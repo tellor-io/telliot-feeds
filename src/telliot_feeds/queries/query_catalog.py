@@ -3,6 +3,7 @@ from telliot_feeds.queries.ampleforth.uspce import AmpleforthUSPCE
 from telliot_feeds.queries.catalog import Catalog
 from telliot_feeds.queries.daily_volatility import DailyVolatility
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
+from telliot_feeds.queries.evm_call import EVMCall
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feeds.queries.price.spot_price import SpotPrice
@@ -173,4 +174,14 @@ query_catalog.add_entry(
     tag="eth-btc-spot",
     title="ETH/BTC spot price",
     q=SpotPrice(asset="eth", currency="btc"),
+)
+
+query_catalog.add_entry(
+    tag="evm-call-example",
+    title="EVM call example",
+    q=EVMCall(
+        chainId=1,
+        contractAddress="0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0",
+        calldata=b"\x18\x16\x0d\xdd",
+    ),
 )
