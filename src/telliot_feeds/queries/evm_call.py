@@ -23,7 +23,7 @@ class EVMCall(AbiQuery):
     """
 
     chainId: int
-    contractAddress: bytes
+    contractAddress: str
     calldata: bytes
 
     abi = [
