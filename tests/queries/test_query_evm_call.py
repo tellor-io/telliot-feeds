@@ -33,3 +33,12 @@ def test_evm_call_constructor():
 
 
 # test get query from data
+def test_evm_call_get_query_from_data():
+    """Test get_query_from_data."""
+    q = EVMCall(
+        chainId=1,
+        contractAddress="0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0",
+        calldata=b"\x18\x16\x0d\xdd",
+    )
+    q2 = EVMCall.get_query_from_data(q.query_data)
+    assert q2.query_data == q.query_data
