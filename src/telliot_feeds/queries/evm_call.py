@@ -29,7 +29,7 @@ class EVMCall(AbiQuery):
     abi = [
         {"type": "uint256", "name": "chainId"},
         {"type": "address", "name": "contractAddress"},
-        {"type": "bytes4", "name": "calldata"},
+        {"type": "bytes", "name": "calldata"},
     ]
 
     @property
@@ -54,7 +54,15 @@ class EVMCall(AbiQuery):
         # The function selector (calldata) parameter must be shifted over, so that
         # the query data matches the generated query data in Solidity.
         last_32_bytes = q_data[-32:]
-        func_selector = last_32_bytes[:4]
-        shifted_func_selector = func_selector.rjust(32, b"\x00")
-        adjusted_q_data = q_data[:-32] + shifted_func_selector
-        return adjusted_q_data
+        call_data = []
+        # iterate backwards through the last 32 bytes
+        # append the remaining bytes to the call_data list
+        # when the first non-zero byte is found
+        for i in range(31, -1, -1):
+            if last_32_bytes[i] != 0:
+                call_data.append(last_32_bytes[: i + 1])
+                break
+
+        shifted_call_data = call_data.rjust(32, b"\x00")
+        # adjusted_q_data = q_data[:-32] + shifted_func_selector
+        # return adjusted_q_data
