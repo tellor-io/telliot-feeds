@@ -4,24 +4,36 @@ from datetime import datetime
 import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feeds.sources.ampl_usd_vwap import AmpleforthCustomSpotPriceSource
-from telliot_feeds.sources.ampl_usd_vwap import AnyBlockSource
-from telliot_feeds.sources.ampl_usd_vwap import BraveNewCoinSource
+from telliot_feeds.sources.ampleforth.ampl_usd_vwap import AmpleforthCustomSpotPriceSource
+from telliot_feeds.sources.ampleforth.ampl_usd_vwap import BitfinexSource
+from telliot_feeds.sources.ampleforth.ampl_usd_vwap import BraveNewCoinSource
 
 
 @pytest.fixture(scope="module")
 def keys_dict():
     keys = TelliotConfig().api_keys
-    anyblock_key = keys.find("anyblock")[0].key
     rapid_key = keys.find("bravenewcoin")[0].key
-
-    if not anyblock_key and "ANYBLOCK_KEY" in os.environ:
-        anyblock_key = os.environ["ANYBLOCK_KEY"]
 
     if not rapid_key and "RAPID_KEY" in os.environ:
         rapid_key = os.environ["RAPID_KEY"]
 
-    return {"anyblock": anyblock_key, "bravenewcoin": rapid_key}
+    return {"bravenewcoin": rapid_key}
+
+
+@pytest.mark.asyncio
+async def test_bitfinex_source():
+    """Test retrieving AMPL/USD/VWAP data from Bitfinex."""
+
+    bitfinex_src = AmpleforthCustomSpotPriceSource().sources[0]
+    assert isinstance(bitfinex_src, BitfinexSource)
+
+    value, timestamp = await bitfinex_src.fetch_new_datapoint()
+
+    print("Bitfinex VWAP:", value)
+
+    assert isinstance(value, float)
+    assert isinstance(timestamp, datetime)
+    assert 0 < value < 1
 
 
 @pytest.mark.asyncio
@@ -29,6 +41,8 @@ async def test_bravenewcoin_source(keys_dict):
     """Test retrieving AMPL/USD/VWAP data from BraveNewCoin/Rapid api.
 
     Retrieves bearer token and adds to headers of main data request."""
+    brave_src = AmpleforthCustomSpotPriceSource().sources[1]
+    assert isinstance(brave_src, BraveNewCoinSource)
 
     if keys_dict["bravenewcoin"]:
         ampl_source = BraveNewCoinSource(api_key=keys_dict["bravenewcoin"])
@@ -43,23 +57,6 @@ async def test_bravenewcoin_source(keys_dict):
 
 
 @pytest.mark.asyncio
-async def test_anyblock_source(keys_dict):
-    """Test retrieving AMPL/USD/VWAP data from AnyBlock api."""
-    api_key = keys_dict["anyblock"]
-
-    if api_key != "":
-        ampl_source = AnyBlockSource(api_key=api_key)
-
-        value, timestamp = await ampl_source.fetch_new_datapoint()
-
-        assert isinstance(value, float)
-        assert isinstance(timestamp, datetime)
-        assert value > 0
-    else:
-        print("No AnyBlock api key ")
-
-
-@pytest.mark.asyncio
 async def test_ampl_usd_vwap_source(keys_dict):
     """Test getting median updated AMPL/USD/VWAP value."""
 
@@ -67,7 +64,6 @@ async def test_ampl_usd_vwap_source(keys_dict):
         print("No api keys found")
     else:
         ampl_source = AmpleforthCustomSpotPriceSource()
-        ampl_source.sources[0].api_key = keys_dict["anyblock"]
         ampl_source.sources[1].api_key = keys_dict["bravenewcoin"]
 
         value, timestamp = await ampl_source.fetch_new_datapoint()
