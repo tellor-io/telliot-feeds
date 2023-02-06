@@ -1,22 +1,23 @@
 """Bitfinex data source."""
 import asyncio
 import logging
-import time
 from typing import Any
 
 import requests
 
 from telliot_feeds.sources.ampleforth.symbols import SYMBOLS
 
+# import time
+
 
 logger = logging.getLogger(__name__)
 
 
-TEN_MINUTES = 1000 * 60
+THOUSAND_MIN = 1000 * 60  # original JS names this variable "TEN_MINUTES"
 NO_TRADES_FOUND = "No trades found"
 
 
-def build_buckets(start: int, a_list: list[list[int]], bucket_size: int = TEN_MINUTES) -> dict[int, dict[str, Any]]:
+def build_buckets(start: int, a_list: list[list[int]], bucket_size: int = THOUSAND_MIN) -> dict[int, dict[str, Any]]:
     """Build buckets for VWAP calculation."""
     vwap_per_slot: dict[int, dict[str, Any]] = {}
     print(a_list)
@@ -209,8 +210,10 @@ async def get_value_from_bitfinex(symbol: dict[str, Any], start: int, end: int, 
 def main() -> None:
     """Main function."""
     # get ampl vwap
-    current_ts = int(time.time()) * 1000
-    ts_24hr_ago = current_ts - 86400000
+    # current_ts = int(time.time()) * 1000
+    # ts_24hr_ago = current_ts - 86400000
+    current_ts = 1675382399000
+    ts_24hr_ago = 1675296000000
     result = asyncio.run(
         get_value_from_bitfinex(SYMBOLS["AMPL_USD_via_ALL"], ts_24hr_ago, current_ts, True)  # type: ignore
     )
