@@ -3,8 +3,6 @@ Subclass AbiQuery to implement the EVMCall query type.
 """
 from dataclasses import dataclass
 
-from eth_abi import encode_abi
-
 from telliot_feeds.dtypes.value_type import ValueType
 from telliot_feeds.queries.abi_query import AbiQuery
 
@@ -17,9 +15,9 @@ class EVMCall(AbiQuery):
 
     Parameters
     ----------
-    chainId: The chain id of the network the contract is deployed on
+    chainId: The chain ID of the network the contract is deployed on
     contractAddress: The address of the contract on the network(e.g. 0x...)
-    calldata: The encoding of the function name and its arguments
+    calldata: The encoding of the function selector and function argument values
     """
 
     chainId: int
