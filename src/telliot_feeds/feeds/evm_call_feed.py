@@ -1,6 +1,6 @@
+from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.evm_call import EVMCall
 from telliot_feeds.sources.evm_call import EVMCallSource
-from telliot_feeds.datafeed import DataFeed
 
 evm_call_feed = DataFeed(
     query=EVMCall(),
