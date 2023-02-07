@@ -39,30 +39,3 @@ class EVMCall(AbiQuery):
         `bytes` - the encoded value and timestamp
         """
         return ValueType(abi_type="bytes", packed=False)
-
-    @property
-    def query_data(self) -> bytes:
-        """Encode the query type and parameters to create the query data.
-
-        This method uses ABI encoding to encode the query's parameter values.
-        """
-        param_values = [getattr(self, p["name"]) for p in self.abi]
-        param_types = [p["type"] for p in self.abi]
-        encoded_params = encode_abi(param_types, param_values)
-
-        q_data = encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
-        # The function selector (calldata) parameter must be shifted over, so that
-        # the query data matches the generated query data in Solidity.
-        last_32_bytes = q_data[-32:]
-        call_data = []
-        # iterate backwards through the last 32 bytes
-        # append the remaining bytes to the call_data list
-        # when the first non-zero byte is found
-        for i in range(31, -1, -1):
-            if last_32_bytes[i] != 0:
-                call_data.append(last_32_bytes[: i + 1])
-                break
-
-        shifted_call_data = call_data.rjust(32, b"\x00")
-        # adjusted_q_data = q_data[:-32] + shifted_func_selector
-        # return adjusted_q_data
