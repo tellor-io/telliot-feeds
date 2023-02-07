@@ -1,14 +1,13 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from telliot_core.apps.telliot_config import TelliotConfig
+from web3 import Web3
+
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.utils.log import get_logger
-
-from telliot_core.apps.telliot_config import TelliotConfig
-
-from web3 import Web3
 
 
 logger = get_logger(__name__)
@@ -17,6 +16,7 @@ logger = get_logger(__name__)
 @dataclass
 class EVMCallSource(DataSource[Optional[bytes]]):
     """DataSource for returning the result of a read function on an EVM contract."""
+
     chain_id: Optional[int] = None
     contract_address: Optional[str] = None  # example: '0x1234567890123456789012345678901234567890'
     calldata: Optional[bytes] = None
@@ -47,10 +47,7 @@ class EVMCallSource(DataSource[Optional[bytes]]):
             raise ValueError("Calldata not provided")
         if not self.web3:
             raise ValueError("Web3 not provided")
-        result = self.web3.eth.call(
-            {'to': self.contract_address, 'data': self.calldata},
-            'latest'
-        )
+        result = self.web3.eth.call({"to": self.contract_address, "data": self.calldata}, "latest")
         return result
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[bytes]:

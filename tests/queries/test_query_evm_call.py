@@ -2,8 +2,6 @@ from eth_abi import decode_abi
 
 from telliot_feeds.queries.evm_call import EVMCall
 
-# from eth_abi import encode_abi
-
 
 def test_evm_call_constructor():
     """Validate EVMCall query."""
@@ -87,14 +85,6 @@ def test_encode_decode_reported_val():
         calldata=b"\x18\x16\x0d\xdd",
     )
     pass
-    # expected response type is bytes
-    # example response of encoded uint256:
-    # print(q.value_type.encode(420 * 10 ** 18))
-    # print(420 * 10 ** 18)
-    # encoded_int = encode_abi(["uint256"], [420 * 10 ** 18])
-    # assert encoded_int == bytes.fromhex("000000000000000000000000000000000000000000000016c4abbebea0100000")
-    # assert q.value_type.encode(encoded_int) == expected_rsp
-    # assert q.value_type.decode(expected_rsp) == encoded_int
 
     # So in solidity you're assuming that the response will be encoded immediately to bytes
     # or else we'd need to know the type of the response to decode it
@@ -103,32 +93,15 @@ def test_encode_decode_reported_val():
     # 1. fix the dataspec query data & id
     # 2. deploy a contract fixture, get its address and calldata for one of its read functions
     # 3. create instance of EVMCall query with the address and calldata
-    # 4. call the function using the calldata and address like so:
-    # from web3 import Web3
+    # 4. call the function using the calldata and address
 
-    # # Connect to an Ethereum client
-    # w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
+    # 6. datafeed
 
-    # # The contract address
-    # contract_address = '0x1234567890123456789012345678901234567890'
+    # 7. might need to deploy a mock contract to then read the reported value from
+    # the tellor oracle contract and then decode it. Like if the reported val is
+    # an encoded uint256, then we need to decode it to get the actual value, say 420
 
-    # # The function signature of the read function (can be obtained using a tool like Remix)
-    # function_signature = '0x12345678'
-
-    # # The arguments to pass to the read function
-    # arguments = [42]
-
-    # # Encode the arguments using `Web3.codec.encode_abi`
-    # encoded_arguments = w3.codec.encode_abi(['uint256'], arguments)
-
-    # # Combine the function signature and the encoded arguments to form the calldata
-    # calldata = function_signature + encoded_arguments[2:]
-
-    # # Call the contract's read function using `Web3.eth.call`
-    # result = w3.eth.call(
-    #     {'to': contract_address, 'data': calldata},
-    #     'latest'
-    # )
-
-    # 5. try encoding / decoding "result" with the query instance
-    # 6. Rewrite steps above as a datasouce and datafed, test separately
+    # test that datasource attributes are updated when you select evmcall q type bc tipped:
+    # datafeed = listener_filter.qtype_in_feed_builder_mapping(query_data)
+    # and
+    # query = listener_filter.get_query_from_qtyp_name(query_data)
