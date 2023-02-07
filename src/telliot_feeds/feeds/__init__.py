@@ -14,6 +14,8 @@ from telliot_feeds.feeds.eth_jpy_feed import eth_jpy_median_feed
 from telliot_feeds.feeds.eth_usd_30day_volatility import eth_usd_30day_volatility
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.eur_usd_feed import eur_usd_median_feed
+from telliot_feeds.feeds.evm_call_feed import evm_call_feed
+from telliot_feeds.feeds.evm_call_feed import evm_call_feed_example
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed_example
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
@@ -72,6 +74,7 @@ CATALOG_FEEDS = {
     "rai-usd-spot": rai_usd_median_feed,
     "xdai-usd-spot": xdai_usd_median_feed,
     "eth-btc-spot": eth_btc_median_feed,
+    "evm-call-example": evm_call_feed_example,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
@@ -88,4 +91,5 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "TellorRNGManualResponse": tellor_rng_manual_feed,
     "AmpleforthCustomSpotPrice": ampl_usd_vwap_feed,
     "AmpleforthUSPCE": uspce_feed,
+    "EVMCall": evm_call_feed,
 }
