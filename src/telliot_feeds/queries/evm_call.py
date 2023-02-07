@@ -2,6 +2,7 @@
 Subclass AbiQuery to implement the EVMCall query type.
 """
 from dataclasses import dataclass
+from typing import Optional
 
 from telliot_feeds.dtypes.value_type import ValueType
 from telliot_feeds.queries.abi_query import AbiQuery
@@ -20,9 +21,9 @@ class EVMCall(AbiQuery):
     calldata: The encoding of the function selector and function argument values
     """
 
-    chainId: int
-    contractAddress: str
-    calldata: bytes
+    chainId: Optional[int] = None
+    contractAddress: Optional[str] = None
+    calldata: Optional[bytes] = None
 
     abi = [
         {"type": "uint256", "name": "chainId"},
