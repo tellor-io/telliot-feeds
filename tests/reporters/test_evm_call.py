@@ -1,12 +1,9 @@
-from unittest import mock
-
 import pytest
 from brownie import chain
-
-from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
-from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
-from telliot_feeds.queries.evm_call import EVMCall
 from eth_abi import decode_single
+
+from telliot_feeds.queries.evm_call import EVMCall
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 
 txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
@@ -66,4 +63,4 @@ async def test_evm_call_e2e(tellor_360, caplog):
     assert isinstance(v, bytes)
     assert isinstance(t, int)
     trb_total_supply = decode_single("uint256", v)
-    assert trb_total_supply > 2390472032948139443578988 # TRB total supply before
+    assert trb_total_supply > 2390472032948139443578988  # TRB total supply before

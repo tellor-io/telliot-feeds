@@ -1,8 +1,9 @@
 import pytest
+from eth_abi import decode_abi
+from eth_abi import decode_single
 from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.sources.evm_call import EVMCallSource
-from eth_abi import decode_abi, decode_single
 
 
 @pytest.mark.asyncio
@@ -39,7 +40,7 @@ async def test_source():
     assert t is not None
     assert isinstance(v, bytes)
     assert isinstance(t, int)
-    assert decode_single("uint256", v) > 2390472032948139443578988 # an earlier total supply of TRB
+    assert decode_single("uint256", v) > 2390472032948139443578988  # an earlier total supply of TRB
 
     # test fetch_new_datapoint
     v, t = await s2.fetch_new_datapoint()

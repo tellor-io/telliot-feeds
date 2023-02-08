@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 from typing import Optional
 
 from telliot_core.apps.telliot_config import TelliotConfig
@@ -14,7 +15,7 @@ logger = get_logger(__name__)
 
 
 @dataclass
-class EVMCallSource(DataSource[Optional[bytes]]):
+class EVMCallSource(DataSource[Any]):
     """DataSource for returning the result of a read function on an EVM contract."""
 
     chain_id: Optional[int] = None
@@ -39,7 +40,7 @@ class EVMCallSource(DataSource[Optional[bytes]]):
 
         self.web3 = endpoint.web3
 
-    def get_response(self) -> Optional[bytes]:
+    def get_response(self) -> Optional[Any]:
         """Return the response from the EVM contract."""
         if not self.contract_address:
             raise ValueError("Contract address not provided")
@@ -56,7 +57,7 @@ class EVMCallSource(DataSource[Optional[bytes]]):
         ts = int(datetime_now_utc().timestamp())
         return (result, ts)
 
-    async def fetch_new_datapoint(self) -> OptionalDataPoint[bytes]:
+    async def fetch_new_datapoint(self) -> OptionalDataPoint[Any]:
         """Update current value with time-stamped value fetched from EVM contract.
 
         Returns:
