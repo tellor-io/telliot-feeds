@@ -2,6 +2,7 @@ import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.sources.evm_call import EVMCallSource
+from eth_abi import decode_abi, decode_single
 
 
 @pytest.mark.asyncio
@@ -16,11 +17,11 @@ async def test_source():
     assert s.cfg.main.chain_id == TelliotConfig().main.chain_id
 
     s2 = EVMCallSource(
-        chain_id=80001,
+        chain_id=1,
         contract_address="0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0",
         calldata=b"\x18\x16\x0d\xdd",
     )
-    assert s2.chain_id == 80001
+    assert s2.chain_id == 1
     assert s2.contract_address == "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
     assert s2.calldata == b"\x18\x16\x0d\xdd"
 
@@ -32,6 +33,13 @@ async def test_source():
     response = s2.get_response()
     assert response is not None
     assert isinstance(response, bytes)
+
+    v, t = decode_abi(["bytes", "uint256"], response)
+    assert v is not None
+    assert t is not None
+    assert isinstance(v, bytes)
+    assert isinstance(t, int)
+    assert decode_single("uint256", v) > 2390472032948139443578988 # an earlier total supply of TRB
 
     # test fetch_new_datapoint
     v, t = await s2.fetch_new_datapoint()
