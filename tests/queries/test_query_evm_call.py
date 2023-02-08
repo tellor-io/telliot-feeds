@@ -76,32 +76,3 @@ def test_evm_call_get_query_from_data():
     q2 = EVMCall.get_query_from_data(q.query_data)
     assert q2.query_data == q.query_data
     assert isinstance(q2, EVMCall)
-
-
-def test_encode_decode_reported_val():
-    _ = EVMCall(
-        chainId=1,
-        contractAddress="0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0",
-        calldata=b"\x18\x16\x0d\xdd",
-    )
-    pass
-
-    # So in solidity you're assuming that the response will be encoded immediately to bytes
-    # or else we'd need to know the type of the response to decode it
-
-    # To do:
-    # 1. fix the dataspec query data & id
-    # 2. deploy a contract fixture, get its address and calldata for one of its read functions
-    # 3. create instance of EVMCall query with the address and calldata
-    # 4. call the function using the calldata and address
-
-    # 6. datafeed
-
-    # 7. might need to deploy a mock contract to then read the reported value from
-    # the tellor oracle contract and then decode it. Like if the reported val is
-    # an encoded uint256, then we need to decode it to get the actual value, say 420
-
-    # test that datasource attributes are updated when you select evmcall q type bc tipped:
-    # datafeed = listener_filter.qtype_in_feed_builder_mapping(query_data)
-    # and
-    # query = listener_filter.get_query_from_qtyp_name(query_data)
