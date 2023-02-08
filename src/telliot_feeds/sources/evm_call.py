@@ -47,8 +47,14 @@ class EVMCallSource(DataSource[Optional[bytes]]):
             raise ValueError("Calldata not provided")
         if not self.web3:
             raise ValueError("Web3 not provided")
+
+        # web3.eth.call returns bytes
         result = self.web3.eth.call({"to": self.contract_address, "data": self.calldata}, "latest")
-        return result
+        if result is None or not isinstance(result, bytes):
+            raise ValueError(f"Result is not bytes: {result}")
+        logger.info(f"EVMCallSource result bytes: {result.hex()}")
+        ts = int(datetime_now_utc().timestamp())
+        return (result, ts)
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[bytes]:
         """Update current value with time-stamped value fetched from EVM contract.
