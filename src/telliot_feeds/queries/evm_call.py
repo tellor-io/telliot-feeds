@@ -37,4 +37,4 @@ class EVMCall(AbiQuery):
 
         `bytes` - the encoded value and timestamp
         """
-        return ValueType(abi_type="bytes", packed=False)
+        return ValueType(abi_type="(bytes,uint256)", packed=False)
