@@ -17,8 +17,8 @@ evm_call_feed_example = DataFeed(
         calldata=calldata,
     ),
     source=EVMCallSource(
-        chain_id=chain_id,
-        contract_address=contract_address,
+        chainId=chain_id,
+        contractAddress=contract_address,
         calldata=calldata,
     ),
 )
