@@ -18,39 +18,42 @@ logger = get_logger(__name__)
 class EVMCallSource(DataSource[Any]):
     """DataSource for returning the result of a read function on an EVM contract."""
 
-    chain_id: Optional[int] = None
-    contract_address: Optional[str] = None  # example: '0x1234567890123456789012345678901234567890'
+    chainId: Optional[int] = None
+    contractAddress: Optional[str] = None  # example: '0x1234567890123456789012345678901234567890'
     calldata: Optional[bytes] = None
     web3: Optional[Web3] = None
     cfg: TelliotConfig = TelliotConfig()
 
     def update_web3(self) -> None:
         """Return a web3 instance for the given chain ID."""
-        if not self.chain_id:
+        if not self.chainId:
             raise ValueError("Chain ID not provided")
 
-        eps = self.cfg.endpoints.find(chain_id=self.chain_id)
+        eps = self.cfg.endpoints.find(chain_id=self.chainId)
         if len(eps) > 0:
             endpoint = eps[0]
         else:
-            raise ValueError(f"Endpoint not found for chain_id={self.chain_id}")
+            raise ValueError(f"Endpoint not found for chain_id={self.chainId}")
 
         if not endpoint.connect():
-            raise Exception(f"Endpoint not connected for chain_id={self.chain_id}")
+            raise Exception(f"Endpoint not connected for chain_id={self.chainId}")
 
         self.web3 = endpoint.web3
 
     def get_response(self) -> Optional[Any]:
         """Return the response from the EVM contract."""
-        if not self.contract_address:
+        if not self.contractAddress:
             raise ValueError("Contract address not provided")
         if not self.calldata:
             raise ValueError("Calldata not provided")
         if not self.web3:
             raise ValueError("Web3 not provided")
 
+        # convert address to checksum address
+        self.contractAddress = self.web3.toChecksumAddress(self.contractAddress)
+
         # web3.eth.call returns bytes
-        result = self.web3.eth.call({"to": self.contract_address, "data": self.calldata}, "latest")
+        result = self.web3.eth.call({"to": self.contractAddress, "data": self.calldata}, "latest")
         if result is None or not isinstance(result, bytes):
             raise ValueError(f"Result is not bytes: {result}")
         logger.info(f"EVMCallSource result bytes: {result.hex()}")
