@@ -64,3 +64,39 @@ async def test_evm_call_e2e(tellor_360, caplog):
     assert isinstance(t, int)
     trb_total_supply = decode_single("uint256", v)
     assert trb_total_supply > 2390472032948139443578988  # TRB total supply before
+
+
+@pytest.mark.asyncio
+async def test_no_endpoint_for_tipped_chain(tellor_360, caplog):
+    """Test reporter doesn't halt if chainId is not supported"""
+    contracts, account = tellor_360
+    r = Tellor360Reporter(
+        oracle=contracts.oracle,
+        token=contracts.token,
+        autopay=contracts.autopay,
+        endpoint=contracts.oracle.node,
+        account=account,
+        chain_id=CHAIN_ID,
+        transaction_type=0,
+        min_native_token_balance=0,
+        datafeed=None,
+        check_rewards=True,
+    )
+
+    q = EVMCall(
+        chainId=123456789,  # A chain id that doesn't exist
+        contractAddress="0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0",
+        calldata=b"\x18\x16\x0d\xdd",
+    )
+    # make one-time tip for query
+    await r.autopay.write(
+        "tip",
+        gas_limit=3500000,
+        legacy_gas_price=1,
+        _queryId=q.query_id,
+        _queryData=q.query_data,
+        _amount=int(1e18),
+    )
+    _, status = await r.report_once()
+    assert "Endpoint not found for chain_id=123456789" in caplog.text
+    assert not status.ok
