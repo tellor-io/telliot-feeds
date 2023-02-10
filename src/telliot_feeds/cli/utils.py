@@ -186,6 +186,8 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
         if val is not None:
             try:
                 # cast input from string to datatype of query parameter
+                if param_dtype == bytes and val.startswith("0x"):
+                    val = bytes.fromhex(val[2:])
                 val = param_dtype(val)
                 setattr(feed.query, query_param, val)
                 setattr(feed.source, query_param, val)
