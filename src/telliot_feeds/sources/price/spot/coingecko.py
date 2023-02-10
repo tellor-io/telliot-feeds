@@ -32,6 +32,23 @@ coingecko_coin_id = {
     "albt": "allianceblock",
     "rai": "rai",
     "xdai": "xdai",
+    "avax": "avalanche",
+    "aave": "aave",
+    "badger": "badger-dao",
+    "bch": "bitcoin-cash",
+    "comp": "compound-governance-token",
+    "crv": "curve-dao-token",
+    "doge": "dogecoin",
+    "dot": "polkadot",
+    "eul": "euler",
+    "fil": "filecoin",
+    "gno": "gnosis",
+    "link": "chainlink",
+    "ltc": "litecoin",
+    "shib": "shiba-inu",
+    "uni": "uniswap",
+    "usdt": "tether",
+    "yfi": "yearn-finance"
 }
 
 

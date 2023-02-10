@@ -35,6 +35,24 @@ SPOT_PRICE_PAIRS = [
     "RAI/USD",
     "XDAI/USD",
     "ETH/BTC",
+    "AVAX/USD",
+    "AAVE/USD",
+    "BADGER/USD",
+    "BCH/USD",
+    "COMP/USD",
+    "CRV/USD",
+    "DOGE/USD",
+    "DOT/USD",
+    "EUL/USD",
+    "FIL/USD",
+    "FRAX/USD",
+    "GNO/USD",
+    "LINK/USD",
+    "LTC/USD",
+    "SHIB/USD",
+    "UNI/USD",
+    "USDT/USD",
+    "YFI/USD"
 ]
 
 
