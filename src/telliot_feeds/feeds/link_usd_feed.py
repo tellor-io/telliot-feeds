@@ -14,7 +14,7 @@ link_usd_median_feed = DataFeed(
         sources=[
             CoinGeckoSpotPriceSource(asset="link", currency="usd"),
             CoinbaseSpotPriceSource(asset="link", currency="usd"),
-            KrakenSpotPriceSource(asset="link", currency="usd")
+            KrakenSpotPriceSource(asset="link", currency="usd"),
         ],
     ),
 )

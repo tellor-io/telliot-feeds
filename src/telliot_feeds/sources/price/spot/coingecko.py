@@ -48,7 +48,7 @@ coingecko_coin_id = {
     "shib": "shiba-inu",
     "uni": "uniswap",
     "usdt": "tether",
-    "yfi": "yearn-finance"
+    "yfi": "yearn-finance",
 }
 
 

@@ -14,7 +14,7 @@ eul_usd_median_feed = DataFeed(
         sources=[
             CoinGeckoSpotPriceSource(asset="eul", currency="usd"),
             GeminiSpotPriceSource(asset="eul", currency="usd"),
-            KrakenSpotPriceSource(asset="eul", currency="usd")
+            KrakenSpotPriceSource(asset="eul", currency="usd"),
         ],
     ),
 )

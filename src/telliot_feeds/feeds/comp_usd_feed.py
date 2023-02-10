@@ -14,7 +14,7 @@ comp_usd_median_feed = DataFeed(
         sources=[
             CoinGeckoSpotPriceSource(asset="comp", currency="usd"),
             CoinbaseSpotPriceSource(asset="comp", currency="usd"),
-            GeminiSpotPriceSource(asset="comp", currency="usd")
+            GeminiSpotPriceSource(asset="comp", currency="usd"),
         ],
     ),
 )

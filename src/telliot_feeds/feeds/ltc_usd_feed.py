@@ -14,7 +14,7 @@ ltc_usd_median_feed = DataFeed(
         sources=[
             CoinGeckoSpotPriceSource(asset="ltc", currency="usd"),
             CoinbaseSpotPriceSource(asset="ltc", currency="usd"),
-            GeminiSpotPriceSource(asset="ltc", currency="usd")
+            GeminiSpotPriceSource(asset="ltc", currency="usd"),
         ],
     ),
 )

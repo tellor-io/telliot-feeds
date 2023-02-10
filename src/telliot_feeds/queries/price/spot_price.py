@@ -52,7 +52,7 @@ SPOT_PRICE_PAIRS = [
     "SHIB/USD",
     "UNI/USD",
     "USDT/USD",
-    "YFI/USD"
+    "YFI/USD",
 ]
 
 

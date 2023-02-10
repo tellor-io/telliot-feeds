@@ -276,4 +276,3 @@ query_catalog.add_entry(
     title="YFI/USD spot price",
     q=SpotPrice(asset="yfi", currency="usd"),
 )
-
