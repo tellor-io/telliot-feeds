@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any
 from typing import Optional
 
+from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
 from web3 import Web3
 
@@ -52,11 +53,23 @@ class EVMCallSource(DataSource[Any]):
         # convert address to checksum address
         self.contractAddress = self.web3.toChecksumAddress(self.contractAddress)
 
-        # web3.eth.call returns bytes
-        result = self.web3.eth.call({"to": self.contractAddress, "data": self.calldata}, "latest")
-        if result is None or not isinstance(result, bytes):
-            raise ValueError(f"Result is not bytes: {result}")
+        try:
+            result = self.web3.eth.call({"gasPrice": 0, "to": self.contractAddress, "data": self.calldata}, "latest")
+        except Exception as e:
+            if e.__module__.startswith("web3"):
+                logger.warning(f"Web3 exception occurred: {e}")
+                return (None, None)
+            raise e
+
+        if result is None or not isinstance(result, HexBytes):
+            raise ValueError(f"Result is not bytes: {str(result)}")
+
+        if result == HexBytes("0x"):
+            logger.info("Result is empty bytes, likely tried to call a non-view function")
+            return (None, None)
+
         logger.info(f"EVMCallSource result bytes: {result.hex()}")
+
         ts = int(datetime_now_utc().timestamp())
         return (result, ts)
 
