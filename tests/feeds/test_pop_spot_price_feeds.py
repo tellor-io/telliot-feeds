@@ -20,10 +20,11 @@ YFI/USD
 """
 import pytest
 
-from telliot_feeds.feeds import *
-# import DataFeed
 from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.feeds import *  # noqa: F403, F401
 from telliot_feeds.queries.price.spot_price import SpotPrice
+
+# import DataFeed
 
 
 @pytest.mark.asyncio
@@ -50,11 +51,7 @@ async def test_spot_price_feeds():
     ]
     for name, obj in globals().items():
         if isinstance(obj, DataFeed) and isinstance(obj.query, SpotPrice):
-            if obj.query.currency.lower() == 'usd' and obj.query.asset.upper() in assets:
+            if obj.query.currency.lower() == "usd" and obj.query.asset.upper() in assets:
                 print(f"Testing {name}")
                 v, _ = await obj.source.fetch_new_datapoint()
                 assert v > 0
-                
-
-        
-
