@@ -47,6 +47,28 @@ def test_build_feed_from_input(capsys):
             assert "Invalid choice" in capsys.readouterr().out.strip()
 
 
+def test_build_evm_call_feed_from_input(capsys):
+    """Test building a feed from user input for EVMCall query type"""
+    num_choice = 5  # EVMCall is the 5th option
+    chain_id_str = "1"
+    chain_id = 1
+    contract_address = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
+    calldata = b"\x18\x16\x0d\xdd"
+    calldata_as_str = "0x18160ddd"
+
+    with mock.patch("builtins.input", side_effect=[num_choice, chain_id_str, contract_address, calldata_as_str]):
+        feed = build_feed_from_input()
+        assert feed.query.type == "EVMCall"
+        assert feed.query.chainId == chain_id
+        assert feed.query.contractAddress == contract_address
+        assert feed.query.calldata == calldata
+
+        assert feed.source.type == "EVMCallSource"
+        assert feed.source.chainId == chain_id
+        assert feed.source.contractAddress == contract_address
+        assert feed.source.calldata == calldata
+
+
 def test_parse_profit_input():
     """Test reading in custom expected profit from user."""
     result = parse_profit_input({}, None, "YOLO")
