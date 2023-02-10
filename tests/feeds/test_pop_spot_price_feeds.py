@@ -55,3 +55,6 @@ async def test_spot_price_feeds():
                 print(f"Testing {name}")
                 v, _ = await obj.source.fetch_new_datapoint()
                 assert v > 0
+                assets.pop(assets.index(obj.query.asset.upper()))
+
+    assert len(assets) == 0
