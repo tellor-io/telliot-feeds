@@ -23,12 +23,9 @@ from telliot_feeds.feeds.eth_usd_30day_volatility import eth_usd_30day_volatilit
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.eul_usd_feed import eul_usd_median_feed
 from telliot_feeds.feeds.eur_usd_feed import eur_usd_median_feed
-<<<<<<< HEAD
 from telliot_feeds.feeds.evm_call_feed import evm_call_feed
 from telliot_feeds.feeds.evm_call_feed import evm_call_feed_example
-=======
 from telliot_feeds.feeds.fil_usd_feed import fil_usd_median_feed
->>>>>>> 6d400a081434ec32589d21e7d3ba90af73687599
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed_example
 from telliot_feeds.feeds.gno_usd_feed import gno_usd_median_feed
