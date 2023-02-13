@@ -243,6 +243,9 @@ async def tellor_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_cont
         # mint token and send to reporter address
         mock_token_contract.mint(account.address, 100000e18)
 
+        # approve token to be spent by autopay contract
+        mock_token_contract.approve(mock_autopay_contract.address, 100000e18, {"from": account.address})
+
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
 

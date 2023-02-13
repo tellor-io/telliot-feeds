@@ -357,6 +357,7 @@ class IntervalReporter:
         query_data = query.query_data
         try:
             value = query.value_type.encode(latest_data[0])
+            logger.debug(f"IntervalReporter Encoded value: {value.hex()}")
         except Exception as e:
             msg = f"Error encoding response value {latest_data[0]}"
             return None, error_status(msg, e=e, log=logger.error)
