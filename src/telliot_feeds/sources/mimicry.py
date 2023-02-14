@@ -45,7 +45,6 @@ class MimicryCollectionStatSource(DataSource[str]):
             self.collectionAddress = self.collectionAddress.lower()
 
         url = f"http://50.112.84.236:3000/api/stats?address={self.collectionAddress}&stat={self.metric}"
-        print(url)
 
         with requests.Session() as s:
             s.mount("https://", adapter)
