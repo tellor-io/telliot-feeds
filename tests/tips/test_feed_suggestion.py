@@ -3,6 +3,7 @@ from brownie import chain
 from eth_utils import to_bytes
 
 from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.reporters.tips import CATALOG_QUERY_IDS
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.utils import log
 
@@ -49,7 +50,15 @@ async def test_fetching_tips(tip_feeds_and_one_time_tips):
     datafeed, tip = await get_feed_and_tip(flex.autopay)
     assert isinstance(datafeed, DataFeed)
     assert isinstance(tip, int)
-    assert tip == 26e18
+    # remove rng query id since it's being bypassed due to no api support
+    TellorRNG_qid = "48142be0c53a531d048ba74c27bd5927b871d3f5de11a909c9e2b829c646e8fd"
+    # give me length of catalog query ids - 1 if rng query id in list
+    length = (
+        (len(CATALOG_QUERY_IDS) - 1)
+        if CATALOG_QUERY_IDS.__contains__(to_bytes(hexstr=TellorRNG_qid))
+        else len(CATALOG_QUERY_IDS)
+    )
+    assert tip == length * int(1e18)
 
 
 @pytest.mark.asyncio

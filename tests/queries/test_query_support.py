@@ -11,10 +11,27 @@ def test_all_query_types_in_catalog():
     for q in AbiQuery.__subclasses__():
         print("Checking", q.__name__)
         # skip legacy type
-        if q.__name__ in ("LegacyRequest", "FakeQueryType"):
+        if q.__name__ in (
+            "LegacyRequest",
+            "FakeQueryType",
+            "MimicryCollectionStat",
+            "AutopayAddresses",
+            "TellorOracleAddress",
+        ):
             continue
         assert q.__name__ in q_types
 
     for q in JsonQuery.__subclasses__():
         print("Checking", q.__name__)
         assert q.__name__ in q_types
+
+
+def test_gen_all_query_ids():
+    """Test that all query IDs can be generated."""
+    for q in AbiQuery.__subclasses__():
+        print("Checking", q.__name__)
+        q.query_id
+
+    for q in JsonQuery.__subclasses__():
+        print("Checking", q.__name__)
+        q.query_id

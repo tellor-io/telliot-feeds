@@ -22,7 +22,7 @@ def stop():
 def test_build_feed_from_input(capsys):
     """Test building feed from user input"""
 
-    num_choice = 7  # NumericApiResponse is the 6th option
+    num_choice = 8  # NumericApiResponse is the 8th option
     url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"  # noqa: E501
     parse_str = "uniswap, usd"
 
@@ -45,6 +45,28 @@ def test_build_feed_from_input(capsys):
             _ = build_feed_from_input()
 
             assert "Invalid choice" in capsys.readouterr().out.strip()
+
+
+def test_build_evm_call_feed_from_input(capsys):
+    """Test building a feed from user input for EVMCall query type"""
+    num_choice = 5  # EVMCall is the 5th option
+    chain_id_str = "1"
+    chain_id = 1
+    contract_address = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
+    calldata = b"\x18\x16\x0d\xdd"
+    calldata_as_str = "0x18160ddd"
+
+    with mock.patch("builtins.input", side_effect=[num_choice, chain_id_str, contract_address, calldata_as_str]):
+        feed = build_feed_from_input()
+        assert feed.query.type == "EVMCall"
+        assert feed.query.chainId == chain_id
+        assert feed.query.contractAddress == contract_address
+        assert feed.query.calldata == calldata
+
+        assert feed.source.type == "EVMCallSource"
+        assert feed.source.chainId == chain_id
+        assert feed.source.contractAddress == contract_address
+        assert feed.source.calldata == calldata
 
 
 def test_parse_profit_input():
@@ -207,10 +229,10 @@ def test_no_accounts_msg():
         click.echo("mocking find_accounts")
         return []
 
-    with mock.patch("telliot_feeds.cli.main.find_accounts", side_effect=mock_find_accounts):
+    with mock.patch("telliot_feeds.cli.commands.report.find_accounts", side_effect=mock_find_accounts):
         runner = CliRunner()
-        result = runner.invoke(cli_main, ["account", "--help"])
+        result = runner.invoke(cli_main, ["report", "-a", "noaccountassociatedwiththisname"])
         msg = result.stdout.lower()
 
         assert not result.exception
-        assert "no accounts found" in msg
+        assert "no account found" in msg

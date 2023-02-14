@@ -68,7 +68,7 @@ def print_reporter_settings(
     click.echo(f"Priority fee (gwei): {priority_fee}")
     click.echo(f"Gas price speed: {gas_price_speed}")
     click.echo(f"Desired stake amount: {stake_amount}")
-    click.echo(f"Minimum native token balance: {min_native_token_balance} ETH")
+    click.echo(f"Minimum native token balance (e.g. ETH if on Ethereum mainnet): {min_native_token_balance}")
     click.echo("\n")
 
 
@@ -186,6 +186,8 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
         if val is not None:
             try:
                 # cast input from string to datatype of query parameter
+                if param_dtype == bytes and val.startswith("0x"):
+                    val = bytes.fromhex(val[2:])
                 val = param_dtype(val)
                 setattr(feed.query, query_param, val)
                 setattr(feed.source, query_param, val)
@@ -261,3 +263,14 @@ def valid_transaction_type(ctx: click.Context, param: Any, value: str) -> int:
         raise click.BadParameter(f"Transaction type given ({value}) is not supported ({supported}).")
     except ValueError:
         raise click.BadParameter("Transaction type must be an integer.")
+
+
+def get_accounts_from_name(name: Optional[str]) -> list[ChainedAccount]:
+    """Get account from name or return any account if no name is given."""
+    accounts: list[ChainedAccount] = find_accounts(name=name) if name else find_accounts()
+    if not accounts:
+        click.echo(
+            f'No account found named: "{name}".\nAdd one with the account subcommand.'
+            "\nFor more info run: `telliot account add --help`"
+        )
+    return accounts

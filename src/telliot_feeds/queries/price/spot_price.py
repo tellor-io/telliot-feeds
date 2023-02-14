@@ -13,7 +13,7 @@ from telliot_feeds.queries.abi_query import AbiQuery
 
 logger = logging.getLogger(__name__)
 
-CURRENCIES = ["usd", "jpy", "eth"]
+CURRENCIES = ["usd", "jpy", "eth", "btc"]
 SPOT_PRICE_PAIRS = [
     "ETH/USD",
     "BTC/USD",
@@ -34,6 +34,25 @@ SPOT_PRICE_PAIRS = [
     "ALBT/USD",
     "RAI/USD",
     "XDAI/USD",
+    "ETH/BTC",
+    "AVAX/USD",
+    "AAVE/USD",
+    "BADGER/USD",
+    "BCH/USD",
+    "COMP/USD",
+    "CRV/USD",
+    "DOGE/USD",
+    "DOT/USD",
+    "EUL/USD",
+    "FIL/USD",
+    "FRAX/USD",
+    "GNO/USD",
+    "LINK/USD",
+    "LTC/USD",
+    "SHIB/USD",
+    "UNI/USD",
+    "USDT/USD",
+    "YFI/USD",
 ]
 
 

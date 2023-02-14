@@ -1,4 +1,3 @@
-import os
 from typing import List
 from typing import Optional
 from typing import Tuple
@@ -16,28 +15,7 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-def mainnet_config() -> Optional[TelliotConfig]:
-    cfg = TelliotConfig()
-    cfg.main.chain_id = 1
-    endpoint = cfg.get_endpoint()
-
-    if "INFURA_API_KEY" in endpoint.url:
-        endpoint.url = f'wss://mainnet.infura.io/ws/v3/{os.environ["INFURA_API_KEY"]}'
-
-    accounts = find_accounts(chain_id=1)
-    if not accounts:
-        # Create a test account using PRIVATE_KEY defined on github.
-        key = os.getenv("PRIVATE_KEY", None)
-        if key:
-            ChainedAccount.add("git-mainnet-key", chains=1, key=os.environ["PRIVATE_KEY"], password="")
-        else:
-            logger.warning("No mainnet account added!")
-            return None
-
-    return cfg
-
-
-def setup_config(cfg: TelliotConfig, account_name: str) -> Tuple[TelliotConfig, ChainedAccount]:
+def setup_config(cfg: TelliotConfig, account_name: str) -> Tuple[TelliotConfig, Optional[ChainedAccount]]:
     """Setup TelliotConfig via CLI if not already configured
 
     Inputs:
@@ -72,12 +50,11 @@ def setup_config(cfg: TelliotConfig, account_name: str) -> Tuple[TelliotConfig, 
     else:
         click.echo("No accounts set.")
 
-    no_update = click.confirm("Proceed with current settings (y) or update (n)?", default=True)
+    keep_settings = click.confirm("Proceed with current settings (y) or update (n)?", default=True)
 
-    if no_update:
-        if not accounts or not endpoint:
-            return cfg, None
-        return cfg, accounts[0]
+    if keep_settings:
+        click.echo("Keeping current settings...")
+        return cfg, accounts[0] if accounts else None
 
     want_to_update_chain_id = click.confirm(f"Chain_id is {cfg.main.chain_id}. Do you want to update it?")
 
@@ -90,7 +67,7 @@ def setup_config(cfg: TelliotConfig, account_name: str) -> Tuple[TelliotConfig, 
         cfg.endpoints.endpoints.insert(0, new_endpoint)
         click.echo(f"{new_endpoint} added!")
 
-    click.echo(f"Your account name: {accounts[0].name}")
+    click.echo(f"Your account name: {accounts[0].name if accounts else None}")
 
     new_account = setup_account(cfg.main.chain_id)
     if new_account is not None:
@@ -115,7 +92,7 @@ def setup_endpoint(cfg: TelliotConfig, chain_id: int) -> RPCEndpoint:
             return prompt_for_endpoint(chain_id)
 
     else:
-        click.echo(f"No endpoints are available for chain_id {chain_id}. Pleae add one")
+        click.echo(f"No endpoints are available for chain_id {chain_id}. Please add one:")
         return prompt_for_endpoint(chain_id)
 
 
@@ -136,14 +113,12 @@ def check_accounts(cfg: TelliotConfig, account_name: str) -> List[ChainedAccount
 
 
 def prompt_for_endpoint(chain_id: int) -> Optional[RPCEndpoint]:
-
-    network_name = click.prompt("Enter network name", type=str)
-    provider = click.prompt("Enter Provider", type=str)
-    rpc_url = click.prompt("Enter RPC url", type=str)
-    explorer_url = click.prompt("Enter Explorer url", type=str)
+    """Take user input to create a new RPCEndpoint"""
+    rpc_url = click.prompt("Enter RPC URL", type=str)
+    explorer_url = click.prompt("Enter block explorer URL", type=str)
 
     try:
-        return RPCEndpoint(chain_id, network_name, provider, rpc_url, explorer_url)
+        return RPCEndpoint(chain_id, "n/a", "n/a", rpc_url, explorer_url)
     except Exception as e:
         click.echo("Cannot add endpoint: invalid endpoint properties" + str(e))
         return None

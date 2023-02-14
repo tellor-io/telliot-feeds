@@ -10,6 +10,7 @@ from eth_utils import to_checksum_address
 from telliot_core.cli.utils import async_run
 
 from telliot_feeds.cli.utils import build_feed_from_input
+from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import parse_profit_input
 from telliot_feeds.cli.utils import print_reporter_settings
 from telliot_feeds.cli.utils import reporter_cli_core
@@ -56,6 +57,24 @@ def reporter() -> None:
     pass
 
 
+@click.option(
+    "--account",
+    "-a",
+    "account_str",
+    help="Name of account used for reporting, staking, etc. More info: run `telliot account --help`",
+    required=True,
+    nargs=1,
+    type=str,
+)
+@click.option(
+    "--signature-account",
+    "-sa",
+    "signature_account",
+    help="Name of signature account used for reporting with Flashbots.",
+    required=False,
+    nargs=1,
+    type=str,
+)
 @reporter.command()
 @click.option(
     "--build-feed",
@@ -292,24 +311,32 @@ async def report(
     custom_autopay_contract: Optional[ChecksumAddress],
     tellor_360: bool,
     stake: float,
+    account_str: str,
+    signature_account: str,
     check_rewards: bool,
     use_random_feeds: bool,
 ) -> None:
     """Report values to Tellor oracle"""
-    name = ctx.obj["ACCOUNT_NAME"]
-    sig_acct_name = ctx.obj["SIGNATURE_ACCOUNT_NAME"]
+    ctx.obj["ACCOUNT_NAME"] = account_str
+    ctx.obj["SIGNATURE_ACCOUNT_NAME"] = signature_account
 
-    if sig_acct_name is not None:
+    accounts = get_accounts_from_name(account_str)
+    if not accounts:
+        return
+
+    ctx.obj["CHAIN_ID"] = accounts[0].chains[0]  # used in reporter_cli_core
+
+    if signature_account is not None:
         try:
             if not signature_password:
-                signature_password = getpass.getpass(f"Enter password for {sig_acct_name} keyfile: ")
+                signature_password = getpass.getpass(f"Enter password for {signature_account} keyfile: ")
         except ValueError:
             click.echo("Invalid Password")
 
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
-        core._config, account = setup_config(core.config, account_name=name)
+        core._config, account = setup_config(core.config, account_name=account_str)
 
         endpoint = check_endpoint(core._config)
 
@@ -323,13 +350,13 @@ async def report(
         if not account.is_unlocked:
             account.unlock(password)
 
-        if sig_acct_name is not None:
-            sig_account = find_accounts(name=sig_acct_name)[0]
+        if signature_account is not None:
+            sig_account = find_accounts(name=signature_account)[0]
             if not sig_account.is_unlocked:
                 sig_account.unlock(password)
             sig_acct_addr = to_checksum_address(sig_account.address)
         else:
-            sig_acct_addr = ""  # type: ignore
+            sig_acct_addr = ""
 
         # If we need to build a datafeed
         if build_feed:

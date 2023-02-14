@@ -3,6 +3,7 @@ from telliot_feeds.queries.ampleforth.uspce import AmpleforthUSPCE
 from telliot_feeds.queries.catalog import Catalog
 from telliot_feeds.queries.daily_volatility import DailyVolatility
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
+from telliot_feeds.queries.evm_call import EVMCall
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feeds.queries.price.spot_price import SpotPrice
@@ -167,4 +168,122 @@ query_catalog.add_entry(
     tag="xdai-usd-spot",
     title="XDAI/USD spot price",
     q=SpotPrice(asset="xdai", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="eth-btc-spot",
+    title="ETH/BTC spot price",
+    q=SpotPrice(asset="eth", currency="btc"),
+)
+
+query_catalog.add_entry(
+    tag="evm-call-example",
+    title="EVM call example",
+    q=EVMCall(
+        chainId=1,
+        contractAddress="0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0",
+        calldata=b"\x18\x16\x0d\xdd",
+    ),
+)
+
+query_catalog.add_entry(
+    tag="avax-usd-spot",
+    title="AVAX/USD spot price",
+    q=SpotPrice(asset="avax", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="aave-usd-spot",
+    title="AAVE/USD spot price",
+    q=SpotPrice(asset="aave", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="badger-usd-spot",
+    title="BADGER/USD spot price",
+    q=SpotPrice(asset="badger", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="bch-usd-spot",
+    title="BCH/USD spot price",
+    q=SpotPrice(asset="bch", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="comp-usd-spot",
+    title="COMP/USD spot price",
+    q=SpotPrice(asset="comp", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="crv-usd-spot",
+    title="CRV/USD spot price",
+    q=SpotPrice(asset="crv", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="doge-usd-spot",
+    title="DOGE/USD spot price",
+    q=SpotPrice(asset="doge", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="dot-usd-spot",
+    title="DOT/USD spot price",
+    q=SpotPrice(asset="dot", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="eul-usd-spot",
+    title="EUL/USD spot price",
+    q=SpotPrice(asset="eul", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="fil-usd-spot",
+    title="FIL/USD spot price",
+    q=SpotPrice(asset="fil", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="gno-usd-spot",
+    title="GNO/USD spot price",
+    q=SpotPrice(asset="gno", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="link-usd-spot",
+    title="LINK/USD spot price",
+    q=SpotPrice(asset="link", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="ltc-usd-spot",
+    title="LTC/USD spot price",
+    q=SpotPrice(asset="ltc", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="shib-usd-spot",
+    title="SHIB/USD spot price",
+    q=SpotPrice(asset="shib", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="uni-usd-spot",
+    title="UNI/USD spot price",
+    q=SpotPrice(asset="uni", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="usdt-usd-spot",
+    title="USDT/USD spot price",
+    q=SpotPrice(asset="usdt", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="yfi-usd-spot",
+    title="YFI/USD spot price",
+    q=SpotPrice(asset="yfi", currency="usd"),
 )

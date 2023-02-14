@@ -5,7 +5,7 @@ Prerequisites: [Getting Started](https://tellor-io.github.io/telliot-feeds/getti
 To report data to Tellor oracles, or access any other functionality, use the `telliot` CLI. A basic example:
 
 ```
-$ telliot -a acct1 report -ncr -qt trb-usd-spot
+$ telliot report -a acct1 -ncr -qt trb-usd-spot
 ```
 
 **Be sure to always confirm the correct settings when prompted and read chain-specific usage sections before setting up your reporter!**
@@ -17,6 +17,8 @@ $ telliot -a acct1 report -ncr -qt trb-usd-spot
 - [Reporting on Polygon](#reporting-on-polygon)
 
 # Reporting Basics
+
+**Note: When using the `report` command, `telliot` will automatically attempt to stake the minimum required to report. To see the current stake amount, find the oracle contract on your desired chain [here](https://docs.tellor.io/tellor/the-basics/contracts-reference), then call `getStakeAmount` in the contract's read functions section on the block explorer. The returned value is denominated in wei.**
 
 ## Help flag
 
@@ -105,13 +107,33 @@ telliot --account acct1 report
 Use the `report` command to submit data to Tellor oracles. Example `report` command usage:
 
 ```
-telliot -a acct2 report
+telliot report -a acct2
 ```
+
+When calling the `report` command, `telliot` will ask you to confirm the reporter's settings:
+  
+```
+...
+Reporting query tag: eth-usd-spot
+Current chain ID: 80001
+Expected percent profit: 100.0%
+Transaction type: 0
+Gas Limit: 350000
+Legacy gas price (gwei): None
+Max fee (gwei): None
+Priority fee (gwei): None
+Gas price speed: fast
+Desired stake amount: 10.0
+Minimum native token balance: 0.25 MATIC
+
+Press [ENTER] to confirm settings.
+```
+The default settings are probably fine to use on testnets, but you may want to adjust them for mainnet using the `report` command flags/options.
 
 By default, the reporter will continue to attempt reporting whenever out of reporting lock. Use the `--submit-once` flag to only report once:
 
 ```
-telliot -a staker1 report --submit-once
+telliot report -a staker1 --submit-once
 ```
 
 ### Build Feed Flag
@@ -119,7 +141,7 @@ telliot -a staker1 report --submit-once
 Use the build-a-feed flag (`--build-feed`) to build a DataFeed of a QueryType with one or more QueryParameters. When reporting, the CLI will list the QueryTypes this flag supports. To select a QueryType, enter a type from the list provided. Then, enter in the corresponding QueryParameters for the QueryType you have selected, and telliot will build the Query and select the appropriate source.
 
 ```
-telliot -a staker1 report --build-feed --submit-once -p YOLO
+telliot report -a staker1 --build-feed --submit-once -p YOLO
 ```
 
 ## Profit Flag
@@ -129,13 +151,13 @@ telliot -a staker1 report --build-feed --submit-once -p YOLO
 Use this flag (`--profit/-p`) to set an expected profit. The default is 100%, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use the `"YOLO"` string:
 
 ```
-telliot -a acct1 report -p YOLO
+telliot report -a acct1 -p YOLO
 ```
 
 Normal profit flag usage:
 
 ```
-telliot -a acct4 report -p 2
+telliot report -a acct4 -p 2
 ```
 
 **Note: Skipping profit checks does not skip checks for tips on the [AutoPay contract](https://github.com/tellor-io/autoPay). If you'd like to skip these checks as well, use the `--no-check-rewards/-ncr` flag.**
@@ -149,7 +171,7 @@ The `--gas-price/-gp` flag is for legacy transactions, while the `--max-fee/-mf`
 Example usage:
 
 ```
-telliot -a acct3 report -tx 0 -gl 310000 -gp 9001 -p 22
+telliot report -a acct3 -tx 0 -gl 310000 -gp 9001 -p 22
 ```
 
 # Reporting on Ethereum
@@ -160,13 +182,7 @@ Both transaction types (0 & 2) are supported for reporting.
 
 It's not advised to report without Flashbots, unless on a testnet like Goerli, because transactions sent to the public mempool on Ethereum mainnet will most likely be [front-run](https://www.paradigm.xyz/2020/08/ethereum-is-a-dark-forest/), so you'll lose money.
 
-If you want to report without flashbots on Ethereum mainnet, use the `--no-flashbots/-nfb` flag.
-
-Example usage:
-
-```
-telliot -a acct1 -nfb report
-```
+By default, `telliot` will report without Flashbots. You need to use the signature account flag (`--signature-account/-sa`) to report with Flashbots. See [below](#using-flashbots) for more info.
 
 ## Using Flashbots
 
@@ -187,7 +203,7 @@ When reporting, select your signatory account by tag as well as your staked main
 Example usage:
 
 ```
-telliot -a acct2 -sgt sigacct -fb report
+telliot report -a acct2 -sgt sigacct
 ```
 
 ## Staking
@@ -197,7 +213,7 @@ If reporting to Tellor360 oracles, reporters can stake multiple times. Each stak
 The reporter will automatically attempt to stake the required amount, but if you'd like to stake more than the current minimum, use the `--stake/-s` flag.
 
 ```
-telliot -a acct1 report -s 2000 -ncr -rf
+telliot report -a acct1 -s 2000 -ncr -rf
 ```
 
 If the reporter account's actual stake is reduced after a dispute, the reporter will attempt to stake the difference in TRB to return to the original desired stake amount.
