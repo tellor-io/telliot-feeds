@@ -110,6 +110,7 @@ CATALOG_FEEDS = {
     "uni-usd-spot": uni_usd_median_feed,
     "usdt-usd-spot": usdt_usd_median_feed,
     "yfi-usd-spot": yfi_usd_median_feed,
+    "mimicry-crypto-coven-tami": mimicry_collection_stat_datafeed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
