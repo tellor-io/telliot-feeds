@@ -88,7 +88,7 @@ class TellorFlexReporter(IntervalReporter):
         """Fetch estimated gas prices.
 
         Expected to return gas price in gwei."""
-        return await legacy_gas_station(chain_id=self.chain_id, speed=speed)  # type: ignore
+        return await legacy_gas_station(chain_id=self.chain_id, speed_parse_lis=speed)  # type: ignore
 
     async def in_dispute(self, new_stake_amount: Any) -> bool:
         """Check if staker balance decreased"""
