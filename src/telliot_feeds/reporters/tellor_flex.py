@@ -322,6 +322,8 @@ class TellorFlexReporter(IntervalReporter):
             # Fetch legacy gas price if not provided by user
             if not self.legacy_gas_price:
                 gas_price = await self.fetch_gas_price()
+                if gas_price is None:
+                    return error_status("Unable to fetch gas price", log=logger.warning)
                 self.legacy_gas_price = gas_price
 
             if not self.legacy_gas_price:
