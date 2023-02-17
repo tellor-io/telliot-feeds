@@ -184,7 +184,7 @@ class Tellor360Reporter(TellorFlexReporter):
         # 12hrs in seconds is 43200
         try:
             reporter_lock = 43200 / math.floor(self.staker_info.stake_balance / self.stake_amount)
-        except ZeroDivisionError:
+        except ZeroDivisionError:  # Tellor Playground contract's stakeAmount is 0
             reporter_lock = 0
         time_remaining = round(self.staker_info.last_report + reporter_lock - time.time())
         if time_remaining > 0:
