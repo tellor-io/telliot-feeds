@@ -50,7 +50,7 @@ class TellorFlexReporter(IntervalReporter):
         max_fee: Optional[int] = None,
         priority_fee: int = 100,
         legacy_gas_price: Optional[int] = None,
-        gas_price_speed: str = "safeLow",
+        gas_price_speed: str = ["safeLow"],
         wait_period: int = 7,
         min_native_token_balance: int = 10**18,
         check_rewards: bool = True,
