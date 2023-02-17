@@ -182,8 +182,10 @@ class Tellor360Reporter(TellorFlexReporter):
             return error_status(msg, log=logger.info)
 
         # 12hrs in seconds is 43200
-        reporter_lock = 43200 / math.floor(self.staker_info.stake_balance / self.stake_amount)
-
+        try:
+            reporter_lock = 43200 / math.floor(self.staker_info.stake_balance / self.stake_amount)
+        except ZeroDivisionError:
+            reporter_lock = 0
         time_remaining = round(self.staker_info.last_report + reporter_lock - time.time())
         if time_remaining > 0:
             hr_min_sec = str(timedelta(seconds=time_remaining))
