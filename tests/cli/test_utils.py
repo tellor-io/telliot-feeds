@@ -7,7 +7,7 @@ from telliot_feeds.queries.price.spot_price import SpotPrice
 def test_build_query():
     """Test building a query."""
     with (
-        mock.patch("simple_term_menu.TerminalMenu.show", return_value=8),
+        mock.patch("simple_term_menu.TerminalMenu.show", return_value=9),
         mock.patch("click.prompt", side_effect=["eth", "usd"]),
     ):
         query = build_query()
