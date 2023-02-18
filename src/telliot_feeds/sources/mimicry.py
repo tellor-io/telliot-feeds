@@ -309,7 +309,7 @@ class MimicryCollectionStatSource(DataSource[str]):
 
                 try:
                     tx_list.floor_price = request.json()["price"]
-                except requests.exceptions.JSONDecodeError as e:
+                except (requests.exceptions.JSONDecodeError, KeyError) as e:
                     logger.error(f"Unable to parse price from Reservoir FloorPrice API response: {str(e)}")
                     return None
 
