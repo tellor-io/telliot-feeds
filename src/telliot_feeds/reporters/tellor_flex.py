@@ -50,7 +50,7 @@ class TellorFlexReporter(IntervalReporter):
         max_fee: Optional[int] = None,
         priority_fee: int = 100,
         legacy_gas_price: Optional[int] = None,
-        gas_price_speed: str = ["safeLow"],
+        gas_price_speed: Union[tuple[str], str] = ("safeLow",),
         wait_period: int = 7,
         min_native_token_balance: int = 10**18,
         check_rewards: bool = True,
@@ -84,7 +84,7 @@ class TellorFlexReporter(IntervalReporter):
         self.account: ChainedAccount = account
         assert self.acct_addr == to_checksum_address(self.account.address)
 
-    async def fetch_gas_price(self, speed: Optional[str] = None) -> Optional[int]:
+    async def fetch_gas_price(self, speed: Optional[Union[tuple[str], str]] = None) -> Optional[int]:
         """Fetch estimated gas prices.
 
         Expected to return gas price in gwei."""
