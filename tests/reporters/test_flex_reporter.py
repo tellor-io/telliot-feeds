@@ -86,7 +86,7 @@ async def test_fetch_gas_price_error(tellor_flex_reporter, caplog):
     assert gp is None
     assert "unable to parse gas price from gasstation" in caplog.text.lower()
 
-    with patch('telliot_feeds.reporters.tellor_flex.TellorFlexReporter.fetch_gas_price') as func:
+    with patch("telliot_feeds.reporters.tellor_flex.TellorFlexReporter.fetch_gas_price") as func:
         func.return_value = None
 
         r.stake = 1e100
@@ -97,7 +97,7 @@ async def test_fetch_gas_price_error(tellor_flex_reporter, caplog):
         # Test ensure_profitable when fetch_gas_price returns None
         status = await r.ensure_profitable(eth_usd_median_feed)
         assert not status.ok
-        assert 'Unable to fetch gas price' in status.error
+        assert "Unable to fetch gas price" in status.error
 
 
 @pytest.mark.asyncio

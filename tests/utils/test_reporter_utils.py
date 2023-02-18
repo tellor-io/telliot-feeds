@@ -7,9 +7,9 @@ from web3 import Web3
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
+from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.queries.query import OracleQuery
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.utils.log import get_logger
