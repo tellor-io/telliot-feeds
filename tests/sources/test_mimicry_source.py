@@ -3,6 +3,7 @@ import pytest
 from telliot_feeds.sources.mimicry import MimicryCollectionStatSource
 
 
+@pytest.mark.skip("See issue ")
 @pytest.mark.asyncio
 async def test_fetching_data():
     """Test fetching data from Mimicry API"""

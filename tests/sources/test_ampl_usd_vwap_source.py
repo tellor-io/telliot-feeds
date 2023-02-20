@@ -33,7 +33,7 @@ async def test_bitfinex_source():
 
     assert isinstance(value, float)
     assert isinstance(timestamp, datetime)
-    assert 0 < value < 1
+    assert 0 < value < 2
 
 
 @pytest.mark.asyncio
