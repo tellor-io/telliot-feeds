@@ -106,6 +106,7 @@ async def custom_reporter(
         )
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
+        accounts[1].transfer(contracts.oracle.account.address, "1 ether")
         # init governance address
         await contracts.oracle.write(
             "init", _governanceAddress=accounts[0].address, gas_limit=350000, legacy_gas_price=1
@@ -116,5 +117,6 @@ async def custom_reporter(
 
 @pytest.mark.asyncio
 async def test_submit_once(custom_reporter):
+    print("CUSTOM REPORTER ADDRESS", custom_reporter.account.address)
     _, status = await custom_reporter.report_once()
     assert status.ok
