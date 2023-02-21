@@ -204,19 +204,17 @@ async def test_handle_contract_master_read_timeout(tellor_flex_reporter):
 
 @pytest.mark.asyncio
 async def test_ensure_reporter_lock_check_after_submitval_attempt(
-    monkeypatch, tellor_flex_reporter, guaranteed_price_source
+    tellor_flex_reporter, guaranteed_price_source
 ):
     r = tellor_flex_reporter
     r.last_submission_timestamp = 1234
     r.fetch_gas_price = gas_price
     r.ensure_staked = passing_bool_w_status
     r.ensure_profitable = passing_status
-
-    assert r.datafeed
+    r.check_reporter_lock = passing_status
+    r.datafeed = eth_usd_median_feed
 
     # Simulate fetching latest value
-    r.eth_usd_median_feed.source.sources = [guaranteed_price_source]
-    r.trb_usd_median_feed.source.sources = [guaranteed_price_source]
     r.datafeed.source.sources = [guaranteed_price_source]
 
     async def num_reports(*args, **kwargs):
