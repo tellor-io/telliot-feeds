@@ -93,7 +93,7 @@ async def test_fetch_gas_price_error(tellor_flex_reporter, caplog):
         staked, status = await r.ensure_staked()
         assert not staked
         assert not status.ok
-        assert "Unable to fetch matic gas price for staking" in status.error
+        assert "Unable to fetch gas price for staking" in status.error
         # Test ensure_profitable when fetch_gas_price returns None
         status = await r.ensure_profitable(eth_usd_median_feed)
         assert not status.ok
