@@ -155,6 +155,7 @@ async def test_no_updated_value(tellor_flex_reporter, bad_datasource):
     assert status.error == "Unable to retrieve updated datafeed value."
 
 
+@pytest.mark.skip("ensure_profitable is overritten in TelloFlexReporter")
 @pytest.mark.asyncio
 async def test_no_token_prices_for_profit_calc(tellor_flex_reporter, bad_datasource, guaranteed_price_source):
     """Test handling for no token prices for profit calculation."""
