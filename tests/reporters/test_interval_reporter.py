@@ -134,6 +134,7 @@ async def test_interval_reporter_submit_once(tellor_flex_reporter):
 async def test_no_updated_value(tellor_flex_reporter, bad_datasource):
     """Test handling for no updated value returned from datasource."""
     r = tellor_flex_reporter
+    r.datafeed = eth_usd_median_feed
 
     # Clear latest datapoint
     r.datafeed.source._history.clear()
