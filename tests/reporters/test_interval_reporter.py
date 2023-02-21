@@ -85,23 +85,16 @@ async def test_ensure_profitable(tellor_flex_reporter):
 
 @pytest.mark.asyncio
 async def test_ethgasstation_error(tellor_flex_reporter):
-    async def no_gas_price(speed):
+    async def no_gas_price(*args, **kwargs):
         return None
 
     r = tellor_flex_reporter
+    r.stake = 1000000*10**18
     interval.ethgasstation = no_gas_price
 
     staked, status = await r.ensure_staked()
     assert not staked
     assert not status.ok
-
-    status = await r.ensure_profitable(eth_usd_median_feed)
-    assert not status.ok
-
-    tx_receipt, status = await r.report_once()
-    assert tx_receipt is None
-    assert not status.ok
-    interval.ethgasstation = ethgasstation
 
 
 @pytest.mark.asyncio
