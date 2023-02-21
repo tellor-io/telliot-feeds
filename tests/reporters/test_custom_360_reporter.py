@@ -117,6 +117,5 @@ async def custom_reporter(
 
 @pytest.mark.asyncio
 async def test_submit_once(custom_reporter):
-    print("CUSTOM REPORTER ADDRESS", custom_reporter.account.address)
     _, status = await custom_reporter.report_once()
     assert status.ok
