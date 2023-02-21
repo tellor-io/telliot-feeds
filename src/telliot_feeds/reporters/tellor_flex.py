@@ -139,7 +139,7 @@ class TellorFlexReporter(IntervalReporter):
 
             gas_price_gwei = await self.fetch_gas_price()
             if gas_price_gwei is None:
-                return False, error_status("Unable to fetch matic gas price for staking", log=logger.info)
+                return False, error_status("Unable to fetch gas price for staking", log=logger.info)
             amount = int(self.stake * 1e18) - staker_balance
 
             _, write_status = await self.token.write(
