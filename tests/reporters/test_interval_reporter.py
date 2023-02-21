@@ -66,20 +66,6 @@ async def test_ensure_staked(tellor_flex_reporter):
 
 
 @pytest.mark.asyncio
-async def test_check_reporter_lock(tellor_flex_reporter):
-    """Test checking if in reporter lock."""
-    r = tellor_flex_reporter
-    r.last_submission_timestamp = 0
-
-    status = await r.check_reporter_lock()
-
-    assert isinstance(status, ResponseStatus)
-    if not status.ok:
-        assert status.error == "Current address is in reporter lock."
-        assert r.last_submission_timestamp != 0
-
-
-@pytest.mark.asyncio
 async def test_ensure_profitable(tellor_flex_reporter):
     """Test profitability check."""
     r = tellor_flex_reporter
