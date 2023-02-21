@@ -84,23 +84,6 @@ async def test_ensure_profitable(tellor_flex_reporter):
 
 
 @pytest.mark.asyncio
-async def test_fetch_gas_price(tellor_flex_reporter):
-    """Test retrieving custom gas price from eth gas station."""
-    r = tellor_flex_reporter
-
-    assert r.gas_price_speed == "safeLow"
-
-    r.gas_price_speed = "average"
-
-    assert r.gas_price_speed != "safeLow"
-
-    gas_price = await r.fetch_gas_price()
-
-    assert isinstance(gas_price, int)
-    assert gas_price > 0
-
-
-@pytest.mark.asyncio
 async def test_ethgasstation_error(tellor_flex_reporter):
     async def no_gas_price(speed):
         return None
