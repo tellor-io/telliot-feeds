@@ -184,6 +184,7 @@ async def test_no_token_prices_for_profit_calc(tellor_flex_reporter, bad_datasou
     assert status.error == "Unable to fetch ETH/USD price for profit calculation"
 
 
+@pytest.mark.skip("ensure_staked is overritten in TelloFlexReporter")
 @pytest.mark.asyncio
 async def test_handle_contract_master_read_timeout(tellor_flex_reporter):
     """Test handling for contract master read timeout."""
