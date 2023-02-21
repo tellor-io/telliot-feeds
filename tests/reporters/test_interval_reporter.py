@@ -7,7 +7,6 @@ from datetime import datetime
 from unittest import mock
 
 import pytest
-from telliot_core.gas.legacy_gas import ethgasstation
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
@@ -89,7 +88,7 @@ async def test_ethgasstation_error(tellor_flex_reporter):
         return None
 
     r = tellor_flex_reporter
-    r.stake = 1000000*10**18
+    r.stake = 1000000 * 10**18
     interval.ethgasstation = no_gas_price
 
     staked, status = await r.ensure_staked()
@@ -203,9 +202,7 @@ async def test_handle_contract_master_read_timeout(tellor_flex_reporter):
 
 
 @pytest.mark.asyncio
-async def test_ensure_reporter_lock_check_after_submitval_attempt(
-    tellor_flex_reporter, guaranteed_price_source
-):
+async def test_ensure_reporter_lock_check_after_submitval_attempt(tellor_flex_reporter, guaranteed_price_source):
     r = tellor_flex_reporter
     r.last_submission_timestamp = 1234
     r.fetch_gas_price = gas_price
