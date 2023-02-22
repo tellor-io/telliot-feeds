@@ -84,7 +84,7 @@ class TellorFlexReporter(IntervalReporter):
         self.account: ChainedAccount = account
         assert self.acct_addr == to_checksum_address(self.account.address)
 
-    async def fetch_gas_price(self, speed: Optional[Union[tuple[str], str]] = None) -> Optional[int]:
+    async def fetch_gas_price(self, speed: Optional[Any] = None) -> Optional[int]:
         """Fetch estimated gas prices.
 
         Expected to return gas price in gwei."""

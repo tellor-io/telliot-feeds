@@ -11,7 +11,7 @@ from typing import Union
 from chained_accounts import ChainedAccount
 from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
-from telliot_core.gas.legacy_gas import ethgasstation
+from telliot_core.gas.legacy_gas import legacy_gas_station
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
@@ -108,9 +108,9 @@ class IntervalReporter:
 
         return status
 
-    async def fetch_gas_price(self, speed: Union[tuple[str], str] = "average") -> Optional[int]:
+    async def fetch_gas_price(self, speed: Optional[Any] = None) -> Optional[int]:
         """Fetch gas price from ethgasstation in gwei."""
-        return await ethgasstation(speed)  # type: ignore
+        return await legacy_gas_station(chain_id=self.chain_id, speed_parse_lis=speed)  # type: ignore
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked
