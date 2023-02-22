@@ -11,6 +11,8 @@ interface IFlex {
     function getCurrentTip(bytes32 _queryId) external view returns (uint256);
     function submitValue(bytes32 _queryId, bytes calldata _value, uint256 _nonce, bytes memory _queryData) external;
     function withdrawStake() external;
+    function stakeAmount() external view returns (uint256);
+    function getStakerInfo(address _staker) external view returns (uint256, uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256);
 
 }
 
@@ -67,6 +69,14 @@ contract SampleFlexReporter {
 
     function withdrawStake() onlyOwner external{
         oracle.withdrawStake();
+    }
+
+    function getStakeAmount() external view returns (uint256){
+        return oracle.stakeAmount();
+    }
+
+    function getStakerInfo(address _stakerAddress) external view returns  (uint256, uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256){
+        return oracle.getStakerInfo(_stakerAddress);
     }
 
 }

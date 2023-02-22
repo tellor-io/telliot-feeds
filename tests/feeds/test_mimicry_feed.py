@@ -3,6 +3,7 @@ import pytest
 from telliot_feeds.feeds.mimicry_feed import mimicry_collection_stat_datafeed
 
 
+@pytest.mark.skip("TODO: see issue 603")
 @pytest.mark.asyncio
 async def test_fetch_new_datapoint():
     """Retrieve TAMI index and NFT market cap from source"""

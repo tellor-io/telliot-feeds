@@ -50,7 +50,7 @@ class TellorFlexReporter(IntervalReporter):
         max_fee: Optional[int] = None,
         priority_fee: int = 100,
         legacy_gas_price: Optional[int] = None,
-        gas_price_speed: str = "safeLow",
+        gas_price_speed: Union[tuple[str], str] = ("safeLow",),
         wait_period: int = 7,
         min_native_token_balance: int = 10**18,
         check_rewards: bool = True,
@@ -84,11 +84,11 @@ class TellorFlexReporter(IntervalReporter):
         self.account: ChainedAccount = account
         assert self.acct_addr == to_checksum_address(self.account.address)
 
-    async def fetch_gas_price(self, speed: Optional[str] = None) -> Optional[int]:
+    async def fetch_gas_price(self, speed: Optional[Union[tuple[str], str]] = None) -> Optional[int]:
         """Fetch estimated gas prices.
 
         Expected to return gas price in gwei."""
-        return await legacy_gas_station(chain_id=self.chain_id, speed=speed)  # type: ignore
+        return await legacy_gas_station(chain_id=self.chain_id, speed_parse_lis=speed)  # type: ignore
 
     async def in_dispute(self, new_stake_amount: Any) -> bool:
         """Check if staker balance decreased"""
@@ -139,7 +139,7 @@ class TellorFlexReporter(IntervalReporter):
 
             gas_price_gwei = await self.fetch_gas_price()
             if gas_price_gwei is None:
-                return False, error_status("Unable to fetch matic gas price for staking", log=logger.info)
+                return False, error_status("Unable to fetch gas price for staking", log=logger.info)
             amount = int(self.stake * 1e18) - staker_balance
 
             _, write_status = await self.token.write(
@@ -321,13 +321,11 @@ class TellorFlexReporter(IntervalReporter):
         else:
             # Fetch legacy gas price if not provided by user
             if not self.legacy_gas_price:
-                gas_price = await self.fetch_gas_price()
-                self.legacy_gas_price = gas_price
+                self.legacy_gas_price = await self.fetch_gas_price()
 
-            if not self.legacy_gas_price:
-                msg = "unable to fetch gas price from api"
-                logger.warning(msg)
-                return None
+            if self.legacy_gas_price is None:
+                return error_status("Unable to fetch gas price", log=logger.warning)
+
             logger.info(
                 f"""
                 tips: {tip/1e18} TRB

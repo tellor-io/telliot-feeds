@@ -22,7 +22,7 @@ def stop():
 def test_build_feed_from_input(capsys):
     """Test building feed from user input"""
 
-    num_choice = 8  # NumericApiResponse is the 8th option
+    num_choice = 9  # NumericApiResponse is the 9th option
     url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"  # noqa: E501
     parse_str = "uniswap, usd"
 

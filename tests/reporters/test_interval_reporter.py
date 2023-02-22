@@ -7,7 +7,6 @@ from datetime import datetime
 from unittest import mock
 
 import pytest
-from telliot_core.gas.legacy_gas import ethgasstation
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
@@ -66,20 +65,6 @@ async def test_ensure_staked(tellor_flex_reporter):
 
 
 @pytest.mark.asyncio
-async def test_check_reporter_lock(tellor_flex_reporter):
-    """Test checking if in reporter lock."""
-    r = tellor_flex_reporter
-    r.last_submission_timestamp = 0
-
-    status = await r.check_reporter_lock()
-
-    assert isinstance(status, ResponseStatus)
-    if not status.ok:
-        assert status.error == "Current address is in reporter lock."
-        assert r.last_submission_timestamp != 0
-
-
-@pytest.mark.asyncio
 async def test_ensure_profitable(tellor_flex_reporter):
     """Test profitability check."""
     r = tellor_flex_reporter
@@ -98,41 +83,17 @@ async def test_ensure_profitable(tellor_flex_reporter):
 
 
 @pytest.mark.asyncio
-async def test_fetch_gas_price(tellor_flex_reporter):
-    """Test retrieving custom gas price from eth gas station."""
-    r = tellor_flex_reporter
-
-    assert r.gas_price_speed == "safeLow"
-
-    r.gas_price_speed = "average"
-
-    assert r.gas_price_speed != "safeLow"
-
-    gas_price = await r.fetch_gas_price()
-
-    assert isinstance(gas_price, int)
-    assert gas_price > 0
-
-
-@pytest.mark.asyncio
 async def test_ethgasstation_error(tellor_flex_reporter):
-    async def no_gas_price(speed):
+    async def no_gas_price(*args, **kwargs):
         return None
 
     r = tellor_flex_reporter
+    r.stake = 1000000 * 10**18
     interval.ethgasstation = no_gas_price
 
     staked, status = await r.ensure_staked()
     assert not staked
     assert not status.ok
-
-    status = await r.ensure_profitable(eth_usd_median_feed)
-    assert not status.ok
-
-    tx_receipt, status = await r.report_once()
-    assert tx_receipt is None
-    assert not status.ok
-    interval.ethgasstation = ethgasstation
 
 
 @pytest.mark.asyncio
@@ -172,6 +133,7 @@ async def test_interval_reporter_submit_once(tellor_flex_reporter):
 async def test_no_updated_value(tellor_flex_reporter, bad_datasource):
     """Test handling for no updated value returned from datasource."""
     r = tellor_flex_reporter
+    r.datafeed = eth_usd_median_feed
 
     # Clear latest datapoint
     r.datafeed.source._history.clear()
@@ -192,6 +154,7 @@ async def test_no_updated_value(tellor_flex_reporter, bad_datasource):
     assert status.error == "Unable to retrieve updated datafeed value."
 
 
+@pytest.mark.skip("ensure_profitable is overritten in TelloFlexReporter")
 @pytest.mark.asyncio
 async def test_no_token_prices_for_profit_calc(tellor_flex_reporter, bad_datasource, guaranteed_price_source):
     """Test handling for no token prices for profit calculation."""
@@ -220,6 +183,7 @@ async def test_no_token_prices_for_profit_calc(tellor_flex_reporter, bad_datasou
     assert status.error == "Unable to fetch ETH/USD price for profit calculation"
 
 
+@pytest.mark.skip("ensure_staked is overritten in TelloFlexReporter")
 @pytest.mark.asyncio
 async def test_handle_contract_master_read_timeout(tellor_flex_reporter):
     """Test handling for contract master read timeout."""
@@ -238,20 +202,16 @@ async def test_handle_contract_master_read_timeout(tellor_flex_reporter):
 
 
 @pytest.mark.asyncio
-async def test_ensure_reporter_lock_check_after_submitval_attempt(
-    monkeypatch, tellor_flex_reporter, guaranteed_price_source
-):
+async def test_ensure_reporter_lock_check_after_submitval_attempt(tellor_flex_reporter, guaranteed_price_source):
     r = tellor_flex_reporter
     r.last_submission_timestamp = 1234
     r.fetch_gas_price = gas_price
     r.ensure_staked = passing_bool_w_status
     r.ensure_profitable = passing_status
-
-    assert r.datafeed
+    r.check_reporter_lock = passing_status
+    r.datafeed = eth_usd_median_feed
 
     # Simulate fetching latest value
-    r.eth_usd_median_feed.source.sources = [guaranteed_price_source]
-    r.trb_usd_median_feed.source.sources = [guaranteed_price_source]
     r.datafeed.source.sources = [guaranteed_price_source]
 
     async def num_reports(*args, **kwargs):

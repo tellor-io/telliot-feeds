@@ -51,7 +51,7 @@ class IntervalReporter:
         max_fee: Optional[int] = None,
         priority_fee: int = 5,
         legacy_gas_price: Optional[int] = None,
-        gas_price_speed: str = "fast",
+        gas_price_speed: Union[tuple[str], str] = "fast",
         wait_period: int = 10,
         min_native_token_balance: int = 10**18,
     ) -> None:
@@ -108,7 +108,7 @@ class IntervalReporter:
 
         return status
 
-    async def fetch_gas_price(self, speed: str = "average") -> Optional[int]:
+    async def fetch_gas_price(self, speed: Union[tuple[str], str] = "average") -> Optional[int]:
         """Fetch gas price from ethgasstation in gwei."""
         return await ethgasstation(speed)  # type: ignore
 

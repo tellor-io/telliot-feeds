@@ -146,7 +146,7 @@ class Tellor360Reporter(TellorFlexReporter):
                 msg = "Not enough TRB in the account to cover the stake"
                 return False, error_status(msg, log=logger.warning)
 
-            txn_kwargs = {"gas_limit": 350000, "legacy_gas_price": gas_price_gwei}
+            txn_kwargs = {"gas_limit": self.gas_limit, "legacy_gas_price": gas_price_gwei}
 
             # approve token spending
             _, approve_status = await self.token.write(
@@ -182,8 +182,10 @@ class Tellor360Reporter(TellorFlexReporter):
             return error_status(msg, log=logger.info)
 
         # 12hrs in seconds is 43200
-        reporter_lock = 43200 / math.floor(self.staker_info.stake_balance / self.stake_amount)
-
+        try:
+            reporter_lock = 43200 / math.floor(self.staker_info.stake_balance / self.stake_amount)
+        except ZeroDivisionError:  # Tellor Playground contract's stakeAmount is 0
+            reporter_lock = 0
         time_remaining = round(self.staker_info.last_report + reporter_lock - time.time())
         if time_remaining > 0:
             hr_min_sec = str(timedelta(seconds=time_remaining))

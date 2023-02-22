@@ -50,6 +50,7 @@ def mock_reporter_contract(tellorflex_360_contract, mock_token_contract, mock_au
 @pytest_asyncio.fixture(scope="function")
 async def custom_reporter(
     mumbai_test_cfg,
+    tellorflex_360_contract,
     mock_autopay_contract,
     mock_token_contract,
     mock_reporter_contract,
@@ -57,6 +58,8 @@ async def custom_reporter(
 ):
     async with TelliotCore(config=mumbai_test_cfg) as core:
         contracts = core.get_tellor360_contracts()
+        contracts.oracle.abi = tellorflex_360_contract.abi
+        contracts.oracle.address = tellorflex_360_contract.address
         contracts.autopay.address = mock_autopay_contract.address
         contracts.autopay.abi = mock_autopay_contract.abi
         contracts.token.address = mock_token_contract.address
@@ -103,6 +106,7 @@ async def custom_reporter(
         )
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
+        accounts[1].transfer(contracts.oracle.account.address, "1 ether")
         # init governance address
         await contracts.oracle.write(
             "init", _governanceAddress=accounts[0].address, gas_limit=350000, legacy_gas_price=1
