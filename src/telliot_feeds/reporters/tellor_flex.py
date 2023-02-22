@@ -72,7 +72,7 @@ class TellorFlexReporter(IntervalReporter):
         self.wait_period = wait_period
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
-        self.gas_price_speed = gas_price_speed
+        self.gas_price_speed = [gas_price_speed]
         self.autopaytip = 0
         self.staked_amount: Optional[float] = None
         self.qtag_selected = False if self.datafeed is None else True

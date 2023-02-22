@@ -70,7 +70,7 @@ class IntervalReporter:
         self.max_fee = max_fee
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
-        self.gas_price_speed = gas_price_speed
+        self.gas_price_speed = [gas_price_speed]
         self.trb_usd_median_feed = trb_usd_median_feed
         self.eth_usd_median_feed = eth_usd_median_feed
         self.wait_period = wait_period
