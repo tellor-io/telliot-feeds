@@ -101,6 +101,7 @@ class Tellor360Reporter(TellorFlexReporter):
 
         logger.info(
             f"""
+
             STAKER INFO
             start date: {staker_info[0]}
             stake_balance: {staker_info[1] / 1e18!r}
@@ -126,10 +127,6 @@ class Tellor360Reporter(TellorFlexReporter):
         if self.stake_amount > account_staked_bal or (self.stake * 1e18) > account_staked_bal:
             logger.info("Approving and depositing stake...")
 
-            gas_price_gwei = await self.fetch_gas_price()
-            if gas_price_gwei is None:
-                return False, error_status("Unable to fetch gas price for staking", log=logger.info)
-
             # amount to deposit whichever largest difference either chosen stake or stakeAmount to keep reporting
             stake_diff = max(int(self.stake_amount - account_staked_bal), int((self.stake * 1e18) - account_staked_bal))
 
@@ -145,27 +142,83 @@ class Tellor360Reporter(TellorFlexReporter):
             if stake_diff > wallet_balance:
                 msg = "Not enough TRB in the account to cover the stake"
                 return False, error_status(msg, log=logger.warning)
-
-            txn_kwargs = {"gas_limit": self.gas_limit, "legacy_gas_price": gas_price_gwei}
-
             # approve token spending
-            _, approve_status = await self.token.write(
-                func_name="approve", spender=self.oracle.address, amount=stake_diff, **txn_kwargs
-            )
-            if not approve_status.ok:
-                msg = "Unable to approve staking"
-                return False, error_status(msg, log=logger.error)
-            # deposit stake
-            _, deposit_status = await self.oracle.write("depositStake", _amount=stake_diff, **txn_kwargs)
-
-            if not deposit_status.ok:
-                msg = (
-                    "Unable to stake deposit: "
-                    + deposit_status.error
-                    + f"Make sure {self.acct_addr} has enough of the current chain's "
-                    + "currency and the oracle's currency (TRB)"
+            if self.transaction_type == 2:
+                # see comments of how fee is structured in TellorFlexReporter
+                if not self.max_fee:
+                    fee_info = await self.get_fee_info()
+                    if fee_info[0] is None:
+                        return False, error_status("Unable to suggest type 2 txn fees", log=logger.error)
+                    base_fee = fee_info[0].suggestBaseFee
+                    priority_fee = fee_info[0].SafeGasPrice if not self.priority_fee else self.priority_fee
+                    max_fee = int(priority_fee + base_fee)
+                else:
+                    max_fee = self.max_fee
+                    priority_fee = self.priority_fee
+                # Approve token spending for a transaction type 2
+                receipt, approve_status = await self.token.write(
+                    func_name="approve",
+                    gas_limit=self.gas_limit,
+                    max_priority_fee_per_gas=priority_fee,
+                    max_fee_per_gas=max_fee,
+                    spender=self.oracle.address,
+                    amount=stake_diff,
                 )
-                return False, error_status(msg, log=logger.error)
+                if not approve_status.ok:
+                    msg = "Unable to approve staking"
+                    return False, error_status(msg, log=logger.error)
+                logger.debug(f"Approve transaction status: {receipt.status}, block: {receipt.blockNumber}")
+                # deposit stake for a transaction type 2
+                _, deposit_status = await self.oracle.write(
+                    func_name="depositStake",
+                    gas_limit=self.gas_limit,
+                    max_priority_fee_per_gas=priority_fee,
+                    max_fee_per_gas=max_fee,
+                    _amount=stake_diff,
+                )
+
+                if not deposit_status.ok:
+                    msg = "Unable to deposit stake"
+                    return False, error_status(msg, log=logger.error)
+            else:
+                # Fetch legacy gas price if not provided by user
+                if self.legacy_gas_price is None:
+                    gas_price_in_gwei = await self.fetch_gas_price()
+                    if not gas_price_in_gwei:
+                        note = "Unable to fetch gas price for tx type 0"
+                        return False, error_status(note, log=logger.warning)
+                else:
+                    gas_price_in_gwei = self.legacy_gas_price
+                # Approve token spending for a transaction type 0 and deposit stake
+                # Approve token spending
+                receipt, approve_status = await self.token.write(
+                    func_name="approve",
+                    gas_limit=self.gas_limit,
+                    legacy_gas_price=gas_price_in_gwei,
+                    spender=self.oracle.address,
+                    amount=stake_diff,
+                )
+                if not approve_status.ok:
+                    msg = "Unable to approve staking"
+                    return False, error_status(msg, log=logger.error)
+                # Add this to avoid nonce error from txn happening too fast
+                time.sleep(1)
+                logger.debug(f"Approve transaction status: {receipt.status}, block: {receipt.blockNumber}")
+                # Deposit stake to oracle contract
+                _, deposit_status = await self.oracle.write(
+                    func_name="depositStake",
+                    gas_limit=self.gas_limit,
+                    legacy_gas_price=gas_price_in_gwei,
+                    _amount=stake_diff,
+                )
+                if not deposit_status.ok:
+                    msg = (
+                        "Unable to stake deposit: "
+                        + deposit_status.error
+                        + f"Make sure {self.acct_addr} has enough of the current chain's "
+                        + "currency and the oracle's currency (TRB)"
+                    )
+                    return False, error_status(msg, log=logger.error)
             # add staked balance after successful stake deposit
             self.staker_info.stake_balance += stake_diff
 

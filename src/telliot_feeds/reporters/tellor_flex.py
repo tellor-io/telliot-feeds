@@ -11,7 +11,6 @@ from chained_accounts import ChainedAccount
 from eth_abi.exceptions import EncodingTypeError
 from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
-from telliot_core.gas.legacy_gas import legacy_gas_station
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
@@ -26,6 +25,7 @@ from telliot_feeds.reporters.reporter_autopay_utils import get_feed_tip
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import get_native_token_feed
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
+from telliot_feeds.utils.reporter_utils import tkn_symbol
 
 
 logger = get_logger(__name__)
@@ -46,11 +46,11 @@ class TellorFlexReporter(IntervalReporter):
         datafeed: Optional[DataFeed[Any]] = None,
         expected_profit: Union[str, float] = "YOLO",
         transaction_type: int = 2,
-        gas_limit: int = 350000,
-        max_fee: Optional[int] = None,
-        priority_fee: int = 100,
+        gas_limit: Optional[int] = None,
+        max_fee: int = 0,
+        priority_fee: float = 0.0,
         legacy_gas_price: Optional[int] = None,
-        gas_price_speed: Union[tuple[str], str] = ("safeLow",),
+        gas_multiplier: int = 1,  # 1 percent
         wait_period: int = 7,
         min_native_token_balance: int = 10**18,
         check_rewards: bool = True,
@@ -72,23 +72,19 @@ class TellorFlexReporter(IntervalReporter):
         self.wait_period = wait_period
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
-        self.gas_price_speed = [gas_price_speed]
+        self.gas_multiplier = gas_multiplier
         self.autopaytip = 0
         self.staked_amount: Optional[float] = None
         self.qtag_selected = False if self.datafeed is None else True
         self.min_native_token_balance = min_native_token_balance
         self.check_rewards: bool = check_rewards
+        self.web3 = self.endpoint.web3
 
+        self.gas_info: dict[str, Union[float, int]] = {}
         logger.info(f"Reporting with account: {self.acct_addr}")
 
         self.account: ChainedAccount = account
         assert self.acct_addr == to_checksum_address(self.account.address)
-
-    async def fetch_gas_price(self, speed: Optional[Any] = None) -> Optional[int]:
-        """Fetch estimated gas prices.
-
-        Expected to return gas price in gwei."""
-        return await legacy_gas_station(chain_id=self.chain_id, speed_parse_lis=speed)  # type: ignore
 
     async def in_dispute(self, new_stake_amount: Any) -> bool:
         """Check if staker balance decreased"""
@@ -118,6 +114,7 @@ class TellorFlexReporter(IntervalReporter):
 
         logger.info(
             f"""
+
             STAKER INFO
             start date:     {staker_startdate}
             desired stake:  {self.stake}
@@ -267,77 +264,57 @@ class TellorFlexReporter(IntervalReporter):
                 return self.datafeed
         return None
 
-    async def ensure_profitable(
-        self,
-        datafeed: DataFeed[Any],
-    ) -> ResponseStatus:
+    async def ensure_profitable(self, datafeed: DataFeed[Any]) -> ResponseStatus:
+
         status = ResponseStatus()
         if not self.check_rewards:
             return status
-        tip = self.autopaytip
 
+        tip = self.autopaytip
         # Fetch token prices in USD
         native_token_feed = get_native_token_feed(self.chain_id)
         price_feeds = [native_token_feed, trb_usd_median_feed]
         _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
         price_native_token = native_token_feed.source.latest[0]
         price_trb_usd = trb_usd_median_feed.source.latest[0]
+
         if price_native_token is None or price_trb_usd is None:
-            logger.warning("Unable to fetch token price")
-            return None
+            return error_status("Unable to fetch token price", log=logger.warning)
 
-        # Using transaction type 2 (EIP-1559)
-        if self.transaction_type == 2:
-            fee_info = await self.get_fee_info()
-            base_fee = fee_info[0].suggestBaseFee
+        if not self.gas_info:
+            return error_status("Gas info not set", log=logger.warning)
 
-            # No miner tip provided by user
-            if self.priority_fee is None:
-                # From etherscan docs:
-                # "Safe/Proposed/Fast gas price recommendations are now modeled as Priority Fees."  # noqa: E501
-                # Source: https://docs.etherscan.io/api-endpoints/gas-tracker
-                priority_fee = fee_info[0].SafeGasPrice
-                self.priority_fee = priority_fee
+        gas_info = self.gas_info
 
-            if self.max_fee is None:
-                # From Alchemy docs:
-                # "maxFeePerGas = baseFeePerGas + maxPriorityFeePerGas"
-                # Source: https://docs.alchemy.com/alchemy/guides/eip-1559/maxpriorityfeepergas-vs-maxfeepergas  # noqa: E501
-                self.max_fee = self.priority_fee + base_fee
-
+        if gas_info["type"] == 0:
+            txn_fee = gas_info["gas_price"] * gas_info["gas_limit"]
             logger.info(
                 f"""
-                tips: {tip} TRB
-                gas limit: {self.gas_limit}
-                base fee: {base_fee}
-                priority fee: {self.priority_fee}
-                max fee: {self.max_fee}
+
+                Tips: {tip/1e18}
+                Transaction fee: {self.web3.fromWei(txn_fee, 'gwei'):.09f} {tkn_symbol(self.chain_id)}
+                Gas price: {gas_info["gas_price"]} gwei
+                Gas limit: {gas_info["gas_limit"]}
+                Txn type: 0 (Legacy)
                 """
             )
-
-            costs = self.gas_limit * self.max_fee  # in gwei
-
-        # Using transaction type 0 (legacy)
-        else:
-            # Fetch legacy gas price if not provided by user
-            if not self.legacy_gas_price:
-                self.legacy_gas_price = await self.fetch_gas_price()
-
-            if self.legacy_gas_price is None:
-                return error_status("Unable to fetch gas price", log=logger.warning)
-
+        if gas_info["type"] == 2:
+            txn_fee = gas_info["max_fee"] * gas_info["gas_limit"]
             logger.info(
                 f"""
-                tips: {tip/1e18} TRB
-                gas limit: {self.gas_limit}
-                legacy gas price: {self.legacy_gas_price}
+
+                Tips: {tip/1e18}
+                Max transaction fee: {self.web3.fromWei(txn_fee, 'gwei')} {tkn_symbol(self.chain_id)}
+                Max fee per gas: {gas_info["max_fee"]} gwei
+                Max priority fee per gas: {gas_info["priority_fee"]} gwei
+                Gas limit: {gas_info["gas_limit"]}
+                Txn type: 2 (EIP-1559)
                 """
             )
-            costs = self.gas_limit * self.legacy_gas_price
 
         # Calculate profit
         rev_usd = tip / 1e18 * price_trb_usd
-        costs_usd = costs / 1e9 * price_native_token  # convert gwei costs to eth, then to usd
+        costs_usd = txn_fee / 1e9 * price_native_token  # convert gwei costs to eth, then to usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
         logger.info(f"tip price: {round(rev_usd, 2)}, gas costs: {costs_usd}")

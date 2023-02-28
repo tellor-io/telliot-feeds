@@ -29,13 +29,12 @@ def print_reporter_settings(
     signature_address: str,
     query_tag: str,
     gas_limit: int,
-    priority_fee: Optional[int],
+    priority_fee: Optional[float],
     expected_profit: str,
     chain_id: int,
     max_fee: Optional[int],
     transaction_type: int,
     legacy_gas_price: Optional[int],
-    gas_price_speed: str,
     reporting_diva_protocol: bool,
     stake_amount: float,
     min_native_token_balance: float,
@@ -66,7 +65,6 @@ def print_reporter_settings(
     click.echo(f"Legacy gas price (gwei): {legacy_gas_price}")
     click.echo(f"Max fee (gwei): {max_fee}")
     click.echo(f"Priority fee (gwei): {priority_fee}")
-    click.echo(f"Gas price speed: {gas_price_speed}")
     click.echo(f"Desired stake amount: {stake_amount}")
     click.echo(f"Minimum native token balance (e.g. ETH if on Ethereum mainnet): {min_native_token_balance}")
     click.echo("\n")
