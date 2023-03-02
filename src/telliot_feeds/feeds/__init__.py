@@ -37,6 +37,7 @@ from telliot_feeds.feeds.mimicry.mimcry_nft_index_feed import mimicry_nft_market
 from telliot_feeds.feeds.mimicry.mimcry_nft_index_feed import mimicry_nft_market_index_eth_datafeed
 from telliot_feeds.feeds.mimicry.mimicry_feed import mimicry_collection_stat_datafeed
 from telliot_feeds.feeds.mimicry.mimicry_feed import mimicry_example_feed
+from telliot_feeds.feeds.mimicry.mimicry_macro_market_mashup_feed_example import mimicry_mashup_feed_example
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
@@ -116,6 +117,7 @@ CATALOG_FEEDS = {
     "mimicry-crypto-coven-tami": mimicry_example_feed,
     "mimicry-nft-index-usd": mimicry_nft_market_index_datafeed,
     "mimicry-nft-index-eth": mimicry_nft_market_index_eth_datafeed,
+    "mimicry-mashup-example": mimicry_mashup_feed_example,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
