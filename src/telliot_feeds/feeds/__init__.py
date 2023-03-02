@@ -33,8 +33,10 @@ from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
 from telliot_feeds.feeds.link_usd_feed import link_usd_median_feed
 from telliot_feeds.feeds.ltc_usd_feed import ltc_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
-from telliot_feeds.feeds.mimicry_feed import mimicry_collection_stat_datafeed
-from telliot_feeds.feeds.mimicry_feed import mimicry_example_feed
+from telliot_feeds.feeds.mimicry.mimcry_nft_index_feed import mimicry_nft_market_index_datafeed
+from telliot_feeds.feeds.mimicry.mimcry_nft_index_feed import mimicry_nft_market_index_eth_datafeed
+from telliot_feeds.feeds.mimicry.mimicry_feed import mimicry_collection_stat_datafeed
+from telliot_feeds.feeds.mimicry.mimicry_feed import mimicry_example_feed
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
@@ -112,6 +114,8 @@ CATALOG_FEEDS = {
     "usdt-usd-spot": usdt_usd_median_feed,
     "yfi-usd-spot": yfi_usd_median_feed,
     "mimicry-crypto-coven-tami": mimicry_example_feed,
+    "mimicry-nft-index-usd": mimicry_nft_market_index_datafeed,
+    "mimicry-nft-index-eth": mimicry_nft_market_index_eth_datafeed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

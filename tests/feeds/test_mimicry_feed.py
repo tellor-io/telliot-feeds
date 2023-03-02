@@ -1,6 +1,6 @@
 import pytest
 
-from telliot_feeds.feeds.mimicry_feed import mimicry_collection_stat_datafeed
+from telliot_feeds.feeds.mimicry.mimicry_feed import mimicry_collection_stat_datafeed
 
 
 @pytest.mark.skip("TODO: see issue 603")

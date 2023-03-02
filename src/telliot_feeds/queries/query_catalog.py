@@ -5,7 +5,8 @@ from telliot_feeds.queries.daily_volatility import DailyVolatility
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.queries.evm_call import EVMCall
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
-from telliot_feeds.queries.mimicry import MimicryCollectionStat
+from telliot_feeds.queries.mimicry.mimicry import MimicryCollectionStat
+from telliot_feeds.queries.mimicry.mimicry_nft_market_index import MimicryNFTMarketIndex
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.queries.price.twap import TWAP
@@ -293,4 +294,18 @@ query_catalog.add_entry(
     tag="mimicry-crypto-coven-tami",
     title="Crypto Coven TAMI calculation for Mimicry",
     q=MimicryCollectionStat(collectionAddress="0x5180db8F5c931aaE63c74266b211F580155ecac8", chainId=1, metric=0),
+)
+
+query_catalog.add_entry(
+    tag="mimicry-nft-index-usd",
+    title="NFT Market Index usd",
+    q=MimicryNFTMarketIndex(chain="ethereum", currency="usd"),
+    active=True,
+)
+
+query_catalog.add_entry(
+    tag="mimicry-nft-index-eth",
+    title="NFT Market Index eth",
+    q=MimicryNFTMarketIndex(chain="ethereum", currency="eth"),
+    active=True,
 )

@@ -1,7 +1,7 @@
 """DataFeed for MimicryCollectionStat query type. Calculates TAMI index or NFT market cap"""
 from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.queries.mimicry import MimicryCollectionStat
-from telliot_feeds.sources.mimicry import MimicryCollectionStatSource
+from telliot_feeds.queries.mimicry.mimicry import MimicryCollectionStat
+from telliot_feeds.sources.mimicry.mimicry import MimicryCollectionStatSource
 
 chain_id = None
 collection_address = None

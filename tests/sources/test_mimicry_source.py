@@ -1,6 +1,6 @@
 import pytest
 
-from telliot_feeds.sources.mimicry import MimicryCollectionStatSource
+from telliot_feeds.sources.mimicry.mimicry import MimicryCollectionStatSource
 
 
 @pytest.mark.skip("See issue 603")
