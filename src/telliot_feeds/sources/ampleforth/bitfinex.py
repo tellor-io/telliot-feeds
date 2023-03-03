@@ -20,7 +20,6 @@ NO_TRADES_FOUND = "No trades found"
 def build_buckets(start: int, a_list: list[list[int]], bucket_size: int = THOUSAND_MIN) -> dict[int, dict[str, Any]]:
     """Build buckets for VWAP calculation."""
     vwap_per_slot: dict[int, dict[str, Any]] = {}
-    print(a_list)
     for i in a_list:
         slot = (i[1] - start) // bucket_size
         amount = i[2]
@@ -28,8 +27,8 @@ def build_buckets(start: int, a_list: list[list[int]], bucket_size: int = THOUSA
 
         vwap_bucket = vwap_per_slot.get(slot)
         if vwap_bucket:
-            vwap_bucket["trades"] = vwap_bucket["trades"] + abs(amount * price)
-            vwap_bucket["volume"] = vwap_bucket["volume"] + abs(amount)
+            vwap_bucket["trades"] += abs(amount * price)
+            vwap_bucket["volume"] += abs(amount)
         else:
             vwap_bucket = {"timestamp": i[1], "trades": abs(amount * price), "volume": abs(amount)}
             vwap_per_slot[slot] = vwap_bucket
@@ -86,65 +85,39 @@ def retrieve_bitfinex_trades(route: str, start: int, end: int) -> Any:
 
     # convert response
     all_trades = response.json()
-    print(f"Bitfinex trades for {route}: {len(all_trades)}")
     if not all_trades:
         logger.warning(f"Could not get Bitfinex trades for {route}")
         return []
 
     if len(all_trades) >= 10000:
-        logger.warn(f"Bitfinex response too big, scrolling: {route} ({start} - {end})")
-        last_timestamp = all_trades[len(all_trades) - 1][1]
+        logger.warning(f"Bitfinex response too big, scrolling: {route} ({start} - {end})")
+        last_timestamp = all_trades[-1][1]
         next_frame = retrieve_bitfinex_trades(route, last_timestamp, end)
-        all_trades = all_trades.concat(next_frame)
-
+        all_trades.extend(next_frame)
+    logger.info(f"Bitfinex trades for {route}: {len(all_trades)}")
     return all_trades
-
-
-def calculate_bitfinex_single_via(symbol: dict[str, Any], start: int, end: int, show_debug: bool) -> Any:
-    """Calculate VWAP for a single symbol via Bitfinex."""
-    from_list = retrieve_bitfinex_trades(symbol["hops"][0], start, end)
-    to_list = retrieve_bitfinex_trades(symbol["hops"][1], start, end)
-    if len(from_list) == 0 or len(to_list) == 0:
-        result = {}
-        result[f'bitFinexVwapVia{symbol["via"]}'] = NO_TRADES_FOUND
-        return result
-
-    vwap = volume_weighted_average_price(start, from_list, to_list)
-
-    result = {"vwap": vwap["vwap"]}
-    result[f'bitFinexVwapVia{symbol["via"]}'] = vwap["vwap"]
-    if show_debug:
-        result["source"] = {}  # type: ignore
-        result["source"][f'bitFinexRawData_{symbol["from"]}to{symbol["via"]}'] = build_buckets(  # type: ignore
-            start, from_list
-        )
-        result["source"][f'bitFinexRawData_{symbol["via"]}to{symbol["to"]}'] = build_buckets(  # type: ignore
-            start, to_list
-        )
-    return result
 
 
 def calculate_all_single_via(symbol: dict[str, Any], start: int, end: int, show_debug: bool) -> dict[str, Any]:
     """Calculate VWAP for a single symbol via all exchanges."""
-    from_list = retrieve_bitfinex_trades(symbol["hops"][0], start, end)
-    to_list = retrieve_bitfinex_trades(symbol["hops"][1], start, end)
-    if len(from_list) == 0 or len(to_list) == 0:
-        result = {}
-        result[f'bitFinexVwapVia{symbol["via"]}'] = NO_TRADES_FOUND
-        return result
+    from_list = retrieve_bitfinex_trades(SYMBOLS[symbol["hops"][0]]["bitFinexSymbol"], start, end)
+    to_list = retrieve_bitfinex_trades(SYMBOLS[symbol["hops"][1]]["bitFinexSymbol"], start, end)
+    result = {}
 
-    vwap = volume_weighted_average_price(start, from_list, to_list)
+    if from_list and to_list:
+        result[f"bitFinexVwapVia{symbol['via']}"] = volume_weighted_average_price(start, from_list, to_list)
+    else:
+        result[f"bitFinexVwapVia{symbol['via']}"] = NO_TRADES_FOUND  # type: ignore
 
-    result = {"vwap": vwap["vwap"]}
-    result[f'bitFinexVwapVia{symbol["via"]}'] = vwap["vwap"]
     if show_debug:
-        result["source"] = {}  # type: ignore
-        result["source"][f'bitFinexRawData_{symbol["from"]}to{symbol["via"]}'] = build_buckets(  # type: ignore
-            start, from_list
-        )
-        result["source"][f'bitFinexRawData_{symbol["via"]}to{symbol["to"]}'] = build_buckets(  # type: ignore
-            start, to_list
-        )
+        result["source"] = {}
+        result["source"][f"bitFinex_{symbol['from']}to{symbol['via']}"] = [
+            {"slot": slot, **bucket} for slot, bucket in build_buckets(start, from_list).items()
+        ]
+        result["source"][f"bitFinex_{symbol['via']}to{symbol['to']}"] = [
+            {"slot": slot, **bucket} for slot, bucket in build_buckets(start, to_list).items()
+        ]
+
     return result
 
 
@@ -153,29 +126,16 @@ def calculate_vwap_direct(symbol_route: dict[str, Any], start: int, end: int) ->
     response = retrieve_bitfinex_trades(symbol_route["bitFinexSymbol"], start, end)
     if len(response) == 0:
         raise Exception(f'No trades found for {symbol_route["bitFinexSymbol"]}')
-    sum_amount_and_prices = sum([trade[2] * trade[3] for trade in response])
-    sum_volume = sum([trade[2] for trade in response])
+    sum_amount_and_prices = sum([abs(trade[2] * trade[3]) for trade in response])
+    sum_volume = sum([abs(trade[2]) for trade in response])
     return {"vwap": sum_amount_and_prices / sum_volume, "volume": sum_volume}
-
-
-def calculate_vwap_via(symbol: dict[str, Any], start: int, end: int, show_debug: bool) -> dict[str, Any]:
-    """Calculate VWAP for a single symbol via another symbol."""
-    vwap_direct = calculate_vwap_direct(symbol["direct"], start, end)
-    via_result = calculate_bitfinex_single_via(symbol, start, end, show_debug)
-
-    result = {"vwapDirect": vwap_direct["vwap"]}
-    if via_result["vwap"]:
-        result["mean"] = (vwap_direct["vwap"] + via_result["vwap"]) / 2
-    del via_result["vwap"]
-    result.update(via_result)
-    return result
 
 
 def calculate_vwap_via_all(symbol: dict[str, Any], start: int, end: int, show_debug: bool) -> dict[str, Any]:
     """Calculate VWAP for a single symbol via all symbols."""
-    p_result = [calculate_vwap_direct(SYMBOLS[symbol["direct"]], start, end)]  # type: ignore
+    p_result = [calculate_vwap_direct(SYMBOLS[symbol["direct"]], start, end)]
     for h in symbol["viaHops"]:
-        p_result.append(calculate_all_single_via(SYMBOLS[h], start, end, show_debug))  # type: ignore
+        p_result.append(calculate_all_single_via(SYMBOLS[h], start, end, show_debug))
     result = {"bitFinexVwapDirect": p_result[0]}
 
     if show_debug:
@@ -187,23 +147,20 @@ def calculate_vwap_via_all(symbol: dict[str, Any], start: int, end: int, show_de
             del p_result[i]["source"]
             result["source"].update(source)
         result.update(p_result[i])
-    all_vwaps = [v[1] for v in result.items() if v[0] != "source" and v[1] != NO_TRADES_FOUND]  # type: ignore
 
-    sum_amount_and_prices = sum([m["vwap"] * m["volume"] for m in all_vwaps])
-    sum_volume = sum([m["volume"] for m in all_vwaps])
+    all_vwaps = [
+        v["vwap"] * v["volume"] for k, v in result.items() if k != "source" and v != NO_TRADES_FOUND
+    ]  # type: ignore
+    sum_volumes_and_prices = sum(all_vwaps)
+    sum_volume = sum(v["volume"] for k, v in result.items() if k != "source" and "volume" in v)
 
-    result["overall_vwap"] = sum_amount_and_prices / sum_volume
+    result["overall_vwap"] = sum_volumes_and_prices / sum_volume
     return result
 
 
 async def get_value_from_bitfinex(symbol: dict[str, Any], start: int, end: int, show_debug: bool) -> dict[str, Any]:
     """Get VWAP for any symbol or group of symbols in SYMBOLS."""
-    if "direct" not in symbol:
-        result = calculate_vwap_direct(symbol, start, end)
-    elif "viaHops" in symbol:
-        result = calculate_vwap_via_all(symbol, start, end, show_debug)
-    else:
-        result = calculate_vwap_via(symbol, start, end, show_debug)
+    result = calculate_vwap_via_all(symbol, start, end, show_debug)
     return result
 
 
@@ -214,10 +171,8 @@ def main() -> None:
     # ts_24hr_ago = current_ts - 86400000
     current_ts = 1675382399000
     ts_24hr_ago = 1675296000000
-    result = asyncio.run(
-        get_value_from_bitfinex(SYMBOLS["AMPL_USD_via_ALL"], ts_24hr_ago, current_ts, True)  # type: ignore
-    )
-    print(result)
+    result = asyncio.run(get_value_from_bitfinex(SYMBOLS["AMPL_USD_via_ALL"], ts_24hr_ago, current_ts, True))
+    print(result["overall_vwap"])
 
 
 if __name__ == "__main__":
