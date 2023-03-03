@@ -149,8 +149,8 @@ def calculate_vwap_via_all(symbol: dict[str, Any], start: int, end: int, show_de
         result.update(p_result[i])
 
     all_vwaps = [
-        v["vwap"] * v["volume"] for k, v in result.items() if k != "source" and v != NO_TRADES_FOUND
-    ]  # type: ignore
+        v["vwap"] * v["volume"] for k, v in result.items() if k != "source" and v != NO_TRADES_FOUND  # type: ignore
+    ]
     sum_volumes_and_prices = sum(all_vwaps)
     sum_volume = sum(v["volume"] for k, v in result.items() if k != "source" and "volume" in v)
 
