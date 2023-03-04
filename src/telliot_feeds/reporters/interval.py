@@ -114,7 +114,7 @@ class IntervalReporter:
         return status
 
     async def fetch_gas_price(self) -> Optional[float]:
-        """Fetches the current gas price from the Ethereum network and returns
+        """Fetches the current gas price from an EVM network and returns
         an adjusted gas price.
 
         Returns:
@@ -458,8 +458,6 @@ class IntervalReporter:
         status = await self.ensure_profitable(datafeed)
         if not status.ok:
             return None, status
-        # TODO: double check if this is needed
-        status = ResponseStatus()
 
         lazy_unlock_account(self.account)
         local_account = self.account.local_account

@@ -190,7 +190,6 @@ class Tellor360Reporter(TellorFlexReporter):
                 else:
                     gas_price_in_gwei = self.legacy_gas_price
                 # Approve token spending for a transaction type 0 and deposit stake
-                # Approve token spending
                 receipt, approve_status = await self.token.write(
                     func_name="approve",
                     gas_limit=self.gas_limit,

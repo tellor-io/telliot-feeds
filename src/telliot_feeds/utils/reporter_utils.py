@@ -175,5 +175,7 @@ def tkn_symbol(chain_id: int) -> str:
         return "MATIC"
     elif chain_id in GNOSIS_CHAINS:
         return "XDAI"
-    else:
+    elif chain_id in ETHEREUM_CHAINS:
         return "ETH"
+    else:
+        return "Unknown native token"
