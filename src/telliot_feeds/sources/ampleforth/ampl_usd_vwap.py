@@ -86,9 +86,7 @@ class BitfinexSource(DataSource[float]):
         end_milli = to_unix_milli(yesterday_end)
 
         try:
-            dict_rsp = await get_value_from_bitfinex(
-                SYMBOLS["AMPL_USD_via_ALL"], start_milli, end_milli, True  # type: ignore
-            )
+            dict_rsp = await get_value_from_bitfinex(SYMBOLS["AMPL_USD_via_ALL"], start_milli, end_milli, True)
         except Exception as e:
             logger.error(f"Error getting VWAP from Bitfinex: {e}")
             return (None, None)
