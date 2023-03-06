@@ -2,6 +2,7 @@ import pytest
 
 from telliot_feeds.sources.mimicry.mimicry import MimicryCollectionStatSource
 from telliot_feeds.sources.mimicry.mimicry_mashup_source import NFTMashupSource
+from telliot_feeds.sources.mimicry.mimicry_nft_market_index import NFTGoSource
 
 
 @pytest.mark.skip("See issue 603")
@@ -43,4 +44,15 @@ async def test_fetching_nft_mashup_mcap():
     )
     val, _ = await source.fetch_new_datapoint()
     assert isinstance(val, int)
+    assert val > 0
+
+
+@pytest.mark.skip("Requires API key")
+@pytest.mark.asyncio
+async def test_fetching_nft_index_mcap():
+    """Test fetch nft market cap"""
+
+    source = NFTGoSource(metric_currency="market_cap_usd")
+    val, _ = await source.fetch_new_datapoint()
+    assert isinstance(val, float)
     assert val > 0
