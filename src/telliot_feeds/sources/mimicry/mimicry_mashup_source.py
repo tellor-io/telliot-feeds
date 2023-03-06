@@ -1,18 +1,13 @@
-from __future__ import annotations
-
 import asyncio
-import time
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
 
-from requests.adapters import HTTPAdapter
-from requests.adapters import Retry
-from requests.exceptions import ConnectionError
-from requests.exceptions import HTTPError
-from requests.exceptions import RequestException
-from requests.exceptions import Timeout
-from requests.sessions import Session
+from aiohttp import ClientConnectionError
+from aiohttp import ClientError
+from aiohttp import ClientResponseError
+from aiohttp import ClientSession
+from aiohttp import ClientTimeout
 from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.datasource import DataSource
@@ -24,7 +19,7 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 # for coingecko api chain ids
-block_chains = {"ethereum-mainnet": "ethereum", "solanamainnet": "solana"}
+block_chains = {"ethereum-mainnet": "ethereum", "solana-mainnet": "solana"}
 
 
 @dataclass
@@ -34,113 +29,123 @@ class NFTMashupSource(DataSource[str]):
     """
 
     api_key = TelliotConfig().api_keys.find(name="nftgo")[0].key
-    metric: Optional[str] = None
-    currency: Optional[str] = None
-    collections: Optional[Any] = None
-    tokens: Optional[Any] = None
+    metric: Optional[str] = None  # ("market_cap")
+    currency: Optional[str] = None  # ("usd")
+    collections: Optional[Any] = None  # ("chain-name", "contract-address")
+    tokens: Optional[Any] = None  # ("chain-name", "token-symbol", "contract-address")
 
-    async def fetch(self, url: str, retries: int = 3) -> Optional[Any]:
+    async def fetch(self, url: str, headers: Optional[dict[str, str]]) -> Optional[Any]:
         """
-        Request NFTGo data from the api.
+        Fetches data from a given URL.
 
         Args:
-            url (str): URL to fetch data from.
-            retries (int): Number of times to retry failed requests.
+            url (str): The URL to fetch data from.
+            headers (Optional[dict[str, str]]): Headers to send with the request.
 
         Returns:
             Response data from the API, or None if the request fails.
 
         """
-        url = url
-        headers = {"X-API-KEY": self.api_key, "accept": "application/json"}
+        async with ClientSession(headers=headers) as session:
+            timeout = ClientTimeout(total=10)
+            async with session.get(url, timeout=timeout) as response:
+                return await response.json()
 
-        with Session() as session:
-            session.headers.update(headers)
-            retry_strat = Retry(total=retries, backoff_factor=0.5, status_forcelist=[500, 502, 503, 504])
-            adapter = HTTPAdapter(max_retries=retry_strat)
-            session.mount("https://", adapter)
-            for i in range(retries):
-                try:
-                    response = session.get(url, timeout=(5, 10))
-                    response.raise_for_status()
-                    return response.json()
-                except HTTPError as e:
-                    logger.error(f"Request failed with HTTP error: {e}.")
-                    return None
-                except Timeout as e:
-                    if i == retries - 1:
-                        logger.error(f"Request timed out after {e}.")
-                        return None
-                    else:
-                        backoff = 2**i
-                        logger.warning(f"Request timed out after {e}. Retrying in {backoff} seconds...")
-                        time.sleep(backoff)
-                        continue
-                except ConnectionError as e:
-                    if i == retries - 1:
-                        logger.error(f"Request failed due to network error: {e}.")
-                        return None
-                    else:
-                        backoff = 2**i
-                        logger.warning(f"Request failed due to network error: {e}. Retrying in {backoff} seconds...")
-                        time.sleep(backoff)
-                        continue
-                except RequestException as e:
-                    if i == retries - 1:
-                        logger.error(f"Request failed with unknown error: {e}.")
-                        return None
-                    else:
-                        backoff = 2**i
-                        logger.warning(f"Request failed with unknown error: {e}. Retrying in {backoff} seconds...")
-                        time.sleep(backoff)
-                        continue
-        return None
-
-    async def fetch_nftgo(self) -> Optional[Any]:
+    async def fetch_urls(self, urls: list[str], headers: Optional[dict[str, str]] = None) -> Any:
         """
-        Fetch NFTGo API response.
+        Fetches a list of URLs and returns a list of responses.
+
+        Args:
+            urls (list[str]): A list of URLs to fetch.
+            headers (Optional[dict[str, str]]): Headers to send with the request.
 
         Returns:
-            List of NFTGo collection market cap values, or None if the request fails.
-
+            Any: A list of responses.
         """
-        collection_mcaps = []
-        metric = f"{self.metric}-{self.currency}".replace("-", "_")
+        tasks = [asyncio.create_task(self.fetch_url_with_retry(url=url, headers=headers)) for url in urls]
+        responses = await asyncio.gather(*tasks)
+        return responses
+
+    async def fetch_url_with_retry(
+        self, url: str, headers: Optional[dict[str, str]], retries: int = 3
+    ) -> Optional[Any]:
+        """
+        Fetches a response from an api with retry logic.
+
+        Args:
+            url (str): A single URL to fetch.
+            headers (Optional[dict[str, str]]): Headers to send with the request.
+
+        Returns:
+            Any: A list of responses.
+        """
+        for attempt in range(retries):
+            try:
+                response = await self.fetch(url=url, headers=headers)
+                return response
+            except (ClientError, ClientConnectionError, ClientResponseError) as e:
+                if attempt == retries - 1:
+                    logger.warning(f"Failed to fetch from {url} after {retries} attempts: {e}.")
+                    return None
+                wait_time = 2**attempt
+                await asyncio.sleep(wait_time)
+        return None
+
+    async def fetch_collections_mcap(self) -> Optional[Any]:
+        """
+        Fetch market cap for a list collection from NFTGo API response.
+
+        Returns:
+            Sum of collections' market cap, or None if the request fails.
+
+        Requires:
+            an api key from NFTGo (https://developer.nftgo.io/)
+        """
         if not self.collections:
             logger.info("No NFTGo collections specified.")
             return None
+
+        nftgo_url = "https://data-api.nftgo.io/eth/v1/collection/{contract_address}/metrics"
+        headers = {"X-API-KEY": self.api_key, "accept": "application/json"}
+
+        urls = []
         for item in self.collections:
             try:
                 contract_address = item[1]
-            except Exception as e:
+            except IndexError as e:
                 logger.warning(f"Specified NFTGo collection is not valid: {e}.")
                 return None
-            nftgo_url = f"https://data-api.nftgo.io/eth/v1/collection/{contract_address}/metrics"
-            response = await self.fetch(nftgo_url)
+            urls.append(nftgo_url.format(contract_address=contract_address))
+
+        responses = await self.fetch_urls(urls=urls, headers=headers)
+        collection_mcaps = []
+        metric = f"{self.metric}_{self.currency}".replace("-", "_")
+        for response in responses:
             if response is not None:
                 try:
                     market_cap = response[metric]
                     collection_mcaps.append(market_cap)
-                except Exception as e:
-                    logger.warning(f"Failed to parse NFTGo response: {e}.")
+                except KeyError as e:
+                    logger.warning(f"Failed to parse NFTGo response, keyerror: {e}.")
                     return None
             else:
                 return None
 
-        return collection_mcaps
+        return sum(collection_mcaps)
 
-    async def fetch_coingecko_api(self) -> Optional[Any]:
+    async def fetch_tokens_mcap(self) -> Optional[Any]:
         """
-        Fetch CoinGecko API response.
+        Fetch list of tokens' market cap from coingecko api.
 
         Returns:
-            List of CoinGecko token market cap values, or None if the request fails.
+            Sum of all tokens' market cap, or None if the request fails.
 
         """
         if not self.tokens or not self.currency:
             logger.info("No tokens specified, check query.")
             return None
-        token_mcaps = []
+        coingecko_url = "https://api.coingecko.com/api/v3/coins/{network}/contract/{contract_address}"
+        urls = []
         for item in self.tokens:
             try:
                 network = block_chains[item[0]]
@@ -148,8 +153,12 @@ class NFTMashupSource(DataSource[str]):
             except Exception as e:
                 logger.warning(f"Specified CoinGecko token is not valid: {e}.")
                 return None
-            coingecko_url = f"https://api.coingecko.com/api/v3/coins/{network}/contract/{contract_address}"
-            response = await self.fetch(coingecko_url)
+
+            urls.append(coingecko_url.format(network=network, contract_address=contract_address))
+
+        responses = await self.fetch_urls(urls=urls)
+        token_mcaps = []
+        for response in responses:
             if response is not None:
                 try:
                     market_cap = response["market_data"]["market_cap"][self.currency.lower()]
@@ -160,20 +169,21 @@ class NFTMashupSource(DataSource[str]):
             else:
                 return None
 
-        return token_mcaps
+        return sum(token_mcaps)
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[Any]:
         """Fetch new data point from NFTGo API."""
-        collections_mcaps = await self.fetch_nftgo()
+        collections_mcaps = await self.fetch_collections_mcap()
         if collections_mcaps is None:
             logger.warning("Failed to fetch from NFTGo collections list market caps.")
             return None, None
-        tokens_mcaps = await self.fetch_coingecko_api()
+
+        tokens_mcaps = await self.fetch_tokens_mcap()
         if tokens_mcaps is None:
             logger.warning("Failed to fetch from CoinGecko tokens list market caps.")
             return None, None
-        sum_mcap = sum(collections_mcaps + tokens_mcaps)
-        datapoint = (round(sum_mcap), datetime_now_utc())
+        total_mcap = collections_mcaps + tokens_mcaps
+        datapoint = (round(total_mcap), datetime_now_utc())
         self.store_datapoint(datapoint)
         return datapoint
 

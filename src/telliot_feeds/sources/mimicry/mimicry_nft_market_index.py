@@ -50,36 +50,16 @@ class NFTGoSource(DataSource[str]):
                 try:
                     response = session.get(url, params=params, timeout=(5, 10))  # type: ignore
                     response.raise_for_status()
-                    data = response.json()
-                except HTTPError as e:
-                    logger.error(f"Request failed with HTTP error: {e}.")
-                    return None
-                except Timeout as e:
+                except (HTTPError, Timeout, ConnectionError, RequestException) as e:
                     if i == retries - 1:
-                        logger.error(f"Request timed out after {e}.")
+                        logger.error(f"Request errored: {e}.")
                         return None
                     else:
                         backoff = 2**i
-                        logger.warning(f"Request timed out after {e}. Retrying in {backoff} seconds...")
-                        time.sleep(backoff)
-                except ConnectionError as e:
-                    if i == retries - 1:
-                        logger.error(f"Request failed due to network error: {e}.")
-                        return None
-                    else:
-                        backoff = 2**i
-                        logger.warning(f"Request failed due to network error: {e}. Retrying in {backoff} seconds...")
-                        time.sleep(backoff)
-                except RequestException as e:
-                    if i == retries - 1:
-                        logger.error(f"Request failed with unknown error: {e}.")
-                        return None
-                    else:
-                        backoff = 2**i
-                        logger.warning(f"Request failed with unknown error: {e}. Retrying in {backoff} seconds...")
+                        logger.warning(f"Request errored: {e}. Retrying in {backoff} seconds...")
                         time.sleep(backoff)
         try:
-            collection = data["collections"]
+            collection = response.json()["collections"]
             return collection
         except (JSONDecodeError, KeyError) as e:
             logger.error(f"Response JSON decode error: {e}.")
