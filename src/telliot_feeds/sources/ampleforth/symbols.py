@@ -1,8 +1,10 @@
 """
 Get all bitfinex symbols: https://api.bitfinex.com/v2/conf/pub:list:pair:exchange
 """
+from typing import Any
 
-SYMBOLS = {
+
+SYMBOLS: dict[str, Any] = {
     "AMPL_USD": {
         "bitFinexSymbol": "tAMPUSD",
     },
