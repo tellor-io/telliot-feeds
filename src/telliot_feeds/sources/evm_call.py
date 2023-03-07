@@ -5,6 +5,7 @@ from typing import Optional
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
 from web3 import Web3
+from web3.exceptions import ContractLogicError
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
@@ -55,6 +56,10 @@ class EVMCallSource(DataSource[Any]):
 
         try:
             result = self.web3.eth.call({"gasPrice": 0, "to": self.contractAddress, "data": self.calldata}, "latest")
+        # Is there a scenario where a contract call for a view/pure function would revert when the callData is valid?
+        except ContractLogicError as e:
+            logger.warning(f"ContractLogicError perhaps bad calldata: {e}")
+            result = HexBytes(bytes(32))
         except Exception as e:
             if e.__module__.startswith("web3"):
                 logger.warning(f"Web3 exception occurred: {e}")
@@ -65,7 +70,11 @@ class EVMCallSource(DataSource[Any]):
             raise ValueError(f"Result is not bytes: {str(result)}")
 
         if result == HexBytes("0x"):
-            logger.info("Result is empty bytes, likely tried to call a non-view function")
+            # TODO: should the result be empty bytes instead of returning None None?
+            # wrong contract address or non-view function return empty bytes
+            # are there other scenarios where this would happen? where the call spec is valid but the call fails?
+            # result = HexBytes(bytes(32))
+            logger.info("Result is empty bytes, either call was to a non-view function or a wrong contract address")
             return (None, None)
 
         logger.info(f"EVMCallSource result bytes: {result.hex()}")
