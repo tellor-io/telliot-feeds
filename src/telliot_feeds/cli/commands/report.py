@@ -1,4 +1,3 @@
-import getpass
 from typing import Any
 from typing import Optional
 
@@ -321,13 +320,6 @@ async def report(
         return
 
     ctx.obj["CHAIN_ID"] = accounts[0].chains[0]  # used in reporter_cli_core
-
-    if signature_account is not None:
-        try:
-            if not signature_password:
-                signature_password = getpass.getpass(f"Enter password for {signature_account} keyfile: ")
-        except ValueError:
-            click.echo("Invalid Password")
 
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
