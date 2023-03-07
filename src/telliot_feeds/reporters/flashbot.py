@@ -117,7 +117,7 @@ class FlashbotsReporter(Tellor360Reporter):
                     return None, error_status("Unable to suggest fees for type 2 txn", log=logger.error)
                 base_fee = fee_info[0].suggestBaseFee
                 priority_fee = fee_info[0].SafeGasPrice if not self.priority_fee else self.priority_fee
-                max_fee = int(self.priority_fee + base_fee)
+                max_fee = int(priority_fee + base_fee)
             else:
                 max_fee = self.max_fee
                 priority_fee = self.priority_fee
