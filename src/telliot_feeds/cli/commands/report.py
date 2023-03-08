@@ -105,7 +105,7 @@ def reporter() -> None:
     "max_fee",
     help="use custom maxFeePerGas (gwei)",
     nargs=1,
-    type=int,
+    type=float,
     required=False,
 )
 @click.option(
@@ -146,7 +146,7 @@ def reporter() -> None:
     type=click.UNPROCESSED,
     required=False,
     callback=valid_transaction_type,
-    default=0,
+    default=2,
 )
 @click.option(
     "-wp",
@@ -286,7 +286,7 @@ async def report(
     build_feed: bool,
     tx_type: int,
     gas_limit: int,
-    max_fee: Optional[int],
+    max_fee: Optional[float],
     priority_fee: Optional[float],
     legacy_gas_price: Optional[int],
     expected_profit: str,
@@ -320,7 +320,9 @@ async def report(
         return
 
     ctx.obj["CHAIN_ID"] = accounts[0].chains[0]  # used in reporter_cli_core
-
+    # if max_fee flag is set, then priority_fee must also be set
+    if (max_fee is not None and priority_fee is None) or (max_fee is None and priority_fee is not None):
+        raise click.UsageError("Must specify both max fee and priority fee")
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
@@ -341,7 +343,7 @@ async def report(
         if signature_account is not None:
             sig_account = find_accounts(name=signature_account)[0]
             if not sig_account.is_unlocked:
-                sig_account.unlock(password)
+                sig_account.unlock(signature_password)
             sig_acct_addr = to_checksum_address(sig_account.address)
         else:
             sig_acct_addr = ""

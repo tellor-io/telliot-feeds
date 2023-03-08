@@ -40,8 +40,8 @@ class CustomXReporter(IntervalReporter):
         expected_profit: Union[str, float] = 100.0,
         transaction_type: int = 0,
         gas_limit: Optional[int] = None,
-        max_fee: int = 0,
-        priority_fee: float = 0.0,
+        max_fee: Optional[float] = None,
+        priority_fee: Optional[float] = None,
         legacy_gas_price: Optional[int] = None,
     ) -> None:
 
@@ -188,16 +188,9 @@ class CustomXReporter(IntervalReporter):
 
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:
-            if not self.max_fee:
-                fee_info = await self.get_fee_info()
-                if fee_info[0] is None:
-                    return None, error_status("Unable to suggestFees", log=logger.error)
-                base_fee = fee_info[0].suggestBaseFee
-                priority_fee = fee_info[0].SafeGasPrice if not self.priority_fee else self.priority_fee
-                max_fee = int(self.priority_fee + base_fee)
-            else:
-                max_fee = self.max_fee
-                priority_fee = self.priority_fee
+            priority_fee, max_fee = self.get_fee_info()
+            if priority_fee is None or max_fee is None:
+                return None, error_status("Unable to suggest type 2 txn fees", log=logger.error)
 
             # Set gas price to max fee used for profitability check
             self.gas_info["type"] = 2

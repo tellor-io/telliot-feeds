@@ -279,18 +279,16 @@ class DIVAProtocolReporter(Tellor360Reporter):
 
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:
-            logger.info(f"maxFeePerGas: {self.max_fee}")
-            logger.info(f"maxPriorityFeePerGas: {self.priority_fee}")
+            priority_fee, max_fee = self.get_fee_info()
+            if priority_fee is None or max_fee is None:
+                return None, error_status("Unable to suggest type 2 txn fees", log=logger.error)
 
             built_submit_val_tx = submit_val_tx.buildTransaction(
                 {
                     "nonce": acc_nonce,
                     "gas": gas_limit,
-                    "maxFeePerGas": Web3.toWei(self.max_fee, "gwei"),
-                    # TODO: Investigate more why etherscan txs using Flashbots have
-                    # the same maxFeePerGas and maxPriorityFeePerGas. Example:
-                    # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288 # noqa: E501
-                    "maxPriorityFeePerGas": Web3.toWei(self.priority_fee, "gwei"),  # noqa: E501
+                    "maxFeePerGas": Web3.toWei(max_fee, "gwei"),
+                    "maxPriorityFeePerGas": Web3.toWei(priority_fee, "gwei"),
                     "chainId": self.chain_id,
                 }
             )

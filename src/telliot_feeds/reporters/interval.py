@@ -15,16 +15,14 @@ from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
+from web3._utils.fee_utils import _fee_history_priority_fee_estimate
 from web3.contract import ContractFunction
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
-from telliot_feeds.sources.etherscan_gas import EtherscanGasPrice
-from telliot_feeds.sources.etherscan_gas import EtherscanGasPriceSource
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import has_native_token_funds
 from telliot_feeds.utils.reporter_utils import is_online
@@ -50,8 +48,8 @@ class IntervalReporter:
         expected_profit: Union[str, float] = 100.0,
         transaction_type: int = 0,
         gas_limit: Optional[int] = None,
-        max_fee: int = 0,
-        priority_fee: float = 0.0,
+        max_fee: Optional[float] = None,
+        priority_fee: Optional[float] = None,
         legacy_gas_price: Optional[int] = None,
         gas_multiplier: int = 1,
         wait_period: int = 10,
@@ -274,12 +272,26 @@ class IntervalReporter:
 
         return status
 
-    async def get_fee_info(self) -> OptionalDataPoint[EtherscanGasPrice]:
-        """Fetch fee into from Etherscan API.
-        Source: https://etherscan.io/apis"""
-        c = EtherscanGasPriceSource()
-        result = await c.fetch_new_datapoint()
-        return result
+    def get_fee_info(self) -> Tuple[Optional[float], Optional[float]]:
+        """Calculate max fee and priority fee if not set
+        for more info:
+            https://web3py.readthedocs.io/en/v5/web3.eth.html?highlight=fee%20history#web3.eth.Eth.fee_history
+        """
+        if self.max_fee is None:
+            try:
+                fee_history = self.web3.eth.fee_history(
+                    block_count=5, newest_block="latest", reward_percentiles=[25, 50, 75]
+                )
+                # "base fee for the next block after the newest of the returned range"
+                base_fee = fee_history.baseFeePerGas[-1] / 1e9
+                # estimate priority fee from fee history
+                priority_fee = _fee_history_priority_fee_estimate(fee_history) / 1e9
+                max_fee = base_fee + priority_fee
+                return priority_fee, max_fee
+            except Exception as e:
+                logger.warning(f"Error in calculating gas fees: {e}")
+                return None, None
+        return self.priority_fee, self.max_fee
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         if self.datafeed is None:
@@ -402,17 +414,9 @@ class IntervalReporter:
             return None, nonce_status
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:
-            if not self.max_fee:
-                fee_info = await self.get_fee_info()
-                if fee_info[0] is None:
-                    return None, error_status("Unable to suggest type 2 txn fees", log=logger.error)
-                base_fee = fee_info[0].suggestBaseFee
-                priority_fee = fee_info[0].SafeGasPrice if not self.priority_fee else self.priority_fee
-                max_fee = int(priority_fee + base_fee)
-            else:
-                max_fee = self.max_fee
-                priority_fee = self.priority_fee
-
+            priority_fee, max_fee = self.get_fee_info()
+            if priority_fee is None or max_fee is None:
+                return None, error_status("Unable to suggest type 2 txn fees", log=logger.error)
             # Set gas price to max fee used for profitability check
             self.gas_info["type"] = 2
             self.gas_info["max_fee"] = max_fee

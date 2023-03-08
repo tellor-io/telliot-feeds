@@ -32,7 +32,7 @@ def print_reporter_settings(
     priority_fee: Optional[float],
     expected_profit: str,
     chain_id: int,
-    max_fee: Optional[int],
+    max_fee: Optional[float],
     transaction_type: int,
     legacy_gas_price: Optional[int],
     reporting_diva_protocol: bool,

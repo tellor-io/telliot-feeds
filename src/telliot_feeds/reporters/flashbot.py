@@ -111,16 +111,9 @@ class FlashbotsReporter(Tellor360Reporter):
 
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:
-            if not self.max_fee:
-                fee_info = await self.get_fee_info()
-                if fee_info[0] is None:
-                    return None, error_status("Unable to suggest fees for type 2 txn", log=logger.error)
-                base_fee = fee_info[0].suggestBaseFee
-                priority_fee = fee_info[0].SafeGasPrice if not self.priority_fee else self.priority_fee
-                max_fee = int(priority_fee + base_fee)
-            else:
-                max_fee = self.max_fee
-                priority_fee = self.priority_fee
+            priority_fee, max_fee = self.get_fee_info()
+            if priority_fee is None or max_fee is None:
+                return None, error_status("Unable to suggest type 2 txn fees", log=logger.error)
 
             logger.info(f"maxFeePerGas: {max_fee}")
             logger.info(f"maxPriorityFeePerGas: {priority_fee}")
