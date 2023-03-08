@@ -168,3 +168,14 @@ def get_native_token_feed(chain_id: int) -> DataFeed[float]:
         return xdai_usd_median_feed
     else:
         raise ValueError(f"Cannot fetch native token feed. Invalid chain ID: {chain_id}")
+
+
+def tkn_symbol(chain_id: int) -> str:
+    if chain_id in POLYGON_CHAINS:
+        return "MATIC"
+    elif chain_id in GNOSIS_CHAINS:
+        return "XDAI"
+    elif chain_id in ETHEREUM_CHAINS:
+        return "ETH"
+    else:
+        return "Unknown native token"

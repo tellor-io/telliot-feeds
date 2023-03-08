@@ -1,4 +1,3 @@
-import getpass
 from typing import Any
 from typing import Optional
 
@@ -99,7 +98,6 @@ def reporter() -> None:
     help="use custom gas limit",
     nargs=1,
     type=int,
-    default=350000,
 )
 @click.option(
     "--max-fee",
@@ -107,7 +105,7 @@ def reporter() -> None:
     "max_fee",
     help="use custom maxFeePerGas (gwei)",
     nargs=1,
-    type=int,
+    type=float,
     required=False,
 )
 @click.option(
@@ -116,7 +114,7 @@ def reporter() -> None:
     "priority_fee",
     help="use custom maxPriorityFeePerGas (gwei)",
     nargs=1,
-    type=int,
+    type=float,
     required=False,
 )
 @click.option(
@@ -148,19 +146,7 @@ def reporter() -> None:
     type=click.UNPROCESSED,
     required=False,
     callback=valid_transaction_type,
-    default=0,
-)
-@click.option(
-    "--gas-price-speed",
-    "-gps",
-    "gas_price_speed",
-    help="gas price speed for eth gas station API",
-    nargs=1,
-    type=click.Choice(
-        ["safeLow", "average", "fast", "fastest"],
-        case_sensitive=True,
-    ),
-    default="fast",
+    default=2,
 )
 @click.option(
     "-wp",
@@ -279,6 +265,15 @@ def reporter() -> None:
     default=False,
     help="Reporter will use a random datafeed from the catalog.",
 )
+@click.option(
+    "--gas-multiplier",
+    "-gm",
+    "gas_multiplier",
+    help="increase gas price by this percentage (default 1%) ie 5 = 5%",
+    nargs=1,
+    type=int,
+    default=1,  # 1% above the gas price by web3
+)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pwd", "--password", type=str)
@@ -291,13 +286,12 @@ async def report(
     build_feed: bool,
     tx_type: int,
     gas_limit: int,
-    max_fee: Optional[int],
-    priority_fee: Optional[int],
+    max_fee: Optional[float],
+    priority_fee: Optional[float],
     legacy_gas_price: Optional[int],
     expected_profit: str,
     submit_once: bool,
     wait_period: int,
-    gas_price_speed: str,
     reporting_diva_protocol: bool,
     diva_diamond_address: Optional[str],
     diva_middleware_address: Optional[str],
@@ -315,6 +309,7 @@ async def report(
     signature_account: str,
     check_rewards: bool,
     use_random_feeds: bool,
+    gas_multiplier: int,
 ) -> None:
     """Report values to Tellor oracle"""
     ctx.obj["ACCOUNT_NAME"] = account_str
@@ -325,14 +320,9 @@ async def report(
         return
 
     ctx.obj["CHAIN_ID"] = accounts[0].chains[0]  # used in reporter_cli_core
-
-    if signature_account is not None:
-        try:
-            if not signature_password:
-                signature_password = getpass.getpass(f"Enter password for {signature_account} keyfile: ")
-        except ValueError:
-            click.echo("Invalid Password")
-
+    # if max_fee flag is set, then priority_fee must also be set
+    if (max_fee is not None and priority_fee is None) or (max_fee is None and priority_fee is not None):
+        raise click.UsageError("Must specify both max fee and priority fee")
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
@@ -353,7 +343,7 @@ async def report(
         if signature_account is not None:
             sig_account = find_accounts(name=signature_account)[0]
             if not sig_account.is_unlocked:
-                sig_account.unlock(password)
+                sig_account.unlock(signature_password)
             sig_acct_addr = to_checksum_address(sig_account.address)
         else:
             sig_acct_addr = ""
@@ -393,7 +383,6 @@ async def report(
             legacy_gas_price=legacy_gas_price,
             expected_profit=expected_profit,
             chain_id=core.config.main.chain_id,
-            gas_price_speed=gas_price_speed,
             reporting_diva_protocol=reporting_diva_protocol,
             stake_amount=stake,
             min_native_token_balance=min_native_token_balance,
@@ -447,7 +436,6 @@ async def report(
             "max_fee": max_fee,
             "priority_fee": priority_fee,
             "legacy_gas_price": legacy_gas_price,
-            "gas_price_speed": gas_price_speed,
             "chain_id": core.config.main.chain_id,
             "wait_period": wait_period,
             "oracle": contracts.oracle,
@@ -459,6 +447,7 @@ async def report(
             "min_native_token_balance": int(min_native_token_balance * 10**18),
             "check_rewards": check_rewards,
             "use_random_feeds": use_random_feeds,
+            "gas_multiplier": gas_multiplier,
         }
 
         if sig_acct_addr:
