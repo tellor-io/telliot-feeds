@@ -304,7 +304,7 @@ class TellorFlexReporter(IntervalReporter):
                 f"""
 
                 Tips: {tip/1e18}
-                Max transaction fee: {self.web3.fromWei(txn_fee, 'gwei')} {tkn_symbol(self.chain_id)}
+                Max transaction fee: {self.web3.fromWei(txn_fee, 'gwei'):.18f} {tkn_symbol(self.chain_id)}
                 Max fee per gas: {gas_info["max_fee"]} gwei
                 Max priority fee per gas: {gas_info["priority_fee"]} gwei
                 Gas limit: {gas_info["gas_limit"]}
