@@ -25,7 +25,10 @@ logger = get_logger(__name__)
 
 @dataclass
 class NFTGoSource(DataSource[str]):
-    """DataSource for NFTGo expected response data."""
+    """DataSource for NFTGo expected response data.
+    For testing purposes this endpoint can be used to check the numbers:
+    https://runkit.io/aslangoldenhour/calculate-nft-market-index-via-nftgo/branches/master?queryData
+    """
 
     metric_currency: Optional[str] = None
     api_key = TelliotConfig().api_keys.find(name="nftgo")[0].key

@@ -26,6 +26,8 @@ block_chains = {"ethereum-mainnet": "ethereum", "solana-mainnet": "solana"}
 class NFTMashupSource(DataSource[str]):
     """
     DataSource for NFT market-cap mash up expected response data.
+    For testing purposes this endpoint can be used to check the numbers:
+    https://runkit.io/aslangoldenhour/macro-market-mashup/branches/master?queryData=<queryData>
     """
 
     api_key = TelliotConfig().api_keys.find(name="nftgo")[0].key
