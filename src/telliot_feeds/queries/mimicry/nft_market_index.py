@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class MimicryNFTMarketIndex(AbiQuery):
-    """Returns the market capitalization metric derived
+    """Returns the market capitalization metric derived by summing the top 50 NFT collections'
+    sales data on a particular chain
 
     Attributes:
         chain: Mainnet blockchain name that NFT collections live on (e.g. ethereum, solana, etc.)

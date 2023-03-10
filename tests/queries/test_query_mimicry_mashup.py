@@ -5,24 +5,15 @@ Distributed under the terms of the MIT License.
 """
 from eth_abi import decode_abi
 
-from telliot_feeds.queries.mimicry.mimicry_macro_market_mash_up import MimicryMacroMarketMashup
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import COLLECTIONS
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import TOKENS
+from telliot_feeds.queries.mimicry.macro_market_mash_up import MimicryMacroMarketMashup
 
 # example data from spec example
 # see: https://github.com/tellor-io/dataSpecs/blob/main/types/MimicryMacroMarketMashup.md
-metric = "market-cap"
-currency = "usd"
-collections = [
-    ["ethereum-mainnet", "0x50f5474724e0ee42d9a4e711ccfb275809fd6d4a"],
-    ["ethereum-mainnet", "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d"],
-    ["ethereum-mainnet", "0x34d85c9cdeb23fa97cb08333b511ac86e1c4e258"],
-]
-tokens = [
-    ["ethereum-mainnet", "sand", "0x3845badade8e6dff049820680d1f14bd3903a5d0"],
-    ["ethereum-mainnet", "mana", "0x0f5d2fb29fb7d3cfee444a200298f468908cc942"],
-    ["ethereum-mainnet", "ape", "0x4d224452801aced8b2f0aebe155379bb5d594381"],
-]
 
-q = MimicryMacroMarketMashup(metric=metric, currency=currency, collections=collections, tokens=tokens)
+
+q = MimicryMacroMarketMashup(metric="market-cap", currency="usd", collections=COLLECTIONS, tokens=TOKENS)
 
 
 def test_query_constructor():
@@ -38,10 +29,10 @@ def test_query_constructor():
     assert query_type == "MimicryMacroMarketMashup"
 
     query: MimicryMacroMarketMashup = q.get_query_from_data(q.query_data)
-    assert query.metric == metric
-    assert query.currency == currency
-    assert query.collections == collections
-    assert query.tokens == tokens
+    assert query.metric == "market-cap"
+    assert query.currency == "usd"
+    assert query.collections == COLLECTIONS
+    assert query.tokens == TOKENS
 
 
 def test_encode_decode_reported_val():

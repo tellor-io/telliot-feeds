@@ -1,7 +1,5 @@
 import logging
 from dataclasses import dataclass
-from typing import Any
-from typing import Optional
 
 from telliot_feeds.dtypes.value_type import ValueType
 from telliot_feeds.queries.abi_query import AbiQuery
@@ -25,10 +23,10 @@ class MimicryMacroMarketMashup(AbiQuery):
     https://github.com/tellor-io/dataSpecs/blob/main/types/MimicryMacroMarketMashup.md
     """
 
-    metric: Optional[str]
-    currency: Optional[str]
-    collections: Optional[Any]
-    tokens: Optional[Any]
+    metric: str
+    currency: str
+    collections: list[tuple[str, str]]
+    tokens: list[tuple[str, str, str]]
 
     #: ABI used for encoding/decoding parameters
     abi = [

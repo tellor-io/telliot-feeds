@@ -1,10 +1,8 @@
 import asyncio
-import time
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
 
-from requests import JSONDecodeError
 from requests.adapters import HTTPAdapter
 from requests.adapters import Retry
 from requests.exceptions import ConnectionError
@@ -22,6 +20,9 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
+retry_strat = Retry(total=3, backoff_factor=0.5, status_forcelist=[500, 502, 503, 504])
+adapter = HTTPAdapter(max_retries=retry_strat)
+
 
 @dataclass
 class NFTGoSource(DataSource[str]):
@@ -31,50 +32,46 @@ class NFTGoSource(DataSource[str]):
     """
 
     metric_currency: Optional[str] = None
-    api_key = TelliotConfig().api_keys.find(name="nftgo")[0].key
 
-    async def fetch_nftgo_api(self, retries: int = 3) -> Optional[Any]:
+    async def fetch_nftgo_api(self) -> Optional[Any]:
         """
         Request NFTGo data from the api
         """
-
+        api_key = TelliotConfig().api_keys.find(name="nftgo")
+        if not api_key:
+            logger.info("API key required for NFTGo API to fetch collection market cap.")
+            return None
         url = "https://data-api.nftgo.io/eth/v1/market/rank/collection/all"
-        headers = {"X-API-KEY": self.api_key, "accept": "application/json"}
+        headers = {"X-API-KEY": api_key[0].key, "accept": "application/json"}
         params = {"by": "market_cap", "with_rarity": "false", "asc": "false", "offset": 0, "limit": 50}
 
         with Session() as session:
             session.headers.update(headers)
-            retry_strat = Retry(total=retries, backoff_factor=0.5, status_forcelist=[500, 502, 503, 504])
-            adapter = HTTPAdapter(max_retries=retry_strat)
             session.mount("https://", adapter)
-            for i in range(retries):
-                try:
-                    response = session.get(url, params=params, timeout=(5, 10))  # type: ignore
-                    response.raise_for_status()
-                except (HTTPError, Timeout, ConnectionError, RequestException) as e:
-                    if i == retries - 1:
-                        logger.error(f"Request errored: {e}.")
-                        return None
-                    else:
-                        backoff = 2**i
-                        logger.warning(f"Request errored: {e}. Retrying in {backoff} seconds...")
-                        time.sleep(backoff)
+            try:
+                response = session.get(url, params=params, timeout=(5, 10))  # type: ignore
+                response.raise_for_status()
+            except (HTTPError, Timeout, ConnectionError, RequestException) as e:
+                logger.error(f"Request errored: {e}.")
+                return None
+
         try:
             collection = response.json()["collections"]
             return collection
-        except (JSONDecodeError, KeyError) as e:
-            logger.error(f"Response JSON decode error: {e}.")
+        except KeyError as e:
+            logger.error(f"Bad API response fetching top 50 collections market caps: {e}.")
             return None
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[Any]:
         """Fetch new data point from NFTGo API."""
         collections = await self.fetch_nftgo_api()
         if collections is None:
+            logger.error("Failed to fetch collections details from NFTGo API.")
             return None, None
         try:
             market_cap = sum(cap[self.metric_currency] for cap in collections)
         except Exception as e:
-            logger.error(f"Failed to parse NFTGo response: {e}")
+            logger.error(f"Failed to calculate total market cap for top 50 collections: {e}")
             return None, None
         datapoint = (market_cap, datetime_now_utc())
         self.store_datapoint(datapoint)

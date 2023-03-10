@@ -1,3 +1,5 @@
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import COLLECTIONS
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import TOKENS
 from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AmpleforthCustomSpotPrice
 from telliot_feeds.queries.ampleforth.uspce import AmpleforthUSPCE
 from telliot_feeds.queries.catalog import Catalog
@@ -5,9 +7,9 @@ from telliot_feeds.queries.daily_volatility import DailyVolatility
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.queries.evm_call import EVMCall
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
-from telliot_feeds.queries.mimicry.mimicry import MimicryCollectionStat
-from telliot_feeds.queries.mimicry.mimicry_macro_market_mash_up import MimicryMacroMarketMashup
-from telliot_feeds.queries.mimicry.mimicry_nft_market_index import MimicryNFTMarketIndex
+from telliot_feeds.queries.mimicry.collection_stat import MimicryCollectionStat
+from telliot_feeds.queries.mimicry.macro_market_mash_up import MimicryMacroMarketMashup
+from telliot_feeds.queries.mimicry.nft_market_index import MimicryNFTMarketIndex
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.queries.price.twap import TWAP
@@ -310,21 +312,10 @@ query_catalog.add_entry(
     q=MimicryNFTMarketIndex(chain="ethereum", currency="eth"),
     active=True,
 )
-metric = "market-cap"
-currency = "usd"
-collections = (
-    ("ethereum-mainnet", "0x50f5474724e0ee42d9a4e711ccfb275809fd6d4a"),
-    ("ethereum-mainnet", "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d"),
-    ("ethereum-mainnet", "0x34d85c9cdeb23fa97cb08333b511ac86e1c4e258"),
-)
-tokens = (
-    ("ethereum-mainnet", "sand", "0x3845badAde8e6dFF049820680d1F14bD3903a5d0"),
-    ("ethereum-mainnet", "mana", "0x0F5D2fB29fb7d3CFeE444a200298f468908cC942"),
-    ("ethereum-mainnet", "ape", "0x4d224452801ACEd8B2F0aebE155379bb5D594381"),
-)
+
 query_catalog.add_entry(
     tag="mimicry-mashup-example",
     title="NFT market cap mashup",
-    q=MimicryMacroMarketMashup(metric=metric, currency=currency, collections=collections, tokens=tokens),
+    q=MimicryMacroMarketMashup(metric="market-cap", currency="usd", collections=COLLECTIONS, tokens=TOKENS),
     active=True,
 )

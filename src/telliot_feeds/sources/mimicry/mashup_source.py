@@ -30,11 +30,10 @@ class NFTMashupSource(DataSource[str]):
     https://runkit.io/aslangoldenhour/macro-market-mashup/branches/master?queryData=<queryData>
     """
 
-    api_key = TelliotConfig().api_keys.find(name="nftgo")[0].key
     metric: Optional[str] = None  # ("market_cap")
     currency: Optional[str] = None  # ("usd")
-    collections: Optional[Any] = None  # ("chain-name", "contract-address")
-    tokens: Optional[Any] = None  # ("chain-name", "token-symbol", "contract-address")
+    collections: Optional[list[tuple[str, str]]] = None  # ("chain-name", "contract-address")
+    tokens: Optional[list[tuple[str, str, str]]] = None  # ("chain-name", "token-symbol", "contract-address")
 
     async def fetch(self, url: str, headers: Optional[dict[str, str]]) -> Optional[Any]:
         """
@@ -107,8 +106,13 @@ class NFTMashupSource(DataSource[str]):
             logger.info("No NFTGo collections specified.")
             return None
 
+        api_key = TelliotConfig().api_keys.find(name="nftgo")
+        if not api_key:
+            logger.info("API key required for NFTGo source to fetch collection market cap.")
+            return None
+
         nftgo_url = "https://data-api.nftgo.io/eth/v1/collection/{contract_address}/metrics"
-        headers = {"X-API-KEY": self.api_key, "accept": "application/json"}
+        headers = {"X-API-KEY": api_key[0].key, "accept": "application/json"}
 
         urls = []
         for item in self.collections:
@@ -122,13 +126,16 @@ class NFTMashupSource(DataSource[str]):
         responses = await self.fetch_urls(urls=urls, headers=headers)
         collection_mcaps = []
         metric = f"{self.metric}_{self.currency}".replace("-", "_")
-        for response in responses:
+        for idx, response in enumerate(responses):
             if response is not None:
                 try:
                     market_cap = response[metric]
                     collection_mcaps.append(market_cap)
                 except KeyError as e:
-                    logger.warning(f"Failed to parse NFTGo response, keyerror: {e}.")
+                    logger.warning(
+                        f"Failed to fetch collection's: {self.collections[idx]} "
+                        f"market cap, metric: ({metric}), not found: {e}."
+                    )
                     return None
             else:
                 return None
@@ -166,7 +173,7 @@ class NFTMashupSource(DataSource[str]):
                     market_cap = response["market_data"]["market_cap"][self.currency.lower()]
                     token_mcaps.append(market_cap)
                 except Exception as e:
-                    logger.warning(f"Failed to parse CoinGecko response: {e}.")
+                    logger.warning(f"Failed to fetch token's market cap: {e}.")
                     return None
             else:
                 return None
@@ -176,14 +183,14 @@ class NFTMashupSource(DataSource[str]):
     async def fetch_new_datapoint(self) -> OptionalDataPoint[Any]:
         """Fetch new data point from NFTGo API."""
         collections_mcaps = await self.fetch_collections_mcap()
-        if collections_mcaps is None:
-            logger.warning("Failed to fetch from NFTGo collections list market caps.")
+        tokens_mcaps = await self.fetch_tokens_mcap()
+
+        if collections_mcaps is None or tokens_mcaps is None:
+            logger.warning(
+                f"Failed to fetch all market caps. tokens = {tokens_mcaps}, collections = {collections_mcaps}"
+            )
             return None, None
 
-        tokens_mcaps = await self.fetch_tokens_mcap()
-        if tokens_mcaps is None:
-            logger.warning("Failed to fetch from CoinGecko tokens list market caps.")
-            return None, None
         total_mcap = collections_mcaps + tokens_mcaps
         datapoint = (round(total_mcap), datetime_now_utc())
         self.store_datapoint(datapoint)
@@ -191,19 +198,13 @@ class NFTMashupSource(DataSource[str]):
 
 
 if __name__ == "__main__":
+    from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import COLLECTIONS, TOKENS
+
     get_market_caps = NFTMashupSource(
         metric="market-cap",
         currency="usd",
-        collections=(
-            ("ethereum-mainnet", "0x50f5474724e0ee42d9a4e711ccfb275809fd6d4a"),
-            ("ethereum-mainnet", "0xf87e31492faf9a91b02ee0deaad50d51d56d5d4d"),
-            ("ethereum-mainnet", "0x34d85c9cdeb23fa97cb08333b511ac86e1c4e258"),
-        ),
-        tokens=(
-            ("ethereum-mainnet", "sand", "0x3845badAde8e6dFF049820680d1F14bD3903a5d0"),
-            ("ethereum-mainnet", "mana", "0x0F5D2fB29fb7d3CFeE444a200298f468908cC942"),
-            ("ethereum-mainnet", "ape", "0x4d224452801ACEd8B2F0aebE155379bb5D594381"),
-        ),
+        collections=COLLECTIONS,  # type: ignore
+        tokens=TOKENS,  # type: ignore
     )
 
     print(asyncio.run(get_market_caps.fetch_new_datapoint()))

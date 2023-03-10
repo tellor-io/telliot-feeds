@@ -5,7 +5,7 @@ Distributed under the terms of the MIT License.
 """
 from eth_abi import decode_abi
 
-from telliot_feeds.queries.mimicry.mimicry_nft_market_index import MimicryNFTMarketIndex
+from telliot_feeds.queries.mimicry.nft_market_index import MimicryNFTMarketIndex
 
 # example data from spec example
 # see: https://github.com/tellor-io/dataSpecs/blob/main/types/MimicryNFTMarketIndex.md

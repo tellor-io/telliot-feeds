@@ -33,11 +33,11 @@ from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
 from telliot_feeds.feeds.link_usd_feed import link_usd_median_feed
 from telliot_feeds.feeds.ltc_usd_feed import ltc_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
-from telliot_feeds.feeds.mimicry.mimcry_nft_index_feed import mimicry_nft_market_index_datafeed
-from telliot_feeds.feeds.mimicry.mimcry_nft_index_feed import mimicry_nft_market_index_eth_datafeed
-from telliot_feeds.feeds.mimicry.mimicry_feed import mimicry_collection_stat_datafeed
-from telliot_feeds.feeds.mimicry.mimicry_feed import mimicry_example_feed
-from telliot_feeds.feeds.mimicry.mimicry_macro_market_mashup_feed_example import mimicry_mashup_feed_example
+from telliot_feeds.feeds.mimicry.collection_stat_feed import mimicry_collection_stat_feed
+from telliot_feeds.feeds.mimicry.collection_stat_feed import mimicry_example_feed
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import mimicry_mashup_example_feed
+from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_eth_feed
+from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_usd_feed
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
@@ -115,9 +115,9 @@ CATALOG_FEEDS = {
     "usdt-usd-spot": usdt_usd_median_feed,
     "yfi-usd-spot": yfi_usd_median_feed,
     "mimicry-crypto-coven-tami": mimicry_example_feed,
-    "mimicry-nft-index-usd": mimicry_nft_market_index_datafeed,
-    "mimicry-nft-index-eth": mimicry_nft_market_index_eth_datafeed,
-    "mimicry-mashup-example": mimicry_mashup_feed_example,
+    "mimicry-nft-index-usd": mimicry_nft_market_index_usd_feed,
+    "mimicry-nft-index-eth": mimicry_nft_market_index_eth_feed,
+    "mimicry-mashup-example": mimicry_mashup_example_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
@@ -134,6 +134,6 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "TellorRNGManualResponse": tellor_rng_manual_feed,
     "AmpleforthCustomSpotPrice": ampl_usd_vwap_feed,
     "AmpleforthUSPCE": uspce_feed,
-    "MimicryCollectionStat": mimicry_collection_stat_datafeed,
+    "MimicryCollectionStat": mimicry_collection_stat_feed,
     "EVMCall": evm_call_feed,
 }
