@@ -369,7 +369,7 @@ async def report(
                 return
             chosen_feed = None
         elif rng_timestamp is not None:
-            chosen_feed = await assemble_rng_datafeed(timestamp=rng_timestamp, node=core.endpoint, account=account)
+            chosen_feed = await assemble_rng_datafeed(timestamp=rng_timestamp)
         else:
             chosen_feed = None
 

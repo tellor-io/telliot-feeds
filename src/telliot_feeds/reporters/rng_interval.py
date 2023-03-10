@@ -53,7 +53,7 @@ class RNGReporter(Tellor360Reporter):
             logger.info(status.error)
             return None
 
-        datafeed = await assemble_rng_datafeed(timestamp=rng_timestamp, node=self.endpoint, account=self.account)
+        datafeed = await assemble_rng_datafeed(timestamp=rng_timestamp)
         if datafeed is None:
             msg = "Unable to assemble RNG datafeed"
             error_status(note=msg, log=logger.warning)
