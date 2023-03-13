@@ -15,7 +15,6 @@ from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
-from web3._utils.fee_utils import _fee_history_priority_fee_estimate
 from web3.contract import ContractFunction
 from web3.datastructures import AttributeDict
 
@@ -24,6 +23,7 @@ from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.reporter_utils import fee_history_priority_fee_estimate
 from telliot_feeds.utils.reporter_utils import has_native_token_funds
 from telliot_feeds.utils.reporter_utils import is_online
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
@@ -285,7 +285,7 @@ class IntervalReporter:
                 # "base fee for the next block after the newest of the returned range"
                 base_fee = fee_history.baseFeePerGas[-1] / 1e9
                 # estimate priority fee from fee history
-                priority_fee = _fee_history_priority_fee_estimate(fee_history) / 1e9
+                priority_fee = fee_history_priority_fee_estimate(fee_history) / 1e9
                 max_fee = base_fee + priority_fee
                 return priority_fee, max_fee
             except Exception as e:

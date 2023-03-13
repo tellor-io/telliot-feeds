@@ -16,6 +16,8 @@ from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.tellor.tellorflex.oracle import TellorFlexOracleContract
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
 from web3 import Web3
+from web3.types import FeeHistory
+from web3.types import Wei
 
 from telliot_feeds.constants import ETHEREUM_CHAINS
 from telliot_feeds.constants import FILECOIN_CHAINS
@@ -185,3 +187,29 @@ def tkn_symbol(chain_id: int) -> str:
         return "FIL"
     else:
         return "Unknown native token"
+
+
+PRIORITY_FEE_MAX = 80000000000
+PRIORITY_FEE_MIN = 1000000000
+
+
+def fee_history_priority_fee_estimate(fee_history: FeeHistory) -> int:
+    """Estimate priority fee based on a percentile of the fee history.
+    Adapted from web3.py fee_utils.py
+    """
+    # grab only non-zero fees and average against only that list
+    non_empty_block_fees = [fee[0] for fee in fee_history["reward"] if fee[0] != 0]
+
+    # prevent division by zero in the extremely unlikely case that all fees within the polled fee
+    # history range for the specified percentile are 0
+    divisor = len(non_empty_block_fees) if len(non_empty_block_fees) != 0 else 1
+
+    priority_fee_average_for_percentile = Wei(round(sum(non_empty_block_fees) / divisor))
+
+    return (  # keep estimated priority fee within a max / min range
+        PRIORITY_FEE_MAX
+        if priority_fee_average_for_percentile > PRIORITY_FEE_MAX
+        else PRIORITY_FEE_MIN
+        if priority_fee_average_for_percentile < PRIORITY_FEE_MIN
+        else priority_fee_average_for_percentile
+    )
