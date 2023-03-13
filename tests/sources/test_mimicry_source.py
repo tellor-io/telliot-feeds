@@ -1,3 +1,6 @@
+from unittest import mock
+
+import aiohttp
 import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 
@@ -50,3 +53,23 @@ async def test_fetching_nft_index_mcap():
     else:
         assert isinstance(val, float)
         assert val > 0
+
+
+@pytest.mark.asyncio
+async def test_aiohttp_errors(caplog):
+    source = NFTMashupSource()
+
+    with mock.patch("aiohttp.ClientSession.get", side_effect=aiohttp.ClientError):
+        result = await source.fetch_new_datapoint()
+
+        assert result == (None, None)
+
+    with mock.patch("aiohttp.ClientSession.get", side_effect=aiohttp.ClientConnectionError):
+        result = await source.fetch_new_datapoint()
+
+        assert result == (None, None)
+
+    with mock.patch("aiohttp.ClientSession.get", side_effect=aiohttp.ClientResponseError):
+        result = await source.fetch_new_datapoint()
+
+        assert result == (None, None)
