@@ -18,11 +18,13 @@ from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
 from web3 import Web3
 
 from telliot_feeds.constants import ETHEREUM_CHAINS
+from telliot_feeds.constants import FILECOIN_CHAINS
 from telliot_feeds.constants import GNOSIS_CHAINS
 from telliot_feeds.constants import POLYGON_CHAINS
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feeds.feeds.fil_usd_feed import fil_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.queries.query_catalog import query_catalog
@@ -166,6 +168,8 @@ def get_native_token_feed(chain_id: int) -> DataFeed[float]:
         return matic_usd_median_feed
     elif chain_id in GNOSIS_CHAINS:
         return xdai_usd_median_feed
+    elif chain_id in FILECOIN_CHAINS:
+        return fil_usd_median_feed
     else:
         raise ValueError(f"Cannot fetch native token feed. Invalid chain ID: {chain_id}")
 
@@ -177,5 +181,7 @@ def tkn_symbol(chain_id: int) -> str:
         return "XDAI"
     elif chain_id in ETHEREUM_CHAINS:
         return "ETH"
+    elif chain_id in FILECOIN_CHAINS:
+        return "FIL"
     else:
         return "Unknown native token"
