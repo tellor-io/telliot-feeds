@@ -1,5 +1,5 @@
-from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import COLLECTIONS
-from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import TOKENS
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import COLLECTIONS
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import TOKENS
 from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AmpleforthCustomSpotPrice
 from telliot_feeds.queries.ampleforth.uspce import AmpleforthUSPCE
 from telliot_feeds.queries.catalog import Catalog

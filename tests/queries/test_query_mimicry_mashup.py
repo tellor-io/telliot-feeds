@@ -5,8 +5,8 @@ Distributed under the terms of the MIT License.
 """
 from eth_abi import decode_abi
 
-from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import COLLECTIONS
-from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import TOKENS
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import COLLECTIONS
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import TOKENS
 from telliot_feeds.queries.mimicry.macro_market_mash_up import MimicryMacroMarketMashup
 
 # example data from spec example

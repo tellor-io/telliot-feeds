@@ -198,7 +198,7 @@ class NFTMashupSource(DataSource[str]):
 
 
 if __name__ == "__main__":
-    from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import COLLECTIONS, TOKENS
+    from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import COLLECTIONS, TOKENS
 
     get_market_caps = NFTMashupSource(
         metric="market-cap",

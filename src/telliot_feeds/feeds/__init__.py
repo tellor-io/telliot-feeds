@@ -35,7 +35,7 @@ from telliot_feeds.feeds.ltc_usd_feed import ltc_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.mimicry.collection_stat_feed import mimicry_collection_stat_feed
 from telliot_feeds.feeds.mimicry.collection_stat_feed import mimicry_example_feed
-from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import mimicry_mashup_example_feed
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import mimicry_mashup_example_feed
 from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_eth_feed
 from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_usd_feed
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed

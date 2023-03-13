@@ -4,8 +4,8 @@ import aiohttp
 import pytest
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import COLLECTIONS
-from telliot_feeds.feeds.mimicry.macro_market_mashup_feed_example import TOKENS
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import COLLECTIONS
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import TOKENS
 from telliot_feeds.sources.mimicry.collection_stat import MimicryCollectionStatSource
 from telliot_feeds.sources.mimicry.mashup_source import NFTMashupSource
 from telliot_feeds.sources.mimicry.nft_market_index import NFTGoSource

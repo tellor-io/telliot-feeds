@@ -1,4 +1,3 @@
-"""example feed"""
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.mimicry.macro_market_mash_up import MimicryMacroMarketMashup
 from telliot_feeds.sources.mimicry.mashup_source import NFTMashupSource
@@ -20,4 +19,15 @@ TOKENS = [
 mimicry_mashup_example_feed = DataFeed(
     query=MimicryMacroMarketMashup(metric=METRIC, currency=CURRENCY, collections=COLLECTIONS, tokens=TOKENS),
     source=NFTMashupSource(metric=METRIC, currency=CURRENCY, collections=COLLECTIONS, tokens=TOKENS),
+)
+
+
+metric = None
+currency = None
+collections = None
+tokens = None
+
+mimicry_mashup_feed = DataFeed(
+    query=MimicryMacroMarketMashup(metric=metric, currency=currency, collections=collections, tokens=tokens),
+    source=NFTMashupSource(metric=metric, currency=currency, collections=collections, tokens=tokens),
 )
