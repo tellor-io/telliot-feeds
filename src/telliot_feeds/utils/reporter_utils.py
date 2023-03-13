@@ -189,14 +189,19 @@ def tkn_symbol(chain_id: int) -> str:
         return "Unknown native token"
 
 
-PRIORITY_FEE_MAX = 80000000000
-PRIORITY_FEE_MIN = 1000000000
-
-
-def fee_history_priority_fee_estimate(fee_history: FeeHistory) -> int:
+def fee_history_priority_fee_estimate(fee_history: FeeHistory, priority_fee_max: int) -> int:
     """Estimate priority fee based on a percentile of the fee history.
+
     Adapted from web3.py fee_utils.py
+
+    Args:
+        fee_history: Fee history object returned by web3.eth.fee_history
+        priority_fee_max: Maximum priority fee willing to pay
+
+    Returns:
+        Estimated priority fee in wei
     """
+    priority_fee_min = 1_000_000_000  # 1 gwei
     # grab only non-zero fees and average against only that list
     non_empty_block_fees = [fee[0] for fee in fee_history["reward"] if fee[0] != 0]
 
@@ -207,9 +212,9 @@ def fee_history_priority_fee_estimate(fee_history: FeeHistory) -> int:
     priority_fee_average_for_percentile = Wei(round(sum(non_empty_block_fees) / divisor))
 
     return (  # keep estimated priority fee within a max / min range
-        PRIORITY_FEE_MAX
-        if priority_fee_average_for_percentile > PRIORITY_FEE_MAX
-        else PRIORITY_FEE_MIN
-        if priority_fee_average_for_percentile < PRIORITY_FEE_MIN
+        priority_fee_max
+        if priority_fee_average_for_percentile > priority_fee_max
+        else priority_fee_min
+        if priority_fee_average_for_percentile < priority_fee_min
         else priority_fee_average_for_percentile
     )
