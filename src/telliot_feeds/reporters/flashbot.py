@@ -10,6 +10,7 @@ from chained_accounts import ChainedAccount
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
 from eth_utils import to_checksum_address
+from requests.exceptions import HTTPError
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
@@ -179,7 +180,11 @@ class FlashbotsReporter(Tellor360Reporter):
         #         )
         #     )
         # result = results[-1]
-        result = self.endpoint._web3.flashbots.send_bundle(bundle, target_block_number=block + 1)
+        try:
+            result = self.endpoint._web3.flashbots.send_bundle(bundle, target_block_number=block + 1)
+        except HTTPError as e:
+            msg = "Unable to send bundle to miners due to HTTP error"
+            return None, error_status(note=msg, e=e, log=logger.error)
         logger.info(f"Bundle sent to miners in block {block}")
 
         # Wait for transaction confirmation
