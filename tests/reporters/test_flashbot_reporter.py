@@ -1,6 +1,8 @@
 from unittest import mock
+
 import pytest
 import requests
+
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.reporters.flashbot import FlashbotsReporter
 
@@ -29,6 +31,3 @@ async def test_http_error(tellor_360):
         res, status = await r.report_once()
         assert res is None
         assert not status.ok
-    
-
-
