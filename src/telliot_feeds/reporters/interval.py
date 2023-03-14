@@ -15,7 +15,6 @@ from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
-from web3._utils.fee_utils import _fee_history_priority_fee_estimate
 from web3.contract import ContractFunction
 from web3.datastructures import AttributeDict
 
@@ -24,6 +23,7 @@ from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.reporter_utils import fee_history_priority_fee_estimate
 from telliot_feeds.utils.reporter_utils import has_native_token_funds
 from telliot_feeds.utils.reporter_utils import is_online
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
@@ -52,6 +52,7 @@ class IntervalReporter:
         priority_fee: Optional[float] = None,
         legacy_gas_price: Optional[int] = None,
         gas_multiplier: int = 1,
+        max_priority_fee_range: int = 80,  # 80 gwei
         wait_period: int = 10,
         min_native_token_balance: int = 10**18,
     ) -> None:
@@ -71,6 +72,7 @@ class IntervalReporter:
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
         self.gas_multiplier = gas_multiplier
+        self.max_priority_fee_range = max_priority_fee_range
         self.trb_usd_median_feed = trb_usd_median_feed
         self.eth_usd_median_feed = eth_usd_median_feed
         self.wait_period = wait_period
@@ -285,7 +287,8 @@ class IntervalReporter:
                 # "base fee for the next block after the newest of the returned range"
                 base_fee = fee_history.baseFeePerGas[-1] / 1e9
                 # estimate priority fee from fee history
-                priority_fee = _fee_history_priority_fee_estimate(fee_history) / 1e9
+                priority_fee_max = int(self.max_priority_fee_range * 1e9)  # convert to wei
+                priority_fee = fee_history_priority_fee_estimate(fee_history, priority_fee_max=priority_fee_max) / 1e9
                 max_fee = base_fee + priority_fee
                 return priority_fee, max_fee
             except Exception as e:

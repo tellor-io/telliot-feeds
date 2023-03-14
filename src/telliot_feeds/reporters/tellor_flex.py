@@ -51,6 +51,7 @@ class TellorFlexReporter(IntervalReporter):
         priority_fee: float = 0.0,
         legacy_gas_price: Optional[int] = None,
         gas_multiplier: int = 1,  # 1 percent
+        max_priority_fee_range: int = 80,  # 80 gwei
         wait_period: int = 7,
         min_native_token_balance: int = 10**18,
         check_rewards: bool = True,
@@ -73,6 +74,7 @@ class TellorFlexReporter(IntervalReporter):
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
         self.gas_multiplier = gas_multiplier
+        self.max_priority_fee_range = max_priority_fee_range
         self.autopaytip = 0
         self.staked_amount: Optional[float] = None
         self.qtag_selected = False if self.datafeed is None else True
