@@ -53,6 +53,10 @@ SPOT_PRICE_PAIRS = [
     "UNI/USD",
     "USDT/USD",
     "YFI/USD",
+    "STETH/BTC",
+    "STETH/USD",
+    "RETH/BTC",
+    "RETH/USD",
 ]
 
 
