@@ -9,8 +9,6 @@ reth_btc_median_feed = DataFeed(
         asset="reth",
         currency="btc",
         algorithm="median",
-        sources=[
-            CoinGeckoSpotPriceSource(asset="reth", currency="btc")
-        ],
+        sources=[CoinGeckoSpotPriceSource(asset="reth", currency="btc")],
     ),
 )

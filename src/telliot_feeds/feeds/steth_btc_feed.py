@@ -9,8 +9,6 @@ steth_btc_median_feed = DataFeed(
         asset="steth",
         currency="btc",
         algorithm="median",
-        sources=[
-            CoinGeckoSpotPriceSource(asset="steth", currency="btc")
-        ],
+        sources=[CoinGeckoSpotPriceSource(asset="steth", currency="btc")],
     ),
 )

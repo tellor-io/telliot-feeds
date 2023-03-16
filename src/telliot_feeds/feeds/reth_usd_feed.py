@@ -12,7 +12,7 @@ reth_usd_median_feed = DataFeed(
         algorithm="median",
         sources=[
             CoinGeckoSpotPriceSource(asset="reth", currency="usd"),
-            UniswapV3PriceSource (asset="reth", currency="usd"),
+            UniswapV3PriceSource(asset="reth", currency="usd"),
         ],
     ),
 )

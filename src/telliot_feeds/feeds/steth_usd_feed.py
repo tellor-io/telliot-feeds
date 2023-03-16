@@ -12,7 +12,7 @@ steth_usd_median_feed = DataFeed(
         algorithm="median",
         sources=[
             CoinGeckoSpotPriceSource(asset="steth", currency="usd"),
-            UniswapV3PriceSource (asset="steth", currency="usd"),
+            UniswapV3PriceSource(asset="steth", currency="usd"),
         ],
     ),
 )

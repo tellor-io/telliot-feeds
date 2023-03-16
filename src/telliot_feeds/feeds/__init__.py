@@ -41,11 +41,15 @@ from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_res
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
 from telliot_feeds.feeds.pls_usd_feed import pls_usd_feed
 from telliot_feeds.feeds.rai_usd_feed import rai_usd_median_feed
+from telliot_feeds.feeds.reth_btc_feed import reth_btc_median_feed
+from telliot_feeds.feeds.reth_usd_feed import reth_usd_median_feed
 from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
 from telliot_feeds.feeds.shib_usd_feed import shib_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_feed_example
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
 from telliot_feeds.feeds.spot_price_manual_feed import spot_price_manual_feed
+from telliot_feeds.feeds.steth_btc_feed import steth_btc_median_feed
+from telliot_feeds.feeds.steth_usd_feed import steth_usd_median_feed
 from telliot_feeds.feeds.string_query_feed import string_query_feed
 from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
 from telliot_feeds.feeds.tellor_rng_feed import tellor_rng_feed
@@ -60,11 +64,6 @@ from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.feeds.vesq import vsq_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
-from telliot_feeds.feeds.steth_btc_feed import steth_btc_median_feed
-from telliot_feeds.feeds.steth_usd_feed import steth_usd_median_feed
-from telliot_feeds.feeds.reth_btc_feed import reth_btc_median_feed
-from telliot_feeds.feeds.reth_usd_feed import reth_usd_median_feed
-
 
 
 CATALOG_FEEDS = {

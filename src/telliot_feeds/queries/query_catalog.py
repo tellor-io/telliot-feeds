@@ -318,5 +318,3 @@ query_catalog.add_entry(
     title="RETH/USD spot price",
     q=SpotPrice(asset="reth", currency="usd"),
 )
-
-
