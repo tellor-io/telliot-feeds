@@ -294,3 +294,27 @@ query_catalog.add_entry(
     title="Crypto Coven TAMI calculation for Mimicry",
     q=MimicryCollectionStat(collectionAddress="0x5180db8F5c931aaE63c74266b211F580155ecac8", chainId=1, metric=0),
 )
+
+query_catalog.add_entry(
+    tag="steth-btc-spot",
+    title="STETH/BTC spot price",
+    q=SpotPrice(asset="steth", currency="btc"),
+)
+
+query_catalog.add_entry(
+    tag="steth-usd-spot",
+    title="STETH/USD spot price",
+    q=SpotPrice(asset="steth", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="reth-btc-spot",
+    title="RETH/BTC spot price",
+    q=SpotPrice(asset="reth", currency="btc"),
+)
+
+query_catalog.add_entry(
+    tag="reth-usd-spot",
+    title="RETH/USD spot price",
+    q=SpotPrice(asset="reth", currency="usd"),
+)
