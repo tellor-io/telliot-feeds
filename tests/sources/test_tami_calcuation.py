@@ -1,14 +1,15 @@
-from dateutil.relativedelta import relativedelta
 from datetime import datetime
 
+from dateutil.relativedelta import relativedelta
+
 from telliot_feeds.sources.mimicry.tami import create_index_value_history
-from telliot_feeds.sources.mimicry.tami import tami
 from telliot_feeds.sources.mimicry.tami import get_index_ratios
 from telliot_feeds.sources.mimicry.tami import get_index_value
-from telliot_feeds.sources.mimicry.utils import sort_transactions
-from telliot_feeds.sources.mimicry.utils import filter_valid_transactions
-from telliot_feeds.sources.mimicry.types import Transaction
+from telliot_feeds.sources.mimicry.tami import tami
 from telliot_feeds.sources.mimicry.types import IndexValueHistoryItem
+from telliot_feeds.sources.mimicry.types import Transaction
+from telliot_feeds.sources.mimicry.utils import filter_valid_transactions
+from telliot_feeds.sources.mimicry.utils import sort_transactions
 
 now = datetime.utcnow()
 yesterday = now - relativedelta(days=1)
@@ -47,39 +48,60 @@ expected_values = {
         {"itemId": "Mars", "price": 1200, "timestamp": two_days_ago},
     ],
     "indexValueHistory": [
-        IndexValueHistoryItem(itemId="Mars", price=612, indexValue=612.0, transaction=Transaction(itemId="Mars", price=612, date=six_weeks_ago)),
-        IndexValueHistoryItem(itemId="Hyacinth", price=700, indexValue=612.0, transaction=Transaction(itemId="Hyacinth", price=700, date=one_month_ago)),
-        IndexValueHistoryItem(itemId="Hyacinth", price=400, indexValue=472.0609756097561, transaction=Transaction(itemId="Hyacinth", price=400, date=three_days_ago)),
-        IndexValueHistoryItem(itemId="Mars", price=1200, indexValue=746.3414634146342, transaction=Transaction(itemId="Mars", price=1200, date=two_days_ago)),
-
+        IndexValueHistoryItem(
+            itemId="Mars",
+            price=612,
+            indexValue=612.0,
+            transaction=Transaction(itemId="Mars", price=612, date=six_weeks_ago),
+        ),
+        IndexValueHistoryItem(
+            itemId="Hyacinth",
+            price=700,
+            indexValue=612.0,
+            transaction=Transaction(itemId="Hyacinth", price=700, date=one_month_ago),
+        ),
+        IndexValueHistoryItem(
+            itemId="Hyacinth",
+            price=400,
+            indexValue=472.0609756097561,
+            transaction=Transaction(itemId="Hyacinth", price=400, date=three_days_ago),
+        ),
+        IndexValueHistoryItem(
+            itemId="Mars",
+            price=1200,
+            indexValue=746.3414634146342,
+            transaction=Transaction(itemId="Mars", price=1200, date=two_days_ago),
+        ),
     ],
     "indexValue": 746.3414634146342,
     "indexRatios": [
         {
-            "itemId": 'Mars',
+            "itemId": "Mars",
             "price": 1200,
             "indexValue": 746.3414634146342,
-            "transaction": Transaction(itemId='Mars', price=1200, date=two_days_ago),
+            "transaction": Transaction(itemId="Mars", price=1200, date=two_days_ago),
             "indexRatio": 1.6078431372549018,
         },
         {
-            "itemId": 'Hyacinth',
+            "itemId": "Hyacinth",
             "price": 400,
             "indexValue": 472.0609756097561,
-            "transaction": Transaction(itemId='Hyacinth', price=400, date=three_days_ago),
+            "transaction": Transaction(itemId="Hyacinth", price=400, date=three_days_ago),
             "indexRatio": 0.847348161926167,
         },
     ],
-        "timeAdjustedValues": [1200, 632.4110671936759],
-        "timeAdjustedMarketIndex": 1832.411067193676,
-    }
+    "timeAdjustedValues": [1200, 632.4110671936759],
+    "timeAdjustedMarketIndex": 1832.411067193676,
+}
 
 sorted_transactions = sort_transactions(mock_transaction_history)
 valid_transactions = filter_valid_transactions(sorted_transactions)
 
+
 def test_create_index_value_history():
     index_value_history = create_index_value_history(valid_transactions)
     assert index_value_history == expected_values["indexValueHistory"]
+
 
 def test_get_index_ratios():
     index_value_history = create_index_value_history(valid_transactions)
@@ -87,14 +109,17 @@ def test_get_index_ratios():
     print(index_ratios)
     assert index_ratios == expected_values["indexRatios"]
 
+
 def test_get_index_value():
     index_value_history = create_index_value_history(valid_transactions)
     index_value = get_index_value(index_value_history)
     assert index_value == expected_values["indexValue"]
 
+
 def test_tami_with_transaction_data():
     value = tami(valid_transactions)
     assert value == expected_values["timeAdjustedMarketIndex"]
+
 
 def test_tami_empty_transaction_data():
     value = tami([])

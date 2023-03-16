@@ -1,12 +1,13 @@
-from typing import List
-from typing import Dict
 from typing import Any
-from typing import Union
+from typing import Dict
+from typing import List
 from typing import Optional
+from typing import Union
+
+from telliot_feeds.sources.mimicry.types import IndexValueHistoryItem
+from telliot_feeds.sources.mimicry.types import Transaction
 from telliot_feeds.sources.mimicry.utils import filter_valid_transactions
 from telliot_feeds.sources.mimicry.utils import sort_transactions
-from telliot_feeds.sources.mimicry.types import Transaction
-from telliot_feeds.sources.mimicry.types import IndexValueHistoryItem
 
 
 def create_index_value_history(transaction_history: List[Transaction]) -> List[IndexValueHistoryItem]:
@@ -34,35 +35,36 @@ def create_index_value_history(transaction_history: List[Transaction]) -> List[I
 
         item_count = len(transaction_map)
 
-        all_last_solde_value = sum([transaction_map[item].price for item in transaction_map])
+        all_last_sold_value = sum([transaction_map[item].price for item in transaction_map])
 
-        index_value = all_last_solde_value / (item_count * last_divisor)
+        index_value = all_last_sold_value / (item_count * last_divisor)
 
         if i == 0:
             last_index_value = index_value
 
-            result.append(IndexValueHistoryItem(
-                itemId=transaction.itemId,
-                price=transaction.price,
-                indexValue=index_value,
-                transaction=transaction
-            ))
+            result.append(
+                IndexValueHistoryItem(
+                    itemId=transaction.itemId, price=transaction.price, indexValue=index_value, transaction=transaction
+                )
+            )
 
             continue
 
         next_divisor = last_divisor * (index_value / last_index_value) if is_first_sale else last_divisor
 
-        weighted_index_value = all_last_solde_value / (item_count * next_divisor)
+        weighted_index_value = all_last_sold_value / (item_count * next_divisor)
 
         last_index_value = weighted_index_value
         last_divisor = next_divisor
 
-        result.append(IndexValueHistoryItem(
-            itemId=transaction.itemId,
-            price=transaction.price,
-            indexValue=weighted_index_value,
-            transaction=transaction
-        ))
+        result.append(
+            IndexValueHistoryItem(
+                itemId=transaction.itemId,
+                price=transaction.price,
+                indexValue=weighted_index_value,
+                transaction=transaction,
+            )
+        )
 
     return result
 
@@ -81,13 +83,7 @@ def get_index_ratios(index_valueHistory: List[IndexValueHistoryItem]) -> List[Di
     for history_item in index_valueHistory:
         last_sale_map[history_item.itemId] = history_item
 
-    return [
-        {
-            **item.__dict__,
-            "indexRatio": item.price / item.indexValue
-        }
-        for item in last_sale_map.values()
-    ]
+    return [{**item.__dict__, "indexRatio": item.price / item.indexValue} for item in last_sale_map.values()]
 
 
 def tami(transaction_history: List[Transaction]) -> Optional[float]:

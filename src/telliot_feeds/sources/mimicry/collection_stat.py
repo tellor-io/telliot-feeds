@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
+from datetime import timezone
 from typing import Any
 from typing import List
 from typing import Optional
@@ -132,7 +133,9 @@ class MimicryCollectionStatSource(DataSource[float]):
                     except KeyError as e:
                         logger.error("Mimicry: Reservoir Sales API KeyError: " + str(e))
                         return None
-                    tx = Transaction(price=price, itemId=item_id, date=datetime.fromtimestamp(timestamp))
+                    tx = Transaction(
+                        price=price, itemId=item_id, date=datetime.fromtimestamp(timestamp, tz=timezone.utc)
+                    )
                     tx_list.transactions.append(tx)
 
                 # if on last page
