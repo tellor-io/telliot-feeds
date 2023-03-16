@@ -60,6 +60,11 @@ from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.feeds.vesq import vsq_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
+from telliot_feeds.feeds.steth_btc_feed import steth_btc_median_feed
+from telliot_feeds.feeds.steth_usd_feed import steth_usd_median_feed
+from telliot_feeds.feeds.reth_btc_feed import reth_btc_median_feed
+from telliot_feeds.feeds.reth_usd_feed import reth_usd_median_feed
+
 
 
 CATALOG_FEEDS = {
@@ -112,6 +117,10 @@ CATALOG_FEEDS = {
     "usdt-usd-spot": usdt_usd_median_feed,
     "yfi-usd-spot": yfi_usd_median_feed,
     "mimicry-crypto-coven-tami": mimicry_example_feed,
+    "steth-btc-spot": steth_btc_median_feed,
+    "steth-usd-spot": steth_usd_median_feed,
+    "reth-btc-spot": reth_btc_median_feed,
+    "reth-usd-spot": reth_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
