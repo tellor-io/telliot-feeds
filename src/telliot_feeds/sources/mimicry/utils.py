@@ -37,12 +37,12 @@ def filter_valid_transactions(transaction_history: List[Transaction]) -> List[Tr
         if current_map_item.is_valid:
             continue
 
-        if date <= one_year_ago:
+        if date < one_year_ago:
             continue
 
         current_map_item.past_year_sale_count += 1
 
-        if date <= six_months_ago:
+        if date < six_months_ago:
             continue
 
         current_map_item.has_sale_in_last_six_months = True
