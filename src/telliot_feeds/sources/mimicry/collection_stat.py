@@ -162,7 +162,6 @@ class MimicryCollectionStatSource(DataSource[float]):
                 logger.error(f"Unable to parse price from Reservoir FloorPrice API response: {str(e)}")
                 return None
 
-        print("we want to see all values: ", all, " length of list ", len(tx_list.transactions))
         return tx_list
 
     async def fetch_new_datapoint(

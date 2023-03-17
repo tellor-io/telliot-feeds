@@ -11,6 +11,7 @@ async def test_fetching_data():
         chainId=1, collectionAddress="0x5180db8F5c931aaE63c74266b211F580155ecac8", metric=0
     )
     val, _ = await source.fetch_new_datapoint()
+    print(val)
     assert isinstance(val, float)
 
     # market cap

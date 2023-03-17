@@ -24,7 +24,6 @@ def filter_valid_transactions(transaction_history: List[Transaction]) -> List[Tr
     six_months_ago = (now - relativedelta(months=6)).replace(tzinfo=timezone.utc)
 
     inclusion_map: Dict[Union[float, int], InclusionMapValue] = {}
-    print("num transactions before filter: ", len(transaction_history))
     for transaction in transaction_history:
 
         item_id = transaction.itemId

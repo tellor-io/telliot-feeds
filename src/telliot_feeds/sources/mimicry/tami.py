@@ -95,7 +95,6 @@ def tami(transaction_history: List[Transaction]) -> Optional[float]:
     """
     sorted_transactions = sort_transactions(transaction_history)
     valid_transactions = filter_valid_transactions(sorted_transactions)
-    print("number of transactions after filtering: ", len(valid_transactions))
     index_value_history = create_index_value_history(valid_transactions)
 
     if len(index_value_history) == 0:
