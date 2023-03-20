@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 import requests
 
-from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.reporters.flashbot import FlashbotsReporter
 
 
@@ -23,7 +23,7 @@ async def test_http_error(tellor_360):
         chain_id=5,
         transaction_type=0,
         min_native_token_balance=0,
-        datafeed=eth_usd_median_feed,
+        datafeed=matic_usd_median_feed,
         check_rewards=False,
     )
 
