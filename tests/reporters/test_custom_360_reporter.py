@@ -72,47 +72,48 @@ async def custom_reporter(
         def mock_confirm(*args, **kwargs):
             return [True]
 
-        monkeypatch.setattr("click.confirm", mock_confirm)
+        with monkeypatch.context() as m:
+            m.setattr("click.confirm", mock_confirm)
 
-        custom_contract = create_custom_contract(
-            original_contract=contracts.oracle,
-            custom_contract_addr=mock_reporter_contract.address,
-            endpoint=core.endpoint,
-            account=account,
-            custom_abi=mock_reporter_contract.abi,
-        )
+            custom_contract = create_custom_contract(
+                original_contract=contracts.oracle,
+                custom_contract_addr=mock_reporter_contract.address,
+                endpoint=core.endpoint,
+                account=account,
+                custom_abi=mock_reporter_contract.abi,
+            )
 
-        r = Tellor360Reporter(
-            transaction_type=0,
-            oracle=custom_contract,
-            token=contracts.token,
-            autopay=contracts.autopay,
-            endpoint=core.endpoint,
-            account=account,
-            chain_id=80001,
-            gas_limit=350000,
-            min_native_token_balance=0,
-        )
-        # mint token and send to reporter address
-        mock_token_contract.mint(account.address, 1000e18)
-        mock_token_contract.mint(accounts[0].address, 1000e18)
-        mock_token_contract.mint(mock_reporter_contract.address, 100e18)
-        mock_token_contract.approve(mock_autopay_contract.address, 10e18)
+            r = Tellor360Reporter(
+                transaction_type=0,
+                oracle=custom_contract,
+                token=contracts.token,
+                autopay=contracts.autopay,
+                endpoint=core.endpoint,
+                account=account,
+                chain_id=80001,
+                gas_limit=350000,
+                min_native_token_balance=0,
+            )
+            # mint token and send to reporter address
+            mock_token_contract.mint(account.address, 1000e18)
+            mock_token_contract.mint(accounts[0].address, 1000e18)
+            mock_token_contract.mint(mock_reporter_contract.address, 100e18)
+            mock_token_contract.approve(mock_autopay_contract.address, 10e18)
 
-        mock_autopay_contract.tip(
-            "0xd913406746edf7891a09ffb9b26a12553bbf4d25ecf8e530ec359969fe6a7a9c",
-            int(10e18),
-            "0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000953706f745072696365000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000003646169000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000037573640000000000000000000000000000000000000000000000000000000000",  # noqa: E501
-        )
-        # send eth from brownie address to reporter address for txn fees
-        accounts[1].transfer(account.address, "1 ether")
-        accounts[1].transfer(contracts.oracle.account.address, "1 ether")
-        # init governance address
-        await contracts.oracle.write(
-            "init", _governanceAddress=accounts[0].address, gas_limit=350000, legacy_gas_price=1
-        )
+            mock_autopay_contract.tip(
+                "0xd913406746edf7891a09ffb9b26a12553bbf4d25ecf8e530ec359969fe6a7a9c",
+                int(10e18),
+                "0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000953706f745072696365000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000003646169000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000037573640000000000000000000000000000000000000000000000000000000000",  # noqa: E501
+            )
+            # send eth from brownie address to reporter address for txn fees
+            accounts[1].transfer(account.address, "1 ether")
+            accounts[1].transfer(contracts.oracle.account.address, "1 ether")
+            # init governance address
+            await contracts.oracle.write(
+                "init", _governanceAddress=accounts[0].address, gas_limit=350000, legacy_gas_price=1
+            )
 
-        return r
+            return r
 
 
 @pytest.mark.asyncio
