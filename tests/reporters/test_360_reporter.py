@@ -206,9 +206,7 @@ async def test_no_native_token(tellor_360, caplog, guaranteed_price_source):
 
 
 @pytest.mark.asyncio
-async def test_checks_reporter_lock_when_manual_source(
-    multicall_contract, tellor_360, monkeypatch, caplog, guaranteed_price_source
-):
+async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, caplog, guaranteed_price_source):
     """Test reporter lock check when reporting for a tip that requires a manaul data source"""
     contracts, account = tellor_360
     feed = eth_usd_median_feed
