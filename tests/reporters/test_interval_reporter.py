@@ -11,7 +11,7 @@ from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPrice
 from tests.utils.utils import gas_price
 from tests.utils.utils import passing_bool_w_status
@@ -45,7 +45,7 @@ def test_get_fee_info(tellor_flex_reporter):
 @pytest.mark.asyncio
 async def test_get_num_reports_by_id(tellor_flex_reporter):
     r = tellor_flex_reporter
-    num, status = await r.get_num_reports_by_id(eth_usd_median_feed.query.query_id)
+    num, status = await r.get_num_reports_by_id(matic_usd_median_feed.query.query_id)
 
     assert isinstance(status, ResponseStatus)
 
@@ -132,7 +132,7 @@ async def test_interval_reporter_submit_once(tellor_flex_reporter):
 async def test_no_updated_value(tellor_flex_reporter, bad_datasource):
     """Test handling for no updated value returned from datasource."""
     r = tellor_flex_reporter
-    r.datafeed = eth_usd_median_feed
+    r.datafeed = matic_usd_median_feed
 
     # Clear latest datapoint
     r.datafeed.source._history.clear()
@@ -208,7 +208,7 @@ async def test_ensure_reporter_lock_check_after_submitval_attempt(tellor_flex_re
     r.ensure_staked = passing_bool_w_status
     r.ensure_profitable = passing_status
     r.check_reporter_lock = passing_status
-    r.datafeed = eth_usd_median_feed
+    r.datafeed = matic_usd_median_feed
     r.gas_limit = 350000
 
     # Simulate fetching latest value

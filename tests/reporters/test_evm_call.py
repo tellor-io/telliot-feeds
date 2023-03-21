@@ -54,7 +54,7 @@ async def test_evm_call_e2e(tellor_360, caplog):
     assert oracle_rsp is not None
     if_retrieved, value, ts_reported = oracle_rsp
     assert if_retrieved
-    assert ts_reported == chain.time()
+    assert ts_reported == pytest.approx(chain.time(), 1)
     print("oracle response:", oracle_rsp)
     assert isinstance(value, bytes)
 

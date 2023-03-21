@@ -1,4 +1,5 @@
 from datetime import datetime
+from datetime import timezone
 
 from dateutil.relativedelta import relativedelta
 
@@ -12,12 +13,12 @@ from telliot_feeds.sources.mimicry.utils import filter_valid_transactions
 from telliot_feeds.sources.mimicry.utils import sort_transactions
 
 now = datetime.utcnow()
-yesterday = now - relativedelta(days=1)
-two_days_ago = now - relativedelta(days=2)
-three_days_ago = now - relativedelta(days=3)
-one_month_ago = now - relativedelta(months=1)
-six_weeks_ago = now - relativedelta(weeks=6)
-two_years_ago = now - relativedelta(years=2)
+yesterday = (now - relativedelta(days=1)).replace(tzinfo=timezone.utc)
+two_days_ago = (now - relativedelta(days=2)).replace(tzinfo=timezone.utc)
+three_days_ago = (now - relativedelta(days=3)).replace(tzinfo=timezone.utc)
+one_month_ago = (now - relativedelta(months=1)).replace(tzinfo=timezone.utc)
+six_weeks_ago = (now - relativedelta(weeks=6)).replace(tzinfo=timezone.utc)
+two_years_ago = (now - relativedelta(years=2)).replace(tzinfo=timezone.utc)
 
 
 mock_transaction_history = [

@@ -33,7 +33,7 @@ def add_multicall_support(
         else:
             MULTICALL3_ADDRESSES[attr] = multicall3_address
     else:
-        print(f"Network {network} already exists in multicall package")
+        logger.info(f"Network {network} already exists in multicall package")
 
 
 add_multicall_support(

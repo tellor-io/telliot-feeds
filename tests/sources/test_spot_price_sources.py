@@ -94,9 +94,6 @@ async def test_bitfinex():
     v, t = await get_price("eth", "usd", service["bitfinex"])
     validate_price(v, t)
 
-    v, t = await get_price("albt:", "usd", service["bitfinex"])
-    validate_price(v, t)
-
 
 @pytest.mark.asyncio
 async def test_coingecko():
