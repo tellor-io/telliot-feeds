@@ -31,7 +31,7 @@ class NFTGoSource(DataSource[str]):
     https://runkit.io/aslangoldenhour/calculate-nft-market-index-via-nftgo/branches/master?queryData
     """
 
-    metric_currency: Optional[str] = None
+    currency: Optional[str] = None
 
     async def fetch_nftgo_api(self) -> Optional[Any]:
         """
@@ -69,7 +69,7 @@ class NFTGoSource(DataSource[str]):
             logger.error("Failed to fetch collections details from NFTGo API.")
             return None, None
         try:
-            market_cap = sum(cap[self.metric_currency] for cap in collections)
+            market_cap = sum(cap[f"market_cap_{self.currency}"] for cap in collections)
         except Exception as e:
             logger.error(f"Failed to calculate total market cap for top 50 collections: {e}")
             return None, None
@@ -79,7 +79,7 @@ class NFTGoSource(DataSource[str]):
 
 
 if __name__ == "__main__":
-    source = NFTGoSource(metric_currency="market_cap_usd")
+    source = NFTGoSource(currency="usd")
     print(asyncio.run(source.fetch_new_datapoint()))
     # https://docs.nftgo.io/docs/faq##Currently,
     # NFTGo supports the Ethereum blockchain and is looking to support more mainstream blockchains in time to come.
