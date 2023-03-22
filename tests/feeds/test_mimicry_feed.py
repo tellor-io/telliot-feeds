@@ -1,3 +1,5 @@
+from typing import get_type_hints
+
 import pytest
 from hexbytes import HexBytes
 
@@ -10,7 +12,6 @@ from telliot_feeds.queries.mimicry.macro_market_mash_up import MimicryMacroMarke
 from telliot_feeds.queries.mimicry.nft_market_index import MimicryNFTMarketIndex
 
 
-@pytest.mark.skip("TODO: see issue 603")
 @pytest.mark.asyncio
 async def test_fetch_new_datapoint():
     """Retrieve TAMI index and NFT market cap from source"""

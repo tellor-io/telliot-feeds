@@ -318,4 +318,25 @@ query_catalog.add_entry(
     title="NFT market cap mashup",
     q=MimicryMacroMarketMashup(metric="market-cap", currency="usd", collections=COLLECTIONS, tokens=TOKENS),
     active=True,
+    tag="steth-btc-spot",
+    title="STETH/BTC spot price",
+    q=SpotPrice(asset="steth", currency="btc"),
+)
+
+query_catalog.add_entry(
+    tag="steth-usd-spot",
+    title="STETH/USD spot price",
+    q=SpotPrice(asset="steth", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="reth-btc-spot",
+    title="RETH/BTC spot price",
+    q=SpotPrice(asset="reth", currency="btc"),
+)
+
+query_catalog.add_entry(
+    tag="reth-usd-spot",
+    title="RETH/USD spot price",
+    q=SpotPrice(asset="reth", currency="usd"),
 )

@@ -274,6 +274,15 @@ def reporter() -> None:
     type=int,
     default=1,  # 1% above the gas price by web3
 )
+@click.option(
+    "--max-priority-fee-range",
+    "-mpfr",
+    "max_priority_fee_range",
+    help="the maximum range of priority fees to use in gwei (default 80 gwei)",
+    nargs=1,
+    type=int,
+    default=80,  # 80 gwei
+)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pwd", "--password", type=str)
@@ -310,6 +319,7 @@ async def report(
     check_rewards: bool,
     use_random_feeds: bool,
     gas_multiplier: int,
+    max_priority_fee_range: int,
 ) -> None:
     """Report values to Tellor oracle"""
     ctx.obj["ACCOUNT_NAME"] = account_str
@@ -448,6 +458,7 @@ async def report(
             "check_rewards": check_rewards,
             "use_random_feeds": use_random_feeds,
             "gas_multiplier": gas_multiplier,
+            "max_priority_fee_range": max_priority_fee_range,
         }
 
         if sig_acct_addr:

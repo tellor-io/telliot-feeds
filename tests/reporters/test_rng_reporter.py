@@ -83,33 +83,32 @@ async def test_missing_blockhash(rng_reporter, monkeypatch, caplog):
         logger.warning("bazinga")
         return None, None
 
-    monkeypatch.setattr(
-        "telliot_feeds.sources.blockhash_aggregator.TellorRNGManualSource.fetch_new_datapoint", mock_no_val
-    )
+    with monkeypatch.context() as m:
+        m.setattr("telliot_feeds.sources.blockhash_aggregator.TellorRNGManualSource.fetch_new_datapoint", mock_no_val)
 
-    # mock functions that don't need to be tested here
-    async def mock_ensure_staked(*args, **kwargs):
-        return True, ResponseStatus()
+        # mock functions that don't need to be tested here
+        async def mock_ensure_staked(*args, **kwargs):
+            return True, ResponseStatus()
 
-    r.ensure_staked = mock_ensure_staked
+        r.ensure_staked = mock_ensure_staked
 
-    def has_native_token(*args, **kwargs):
-        return True
+        def has_native_token(*args, **kwargs):
+            return True
 
-    r.has_native_token = has_native_token
+        r.has_native_token = has_native_token
 
-    async def mock_online(*args, **kwargs):
-        return True
+        async def mock_online(*args, **kwargs):
+            return True
 
-    r.is_online = mock_online
+        r.is_online = mock_online
 
-    r.check_reporter_lock = mock_response_status
+        r.check_reporter_lock = mock_response_status
 
-    r.ensure_profitable = mock_response_status
+        r.ensure_profitable = mock_response_status
 
-    await r.report(report_count=3)
+        await r.report(report_count=3)
 
-    assert caplog.text.count("bazinga") == 3
+        assert caplog.text.count("bazinga") == 3
 
 
 @pytest.mark.asyncio
@@ -119,15 +118,16 @@ async def test_invalid_timestamp(rng_reporter, monkeypatch, caplog):
 
     invalid_timestamp = 12345
     valid_timestamp = 1438269973
-    monkeypatch.setattr("telliot_feeds.reporters.rng_interval.get_next_timestamp", mock_zero_timestamp)
-    with patch(
-        "telliot_feeds.sources.blockhash_aggregator.input_timeout",
-        side_effect=[invalid_timestamp, valid_timestamp, "\n"],
-    ):
-        receipt, status = await r.report_once()
-        assert status.ok
-        assert receipt["status"] == 1
-        assert "should be greater than eth genesis block timestamp" in caplog.text
+    with monkeypatch.context() as m:
+        m.setattr("telliot_feeds.reporters.rng_interval.get_next_timestamp", mock_zero_timestamp)
+        with patch(
+            "telliot_feeds.sources.blockhash_aggregator.input_timeout",
+            side_effect=[invalid_timestamp, valid_timestamp, "\n"],
+        ):
+            receipt, status = await r.report_once()
+            assert status.ok
+            assert receipt["status"] == 1
+            assert "should be greater than eth genesis block timestamp" in caplog.text
 
 
 @pytest.mark.asyncio
@@ -136,15 +136,16 @@ async def test_invalid_timestamp_in_future(rng_reporter, monkeypatch, caplog):
     r = rng_reporter
     invalid_timestamp2 = int(time.time()) + 100000
     valid_timestamp = 1438269973
-    monkeypatch.setattr("telliot_feeds.reporters.rng_interval.get_next_timestamp", mock_zero_timestamp)
-    with patch(
-        "telliot_feeds.sources.blockhash_aggregator.input_timeout",
-        side_effect=[invalid_timestamp2, valid_timestamp, "\n"],
-    ):
-        receipt, status = await r.report_once()
-        assert status.ok
-        assert receipt["status"] == 1
-        assert "less than current time" in caplog.text
+    with monkeypatch.context() as m:
+        m.setattr("telliot_feeds.reporters.rng_interval.get_next_timestamp", mock_zero_timestamp)
+        with patch(
+            "telliot_feeds.sources.blockhash_aggregator.input_timeout",
+            side_effect=[invalid_timestamp2, valid_timestamp, "\n"],
+        ):
+            receipt, status = await r.report_once()
+            assert status.ok
+            assert receipt["status"] == 1
+            assert "less than current time" in caplog.text
 
 
 def generate_numbers():

@@ -16,13 +16,17 @@ from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.tellor.tellorflex.oracle import TellorFlexOracleContract
 from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
 from web3 import Web3
+from web3.types import FeeHistory
+from web3.types import Wei
 
 from telliot_feeds.constants import ETHEREUM_CHAINS
+from telliot_feeds.constants import FILECOIN_CHAINS
 from telliot_feeds.constants import GNOSIS_CHAINS
 from telliot_feeds.constants import POLYGON_CHAINS
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feeds.feeds.fil_usd_feed import fil_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.queries.query_catalog import query_catalog
@@ -166,6 +170,8 @@ def get_native_token_feed(chain_id: int) -> DataFeed[float]:
         return matic_usd_median_feed
     elif chain_id in GNOSIS_CHAINS:
         return xdai_usd_median_feed
+    elif chain_id in FILECOIN_CHAINS:
+        return fil_usd_median_feed
     else:
         raise ValueError(f"Cannot fetch native token feed. Invalid chain ID: {chain_id}")
 
@@ -177,5 +183,38 @@ def tkn_symbol(chain_id: int) -> str:
         return "XDAI"
     elif chain_id in ETHEREUM_CHAINS:
         return "ETH"
+    elif chain_id in FILECOIN_CHAINS:
+        return "FIL"
     else:
         return "Unknown native token"
+
+
+def fee_history_priority_fee_estimate(fee_history: FeeHistory, priority_fee_max: int) -> int:
+    """Estimate priority fee based on a percentile of the fee history.
+
+    Adapted from web3.py fee_utils.py
+
+    Args:
+        fee_history: Fee history object returned by web3.eth.fee_history
+        priority_fee_max: Maximum priority fee willing to pay
+
+    Returns:
+        Estimated priority fee in wei
+    """
+    priority_fee_min = 1_000_000_000  # 1 gwei
+    # grab only non-zero fees and average against only that list
+    non_empty_block_fees = [fee[0] for fee in fee_history["reward"] if fee[0] != 0]
+
+    # prevent division by zero in the extremely unlikely case that all fees within the polled fee
+    # history range for the specified percentile are 0
+    divisor = len(non_empty_block_fees) if len(non_empty_block_fees) != 0 else 1
+
+    priority_fee_average_for_percentile = Wei(round(sum(non_empty_block_fees) / divisor))
+
+    return (  # keep estimated priority fee within a max / min range
+        priority_fee_max
+        if priority_fee_average_for_percentile > priority_fee_max
+        else priority_fee_min
+        if priority_fee_average_for_percentile < priority_fee_min
+        else priority_fee_average_for_percentile
+    )

@@ -33,7 +33,7 @@ def add_multicall_support(
         else:
             MULTICALL3_ADDRESSES[attr] = multicall3_address
     else:
-        print(f"Network {network} already exists in multicall package")
+        logger.info(f"Network {network} already exists in multicall package")
 
 
 add_multicall_support(
@@ -46,5 +46,13 @@ add_multicall_support(
     state_override=False,
     multicall3_address="0x08e08170712c7751b45b38865B97A50855c8ab13",
 )
+
+add_multicall_support(
+    network="Filecoin Hyperspace Testnet",
+    network_id=3141,
+    state_override=False,
+    multicall3_address="0x08e08170712c7751b45b38865B97A50855c8ab13 ",
+)
+
 CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
 CATALOG_QUERY_DATA = {query_catalog._entries[tag].query.query_data: tag for tag in query_catalog._entries}

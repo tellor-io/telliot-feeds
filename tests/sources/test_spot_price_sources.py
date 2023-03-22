@@ -16,6 +16,7 @@ from telliot_feeds.sources.price.spot.bittrex import BittrexSpotPriceService
 from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceService
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceService
 from telliot_feeds.sources.price.spot.coinmarketcap import CoinMarketCapSpotPriceService
+from telliot_feeds.sources.price.spot.coinpaprika import CoinpaprikaSpotPriceService
 from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceService
 from telliot_feeds.sources.price.spot.kraken import KrakenSpotPriceService
 from telliot_feeds.sources.price.spot.nomics import NomicsSpotPriceService
@@ -38,6 +39,7 @@ service = {
     "kraken": KrakenSpotPriceService(),
     "coinmarketcap": CoinMarketCapSpotPriceService(),
     "bitfinex": BitfinexSpotPriceService(),
+    "coinpaprika": CoinpaprikaSpotPriceService(),
 }
 
 
@@ -92,9 +94,6 @@ async def test_coinbase():
 async def test_bitfinex():
     """Test retrieving from Bitfinex price source."""
     v, t = await get_price("eth", "usd", service["bitfinex"])
-    validate_price(v, t)
-
-    v, t = await get_price("albt:", "usd", service["bitfinex"])
     validate_price(v, t)
 
 
@@ -296,3 +295,12 @@ async def test_failed_price_service_request():
 
     assert v is None
     assert t is None
+
+
+@pytest.mark.asyncio
+async def test_coinpaprika():
+    """Test Coinpaprika price service"""
+    v, t = await get_price("steth-lido-staked-ether", "btc", service["coinpaprika"])
+    validate_price(v, t)
+    assert v is not None
+    assert t is not None

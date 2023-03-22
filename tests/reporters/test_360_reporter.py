@@ -1,3 +1,6 @@
+import math
+import time
+from datetime import timedelta
 from unittest import mock
 
 import pytest
@@ -226,22 +229,27 @@ async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, 
     async def mock_get_feed_and_tip(*args, **kwargs):
         return [snapshot_manual_feed, int(1e18)]
 
-    monkeypatch.setattr("telliot_feeds.reporters.tellor_360.get_feed_and_tip", mock_get_feed_and_tip)
-    reporter = Tellor360Reporter(**reporter_kwargs)
+    with monkeypatch.context() as m:
+        m.setattr("telliot_feeds.reporters.tellor_360.get_feed_and_tip", mock_get_feed_and_tip)
+        reporter = Tellor360Reporter(**reporter_kwargs)
 
-    # report once to trigger reporter lock next time
-    reporter.datafeed = eth_usd_median_feed
-    _, status = await reporter.report_once()
-    assert status.ok
+        # report once to trigger reporter lock next time
+        reporter.datafeed = eth_usd_median_feed
+        _, status = await reporter.report_once()
+        assert status.ok
 
-    # set datafeed to None so fetch_datafeed will call get_feed_and_tip
-    reporter.datafeed = None
-    await reporter.report(report_count=1)
-    assert "Currently in reporter lock. Time left: 11:59" in caplog.text
+        # set datafeed to None so fetch_datafeed will call get_feed_and_tip
+        reporter.datafeed = None
+        await reporter.report(report_count=1)
+        reporter_lock = 43200 / math.floor(reporter.staker_info.stake_balance / reporter.stake_amount)
+        time_remaining = round(reporter.staker_info.last_report + reporter_lock - time.time())
+        if time_remaining > 0:
+            hr_min_sec = str(timedelta(seconds=time_remaining))
+        assert f"Currently in reporter lock. Time left: {hr_min_sec}" in caplog.text
 
 
 @pytest.mark.asyncio
-async def test_fail_gen_query_id(tellor_360, monkeypatch, caplog, guaranteed_price_source):
+async def test_fail_gen_query_id(tellor_360, caplog, guaranteed_price_source):
     """Test failure to generate query id when calling rewards() method."""
     contracts, account = tellor_360
     feed = eth_usd_median_feed
