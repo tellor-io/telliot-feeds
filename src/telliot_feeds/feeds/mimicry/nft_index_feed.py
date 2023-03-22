@@ -13,3 +13,11 @@ mimicry_nft_market_index_eth_feed = DataFeed(
     query=MimicryNFTMarketIndex(chain="ethereum", currency="eth"),
     source=NFTGoSource(metric_currency="market_cap_eth"),
 )
+
+chain = None
+currency = None
+
+mimicry_nft_market_index_feed = DataFeed(
+    query=MimicryNFTMarketIndex(chain=chain, currency=currency),
+    source=NFTGoSource(metric_currency="market_cap_usd"),
+)

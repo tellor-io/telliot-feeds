@@ -180,6 +180,10 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
             param_dtype = type_hints[query_param]
 
         val = input(f"Enter value for QueryParameter {query_param}: ")
+        try:
+            val = eval(val)  # try to evaluate input if it's not string type
+        except NameError:
+            pass
 
         if val is not None:
             try:

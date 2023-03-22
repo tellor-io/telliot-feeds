@@ -36,7 +36,9 @@ from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.mimicry.collection_stat_feed import mimicry_collection_stat_feed
 from telliot_feeds.feeds.mimicry.collection_stat_feed import mimicry_example_feed
 from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import mimicry_mashup_example_feed
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import mimicry_mashup_feed
 from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_eth_feed
+from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_feed
 from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_usd_feed
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
@@ -143,5 +145,7 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "AmpleforthCustomSpotPrice": ampl_usd_vwap_feed,
     "AmpleforthUSPCE": uspce_feed,
     "MimicryCollectionStat": mimicry_collection_stat_feed,
+    "MimicryNFTMarketIndex": mimicry_nft_market_index_feed,
+    "MimicryMacroMarketMashup": mimicry_mashup_feed,
     "EVMCall": evm_call_feed,
 }
