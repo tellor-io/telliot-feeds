@@ -8,31 +8,10 @@ from telliot_feeds.feeds.mimicry.collection_stat_feed import mimicry_collection_
 from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import mimicry_mashup_example_feed
 from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_eth_feed
 from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_usd_feed
+from telliot_feeds.queries.mimicry.collection_stat import MimicryCollectionStat
 from telliot_feeds.queries.mimicry.macro_market_mash_up import MimicryMacroMarketMashup
 from telliot_feeds.queries.mimicry.nft_market_index import MimicryNFTMarketIndex
-
-
-@pytest.mark.asyncio
-async def test_fetch_new_datapoint():
-    """Retrieve TAMI index and NFT market cap from source"""
-
-    crypto_coven_address = "0x5180db8F5c931aaE63c74266b211F580155ecac8"
-
-    mimicry_collection_stat_feed.source.chainId = 1
-    mimicry_collection_stat_feed.source.collectionAddress = crypto_coven_address
-    mimicry_collection_stat_feed.source.metric = 0
-
-    tami, _ = await mimicry_collection_stat_feed.source.fetch_new_datapoint()
-    print(tami)
-
-    assert tami > 0
-
-    mimicry_collection_stat_feed.source.metric = 1
-
-    market_cap, _ = await mimicry_collection_stat_feed.source.fetch_new_datapoint()
-    print(market_cap)
-
-    assert market_cap > tami
+from telliot_feeds.sources.mimicry.collection_stat import MimicryCollectionStatSource
 
 
 def test_mimicry_nft_market_index_usd_feed():
@@ -76,3 +55,20 @@ def test_mimicry_mashup_feed():
     assert q.query_id == exp_id
     assert isinstance(mimicry_mashup_example_feed, DataFeed)
     assert isinstance(q, MimicryMacroMarketMashup)
+
+
+def test_collection_stat_feed():
+    """test mimicry_collection_stat_datafeed"""
+    # source test is in tests/sources/test_mimicry_source.py
+    assert mimicry_collection_stat_feed.query.chainId is None
+    assert mimicry_collection_stat_feed.query.collectionAddress is None
+    assert mimicry_collection_stat_feed.query.metric is None
+    assert mimicry_collection_stat_feed.source.chainId is None
+    assert mimicry_collection_stat_feed.source.collectionAddress is None
+    assert mimicry_collection_stat_feed.source.metric is None
+    assert isinstance(mimicry_collection_stat_feed.source, MimicryCollectionStatSource)
+    assert isinstance(mimicry_collection_stat_feed.query, MimicryCollectionStat)
+    query_attributes = get_type_hints(mimicry_collection_stat_feed.query)
+    source_attributes = get_type_hints(mimicry_collection_stat_feed.source)
+    assert ["chainId", "collectionAddress", "metric"] == list(query_attributes.keys())
+    assert ["chainId", "collectionAddress", "metric"] == list(source_attributes.keys())

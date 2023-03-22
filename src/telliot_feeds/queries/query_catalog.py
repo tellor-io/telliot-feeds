@@ -318,6 +318,9 @@ query_catalog.add_entry(
     title="NFT market cap mashup",
     q=MimicryMacroMarketMashup(metric="market-cap", currency="usd", collections=COLLECTIONS, tokens=TOKENS),
     active=True,
+)
+
+query_catalog.add_entry(
     tag="steth-btc-spot",
     title="STETH/BTC spot price",
     q=SpotPrice(asset="steth", currency="btc"),
