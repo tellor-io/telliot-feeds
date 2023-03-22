@@ -300,17 +300,6 @@ async def test_failed_price_service_request():
 @pytest.mark.asyncio
 async def test_coinpaprika():
     """Test Coinpaprika price service"""
-    # Example response from Coinpaprika API
-    # TODO: consider using a mock responses to lower api calls for any test not just this api
-    # {"id":"steth-lido-staked-ether","name":"Lido Staked Ether","symbol":"STETH","rank":10,
-    #  "circulating_supply":5842138,"total_supply":5842137,"max_supply":0,"beta_value":1.32621,
-    #  "first_data_at":"2021-08-12T00:00:00Z","last_updated":"2023-03-22T13:14:08Z",
-    #  "quotes":{"USD":{"price":1797.56354446107,"volume_24h":19751787.534851808,"volume_24h_change_24h":-72.95,
-    #  "market_cap":10501614291,"market_cap_change_24h":-1.07,"percent_change_15m":0.01,
-    #  "percent_change_30m":-0.02,"percent_change_1h":-0.03,"percent_change_6h":0.05,
-    #  "percent_change_12h":0.24,"percent_change_24h":-1.16,"percent_change_7d":7.59,
-    #  "percent_change_30d":7.27,"percent_change_1y":-39.28,"ath_price":4824.292564201527,
-    #  "ath_date":"2021-11-10T16:05:00Z","percent_from_price_ath":-62.74}}}
     v, t = await get_price("steth-lido-staked-ether", "btc", service["coinpaprika"])
     validate_price(v, t)
     assert v is not None
