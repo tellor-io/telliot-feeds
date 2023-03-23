@@ -55,9 +55,9 @@ class CurveFinanceSpotPriceService(WebPriceService):
                 return None, None
             asset_price = None
             for pool in pool_data:
-                for coin in pool['coins']:
-                    if coin['address'] == asset:
-                        asset_price = coin.get('usdPrice')
+                for coin in pool["coins"]:
+                    if coin["address"] == asset:
+                        asset_price = coin.get("usdPrice")
                         break
                 else:
                     continue
@@ -71,9 +71,9 @@ class CurveFinanceSpotPriceService(WebPriceService):
             else:
                 currency_price = None
                 for pool in pool_data:
-                    for coin in pool['coins']:
-                        if coin['address'] == contract_map[currency]:
-                            currency_price = coin.get('usdPrice')
+                    for coin in pool["coins"]:
+                        if coin["address"] == contract_map[currency]:
+                            currency_price = coin.get("usdPrice")
                             break
                     else:
                         continue
