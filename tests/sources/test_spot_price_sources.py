@@ -10,6 +10,7 @@ from requests import Response
 from requests.exceptions import JSONDecodeError
 from telliot_core.apps.telliot_config import TelliotConfig
 
+from telliot_feeds.sources.price.curvefi import CurveFinanceSpotPriceService
 from telliot_feeds.sources.price.spot import coingecko
 from telliot_feeds.sources.price.spot.bitfinex import BitfinexSpotPriceService
 from telliot_feeds.sources.price.spot.bittrex import BittrexSpotPriceService
@@ -40,6 +41,7 @@ service = {
     "coinmarketcap": CoinMarketCapSpotPriceService(),
     "bitfinex": BitfinexSpotPriceService(),
     "coinpaprika": CoinpaprikaSpotPriceService(),
+    "curvefi": CurveFinanceSpotPriceService(),
 }
 
 
@@ -301,6 +303,15 @@ async def test_failed_price_service_request():
 async def test_coinpaprika():
     """Test Coinpaprika price service"""
     v, t = await get_price("steth-lido-staked-ether", "btc", service["coinpaprika"])
+    validate_price(v, t)
+    assert v is not None
+    assert t is not None
+
+
+@pytest.mark.asyncio
+async def test_curvefi():
+    """Test CurveFinance price service"""
+    v, t = await get_price("steth", "wbtc", service["curvefi"])
     validate_price(v, t)
     assert v is not None
     assert t is not None
