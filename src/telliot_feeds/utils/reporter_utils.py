@@ -211,10 +211,9 @@ def fee_history_priority_fee_estimate(fee_history: FeeHistory, priority_fee_max:
 
     priority_fee_average_for_percentile = Wei(round(sum(non_empty_block_fees) / divisor))
 
-    return (  # keep estimated priority fee within a max / min range
-        priority_fee_max
-        if priority_fee_average_for_percentile > priority_fee_max
-        else priority_fee_min
-        if priority_fee_average_for_percentile < priority_fee_min
-        else priority_fee_average_for_percentile
-    )
+    if priority_fee_average_for_percentile > priority_fee_max:
+        return priority_fee_max
+    elif priority_fee_average_for_percentile < priority_fee_min:
+        return priority_fee_min
+    else:
+        return priority_fee_average_for_percentile
