@@ -5,7 +5,7 @@ Distributed under the terms of the MIT License.
 """
 from eth_abi import decode_abi
 
-from telliot_feeds.queries.mimicry import MimicryCollectionStat
+from telliot_feeds.queries.mimicry.collection_stat import MimicryCollectionStat
 
 
 def test_query_constructor():
