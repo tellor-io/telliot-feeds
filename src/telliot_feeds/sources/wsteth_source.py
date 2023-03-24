@@ -25,11 +25,11 @@ class WstETHSpotPriceService(WebPriceService):
         kwargs["name"] = "Custom WstETH Price Service"
         kwargs["url"] = ""
         super().__init__(**kwargs)
+        self.cfg = TelliotConfig()
 
     def get_wsteth_steth_ratio(self) -> Optional[float]:
         # get endpoint
-        cfg = TelliotConfig()
-        endpoint = cfg.endpoints.find(chain_id=1)
+        endpoint = self.cfg.endpoints.find(chain_id=1)
         if not endpoint:
             logger.error("Endpoint not found for mainnet to get wsteth_eth_ratio")
             return None

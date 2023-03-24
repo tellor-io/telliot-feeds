@@ -60,9 +60,8 @@ class CurveFinanceSpotPriceService(WebPriceService):
                     if coin["address"] == asset_address:
                         asset_price = coin.get("usdPrice")
                         break
-                else:
-                    continue
-                break
+                if asset_price is not None:
+                    break
 
             if asset_price is None:
                 logger.error(f"Unable to find price for {asset} from Curve Finance API")
@@ -76,9 +75,8 @@ class CurveFinanceSpotPriceService(WebPriceService):
                         if coin["address"] == contract_map[currency]:
                             currency_price = coin.get("usdPrice")
                             break
-                    else:
-                        continue
-                    break
+                    if currency_price is not None:
+                        break
                 if currency_price is None:
                     logger.error(f"Unable to find price for {currency} from Curve Finance API")
                     return None, None
