@@ -12,11 +12,10 @@ async def test_wsteth_usd_median_feed(caplog):
 
     assert v is not None
     assert v > 0
-    assert "sources used in aggregate: 2" in caplog.text.lower()
+    assert "sources used in aggregate: 4" in caplog.text.lower()
     print(f"WSTETH/USD Price: {v}")
-
     # Get list of data sources from sources dict
-    source_prices = [source.latest[0] for source in wsteth_usd_median_feed.source.sources if source.latest[0]]
+    source_prices = wsteth_usd_median_feed.source.latest[0]
 
     # Make sure error is less than decimal tolerance
-    assert (v - statistics.median(source_prices)) < 10**-6
+    assert (v - statistics.median([source_prices])) < 10**-6

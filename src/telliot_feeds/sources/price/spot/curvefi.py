@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 contract_map = {
     "eth": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "steth": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
-    "wbtc": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+    "btc": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
 }
 
 
@@ -29,11 +29,12 @@ class CurveFinanceSpotPriceService(WebPriceService):
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """This implementation gets the price from the Curve finance API."""
+        asset = asset.lower()
+        currency = currency.lower()
         if asset not in contract_map:
             logger.error(f"Asset not supported: {asset}")
             return None, None
-        asset = contract_map[asset.lower()]
-        currency = currency.lower()
+        asset_address = contract_map[asset]
 
         request_url = "/api/getPools/ethereum/main"
 
@@ -56,7 +57,7 @@ class CurveFinanceSpotPriceService(WebPriceService):
             asset_price = None
             for pool in pool_data:
                 for coin in pool["coins"]:
-                    if coin["address"] == asset:
+                    if coin["address"] == asset_address:
                         asset_price = coin.get("usdPrice")
                         break
                 else:
@@ -79,7 +80,7 @@ class CurveFinanceSpotPriceService(WebPriceService):
                         continue
                     break
                 if currency_price is None:
-                    logger.error("Unable to find price for {currency} from Curve Finance API")
+                    logger.error(f"Unable to find price for {currency} from Curve Finance API")
                     return None, None
                 return asset_price / currency_price, datetime_now_utc()
 
@@ -98,7 +99,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        source = CurveFinanceSpotPriceSource(asset="steth", currency="wbtc")
+        source = CurveFinanceSpotPriceSource(asset="steth", currency="btc")
         v, _ = await source.fetch_new_datapoint()
         print(v)
 

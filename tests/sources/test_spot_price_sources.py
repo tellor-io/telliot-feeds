@@ -10,7 +10,6 @@ from requests import Response
 from requests.exceptions import JSONDecodeError
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feeds.sources.price.curvefi import CurveFinanceSpotPriceService
 from telliot_feeds.sources.price.spot import coingecko
 from telliot_feeds.sources.price.spot.bitfinex import BitfinexSpotPriceService
 from telliot_feeds.sources.price.spot.bittrex import BittrexSpotPriceService
@@ -18,6 +17,7 @@ from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceService
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceService
 from telliot_feeds.sources.price.spot.coinmarketcap import CoinMarketCapSpotPriceService
 from telliot_feeds.sources.price.spot.coinpaprika import CoinpaprikaSpotPriceService
+from telliot_feeds.sources.price.spot.curvefi import CurveFinanceSpotPriceService
 from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceService
 from telliot_feeds.sources.price.spot.kraken import KrakenSpotPriceService
 from telliot_feeds.sources.price.spot.nomics import NomicsSpotPriceService
@@ -311,7 +311,7 @@ async def test_coinpaprika():
 @pytest.mark.asyncio
 async def test_curvefi():
     """Test CurveFinance price service"""
-    v, t = await get_price("steth", "wbtc", service["curvefi"])
+    v, t = await get_price("steth", "btc", service["curvefi"])
     validate_price(v, t)
     assert v is not None
     assert t is not None
