@@ -18,7 +18,7 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-class CustomWstETHSpotPriceService(WebPriceService):
+class WstETHSpotPriceService(WebPriceService):
     """Custom WstETH Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
@@ -79,17 +79,17 @@ class CustomWstETHSpotPriceService(WebPriceService):
 
 
 @dataclass
-class CustomWstETHSpotPriceSource(PriceSource):
+class WstETHSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: CustomWstETHSpotPriceService = field(default_factory=CustomWstETHSpotPriceService, init=False)
+    service: WstETHSpotPriceService = field(default_factory=WstETHSpotPriceService, init=False)
 
 
 if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        source = CustomWstETHSpotPriceSource(asset="wsteth", currency="eth")
+        source = WstETHSpotPriceSource(asset="wsteth", currency="eth")
         v, _ = await source.fetch_new_datapoint()
         print(v)
 

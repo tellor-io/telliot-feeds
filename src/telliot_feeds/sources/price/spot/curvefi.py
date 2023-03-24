@@ -65,7 +65,7 @@ class CurveFinanceSpotPriceService(WebPriceService):
                 break
 
             if asset_price is None:
-                logger.error("Unable to find price for {asset} from Curve Finance API")
+                logger.error(f"Unable to find price for {asset} from Curve Finance API")
                 return None, None
             if currency == "usd":
                 return asset_price, datetime_now_utc()
