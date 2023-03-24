@@ -51,7 +51,6 @@ coingecko_coin_id = {
     "yfi": "yearn-finance",
     "steth": "staked-ether",
     "reth": "rocket-pool-eth",
-    "wsteth": "wrapped-steth",
 }
 
 
