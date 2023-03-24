@@ -10,7 +10,6 @@ from requests import Response
 from requests.exceptions import JSONDecodeError
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feeds.sources.price.spot import coingecko
 from telliot_feeds.sources.price.spot.bitfinex import BitfinexSpotPriceService
 from telliot_feeds.sources.price.spot.bittrex import BittrexSpotPriceService
 from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceService
@@ -268,7 +267,7 @@ async def test_pulsechain_subgraph():
 
 @pytest.mark.asyncio
 async def test_coingecko_price_service_rate_limit(caplog):
-    def mock_get_url(self, url):
+    def mock_get_url(self, url=""):
         return {
             "error": "<class 'requests.exceptions.JSONDecodeError'>",
             "exception": JSONDecodeError(
@@ -278,13 +277,13 @@ async def test_coingecko_price_service_rate_limit(caplog):
             ),
         }
 
-    coingecko.WebPriceService.get_url = mock_get_url
-    ps = CoinGeckoSpotPriceService(timeout=0.5)
-    v, dt = await ps.get_price("trb", "usd")
+    with mock.patch("telliot_feeds.sources.price.spot.coingecko.WebPriceService.get_url", side_effect=mock_get_url):
+        ps = CoinGeckoSpotPriceService(timeout=0.5)
+        v, dt = await ps.get_price("trb", "usd")
 
-    assert v is None
-    assert dt is None
-    assert "CoinGecko API rate limit exceeded" in caplog.text
+        assert v is None
+        assert dt is None
+        assert "CoinGecko API rate limit exceeded" in caplog.text
 
 
 @pytest.mark.asyncio
