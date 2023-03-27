@@ -12,7 +12,7 @@ async def test_steth_btc_median_feed(caplog):
 
     assert v is not None
     assert v > 0
-    assert "sources used in aggregate: 1" in caplog.text.lower()
+    assert "sources used in aggregate: 3" in caplog.text.lower()
     print(f"STETH/BTC Price: {v}")
 
     # Get list of data sources from sources dict
