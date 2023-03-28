@@ -44,6 +44,7 @@ from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
+from telliot_feeds.feeds.op_usd_feed import op_usd_median_feed
 from telliot_feeds.feeds.pls_usd_feed import pls_usd_feed
 from telliot_feeds.feeds.rai_usd_feed import rai_usd_median_feed
 from telliot_feeds.feeds.reth_btc_feed import reth_btc_median_feed
@@ -132,6 +133,7 @@ CATALOG_FEEDS = {
     "reth-usd-spot": reth_usd_median_feed,
     "wsteth-usd-spot": wsteth_usd_median_feed,
     "wsteth-eth-spot": wsteth_eth_median_feed,
+    "op-usd-spot": op_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
