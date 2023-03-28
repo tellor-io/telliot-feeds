@@ -240,26 +240,18 @@ class Tellor360Reporter(TellorFlexReporter):
 
     async def rewards(self) -> int:
         """Fetches total time based rewards plus tips for current datafeed"""
-        time_based_rewards: int = 0
-        fetch_autopay_tip: int = 0
-        total_rewards: int = 0
-
         if self.datafeed is not None:
             try:
                 qid = self.datafeed.query.query_id
-                fetch_autopay_tip = await fetch_feed_tip(self.autopay, qid)
+                self.autopaytip += await fetch_feed_tip(self.autopay, qid)
             except EncodingTypeError:
                 logger.warning(f"Unable to generate data/id for query: {self.datafeed.query}")
-
-            if fetch_autopay_tip is not None:
-                total_rewards += fetch_autopay_tip
 
         if self.chain_id in (1, 5):
             time_based_rewards = await get_time_based_rewards(self.oracle)
             if time_based_rewards is not None:
-                total_rewards += time_based_rewards
-
-        return total_rewards
+                self.autopaytip += time_based_rewards
+        return self.autopaytip
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         """Fetches datafeed
@@ -274,6 +266,14 @@ class Tellor360Reporter(TellorFlexReporter):
         available tips for the datafeed unless the user has not selected a query tag or
         used the random feeds flag.
         """
+        # reset autopay tip every time fetch_datafeed is called
+        # so that tip is checked fresh every time and not carry older tips
+        self.autopaytip = 0
+        # TODO: This should be removed and moved to profit check method perhaps
+        if self.check_rewards:
+            # calculate tbr and
+            _ = await self.rewards()
+
         if self.use_random_feeds:
             self.datafeed = suggest_random_feed()
 
@@ -281,13 +281,10 @@ class Tellor360Reporter(TellorFlexReporter):
         if self.datafeed is None:
             suggested_feed, tip_amount = await get_feed_and_tip(self.autopay)
 
-            if suggested_feed is not None:
-                self.autopaytip = tip_amount  # type: ignore
+            if suggested_feed is not None and tip_amount is not None:
+                self.autopaytip += tip_amount
+
                 self.datafeed = suggested_feed
                 return self.datafeed
-
-        # TODO: This should be removed and moved to profit check method perhaps
-        if self.check_rewards:
-            self.autopaytip = await self.rewards()
 
         return self.datafeed
