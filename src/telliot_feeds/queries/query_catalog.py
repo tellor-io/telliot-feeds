@@ -349,3 +349,9 @@ query_catalog.add_entry(
     title="WSTETH/USD spot price",
     q=SpotPrice(asset="wsteth", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="op-usd-spot",
+    title="OP/USD spot price",
+    q=SpotPrice(asset="op", currency="usd"),
+)
