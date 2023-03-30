@@ -2,10 +2,13 @@ import math
 import time
 from datetime import timedelta
 from unittest import mock
+from unittest.mock import AsyncMock
+from unittest.mock import patch
 
 import pytest
 
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
+from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
@@ -276,3 +279,50 @@ async def test_fail_gen_query_id(tellor_360, caplog, guaranteed_price_source):
     _ = await reporter.rewards()
 
     assert "Unable to generate data/id for query" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_tbr_tip_increment(tellor_360, guaranteed_price_source, caplog):
+    contracts, account = tellor_360
+    feed = eth_usd_median_feed
+    feed.source = guaranteed_price_source
+    matic_usd_median_feed.source = guaranteed_price_source
+
+    _ = await contracts.autopay.write(
+        "tip",
+        **txn_kwargs,
+        _amount=1 * 10**18,
+        _queryId=matic_usd_median_feed.query.query_id,
+        _queryData=matic_usd_median_feed.query.query_data,
+    )
+    reporter_kwargs = {
+        "oracle": contracts.oracle,
+        "token": contracts.token,
+        "autopay": contracts.autopay,
+        "endpoint": contracts.oracle.node,
+        "account": account,
+        "chain_id": 5,  # set chain id to 5 so it checks tbr
+        "transaction_type": 0,
+        "wait_period": 0,
+        "min_native_token_balance": 0,
+        "expected_profit": 1000.0,  # set expected profit high so it won't report
+    }
+
+    def mock_tbr():
+        current_number = 0
+        while True:
+            yield current_number
+            current_number += 1e18
+
+    generator = mock_tbr()
+    mock_async_tbr = AsyncMock(side_effect=lambda _: next(generator))
+
+    reporter = Tellor360Reporter(**reporter_kwargs)
+    assert reporter.check_rewards
+
+    with patch("telliot_feeds.reporters.tellor_360.get_time_based_rewards", mock_async_tbr):
+        await reporter.report(report_count=3)
+        # tip amount should increase by 1e18 each time and not more
+        assert "Tips: 1.0" in caplog.text
+        assert "Tips: 2.0" in caplog.text
+        assert "Tips: 3.0" in caplog.text
