@@ -1,7 +1,12 @@
+from unittest.mock import AsyncMock
+
 import pytest
 from brownie import chain
 from eth_abi import decode_single
+from hexbytes import HexBytes
+from telliot_core.utils.response import ResponseStatus
 
+from telliot_feeds.feeds import evm_call_feed_example
 from telliot_feeds.queries.evm_call import EVMCall
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
@@ -106,6 +111,12 @@ async def test_no_endpoint_for_tipped_chain(tellor_360, caplog):
 async def test_bad_contract_address(tellor_360, caplog):
     """Test reporter doesn't halt if chainId is not supported"""
     contracts, account = tellor_360
+    invalid_address = "0x1234567890123456789012345678901234567890"
+
+    feed = evm_call_feed_example
+    feed.query.contractAddress = invalid_address
+    feed.source.contractAddress = invalid_address
+
     r = Tellor360Reporter(
         oracle=contracts.oracle,
         token=contracts.token,
@@ -115,24 +126,48 @@ async def test_bad_contract_address(tellor_360, caplog):
         chain_id=CHAIN_ID,
         transaction_type=0,
         min_native_token_balance=0,
-        datafeed=None,
+        datafeed=feed,
         check_rewards=True,
+        gas_limit=350000,
     )
 
-    q = EVMCall(
-        chainId=1,
-        contractAddress="0xd5f1Cc896542C111c7Aa7D7fae2C3D654f34b927",  # wrong contract address
-        calldata=b"\x18\x16\x0d\xdd",
-    )
-    # make one-time tip for query
-    await r.autopay.write(
-        "tip",
-        gas_limit=3500000,
-        legacy_gas_price=1,
-        _queryId=q.query_id,
-        _queryData=q.query_data,
-        _amount=int(1e18),
-    )
     _, status = await r.report_once()
-    assert "Result is empty bytes, either call was to a non-view function or a wrong contract address" in caplog.text
-    assert not status.ok
+    assert f"Invalid contract address: {invalid_address}, no bytecode, submitting empty bytes" in caplog.text
+    assert status.ok
+
+
+@pytest.mark.asyncio
+async def test_bad_call_data(tellor_360, caplog):
+    """Test reporter doesn't halt if chainId is not supported"""
+    contracts, account = tellor_360
+    invalid_calldata = HexBytes("0x165c4a")  # less than 4 bytes
+
+    feed = evm_call_feed_example
+    feed.query.calldata = invalid_calldata
+    feed.source.calldata = invalid_calldata
+
+    r = Tellor360Reporter(
+        oracle=contracts.oracle,
+        token=contracts.token,
+        autopay=contracts.autopay,
+        endpoint=contracts.oracle.node,
+        account=account,
+        chain_id=CHAIN_ID,
+        transaction_type=0,
+        min_native_token_balance=0,
+        datafeed=feed,
+        check_rewards=True,
+        gas_limit=350000,
+    )
+
+    _, status = await r.report_once()
+    assert f"Invalid calldata: {invalid_calldata!r}, too short, submitting empty bytes" in caplog.text
+    assert status.ok
+
+    feed.source.calldata = HexBytes("0x165c4a16")  # doesn't exist in contract
+    r.datafeed = feed
+    r.check_reporter_lock = AsyncMock(lambda: ResponseStatus())
+    chain.sleep(43201)
+    _, status = await r.report_once()
+    assert "ContractLogicError perhaps bad calldata: execution reverted" in caplog.text
+    assert status.ok
