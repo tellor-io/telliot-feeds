@@ -11,23 +11,23 @@ from typing import Union
 from chained_accounts import ChainedAccount
 from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
-from telliot_core.gas.legacy_gas import legacy_gas_station
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
-from web3 import Web3
+from web3.contract import ContractFunction
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
-from telliot_feeds.sources.etherscan_gas import EtherscanGasPriceSource
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.reporter_utils import fee_history_priority_fee_estimate
 from telliot_feeds.utils.reporter_utils import has_native_token_funds
 from telliot_feeds.utils.reporter_utils import is_online
 from telliot_feeds.utils.reporter_utils import tellor_suggested_report
+from telliot_feeds.utils.reporter_utils import tkn_symbol
 
 
 logger = get_logger(__name__)
@@ -47,11 +47,12 @@ class IntervalReporter:
         datafeed: Optional[DataFeed[Any]] = None,
         expected_profit: Union[str, float] = 100.0,
         transaction_type: int = 0,
-        gas_limit: int = 350000,
-        max_fee: Optional[int] = None,
-        priority_fee: int = 5,
+        gas_limit: Optional[int] = None,
+        max_fee: Optional[float] = None,
+        priority_fee: Optional[float] = None,
         legacy_gas_price: Optional[int] = None,
-        gas_price_speed: Union[tuple[str], str] = "fast",
+        gas_multiplier: int = 1,
+        max_priority_fee_range: int = 80,  # 80 gwei
         wait_period: int = 10,
         min_native_token_balance: int = 10**18,
     ) -> None:
@@ -70,11 +71,15 @@ class IntervalReporter:
         self.max_fee = max_fee
         self.priority_fee = priority_fee
         self.legacy_gas_price = legacy_gas_price
-        self.gas_price_speed = [gas_price_speed]
+        self.gas_multiplier = gas_multiplier
+        self.max_priority_fee_range = max_priority_fee_range
         self.trb_usd_median_feed = trb_usd_median_feed
         self.eth_usd_median_feed = eth_usd_median_feed
         self.wait_period = wait_period
         self.min_native_token_balance = min_native_token_balance
+        self.web3 = self.endpoint._web3
+
+        self.gas_info: dict[str, Union[float, int]] = {}
 
         logger.info(f"Reporting with account: {self.acct_addr}")
 
@@ -108,9 +113,24 @@ class IntervalReporter:
 
         return status
 
-    async def fetch_gas_price(self, speed: Optional[Any] = None) -> Optional[int]:
-        """Fetch gas price from ethgasstation in gwei."""
-        return await legacy_gas_station(chain_id=self.chain_id, speed_parse_lis=speed)  # type: ignore
+    async def fetch_gas_price(self) -> Optional[float]:
+        """Fetches the current gas price from an EVM network and returns
+        an adjusted gas price.
+
+        Returns:
+            An optional integer representing the adjusted gas price in wei, or
+            None if the gas price could not be retrieved.
+        """
+        try:
+            price = self.web3.eth.gas_price
+            priceGwei = self.web3.fromWei(price, "gwei")
+        except Exception as e:
+            logger.error(f"Error fetching gas price: {e}")
+            return None
+        # increase gas price by 1.0 + gas_multiplier
+        multiplier = 1.0 + (self.gas_multiplier / 100.0)
+        gas_price = (float(priceGwei) * multiplier) if priceGwei else None
+        return gas_price
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Make sure the current user is staked
@@ -168,10 +188,7 @@ class IntervalReporter:
             msg = "Current address is locked in dispute or for withdrawal."  # noqa: E501
             return False, error_status(msg, log=logger.info)
 
-    async def ensure_profitable(
-        self,
-        datafeed: DataFeed[Any],
-    ) -> ResponseStatus:
+    async def ensure_profitable(self, datafeed: DataFeed[Any]) -> ResponseStatus:
         """Estimate profitability
 
         Returns a bool signifying whether submitting for a given
@@ -205,63 +222,44 @@ class IntervalReporter:
 
         tips, tb_reward = rewards
 
-        # Using transaction type 2 (EIP-1559)
-        if self.transaction_type == 2:
-            fee_info = await self.get_fee_info()
-            base_fee = fee_info[0].suggestBaseFee
+        if not self.gas_info:
+            return error_status("Gas info not set", log=logger.warning)
 
-            # No miner tip provided by user
-            if self.priority_fee is None:
-                # From etherscan docs:
-                # "Safe/Proposed/Fast gas price recommendations are now modeled as Priority Fees."  # noqa: E501
-                # Source: https://docs.etherscan.io/api-endpoints/gas-tracker
-                priority_fee = fee_info[0].SafeGasPrice
-                self.priority_fee = priority_fee
+        gas_info = self.gas_info
+        txn_fee = gas_info["gas_price"] * gas_info["gas_limit"]
 
-            if self.max_fee is None:
-                # From Alchemy docs:
-                # "maxFeePerGas = baseFeePerGas + maxPriorityFeePerGas"
-                # Source: https://docs.alchemy.com/alchemy/guides/eip-1559/maxpriorityfeepergas-vs-maxfeepergas  # noqa: E501
-                self.max_fee = self.priority_fee + base_fee
-
+        if gas_info["type"] == 0:
+            txn_fee = gas_info["gas_price"] * gas_info["gas_limit"]
             logger.info(
                 f"""
-                tips: {tips / 1e18} TRB
-                time-based reward: {tb_reward / 1e18} TRB
-                gas limit: {self.gas_limit}
-                base fee: {base_fee}
-                priority fee: {self.priority_fee}
-                max fee: {self.max_fee}
+
+                Tips: {tips / 1e18}
+                Time-based reward: {tb_reward / 1e18} TRB
+                Transaction fee: {self.web3.fromWei(txn_fee, 'gwei'):.09f} {tkn_symbol(self.chain_id)}
+                Gas price: {gas_info["gas_price"]} gwei
+                Gas limit: {gas_info["gas_limit"]}
+                Txn type: 0 (Legacy)
                 """
             )
-
-            costs = self.gas_limit * self.max_fee
-
-        # Using transaction type 0 (legacy)
-        else:
-            # Fetch legacy gas price if not provided by user
-            if not self.legacy_gas_price:
-                gas_price = await self.fetch_gas_price(speed=self.gas_price_speed)
-                self.legacy_gas_price = gas_price
-
-            if not self.legacy_gas_price:
-                note = "Unable to fetch gas price for tx type 0"
-                return error_status(note, log=logger.warning)
-
+        if gas_info["type"] == 2:
+            txn_fee = gas_info["max_fee"] * gas_info["gas_limit"]
             logger.info(
                 f"""
-                tips: {tips / 1e18} TRB
-                time-based reward: {tb_reward / 1e18} TRB
-                gas limit: {self.gas_limit}
-                legacy gas price: {self.legacy_gas_price}
+
+                Tips: {tips / 1e18}
+                Time-based reward: {tb_reward / 1e18} TRB
+                Max transaction fee: {self.web3.fromWei(txn_fee, 'gwei')} {tkn_symbol(self.chain_id)}
+                Max fee per gas: {gas_info["max_fee"]} gwei
+                Max priority fee per gas: {gas_info["priority_fee"]} gwei
+                Gas limit: {gas_info["gas_limit"]}
+                Txn type: 2 (EIP-1559)
                 """
             )
-            costs = self.gas_limit * self.legacy_gas_price
 
         # Calculate profit
         revenue = tb_reward + tips
         rev_usd = revenue / 1e18 * price_trb_usd
-        costs_usd = costs / 1e9 * price_eth_usd
+        costs_usd = txn_fee / 1e9 * price_eth_usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
 
@@ -276,12 +274,27 @@ class IntervalReporter:
 
         return status
 
-    async def get_fee_info(self) -> Any:
-        """Fetch fee into from Etherscan API.
-        Source: https://etherscan.io/apis"""
-        c = EtherscanGasPriceSource()
-        result = await c.fetch_new_datapoint()
-        return result
+    def get_fee_info(self) -> Tuple[Optional[float], Optional[float]]:
+        """Calculate max fee and priority fee if not set
+        for more info:
+            https://web3py.readthedocs.io/en/v5/web3.eth.html?highlight=fee%20history#web3.eth.Eth.fee_history
+        """
+        if self.max_fee is None:
+            try:
+                fee_history = self.web3.eth.fee_history(
+                    block_count=5, newest_block="latest", reward_percentiles=[25, 50, 75]
+                )
+                # "base fee for the next block after the newest of the returned range"
+                base_fee = fee_history.baseFeePerGas[-1] / 1e9
+                # estimate priority fee from fee history
+                priority_fee_max = int(self.max_priority_fee_range * 1e9)  # convert to wei
+                priority_fee = fee_history_priority_fee_estimate(fee_history, priority_fee_max=priority_fee_max) / 1e9
+                max_fee = base_fee + priority_fee
+                return priority_fee, max_fee
+            except Exception as e:
+                logger.warning(f"Error in calculating gas fees: {e}")
+                return None, None
+        return self.priority_fee, self.max_fee
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         if self.datafeed is None:
@@ -301,16 +314,35 @@ class IntervalReporter:
         return await is_online()
 
     def has_native_token(self) -> bool:
-        return has_native_token_funds(self.acct_addr, self.endpoint._web3, min_balance=self.min_native_token_balance)
+        """Check if account has native token funds for a network for gas fees
+        of at least min_native_token_balance that is set in the cli"""
+        return has_native_token_funds(self.acct_addr, self.web3, min_balance=self.min_native_token_balance)
 
     def get_acct_nonce(self) -> tuple[Optional[int], ResponseStatus]:
         """Get transaction count for an address"""
         try:
-            return self.endpoint._web3.eth.get_transaction_count(self.acct_addr), ResponseStatus()
+            return self.web3.eth.get_transaction_count(self.acct_addr), ResponseStatus()
         except ValueError as e:
             return None, error_status("Account nonce request timed out", e=e, log=logger.warning)
         except Exception as e:
             return None, error_status("Unable to retrieve account nonce", e=e, log=logger.error)
+
+    # Estimate gas usage and set the gas limit if not provided
+    def submit_val_tx_gas_limit(self, submit_val_tx: ContractFunction) -> tuple[Optional[int], ResponseStatus]:
+        """Estimate gas usage for submitValue transaction
+        Args:
+            submit_val_tx: The submitValue transaction object
+        Returns a tuple of the gas limit and a ResponseStatus object"""
+        if self.gas_limit is None:
+            try:
+                gas_limit: int = submit_val_tx.estimateGas({"from": self.acct_addr})
+                if not gas_limit:
+                    return None, error_status("Unable to estimate gas for submitValue transaction")
+                return gas_limit, ResponseStatus()
+            except Exception as e:
+                msg = "Unable to estimate gas for submitValue transaction"
+                return None, error_status(msg, e=e, log=logger.error)
+        return self.gas_limit, ResponseStatus()
 
     async def report_once(
         self,
@@ -337,12 +369,6 @@ class IntervalReporter:
             return None, error_status(note=msg, log=logger.info)
 
         logger.info(f"Current query: {datafeed.query.descriptor}")
-
-        status = await self.ensure_profitable(datafeed)
-        if not status.ok:
-            return None, status
-
-        status = ResponseStatus()
 
         # Update datafeed value
         await datafeed.source.fetch_new_datapoint()
@@ -379,24 +405,36 @@ class IntervalReporter:
             _nonce=report_count,
             _queryData=query_data,
         )
+        # Estimate gas usage amount
+        gas_limit, status = self.submit_val_tx_gas_limit(submit_val_tx=submit_val_tx)
+        if not status.ok or gas_limit is None:
+            return None, status
+
+        self.gas_info["gas_limit"] = gas_limit
+        # Get account nonce
         acc_nonce, nonce_status = self.get_acct_nonce()
         if not nonce_status.ok:
             return None, nonce_status
-
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:
-            logger.info(f"maxFeePerGas: {self.max_fee}")
-            logger.info(f"maxPriorityFeePerGas: {self.priority_fee}")
+            priority_fee, max_fee = self.get_fee_info()
+            if priority_fee is None or max_fee is None:
+                return None, error_status("Unable to suggest type 2 txn fees", log=logger.error)
+            # Set gas price to max fee used for profitability check
+            self.gas_info["type"] = 2
+            self.gas_info["max_fee"] = max_fee
+            self.gas_info["priority_fee"] = priority_fee
+            self.gas_info["base_fee"] = max_fee - priority_fee
 
             built_submit_val_tx = submit_val_tx.buildTransaction(
                 {
                     "nonce": acc_nonce,
-                    "gas": self.gas_limit,
-                    "maxFeePerGas": Web3.toWei(self.max_fee, "gwei"),  # type: ignore
+                    "gas": gas_limit,
+                    "maxFeePerGas": self.web3.toWei(max_fee, "gwei"),
                     # TODO: Investigate more why etherscan txs using Flashbots have
                     # the same maxFeePerGas and maxPriorityFeePerGas. Example:
                     # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288 # noqa: E501
-                    "maxPriorityFeePerGas": Web3.toWei(self.priority_fee, "gwei"),  # noqa: E501
+                    "maxPriorityFeePerGas": self.web3.toWei(priority_fee, "gwei"),  # noqa: E501
                     "chainId": self.chain_id,
                 }
             )
@@ -404,21 +442,29 @@ class IntervalReporter:
         else:
             # Fetch legacy gas price if not provided by user
             if not self.legacy_gas_price:
-                gas_price = await self.fetch_gas_price(self.gas_price_speed)
+                gas_price = await self.fetch_gas_price()
                 if not gas_price:
                     note = "Unable to fetch gas price for tx type 0"
                     return None, error_status(note, log=logger.warning)
+
             else:
                 gas_price = self.legacy_gas_price
-
+            # Set gas price to legacy gas price used for profitability check
+            self.gas_info["type"] = 0
+            self.gas_info["gas_price"] = gas_price
             built_submit_val_tx = submit_val_tx.buildTransaction(
                 {
                     "nonce": acc_nonce,
-                    "gas": self.gas_limit,
-                    "gasPrice": Web3.toWei(gas_price, "gwei"),
+                    "gas": gas_limit,
+                    "gasPrice": self.web3.toWei(gas_price, "gwei"),
                     "chainId": self.chain_id,
                 }
             )
+
+        # Check if profitable if not YOLO
+        status = await self.ensure_profitable(datafeed)
+        if not status.ok:
+            return None, status
 
         lazy_unlock_account(self.account)
         local_account = self.account.local_account
@@ -429,14 +475,14 @@ class IntervalReporter:
 
         try:
             logger.debug("Sending submitValue transaction")
-            tx_hash = self.endpoint._web3.eth.send_raw_transaction(tx_signed.rawTransaction)
+            tx_hash = self.web3.eth.send_raw_transaction(tx_signed.rawTransaction)
         except Exception as e:
             note = "Send transaction failed"
             return None, error_status(note, log=logger.error, e=e)
 
         try:
             # Confirm transaction
-            tx_receipt = self.endpoint._web3.eth.wait_for_transaction_receipt(tx_hash, timeout=360)
+            tx_receipt = self.web3.eth.wait_for_transaction_receipt(tx_hash, timeout=360)
 
             tx_url = f"{self.endpoint.explorer}/tx/{tx_hash.hex()}"
 

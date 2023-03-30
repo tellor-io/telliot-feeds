@@ -1,3 +1,5 @@
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import COLLECTIONS
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import TOKENS
 from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AmpleforthCustomSpotPrice
 from telliot_feeds.queries.ampleforth.uspce import AmpleforthUSPCE
 from telliot_feeds.queries.catalog import Catalog
@@ -5,7 +7,9 @@ from telliot_feeds.queries.daily_volatility import DailyVolatility
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.queries.evm_call import EVMCall
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
-from telliot_feeds.queries.mimicry import MimicryCollectionStat
+from telliot_feeds.queries.mimicry.collection_stat import MimicryCollectionStat
+from telliot_feeds.queries.mimicry.macro_market_mash_up import MimicryMacroMarketMashup
+from telliot_feeds.queries.mimicry.nft_market_index import MimicryNFTMarketIndex
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.queries.price.twap import TWAP
@@ -293,4 +297,67 @@ query_catalog.add_entry(
     tag="mimicry-crypto-coven-tami",
     title="Crypto Coven TAMI calculation for Mimicry",
     q=MimicryCollectionStat(collectionAddress="0x5180db8F5c931aaE63c74266b211F580155ecac8", chainId=1, metric=0),
+)
+
+query_catalog.add_entry(
+    tag="mimicry-nft-index-usd",
+    title="NFT Market Index usd",
+    q=MimicryNFTMarketIndex(chain="ethereum", currency="usd"),
+    active=True,
+)
+
+query_catalog.add_entry(
+    tag="mimicry-nft-index-eth",
+    title="NFT Market Index eth",
+    q=MimicryNFTMarketIndex(chain="ethereum", currency="eth"),
+    active=True,
+)
+
+query_catalog.add_entry(
+    tag="mimicry-mashup-example",
+    title="NFT market cap mashup",
+    q=MimicryMacroMarketMashup(metric="market-cap", currency="usd", collections=COLLECTIONS, tokens=TOKENS),
+    active=True,
+)
+
+query_catalog.add_entry(
+    tag="steth-btc-spot",
+    title="STETH/BTC spot price",
+    q=SpotPrice(asset="steth", currency="btc"),
+)
+
+query_catalog.add_entry(
+    tag="steth-usd-spot",
+    title="STETH/USD spot price",
+    q=SpotPrice(asset="steth", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="reth-btc-spot",
+    title="RETH/BTC spot price",
+    q=SpotPrice(asset="reth", currency="btc"),
+)
+
+query_catalog.add_entry(
+    tag="reth-usd-spot",
+    title="RETH/USD spot price",
+    q=SpotPrice(asset="reth", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="wsteth-usd-spot",
+    title="WSTETH/USD spot price",
+    q=SpotPrice(asset="wsteth", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="wsteth-eth-spot",
+    title="WSTETH/ETH spot price",
+    q=SpotPrice(asset="wsteth", currency="eth"),
+)
+
+query_catalog.add_entry(
+    tag="op-usd-spot",
+    title="OP/USD spot price",
+    q=SpotPrice(asset="op", currency="usd"),
 )

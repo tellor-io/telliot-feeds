@@ -49,6 +49,9 @@ coingecko_coin_id = {
     "uni": "uniswap",
     "usdt": "tether",
     "yfi": "yearn-finance",
+    "steth": "staked-ether",
+    "reth": "rocket-pool-eth",
+    "op": "optimism",
 }
 
 

@@ -10,6 +10,7 @@ from chained_accounts import ChainedAccount
 from eth_account.account import Account
 from eth_account.signers.local import LocalAccount
 from eth_utils import to_checksum_address
+from requests.exceptions import HTTPError
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
@@ -65,12 +66,6 @@ class FlashbotsReporter(Tellor360Reporter):
 
         logger.info(f"Current query: {datafeed.query.descriptor}")
 
-        status = await self.ensure_profitable(datafeed)
-        if not status.ok:
-            return None, status
-
-        status = ResponseStatus()
-
         # Update datafeed value
         await datafeed.source.fetch_new_datapoint()
         latest_data = datafeed.source.latest
@@ -104,37 +99,69 @@ class FlashbotsReporter(Tellor360Reporter):
             _nonce=timestamp_count,
             _queryData=query_data,
         )
+        # Estimate gas usage amount
+        gas_limit, status = self.submit_val_tx_gas_limit(submit_val_tx=submit_val_tx)
+        if not status.ok or gas_limit is None:
+            return None, status
+
+        self.gas_info["gas_limit"] = gas_limit
+        # Get account nonce
         acc_nonce, nonce_status = self.get_acct_nonce()
         if not nonce_status.ok:
             return None, nonce_status
 
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:
-            logger.info(f"maxFeePerGas: {self.max_fee}")
-            logger.info(f"maxPriorityFeePerGas: {self.priority_fee}")
+            priority_fee, max_fee = self.get_fee_info()
+            if priority_fee is None or max_fee is None:
+                return None, error_status("Unable to suggest type 2 txn fees", log=logger.error)
+
+            logger.info(f"maxFeePerGas: {max_fee}")
+            logger.info(f"maxPriorityFeePerGas: {priority_fee}")
+
+            # Set gas price to max fee used for profitability check
+            self.gas_info["type"] = 2
+            self.gas_info["max_fee"] = max_fee
+            self.gas_info["priority_fee"] = priority_fee
+            self.gas_info["base_fee"] = max_fee - priority_fee
 
             built_submit_val_tx = submit_val_tx.buildTransaction(
                 {
                     "nonce": acc_nonce,
-                    "gas": self.gas_limit,
-                    "maxFeePerGas": Web3.toWei(self.max_fee, "gwei"),  # type: ignore
+                    "gas": gas_limit,
+                    "maxFeePerGas": Web3.toWei(max_fee, "gwei"),
                     # TODO: Investigate more why etherscan txs using Flashbots have
                     # the same maxFeePerGas and maxPriorityFeePerGas. Example:
                     # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288 # noqa: E501
-                    "maxPriorityFeePerGas": Web3.toWei(self.priority_fee, "gwei"),  # noqa: E501
+                    "maxPriorityFeePerGas": Web3.toWei(priority_fee, "gwei"),  # noqa: E501
                     "chainId": self.chain_id,
                 }
             )
         # Add transaction type 0 (legacy) data
         else:
+            if not self.legacy_gas_price:
+                gas_price = await self.fetch_gas_price()
+                if gas_price is None:
+                    note = "Unable to fetch gas price for tx type 0"
+                    return None, error_status(note, log=logger.warning)
+            else:
+                gas_price = self.legacy_gas_price
+
+            self.gas_info["type"] = 0
+            self.gas_info["gas_price"] = gas_price
             built_submit_val_tx = submit_val_tx.buildTransaction(
                 {
                     "nonce": acc_nonce,
-                    "gas": self.gas_limit,
-                    "gasPrice": Web3.toWei(self.legacy_gas_price, "gwei"),  # type: ignore
+                    "gas": gas_limit,
+                    "gasPrice": Web3.toWei(gas_price, "gwei"),
                     "chainId": self.chain_id,
                 }
             )
+
+        status = await self.ensure_profitable(datafeed)
+        if not status.ok:
+            return None, status
+        status = ResponseStatus()
 
         submit_val_tx_signed = self.account.sign_transaction(built_submit_val_tx)  # type: ignore
 
@@ -153,7 +180,11 @@ class FlashbotsReporter(Tellor360Reporter):
         #         )
         #     )
         # result = results[-1]
-        result = self.endpoint._web3.flashbots.send_bundle(bundle, target_block_number=block + 1)
+        try:
+            result = self.endpoint._web3.flashbots.send_bundle(bundle, target_block_number=block + 1)
+        except HTTPError as e:
+            msg = "Unable to send bundle to miners due to HTTP error"
+            return None, error_status(note=msg, e=e, log=logger.error)
         logger.info(f"Bundle sent to miners in block {block}")
 
         # Wait for transaction confirmation

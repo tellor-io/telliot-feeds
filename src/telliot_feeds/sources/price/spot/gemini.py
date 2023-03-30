@@ -64,7 +64,7 @@ class GeminiSpotPriceService(WebPriceService):
             try:
                 r = GeminiPriceResponse(**d["response"])
             except Exception as e:
-                logger.error("Error parsing response from Gemini API:", e)
+                logger.error(f"Error parsing response from Gemini API: {e}")
                 return None, None
 
             if r.last is not None:

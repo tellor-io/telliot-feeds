@@ -146,13 +146,14 @@ class DIVAProtocolReporter(Tellor360Reporter):
     async def settle_pool(self, pool_id: int) -> ResponseStatus:
         """Settle pool"""
         if not self.legacy_gas_price:
-            gas_price = await self.fetch_gas_price(self.gas_price_speed)
+            gas_price = await self.fetch_gas_price()
             if not gas_price:
                 msg = "Unable to fetch gas price for tx type 0"
                 return error_status(note=msg, log=logger.warning)
         else:
             gas_price = self.legacy_gas_price
 
+        gas_price = int(gas_price) if gas_price >= 1 else 1
         status = await self.set_final_ref_value(pool_id=pool_id, gas_price=gas_price)
         if status is not None and status.ok:
             logger.info(f"Pool {pool_id} settled.")
@@ -267,24 +268,27 @@ class DIVAProtocolReporter(Tellor360Reporter):
             _nonce=report_count,
             _queryData=query_data,
         )
+        # Estimate gas usage amount
+        gas_limit, status = self.submit_val_tx_gas_limit(submit_val_tx=submit_val_tx)
+        if not status.ok or gas_limit is None:
+            return None, status
+
         acc_nonce, nonce_status = self.get_acct_nonce()
         if not nonce_status.ok:
             return None, nonce_status
 
         # Add transaction type 2 (EIP-1559) data
         if self.transaction_type == 2:
-            logger.info(f"maxFeePerGas: {self.max_fee}")
-            logger.info(f"maxPriorityFeePerGas: {self.priority_fee}")
+            priority_fee, max_fee = self.get_fee_info()
+            if priority_fee is None or max_fee is None:
+                return None, error_status("Unable to suggest type 2 txn fees", log=logger.error)
 
             built_submit_val_tx = submit_val_tx.buildTransaction(
                 {
                     "nonce": acc_nonce,
-                    "gas": self.gas_limit,
-                    "maxFeePerGas": Web3.toWei(self.max_fee, "gwei"),  # type: ignore
-                    # TODO: Investigate more why etherscan txs using Flashbots have
-                    # the same maxFeePerGas and maxPriorityFeePerGas. Example:
-                    # https://etherscan.io/tx/0x0bd2c8b986be4f183c0a2667ef48ab1d8863c59510f3226ef056e46658541288 # noqa: E501
-                    "maxPriorityFeePerGas": Web3.toWei(self.priority_fee, "gwei"),  # noqa: E501
+                    "gas": gas_limit,
+                    "maxFeePerGas": Web3.toWei(max_fee, "gwei"),
+                    "maxPriorityFeePerGas": Web3.toWei(priority_fee, "gwei"),
                     "chainId": self.chain_id,
                 }
             )
@@ -292,8 +296,8 @@ class DIVAProtocolReporter(Tellor360Reporter):
         else:
             # Fetch legacy gas price if not provided by user
             if not self.legacy_gas_price:
-                gas_price = await self.fetch_gas_price(self.gas_price_speed)
-                if not gas_price:
+                gas_price = await self.fetch_gas_price()
+                if gas_price is None:
                     note = "Unable to fetch gas price for tx type 0"
                     return None, error_status(note, log=logger.warning)
             else:
@@ -302,7 +306,7 @@ class DIVAProtocolReporter(Tellor360Reporter):
             built_submit_val_tx = submit_val_tx.buildTransaction(
                 {
                     "nonce": acc_nonce,
-                    "gas": self.gas_limit,
+                    "gas": gas_limit,
                     "gasPrice": Web3.toWei(gas_price, "gwei"),
                     "chainId": self.chain_id,
                 }

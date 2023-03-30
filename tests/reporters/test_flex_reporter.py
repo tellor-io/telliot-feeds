@@ -6,7 +6,6 @@ from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 
@@ -24,6 +23,7 @@ async def test_YOLO_feed_suggestion(tellor_flex_reporter):
 async def test_ensure_profitable(tellor_flex_reporter):
     r = tellor_flex_reporter
     r.expected_profit = "YOLO"
+    r.gas_info = {"type": 0, "gas_price": 1e9, "gas_limit": 300000}
     unused_feed = matic_usd_median_feed
     status = await r.ensure_profitable(unused_feed)
 
@@ -41,7 +41,7 @@ async def test_ensure_profitable(tellor_flex_reporter):
 async def test_fetch_gas_price(tellor_flex_reporter):
     price = await tellor_flex_reporter.fetch_gas_price()
 
-    assert isinstance(price, int)
+    assert isinstance(price, float)
     assert price > 0
 
 
@@ -68,7 +68,7 @@ async def test_check_reporter_lock(tellor_flex_reporter):
 
 @pytest.mark.asyncio
 async def test_get_num_reports_by_id(tellor_flex_reporter):
-    qid = eth_usd_median_feed.query.query_id
+    qid = matic_usd_median_feed.query.query_id
     count, status = await tellor_flex_reporter.get_num_reports_by_id(qid)
 
     assert isinstance(status, ResponseStatus)
@@ -82,9 +82,6 @@ async def test_get_num_reports_by_id(tellor_flex_reporter):
 async def test_fetch_gas_price_error(tellor_flex_reporter, caplog):
     # Test invalid gas price speed
     r = tellor_flex_reporter
-    gp = await r.fetch_gas_price("blah")
-    assert gp is None
-    assert "unable to parse gas price from gasstation" in caplog.text.lower()
 
     with patch("telliot_feeds.reporters.tellor_flex.TellorFlexReporter.fetch_gas_price") as func:
         func.return_value = None
@@ -94,8 +91,7 @@ async def test_fetch_gas_price_error(tellor_flex_reporter, caplog):
         assert not staked
         assert not status.ok
         assert "Unable to fetch gas price for staking" in status.error
-        # Test ensure_profitable when fetch_gas_price returns None
-        status = await r.ensure_profitable(eth_usd_median_feed)
+        _, status = await r.report_once()
         assert not status.ok
         assert "Unable to fetch gas price" in status.error
 

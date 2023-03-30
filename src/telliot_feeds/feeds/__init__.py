@@ -33,19 +33,29 @@ from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
 from telliot_feeds.feeds.link_usd_feed import link_usd_median_feed
 from telliot_feeds.feeds.ltc_usd_feed import ltc_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
-from telliot_feeds.feeds.mimicry_feed import mimicry_collection_stat_datafeed
-from telliot_feeds.feeds.mimicry_feed import mimicry_example_feed
+from telliot_feeds.feeds.mimicry.collection_stat_feed import mimicry_collection_stat_feed
+from telliot_feeds.feeds.mimicry.collection_stat_feed import mimicry_example_feed
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import mimicry_mashup_example_feed
+from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import mimicry_mashup_feed
+from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_eth_feed
+from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_feed
+from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_usd_feed
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
+from telliot_feeds.feeds.op_usd_feed import op_usd_median_feed
 from telliot_feeds.feeds.pls_usd_feed import pls_usd_feed
 from telliot_feeds.feeds.rai_usd_feed import rai_usd_median_feed
+from telliot_feeds.feeds.reth_btc_feed import reth_btc_median_feed
+from telliot_feeds.feeds.reth_usd_feed import reth_usd_median_feed
 from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
 from telliot_feeds.feeds.shib_usd_feed import shib_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_feed_example
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
 from telliot_feeds.feeds.spot_price_manual_feed import spot_price_manual_feed
+from telliot_feeds.feeds.steth_btc_feed import steth_btc_median_feed
+from telliot_feeds.feeds.steth_usd_feed import steth_usd_median_feed
 from telliot_feeds.feeds.string_query_feed import string_query_feed
 from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
 from telliot_feeds.feeds.tellor_rng_feed import tellor_rng_feed
@@ -58,6 +68,8 @@ from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.feeds.vesq import vsq_usd_median_feed
+from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
+from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
 
@@ -112,6 +124,16 @@ CATALOG_FEEDS = {
     "usdt-usd-spot": usdt_usd_median_feed,
     "yfi-usd-spot": yfi_usd_median_feed,
     "mimicry-crypto-coven-tami": mimicry_example_feed,
+    "mimicry-nft-index-usd": mimicry_nft_market_index_usd_feed,
+    "mimicry-nft-index-eth": mimicry_nft_market_index_eth_feed,
+    "mimicry-mashup-example": mimicry_mashup_example_feed,
+    "steth-btc-spot": steth_btc_median_feed,
+    "steth-usd-spot": steth_usd_median_feed,
+    "reth-btc-spot": reth_btc_median_feed,
+    "reth-usd-spot": reth_usd_median_feed,
+    "wsteth-usd-spot": wsteth_usd_median_feed,
+    "wsteth-eth-spot": wsteth_eth_median_feed,
+    "op-usd-spot": op_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
@@ -128,6 +150,8 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "TellorRNGManualResponse": tellor_rng_manual_feed,
     "AmpleforthCustomSpotPrice": ampl_usd_vwap_feed,
     "AmpleforthUSPCE": uspce_feed,
-    "MimicryCollectionStat": mimicry_collection_stat_datafeed,
+    "MimicryCollectionStat": mimicry_collection_stat_feed,
+    "MimicryNFTMarketIndex": mimicry_nft_market_index_feed,
+    "MimicryMacroMarketMashup": mimicry_mashup_feed,
     "EVMCall": evm_call_feed,
 }

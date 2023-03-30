@@ -18,6 +18,8 @@ uniswapV3_map = {
     "matic": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
     "dai": "0x6b175474e89094c44da98b954eedeac495271d0f",
     "fuse": "0x970b9bb2c0444f5e81e9d0efb84c8ccdcdcaf84d",
+    "steth": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+    "reth": "0xae78736cd615f374d3085123a210448e74fc6393",
 }
 
 

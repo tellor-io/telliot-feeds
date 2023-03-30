@@ -11,8 +11,7 @@ from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
-from telliot_feeds.reporters import interval
+from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.sources.etherscan_gas import EtherscanGasPrice
 from tests.utils.utils import gas_price
 from tests.utils.utils import passing_bool_w_status
@@ -31,9 +30,10 @@ async def test_fetch_datafeed(tellor_flex_reporter):
     assert isinstance(feed, DataFeed)
 
 
+@pytest.mark.skip(reason="EIP-1559 not supported by ganache")
 @pytest.mark.asyncio
-async def test_get_fee_info(tellor_flex_reporter):
-    info, time = await tellor_flex_reporter.get_fee_info()
+def test_get_fee_info(tellor_flex_reporter):
+    info, time = tellor_flex_reporter.get_fee_info()
 
     assert isinstance(time, datetime)
     assert isinstance(info, EtherscanGasPrice)
@@ -45,7 +45,7 @@ async def test_get_fee_info(tellor_flex_reporter):
 @pytest.mark.asyncio
 async def test_get_num_reports_by_id(tellor_flex_reporter):
     r = tellor_flex_reporter
-    num, status = await r.get_num_reports_by_id(eth_usd_median_feed.query.query_id)
+    num, status = await r.get_num_reports_by_id(matic_usd_median_feed.query.query_id)
 
     assert isinstance(status, ResponseStatus)
 
@@ -68,6 +68,7 @@ async def test_ensure_staked(tellor_flex_reporter):
 async def test_ensure_profitable(tellor_flex_reporter):
     """Test profitability check."""
     r = tellor_flex_reporter
+    r.gas_info = {"type": 0, "gas_price": 1e9, "gas_limit": 300000}
 
     assert r.expected_profit == "YOLO"
 
@@ -84,16 +85,14 @@ async def test_ensure_profitable(tellor_flex_reporter):
 
 @pytest.mark.asyncio
 async def test_ethgasstation_error(tellor_flex_reporter):
-    async def no_gas_price(*args, **kwargs):
-        return None
+    with mock.patch("telliot_feeds.reporters.interval.IntervalReporter.fetch_gas_price") as func:
+        func.return_value = None
+        r = tellor_flex_reporter
+        r.stake = 1000000 * 10**18
 
-    r = tellor_flex_reporter
-    r.stake = 1000000 * 10**18
-    interval.ethgasstation = no_gas_price
-
-    staked, status = await r.ensure_staked()
-    assert not staked
-    assert not status.ok
+        staked, status = await r.ensure_staked()
+        assert not staked
+        assert not status.ok
 
 
 @pytest.mark.asyncio
@@ -133,7 +132,7 @@ async def test_interval_reporter_submit_once(tellor_flex_reporter):
 async def test_no_updated_value(tellor_flex_reporter, bad_datasource):
     """Test handling for no updated value returned from datasource."""
     r = tellor_flex_reporter
-    r.datafeed = eth_usd_median_feed
+    r.datafeed = matic_usd_median_feed
 
     # Clear latest datapoint
     r.datafeed.source._history.clear()
@@ -209,7 +208,8 @@ async def test_ensure_reporter_lock_check_after_submitval_attempt(tellor_flex_re
     r.ensure_staked = passing_bool_w_status
     r.ensure_profitable = passing_status
     r.check_reporter_lock = passing_status
-    r.datafeed = eth_usd_median_feed
+    r.datafeed = matic_usd_median_feed
+    r.gas_limit = 350000
 
     # Simulate fetching latest value
     r.datafeed.source.sources = [guaranteed_price_source]

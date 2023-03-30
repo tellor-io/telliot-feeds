@@ -10,12 +10,13 @@ from requests import Response
 from requests.exceptions import JSONDecodeError
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feeds.sources.price.spot import coingecko
 from telliot_feeds.sources.price.spot.bitfinex import BitfinexSpotPriceService
 from telliot_feeds.sources.price.spot.bittrex import BittrexSpotPriceService
 from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceService
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceService
 from telliot_feeds.sources.price.spot.coinmarketcap import CoinMarketCapSpotPriceService
+from telliot_feeds.sources.price.spot.coinpaprika import CoinpaprikaSpotPriceService
+from telliot_feeds.sources.price.spot.curvefi import CurveFinanceSpotPriceService
 from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceService
 from telliot_feeds.sources.price.spot.kraken import KrakenSpotPriceService
 from telliot_feeds.sources.price.spot.nomics import NomicsSpotPriceService
@@ -38,6 +39,8 @@ service = {
     "kraken": KrakenSpotPriceService(),
     "coinmarketcap": CoinMarketCapSpotPriceService(),
     "bitfinex": BitfinexSpotPriceService(),
+    "coinpaprika": CoinpaprikaSpotPriceService(),
+    "curvefi": CurveFinanceSpotPriceService(),
 }
 
 
@@ -92,9 +95,6 @@ async def test_coinbase():
 async def test_bitfinex():
     """Test retrieving from Bitfinex price source."""
     v, t = await get_price("eth", "usd", service["bitfinex"])
-    validate_price(v, t)
-
-    v, t = await get_price("albt:", "usd", service["bitfinex"])
     validate_price(v, t)
 
 
@@ -267,7 +267,7 @@ async def test_pulsechain_subgraph():
 
 @pytest.mark.asyncio
 async def test_coingecko_price_service_rate_limit(caplog):
-    def mock_get_url(self, url):
+    def mock_get_url(self, url=""):
         return {
             "error": "<class 'requests.exceptions.JSONDecodeError'>",
             "exception": JSONDecodeError(
@@ -277,13 +277,13 @@ async def test_coingecko_price_service_rate_limit(caplog):
             ),
         }
 
-    coingecko.WebPriceService.get_url = mock_get_url
-    ps = CoinGeckoSpotPriceService(timeout=0.5)
-    v, dt = await ps.get_price("trb", "usd")
+    with mock.patch("telliot_feeds.sources.price.spot.coingecko.WebPriceService.get_url", side_effect=mock_get_url):
+        ps = CoinGeckoSpotPriceService(timeout=0.5)
+        v, dt = await ps.get_price("trb", "usd")
 
-    assert v is None
-    assert dt is None
-    assert "CoinGecko API rate limit exceeded" in caplog.text
+        assert v is None
+        assert dt is None
+        assert "CoinGecko API rate limit exceeded" in caplog.text
 
 
 @pytest.mark.asyncio
@@ -296,3 +296,21 @@ async def test_failed_price_service_request():
 
     assert v is None
     assert t is None
+
+
+@pytest.mark.asyncio
+async def test_coinpaprika():
+    """Test Coinpaprika price service"""
+    v, t = await get_price("steth-lido-staked-ether", "btc", service["coinpaprika"])
+    validate_price(v, t)
+    assert v is not None
+    assert t is not None
+
+
+@pytest.mark.asyncio
+async def test_curvefi():
+    """Test CurveFinance price service"""
+    v, t = await get_price("steth", "btc", service["curvefi"])
+    validate_price(v, t)
+    assert v is not None
+    assert t is not None
