@@ -100,3 +100,39 @@ async def test_no_endpoint_for_tipped_chain(tellor_360, caplog):
     _, status = await r.report_once()
     assert "Endpoint not found for chain_id=123456789" in caplog.text
     assert not status.ok
+
+
+@pytest.mark.asyncio
+async def test_bad_contract_address(tellor_360, caplog):
+    """Test reporter doesn't halt if chainId is not supported"""
+    contracts, account = tellor_360
+    r = Tellor360Reporter(
+        oracle=contracts.oracle,
+        token=contracts.token,
+        autopay=contracts.autopay,
+        endpoint=contracts.oracle.node,
+        account=account,
+        chain_id=CHAIN_ID,
+        transaction_type=0,
+        min_native_token_balance=0,
+        datafeed=None,
+        check_rewards=True,
+    )
+
+    q = EVMCall(
+        chainId=1,
+        contractAddress="0xd5f1Cc896542C111c7Aa7D7fae2C3D654f34b927",  # wrong contract address
+        calldata=b"\x18\x16\x0d\xdd",
+    )
+    # make one-time tip for query
+    await r.autopay.write(
+        "tip",
+        gas_limit=3500000,
+        legacy_gas_price=1,
+        _queryId=q.query_id,
+        _queryData=q.query_data,
+        _amount=int(1e18),
+    )
+    _, status = await r.report_once()
+    assert "Result is empty bytes, either call was to a non-view function or a wrong contract address" in caplog.text
+    assert not status.ok
