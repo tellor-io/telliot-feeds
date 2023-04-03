@@ -43,14 +43,14 @@ class EVMCallSource(DataSource[Any]):
         self.web3 = endpoint.web3
 
     def get_response(self) -> Optional[Any]:
-        """Return the response from the EVM contract."""
-        """Validate evm call type args
-        chain-id is checked by default if web3 connection fails
-        address format, length, and if checksum is checked by default
-        cause the encoding fails if not address type.  Address is checked here if its contract or EOA
-        calldata is checked for length being at least 4 bytes and if exists in bytecode
+        """Makes requested EVM call and returns the response from the contract
 
-        in cases of known errors and failures the response will be empty-bytes and current timestamp
+        EVM call query is validated as best as possible and for known invalid EVM call requests
+        empty bytes are returned as the response to be submitted to the oracle.
+        Things that prompt an empty bytes response are:
+        - calldata with length of less than four bytes
+        - contract address that returns zero length bytecode
+        - function selector that isn't available in the bytecode
         """
         if not self.contractAddress:
             raise ValueError("Contract address not provided")
@@ -64,39 +64,41 @@ class EVMCallSource(DataSource[Any]):
 
         self.contractAddress = self.web3.toChecksumAddress(self.contractAddress)
 
-        if len(self.calldata) < 4:  # function signature is 4 bytes long, so calldata must be at least of length 4
+        if len(self.calldata) < 4:  # A function selector is 4 bytes long, so calldata must be at least of length 4
             logger.info(f"Invalid calldata: {self.calldata!r}, too short, submitting empty bytes")
             return (empty_bytes, ts)
         try:
             result = self.web3.eth.call({"gasPrice": 0, "to": self.contractAddress, "data": self.calldata}, "latest")
         # Is there a scenario where a contract call for a view/pure function would revert when the callData is valid?
         except ContractLogicError as e:
-            logger.warning(f"ContractLogicError perhaps bad calldata: {e}")
-            return (empty_bytes, ts)
+            bytecode = self.web3.eth.getCode(self.contractAddress)
+            if self.calldata[:4] not in bytecode:
+                logger.info(f"function selector: {self.calldata!r}, not found in bytecode, submitting empty bytes")
+                return (empty_bytes, ts)
+            else:
+                # It could be safe to submit zerobytes for most contract logic errors since this error is
+                # indicative of bad calldata ie bad function arguments or bad contract logic, but don't
+                # know if there are cases where you shouldn't so consider submitting manually based on reason
+                logger.warning(f"ContractLogicError read exception for reason: {e}")
+                return None
         except Exception as e:
             if e.__module__.startswith("web3"):
                 logger.warning(f"Web3 exception occurred: {e}")
-                return (None, None)
+                return None
             raise e
 
         if result is None or not isinstance(result, HexBytes):
             raise ValueError(f"Result is not bytes: {str(result)}")
 
         if result == HexBytes("0x"):
-            # if response is empty bytes, then make call to test if contractAddress is valid ie EOA or contract address
+            # A Non-contract address returns zero bytes so we check here to see
+            # if thats the reason for the zero bytes result; if so submit empty bytes to oracle
             bytecode = self.web3.eth.getCode(self.contractAddress)
             if len(bytecode) <= 0:  # if no code means address isn't a contractAddress
                 logger.info(f"Invalid contract address: {self.contractAddress}, no bytecode, submitting empty bytes")
-                return (HexBytes(bytes(32)), ts)
-            elif self.calldata[:4] not in bytecode:
-                logger.info(f"function selector: {self.calldata!r}, not found in bytecode, submitting empty bytes")
-                return (HexBytes(bytes(32)), ts)
-            else:
-                # TODO: should the result be empty bytes instead of returning None None?
-                # wrong contract address or non-view function return empty bytes
-                # are there other scenarios where the call spec is valid but the call fails?
-                logger.info("Result is empty bytes, call might be to a non-view function")
-                return (None, None)
+                return (empty_bytes, ts)
+            logger.info("Result is empty bytes, call might be to a non-view function")
+            return None
 
         logger.info(f"EVMCallSource result bytes: {result.hex()}")
 
@@ -116,6 +118,9 @@ class EVMCallSource(DataSource[Any]):
 
         try:
             val = self.get_response()
+            if val is None:
+                logger.warning("Call to contract failed to return a response")
+                return None, None
         except Exception as e:
             logger.warning(f"Error occurred while getting response: {e}")
             return None, None
