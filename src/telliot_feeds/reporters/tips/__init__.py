@@ -51,7 +51,14 @@ add_multicall_support(
     network="Filecoin Hyperspace Testnet",
     network_id=3141,
     state_override=False,
-    multicall3_address="0x08e08170712c7751b45b38865B97A50855c8ab13 ",
+    multicall3_address="0x08e08170712c7751b45b38865B97A50855c8ab13",
+)
+
+add_multicall_support(
+    network="Filecoin",
+    network_id=314,
+    state_override=False,
+    multicall3_address="0x5c691b93A8A77D9a36C1Cc8e4e08a4283d1665e1",
 )
 
 CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
