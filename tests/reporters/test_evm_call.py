@@ -142,7 +142,7 @@ async def test_bad_contract_address(tellor_360, caplog):
 
 @pytest.mark.asyncio
 async def test_short_call_data(tellor_360, caplog):
-    """Test reporter doesn't halt if chainId is not supported"""
+    """Test when calldata is less than 4 bytes"""
     contracts, account = tellor_360
     invalid_calldata = HexBytes("0x165c4a")  # less than 4 bytes
 
