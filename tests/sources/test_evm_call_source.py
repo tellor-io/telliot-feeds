@@ -3,6 +3,7 @@ from eth_abi import decode_single
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
 
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.sources.evm_call import EVMCallSource
 
 
@@ -77,3 +78,49 @@ async def test_non_getter_calldata():
     assert isinstance(v, bytes)
     assert isinstance(t, int)
     assert decode_single("address", v) == "0x46038969d7dc0b17bc72137d07b4ede43859da45"
+
+
+@pytest.mark.asyncio
+async def test_report_for_bad_calldata(tellor_360):
+    """Test report empty bytes for bad calldata."""
+    contracts, account = tellor_360
+
+    from telliot_feeds.datafeed import DataFeed
+    from telliot_feeds.queries.evm_call import EVMCall
+    from telliot_feeds.sources.evm_call import EVMCallSource
+
+    chain_id = 1
+    contract_address = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"  # good contract address
+    calldata = b"\x18\x16\x0d"  # bad calldata
+
+    bad_calldata_feed = DataFeed(
+        query=EVMCall(
+            chainId=chain_id,
+            contractAddress=contract_address,
+            calldata=calldata,
+        ),
+        source=EVMCallSource(
+            chainId=chain_id,
+            contractAddress=contract_address,
+            calldata=calldata,
+        ),
+    )
+
+    r = Tellor360Reporter(
+        oracle=contracts.oracle,
+        token=contracts.token,
+        autopay=contracts.autopay,
+        endpoint=contracts.oracle.node,
+        account=account,
+        chain_id=80001,
+        transaction_type=0,
+        legacy_gas_price=1,
+        gas_limit=350000,
+        min_native_token_balance=0,
+        datafeed=bad_calldata_feed,
+        check_rewards=False,
+    )
+    await r.report_once()
+    # call r.ensure_staked to update staker info
+    await r.ensure_staked()
+    assert r.staker_info.reports_count == 1
