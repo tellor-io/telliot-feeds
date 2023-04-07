@@ -249,7 +249,7 @@ class TellorFlexReporter(IntervalReporter):
         suggested_qtag, autopay_tip = await autopay_suggested_report(self.autopay)
         if suggested_qtag:
             self.autopaytip = autopay_tip
-            self.datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
+            self.datafeed = CATALOG_FEEDS[suggested_qtag]
             return self.datafeed
 
         if suggested_qtag is None:
@@ -261,7 +261,7 @@ class TellorFlexReporter(IntervalReporter):
                 logger.warning(f"Suggested query tag not in catalog: {suggested_qtag}")
                 return None
             else:
-                self.datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
+                self.datafeed = CATALOG_FEEDS[suggested_qtag]
                 self.autopaytip = await self.rewards()
                 return self.datafeed
         return None

@@ -69,7 +69,7 @@ async def tellor_suggested_report(
 
 def suggest_random_feed() -> DataFeed[Any]:
     """Suggest a random feed to report against."""
-    return random.choice(list(CATALOG_FEEDS.values()))  # type: ignore
+    return random.choice(list(CATALOG_FEEDS.values()))
 
 
 async def is_online() -> bool:

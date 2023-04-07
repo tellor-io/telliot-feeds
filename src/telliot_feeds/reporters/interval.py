@@ -302,7 +302,7 @@ class IntervalReporter:
             if suggested_qtag is None:
                 logger.warning("Could not get suggested query")
                 return None
-            self.datafeed = CATALOG_FEEDS[suggested_qtag]  # type: ignore
+            self.datafeed = CATALOG_FEEDS[suggested_qtag]
 
         return self.datafeed
 
