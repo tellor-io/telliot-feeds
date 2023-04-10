@@ -65,11 +65,11 @@ class EVMCallSource(DataSource[Any]):
         try:
             block_number = self.web3.eth.get_block_number()
             block = self.web3.eth.get_block(block_number)
-            ts = block['timestamp']
+            ts = block["timestamp"]
         except Exception as e:
-            logger.warning(f"Unable to retrieve current block timestamp")
+            logger.warning(f"Unable to retrieve current block timestamp: {e}")
             return None
-        
+
         self.contractAddress = self.web3.toChecksumAddress(self.contractAddress)
 
         if len(self.calldata) < 4:  # A function selector is 4 bytes long, so calldata must be at least of length 4
