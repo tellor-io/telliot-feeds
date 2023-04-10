@@ -81,11 +81,12 @@ class FundedFeedFilter:
         Returns: float
         """
         query_id = bytes(w3.keccak(query_data))
-        query = query_from_query_catalog(qid=query_id.hex())
-        if query is not None:
-            datafeed = CATALOG_FEEDS.get(query.tag)
+        query_entry = query_from_query_catalog(qid=query_id.hex())
+        if query_entry is not None:
+            query = query_entry.query
+            datafeed = CATALOG_FEEDS.get(query_entry.tag)
             if datafeed is None:
-                logger.info(f"{query.tag} not found in telliot CATALOG_FEEDS needed for priceThreshold check")
+                logger.info(f"{query_entry.tag} not found in telliot CATALOG_FEEDS needed for priceThreshold check")
                 return None
         else:
             qtype_name = decode_typ_name(query_data)
@@ -110,7 +111,9 @@ class FundedFeedFilter:
             value_now = await datafeed.source.fetch_new_datapoint()
 
             if not value_now[0]:
-                note = f"Unable to fetch {datafeed.query.descriptor} price for tip calculation"
+                note = (
+                    f"Unable to fetch data from API for {datafeed.query.descriptor}, to check if price threshold is met"
+                )
                 _ = error_status(note=note, log=logger.warning)
                 return None
 

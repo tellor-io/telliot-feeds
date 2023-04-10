@@ -113,7 +113,7 @@ async def test_error_calculating_priceThreshold(autopay_contract_setup, caplog):
         gas_limit=3500000,
         legacy_gas_price=1,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed)
     assert tip_amount == int(1e18)
     # report a price that meets the threshold
     current_price = price * (1 + price_threshold / 100)
@@ -128,14 +128,14 @@ async def test_error_calculating_priceThreshold(autopay_contract_setup, caplog):
         legacy_gas_price=1,
     )
     # there should be a tip since the price threshold is met and we're able to calculate the deviation
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id, timestamp=chain.time() + 2)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.time() + 2)
     assert tip_amount == int(1e18)
     with patch(
         "telliot_feeds.feeds.matic_usd_median_feed.source.fetch_new_datapoint",
         AsyncMock(side_effect=lambda: (None, None)),
     ):
         # tip amount should be 0 because the price threshold can't be calculated
-        tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id, timestamp=chain.time() + 2)
+        tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.time() + 2)
         assert tip_amount == 0
         assert (
             'Unable to fetch data from API for {"type":"SpotPrice","asset":"matic","currency":"usd"}, to check if price'
