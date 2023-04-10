@@ -131,6 +131,21 @@ def valid_diva_chain(chain_id: int) -> bool:
     return True
 
 
+def convert_input(target_type: Callable[[Union[str, int, float]], Any], input_str: str) -> Any:
+    """Convert an input string from cli to whatever type is needed for the QueryParameter"""
+    if target_type == bytes:
+        if input_str.startswith("0x"):
+            return bytes.fromhex(input_str[2:])
+    if target_type == int:
+        return int(input_str)
+    elif target_type == float:
+        return float(input_str)
+    elif target_type == str:
+        return input_str
+    else:
+        return target_type(input_str)
+
+
 def build_feed_from_input() -> Optional[DataFeed[Any]]:
     """
     Build a DataFeed from CLI input
@@ -180,17 +195,11 @@ def build_feed_from_input() -> Optional[DataFeed[Any]]:
             param_dtype = type_hints[query_param]
 
         val = input(f"Enter value for QueryParameter {query_param}: ")
-        try:
-            val = eval(val)  # try to evaluate input if it's not string type
-        except NameError:
-            pass
 
         if val is not None:
             try:
                 # cast input from string to datatype of query parameter
-                if param_dtype == bytes and val.startswith("0x"):
-                    val = bytes.fromhex(val[2:])
-                val = param_dtype(val)
+                val = convert_input(param_dtype, val)
                 setattr(feed.query, query_param, val)
                 setattr(feed.source, query_param, val)
             except ValueError:

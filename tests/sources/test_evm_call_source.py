@@ -63,7 +63,7 @@ async def test_non_getter_calldata():
 
     # test get_response
     response = s.get_response()
-    assert response == (None, None)
+    assert response is None
 
     """Test getter calldata"""
     s.calldata = b"\x73\x25\x24\x94"  # calldata for getGovernanceAddress()

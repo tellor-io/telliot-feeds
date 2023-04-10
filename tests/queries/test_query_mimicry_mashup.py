@@ -29,10 +29,14 @@ def test_query_constructor():
     assert query_type == "MimicryMacroMarketMashup"
 
     query: MimicryMacroMarketMashup = q.get_query_from_data(q.query_data)
+    # Convert the decoded list to a tuple.
+    # The ABI encoding does not differentiate between tuples and lists,
+    # so after decoding, the result is a list. We convert it back to a tuple
+    # for a correct comparison with the original tuple.
     assert query.metric == "market-cap"
     assert query.currency == "usd"
-    assert query.collections == COLLECTIONS
-    assert query.tokens == TOKENS
+    assert [tuple(lis) for lis in query.collections] == COLLECTIONS
+    assert [tuple(lis) for lis in query.tokens] == TOKENS
 
 
 def test_encode_decode_reported_val():
