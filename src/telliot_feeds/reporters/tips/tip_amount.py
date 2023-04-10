@@ -1,9 +1,11 @@
+from typing import Any
 from typing import List
 from typing import Optional
 
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.utils.timestamp import TimeStamp
 
+from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
 from telliot_feeds.reporters.tips.listener.funded_feeds_filter import FundedFeedFilter
 from telliot_feeds.reporters.tips.multicall_functions.multicall_autopay import MulticallAutopay
@@ -15,7 +17,7 @@ filtr = FundedFeedFilter()
 
 
 async def fetch_feed_tip(
-    autopay: TellorFlexAutopayContract, query_id: bytes, timestamp: Optional[TimeStamp] = None
+    autopay: TellorFlexAutopayContract, datafeed: DataFeed[Any], timestamp: Optional[TimeStamp] = None
 ) -> int:
     """Fetch tip amount for a given query id
 
@@ -30,14 +32,14 @@ async def fetch_feed_tip(
     tip_amount: int = 0
 
     # get tip amount for one time tip if available
-    one_time_tip, status = await autopay.get_current_tip(query_id=query_id)
+    one_time_tip, status = await autopay.get_current_tip(query_id=datafeed.query.query_id)
 
     if status.ok:
         tip_amount += one_time_tip
 
     # make the first batch call of getCurrentFeeds, getDataBefore, getTimestampbyQueryIdandIndex
     results, status = await call.currentfeeds_multiple_values_before(
-        query_id=query_id, now_timestamp=timestamp, month_old_timestamp=month_old
+        datafeed=datafeed, now_timestamp=timestamp, month_old_timestamp=month_old
     )
 
     if not status.ok or not results:

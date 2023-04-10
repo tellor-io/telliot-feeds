@@ -63,3 +63,4 @@ add_multicall_support(
 
 CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
 CATALOG_QUERY_DATA = {query_catalog._entries[tag].query.query_data: tag for tag in query_catalog._entries}
+TYPES_WITH_GENERIC_SOURCE = ["MimicryMacroMarketMashup", "MimicryCollectionStat"]

@@ -60,21 +60,21 @@ class FundedFeeds(FundedFeedFilter):
         self, now_timestamp: int, month_old_timestamp: int
     ) -> tuple[Optional[list[QueryIdandFeedDetails]], ResponseStatus]:
 
-        telliot_supported_feeds, status = await self.get_funded_feed_queries()
+        qtype_supported_feeds, status = await self.get_funded_feed_queries()
         if not status.ok:
             logger.error("Error getting supported feeds")
             return None, status
-        if not telliot_supported_feeds:
+        if not qtype_supported_feeds:
             logger.info("No supported feeds found")
             return None, status
 
         # assemble both feed id and query id
-        for feed in telliot_supported_feeds:
+        for feed in qtype_supported_feeds:
             feed.feed_id, feed.query_id = self.generate_ids(feed=feed)
         # for feeds with price threshold gt zero check if api support
-        catalog_supported_feeds = self.api_support_check(feeds=telliot_supported_feeds)
+        api_supported_feeds = self.api_support_check(feeds=qtype_supported_feeds)
 
-        if not catalog_supported_feeds:
+        if not api_supported_feeds:
             note = (
                 "No feeds to report, all funded feeds had threshold gt zero and "
                 "no API support in telliot to check if threshold is met"
@@ -82,7 +82,7 @@ class FundedFeeds(FundedFeedFilter):
             return None, error_status(note=note)
         # make the first multicall and values and timestamps for the past month
         feeds_timestsamps_and_values_lis, status = await self.multi_call.month_of_timestamps_and_values(
-            feeds=catalog_supported_feeds, now_timestamp=now_timestamp, max_age=month_old_timestamp, max_count=40_000
+            feeds=api_supported_feeds, now_timestamp=now_timestamp, max_age=month_old_timestamp, max_count=40_000
         )
 
         if not status.ok:
