@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
+from typing import Union
 
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
@@ -42,7 +43,7 @@ class EVMCallSource(DataSource[Any]):
 
         self.web3 = endpoint.web3
 
-    def get_response(self) -> Optional[Any]:
+    def get_response(self, block_number: Union[str, int] = "latest") -> Optional[Any]:
         """Makes requested EVM call and returns the response from the contract
 
         EVM call query is validated as best as possible and for known invalid EVM call requests
@@ -60,8 +61,15 @@ class EVMCallSource(DataSource[Any]):
             raise ValueError("Web3 not provided")
 
         empty_bytes = HexBytes(bytes(32))
-        ts = int(datetime_now_utc().timestamp())
 
+        try:
+            block_number = self.web3.eth.get_block_number()
+            block = self.web3.eth.get_block(block_number)
+            ts = block['timestamp']
+        except Exception as e:
+            logger.warning(f"Unable to retrieve current block timestamp")
+            return None
+        
         self.contractAddress = self.web3.toChecksumAddress(self.contractAddress)
 
         if len(self.calldata) < 4:  # A function selector is 4 bytes long, so calldata must be at least of length 4
@@ -104,7 +112,7 @@ class EVMCallSource(DataSource[Any]):
 
         return (result, ts)
 
-    async def fetch_new_datapoint(self) -> OptionalDataPoint[Any]:
+    async def fetch_new_datapoint(self, block_number: Union[str, int] = "latest") -> OptionalDataPoint[Any]:
         """Update current value with time-stamped value fetched from EVM contract.
 
         Returns:
@@ -117,7 +125,7 @@ class EVMCallSource(DataSource[Any]):
             return None, None
 
         try:
-            val = self.get_response()
+            val = self.get_response(block_number=block_number)
             if val is None:
                 logger.warning("Call to contract failed to return a response")
                 return None, None
