@@ -2,7 +2,6 @@ import pytest
 from eth_abi import decode_single
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
-from web3 import Web3
 
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.sources.evm_call import EVMCallSource
@@ -125,6 +124,7 @@ async def test_report_for_bad_calldata(tellor_360):
     # call r.ensure_staked to update staker info
     await r.ensure_staked()
     assert r.staker_info.reports_count == 1
+
 
 def test_evm_call_on_previous_block():
     """Test an EVMCall on a block that isn't the latest block"""
