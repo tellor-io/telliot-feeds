@@ -139,7 +139,7 @@ def test_evm_call_on_previous_block():
 
     current_value, current_timestamp = s.get_response()
 
-    old_block_number = s.web3.eth.get_block_number() - 128
+    old_block_number = s.web3.eth.get_block_number() - 2000
 
     previous_value, previous_timestamp = s.get_response(old_block_number)
 
