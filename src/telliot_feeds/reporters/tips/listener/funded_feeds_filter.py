@@ -1,4 +1,5 @@
 import math
+from typing import Any
 from typing import Optional
 
 from eth_abi import encode_single
@@ -6,6 +7,7 @@ from eth_utils.conversions import to_bytes
 from telliot_core.utils.response import error_status
 from web3 import Web3 as w3
 
+from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.reporters.tips import CATALOG_QUERY_IDS
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
@@ -81,15 +83,16 @@ class FundedFeedFilter:
         query_tag = CATALOG_QUERY_IDS[query_id]
 
         if query_tag in CATALOG_FEEDS:
-            datafeed = CATALOG_FEEDS[query_tag]
+            datafeed: DataFeed[Any] = CATALOG_FEEDS[query_tag]
         else:
             logger.info(f"No Api source found for {query_tag} to check priceThreshold")
             return None
         if query_id not in self.prices:
-            value_now = await datafeed.source.fetch_new_datapoint()  # type: ignore
-
-            if not value_now:
-                note = f"Unable to fetch {datafeed} price for tip calculation"
+            value_now = await datafeed.source.fetch_new_datapoint()
+            if value_now[0] is None:
+                note = (
+                    f"Unable to fetch data from API for {datafeed.query.descriptor}, to check if price threshold is met"
+                )
                 _ = error_status(note=note, log=logger.warning)
                 return None
 
@@ -228,6 +231,7 @@ class FundedFeedFilter:
                 )
                 if price_change is None:
                     # unable to fetch price data
+                    feeds.remove(feed)
                     continue
                 if price_change < price_threshold:
                     feeds.remove(feed)

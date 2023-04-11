@@ -70,7 +70,7 @@ class TipListenerFilter:
             return None
         if qtag in CATALOG_FEEDS:
             datafeed = CATALOG_FEEDS[qtag]
-            return datafeed  # type: ignore
+            return datafeed
         else:
             return None
 

@@ -74,7 +74,7 @@ from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
 
 
-CATALOG_FEEDS = {
+CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "ampleforth-custom": ampl_usd_vwap_feed,
     "ampleforth-uspce": uspce_feed,
     "eth-jpy-spot": eth_jpy_median_feed,

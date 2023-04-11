@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Tuple
 from typing import Optional
 from typing import Union
-
+from web3 import middleware
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
 from web3 import Web3
+from web3.types import BlockIdentifier
 from web3.exceptions import ContractLogicError
 
 from telliot_feeds.datasource import DataSource
@@ -43,7 +44,7 @@ class EVMCallSource(DataSource[Any]):
 
         self.web3 = endpoint.web3
 
-    def get_response(self, block_number: Union[str, int] = "latest") -> Optional[Any]:
+    def get_response(self, block_number: BlockIdentifier = "latest") -> Optional[Tuple[HexBytes, int]]:
         """Makes requested EVM call and returns the response from the contract
 
         EVM call query is validated as best as possible and for known invalid EVM call requests
@@ -63,9 +64,18 @@ class EVMCallSource(DataSource[Any]):
         empty_bytes = HexBytes(bytes(32))
 
         try:
-            block_number = self.web3.eth.get_block_number()
+            self.web3.eth.get_block('latest')
+        except Exception as e:
+            logger.info(f"EVMCall to POA chain detected. Injecting POA middleware...")
+
+            try:
+                self.web3.middleware_onion.inject(middleware.geth_poa_middleware, layer=0)
+            except Exception as e:
+                logger.warning(f"Unable to inject web3 middleware for POA chain connection: {e}")
+
+        try:
             block = self.web3.eth.get_block(block_number)
-            ts = block["timestamp"]
+            ts = int(block["timestamp"])
         except Exception as e:
             logger.warning(f"Unable to retrieve current block timestamp: {e}")
             return None
@@ -76,7 +86,7 @@ class EVMCallSource(DataSource[Any]):
             logger.info(f"Invalid calldata: {self.calldata!r}, too short, submitting empty bytes")
             return (empty_bytes, ts)
         try:
-            result = self.web3.eth.call({"gasPrice": 0, "to": self.contractAddress, "data": self.calldata}, "latest")
+            result = self.web3.eth.call({"gasPrice": 0, "to": self.contractAddress, "data": self.calldata}, block_number)
         # Is there a scenario where a contract call for a view/pure function would revert when the callData is valid?
         except ContractLogicError as e:
             bytecode = self.web3.eth.getCode(self.contractAddress)
@@ -112,7 +122,7 @@ class EVMCallSource(DataSource[Any]):
 
         return (result, ts)
 
-    async def fetch_new_datapoint(self, block_number: Union[str, int] = "latest") -> OptionalDataPoint[Any]:
+    async def fetch_new_datapoint(self, block_number: BlockIdentifier = "latest") -> OptionalDataPoint[Any]:
         """Update current value with time-stamped value fetched from EVM contract.
 
         Returns:

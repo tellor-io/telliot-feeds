@@ -2,6 +2,7 @@ import pytest
 from eth_abi import decode_single
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
+from web3 import Web3
 
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.sources.evm_call import EVMCallSource
@@ -63,7 +64,7 @@ async def test_non_getter_calldata():
 
     # test get_response
     response = s.get_response()
-    assert not response
+    assert response is None
 
     """Test getter calldata"""
     s.calldata = b"\x73\x25\x24\x94"  # calldata for getGovernanceAddress()
@@ -124,3 +125,23 @@ async def test_report_for_bad_calldata(tellor_360):
     # call r.ensure_staked to update staker info
     await r.ensure_staked()
     assert r.staker_info.reports_count == 1
+
+def test_evm_call_on_previous_block():
+    """Test an EVMCall on a block that isn't the latest block"""
+
+    s = EVMCallSource()
+    s.chainId = 1
+    s.update_web3()
+
+    # We will use `getCurrentValue` on the ETH/USD query id
+    s.calldata = bytes.fromhex("adf1639d83a7f3d48786ac2667503a61e8c415438ed2922eb86a2906e4ee66d9a2ce4992")
+    s.contractAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
+
+    current_value, current_timestamp = s.get_response()
+
+    old_block_number = s.web3.eth.get_block_number() - 128
+
+    previous_value, previous_timestamp = s.get_response(old_block_number)
+
+    assert current_value != previous_value
+    assert current_timestamp != previous_timestamp
