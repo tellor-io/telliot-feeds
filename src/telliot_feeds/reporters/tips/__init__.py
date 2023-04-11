@@ -63,4 +63,7 @@ add_multicall_support(
 
 CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
 CATALOG_QUERY_DATA = {query_catalog._entries[tag].query.query_data: tag for tag in query_catalog._entries}
+# A list of query types that have a generic source that can take any properly formatted inputs and return a price
+# unlike manual input sources that prompt user input. This allows tip listener to fetch prices when needing to check
+# threshold conditions
 TYPES_WITH_GENERIC_SOURCE = ["MimicryMacroMarketMashup", "MimicryCollectionStat"]

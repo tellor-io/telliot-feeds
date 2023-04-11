@@ -10,10 +10,10 @@ from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
 from telliot_feeds.reporters.tips import TYPES_WITH_GENERIC_SOURCE
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
-from telliot_feeds.reporters.tips.listener.tip_listener_filter import decode_typ_name
-from telliot_feeds.reporters.tips.listener.tip_listener_filter import feed_from_catalog_feeds
-from telliot_feeds.reporters.tips.listener.tip_listener_filter import get_query_from_qtyp_name
-from telliot_feeds.reporters.tips.listener.tip_listener_filter import query_from_query_catalog
+from telliot_feeds.utils.query_search_utils import decode_typ_name
+from telliot_feeds.utils.query_search_utils import feed_from_catalog_feeds
+from telliot_feeds.utils.query_search_utils import get_query_from_qtyp_name
+from telliot_feeds.utils.query_search_utils import query_from_query_catalog
 from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
@@ -92,7 +92,7 @@ class FundedFeedFilter:
             qtype_name = decode_typ_name(query_data)
             datafeed = DATAFEED_BUILDER_MAPPING.get(qtype_name) if qtype_name in TYPES_WITH_GENERIC_SOURCE else None
             if datafeed is None:
-                logger.info(f"No Api source found for {query_id.hex()} to check priceThreshold")
+                logger.info(f"No API source found for {query_id.hex()} to check priceThreshold")
                 return None
             query = get_query_from_qtyp_name(query_data)
             if query is None:

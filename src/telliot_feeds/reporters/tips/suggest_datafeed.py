@@ -8,10 +8,10 @@ from telliot_core.utils.timestamp import TimeStamp
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.reporters.tips.listener.funded_feeds import FundedFeeds
 from telliot_feeds.reporters.tips.listener.one_time_tips import get_funded_one_time_tips
-from telliot_feeds.reporters.tips.listener.tip_listener_filter import feed_from_catalog_feeds
-from telliot_feeds.reporters.tips.listener.tip_listener_filter import feed_from_data_feed_builder_mapping
-from telliot_feeds.reporters.tips.listener.tip_listener_filter import get_query_from_qtyp_name
-from telliot_feeds.reporters.tips.listener.tip_listener_filter import qtype_name_in_registry
+from telliot_feeds.utils.query_search_utils import feed_from_catalog_feeds
+from telliot_feeds.utils.query_search_utils import feed_from_data_feed_builder_mapping
+from telliot_feeds.utils.query_search_utils import get_query_from_qtyp_name
+from telliot_feeds.utils.query_search_utils import qtype_name_in_registry
 from telliot_feeds.reporters.tips.listener.utils import get_sorted_tips
 from telliot_feeds.reporters.tips.multicall_functions.multicall_autopay import MulticallAutopay
 from telliot_feeds.utils.log import get_logger

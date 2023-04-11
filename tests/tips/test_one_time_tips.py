@@ -6,7 +6,7 @@ from eth_abi import encode_abi
 from web3 import Web3
 
 from telliot_feeds.reporters.tips.listener.one_time_tips import get_funded_one_time_tips
-from telliot_feeds.reporters.tips.listener.tip_listener_filter import qtype_name_in_registry
+from telliot_feeds.utils.query_search_utils import qtype_name_in_registry
 
 
 @pytest.mark.asyncio
