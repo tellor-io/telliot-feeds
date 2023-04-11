@@ -10,11 +10,11 @@ from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
 from telliot_feeds.reporters.tips import TYPES_WITH_GENERIC_SOURCE
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
+from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.query_search_utils import decode_typ_name
 from telliot_feeds.utils.query_search_utils import feed_from_catalog_feeds
 from telliot_feeds.utils.query_search_utils import get_query_from_qtyp_name
 from telliot_feeds.utils.query_search_utils import query_from_query_catalog
-from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
