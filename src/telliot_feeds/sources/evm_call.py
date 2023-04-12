@@ -3,6 +3,7 @@ from typing import Any
 from typing import Optional
 from typing import Tuple
 
+import web3
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
 from web3 import middleware
@@ -65,13 +66,13 @@ class EVMCallSource(DataSource[Any]):
         empty_bytes = HexBytes(bytes(32))
 
         try:
-            self.web3.eth.get_block("latest")
-        except Exception:
-            logger.info("EVMCall to POA chain detected. Injecting POA middleware...")
+            self.web3.eth.get_block(block_number)
+        except web3.exceptions.ExtraDataLengthError as e:
+            logger.info(f"EVMCall to POA chain detected. Injecting POA middleware in response to exception: {e}")
 
             try:
                 self.web3.middleware_onion.inject(middleware.geth_poa_middleware, layer=0)
-            except Exception as e:
+            except ValueError as e:
                 logger.warning(f"Unable to inject web3 middleware for POA chain connection: {e}")
 
         try:
