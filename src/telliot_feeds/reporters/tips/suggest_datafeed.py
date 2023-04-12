@@ -12,9 +12,8 @@ from telliot_feeds.reporters.tips.listener.utils import get_sorted_tips
 from telliot_feeds.reporters.tips.multicall_functions.multicall_autopay import MulticallAutopay
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.query_search_utils import feed_from_catalog_feeds
-from telliot_feeds.utils.query_search_utils import feed_from_data_feed_builder_mapping
+from telliot_feeds.utils.query_search_utils import feed_in_feed_builder_mapping
 from telliot_feeds.utils.query_search_utils import get_query_from_qtyp_name
-from telliot_feeds.utils.query_search_utils import qtype_name_in_registry
 
 
 logger = get_logger(__name__)
@@ -39,10 +38,10 @@ async def get_feed_and_tip(
 
     multi_call = MulticallAutopay()
 
-    funded_feeds = FundedFeeds(autopay=autopay, multi_call=multi_call, listener_filter=qtype_name_in_registry)
+    funded_feeds = FundedFeeds(autopay=autopay, multi_call=multi_call)
 
     feed_tips = await funded_feeds.querydata_and_tip(current_time=current_timestamp)
-    onetime_tips = await get_funded_one_time_tips(autopay=autopay, listener_filter=qtype_name_in_registry)
+    onetime_tips = await get_funded_one_time_tips(autopay=autopay)
 
     if not feed_tips and not onetime_tips:
         logger.info("No tips available in autopay")
@@ -57,7 +56,7 @@ async def get_feed_and_tip(
         datafeed = feed_from_catalog_feeds(query_data)
 
         if datafeed is None:
-            datafeed = feed_from_data_feed_builder_mapping(query_data)
+            datafeed = feed_in_feed_builder_mapping(query_data)
 
         if datafeed is not None:
             query = get_query_from_qtyp_name(query_data)

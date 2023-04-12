@@ -1,8 +1,7 @@
 import math
 from typing import Optional
 
-from eth_abi import encode_single
-from eth_utils.conversions import to_bytes
+from eth_abi import encode_abi
 from telliot_core.utils.response import error_status
 from web3 import Web3 as w3
 
@@ -12,36 +11,38 @@ from telliot_feeds.reporters.tips import TYPES_WITH_GENERIC_SOURCE
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.query_search_utils import decode_typ_name
-from telliot_feeds.utils.query_search_utils import feed_from_catalog_feeds
 from telliot_feeds.utils.query_search_utils import get_query_from_qtyp_name
+from telliot_feeds.utils.query_search_utils import qtag_from_query_catalog
 from telliot_feeds.utils.query_search_utils import query_from_query_catalog
 
 logger = get_logger(__name__)
 
 
 class FundedFeedFilter:
-    def generate_ids(self, feed: QueryIdandFeedDetails) -> tuple[bytes, bytes]:
+    def generate_ids(self, feeds: list[QueryIdandFeedDetails]) -> list[QueryIdandFeedDetails]:
         """Hash feed details to generate query id and feed id
 
         Return:
+        list of feeds with query_id and feed_id added
         - query_id: keccak(query_data)
         - feed_id: keccak(abi.encode(queryId,reward,startTime,interval,window,priceThreshold,rewardIncreasePerSecond)
         """
-        query_id = to_bytes(hexstr=w3.keccak(feed.query_data).hex())
-        feed_data = encode_single(
-            "(bytes32,uint256,uint256,uint256,uint256,uint256,uint256)",
-            [
-                query_id,
+        for feed in feeds:
+            feed.query_id = bytes(w3.keccak(feed.query_data))
+            feed_abi_types = ["bytes32", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256"]
+            feed_values = [
+                feed.query_id,
                 feed.params.reward,
                 feed.params.startTime,
                 feed.params.interval,
                 feed.params.window,
                 feed.params.priceThreshold,
                 feed.params.rewardIncreasePerSecond,
-            ],
-        )
-        feed_id = to_bytes(hexstr=w3.keccak(feed_data).hex())
-        return feed_id, query_id
+            ]
+            feed_id_encoded = encode_abi(feed_abi_types, feed_values)
+            feed.feed_id = bytes(w3.keccak(feed_id_encoded))
+
+        return feeds
 
     def is_timestamp_first_in_window(
         self,
@@ -120,28 +121,6 @@ class FundedFeedFilter:
             self.prices[query_id] = value_now[0]
 
         return _get_price_change(previous_val=value_before_decoded, current_val=self.prices[query_id])
-
-    def api_support_check(self, feeds: list[QueryIdandFeedDetails]) -> list[QueryIdandFeedDetails]:
-        """Filter funded feeds where threshold is gt zero and no telliot catalog feeds support"""
-        telliot_supported_with_api = []
-
-        for feed in feeds:
-            if feed.params.priceThreshold == 0:
-                telliot_supported_with_api.append(feed)
-            else:
-                # check first if qtag in CATALOG_FEEDS which means a datafeed exists to check prices
-                datafeed = feed_from_catalog_feeds(feed.query_data)
-                # find query type in DATAFEEDBUILDER Mapping if qtype has generic source ie no manual entry required
-                if datafeed is None:
-                    qtype = decode_typ_name(feed.query_data)
-                    if qtype in TYPES_WITH_GENERIC_SOURCE:
-                        telliot_supported_with_api.append(feed)
-                    else:
-                        continue
-                else:
-                    telliot_supported_with_api.append(feed)
-
-        return telliot_supported_with_api
 
     def filter_historical_submissions(self, feeds: list[QueryIdandFeedDetails]) -> list[QueryIdandFeedDetails]:
         """Check list of values for older submission would've been eligible for a tip
@@ -252,6 +231,13 @@ class FundedFeedFilter:
                 continue
 
             if price_threshold != 0 and not in_eligible_window:
+                # See if query type has API source to check price threshold
+                if qtag_from_query_catalog(qid=feed.query_id.hex()) not in CATALOG_FEEDS:
+                    qtype = decode_typ_name(feed.query_data)
+                    if qtype not in TYPES_WITH_GENERIC_SOURCE:
+                        logger.info(f"No auto source for feed with query type {qtype} to check threshold")
+                        feeds.remove(feed)
+                        continue
                 price_change = await self.price_change(
                     query_data=feed.query_data,
                     value_before=feed.current_queryid_value,

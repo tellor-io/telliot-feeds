@@ -1,7 +1,6 @@
 """Fetch and filter(based on telliot registry) funded queries from autopay
 Make calls forward and fill in FullFeedQueryDetails
 """
-from typing import Callable
 from typing import Optional
 
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
@@ -14,6 +13,7 @@ from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
 from telliot_feeds.reporters.tips.listener.funded_feeds_filter import FundedFeedFilter
 from telliot_feeds.reporters.tips.multicall_functions.multicall_autopay import MulticallAutopay
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.query_search_utils import feed_in_feed_builder_mapping
 
 
 logger = get_logger(__name__)
@@ -22,11 +22,8 @@ logger = get_logger(__name__)
 class FundedFeeds(FundedFeedFilter):
     """Fetch Feeds from autopay and filter"""
 
-    def __init__(
-        self, autopay: TellorFlexAutopayContract, multi_call: MulticallAutopay, listener_filter: Callable[[bytes], bool]
-    ) -> None:
+    def __init__(self, autopay: TellorFlexAutopayContract, multi_call: MulticallAutopay) -> None:
         self.multi_call = multi_call
-        self.listener_filter = listener_filter
         self.autopay = self.multi_call.autopay = autopay
 
     async def get_funded_feed_queries(self) -> tuple[Optional[list[QueryIdandFeedDetails]], ResponseStatus]:
@@ -43,7 +40,7 @@ class FundedFeeds(FundedFeedFilter):
 
         # List of feeds with telliot supported query types
         supported_funded_feeds = [
-            (feed, query_data) for (feed, query_data) in funded_feeds if self.listener_filter(query_data)
+            (feed, query_data) for (feed, query_data) in funded_feeds if feed_in_feed_builder_mapping(query_data)
         ]
 
         if not supported_funded_feeds:
@@ -61,36 +58,18 @@ class FundedFeeds(FundedFeedFilter):
     ) -> tuple[Optional[list[QueryIdandFeedDetails]], ResponseStatus]:
 
         qtype_supported_feeds, status = await self.get_funded_feed_queries()
-        if not status.ok:
-            logger.error("Error getting supported feeds")
-            return None, status
-        if not qtype_supported_feeds:
-            logger.info("No supported feeds found")
+        if not status.ok or not qtype_supported_feeds:
             return None, status
 
         # assemble both feed id and query id
-        for feed in qtype_supported_feeds:
-            feed.feed_id, feed.query_id = self.generate_ids(feed=feed)
-        # for feeds with price threshold gt zero check if api support
-        api_supported_feeds = self.api_support_check(feeds=qtype_supported_feeds)
+        qtype_supported_feeds = self.generate_ids(feeds=qtype_supported_feeds)
 
-        if not api_supported_feeds:
-            note = (
-                "No feeds to report, all funded feeds had threshold gt zero and "
-                "no API support in telliot to check if threshold is met"
-            )
-            return None, error_status(note=note)
         # make the first multicall and values and timestamps for the past month
         feeds_timestsamps_and_values_lis, status = await self.multi_call.month_of_timestamps_and_values(
-            feeds=api_supported_feeds, now_timestamp=now_timestamp, max_age=month_old_timestamp, max_count=40_000
+            feeds=qtype_supported_feeds, now_timestamp=now_timestamp, max_age=month_old_timestamp, max_count=40_000
         )
 
-        if not status.ok:
-            logger.error("Error getting feeds, timestamps, and values")
-            return None, status
-
-        if not feeds_timestsamps_and_values_lis:
-            logger.info("No feeds, timestamps, and values found")
+        if not status.ok or not feeds_timestsamps_and_values_lis:
             return None, status
 
         # filter out feeds that aren't eligible to submit for NOW
@@ -131,10 +110,7 @@ class FundedFeeds(FundedFeedFilter):
         # one_day_ago = current_time - 259_200
 
         eligible_funded_feeds, status = await self.filtered_funded_feeds(
-            now_timestamp=current_time,
-            month_old_timestamp=one_month_ago
-            # now_timestamp=current_time,
-            # month_old_timestamp=one_day_ago,
+            now_timestamp=current_time, month_old_timestamp=one_month_ago
         )
         if not status.ok:
             logger.error(f"Error getting eligible funded feeds: {status.error}")
