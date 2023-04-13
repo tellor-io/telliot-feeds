@@ -3,7 +3,8 @@ from unittest.mock import patch
 
 import pytest
 from brownie import chain
-from eth_utils import to_bytes
+from hexbytes import HexBytes
+from web3 import Web3
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import matic_usd_median_feed
@@ -62,14 +63,14 @@ async def test_fetching_tips(tip_feeds_and_one_time_tips):
 async def test_fake_queryid_feed_setup(autopay_contract_setup, caplog):
     """Test feed tips but no one time tips and no reported timestamps"""
     flex = await autopay_contract_setup
-    query_data = "0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000953706f745072696365000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002"  # noqa: E501
-    query_id = flex.autopay.node._web3.keccak(to_bytes(hexstr=query_data)).hex()
+    query_data = "0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000846616b655479706500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000003657468000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000037573640000000000000000000000000000000000000000000000000000000000"  # noqa: E501
+    query_id = Web3.keccak(HexBytes(query_data))
     # setup a feed on autopay
     _, status = await flex.autopay.write(
         "setupDataFeed",
         gas_limit=3500000,
         legacy_gas_price=1,
-        _queryId=query_id,
+        _queryId=query_id.hex(),
         _reward=1,
         _startTime=chain.time(),
         _interval=21600,
@@ -83,11 +84,7 @@ async def test_fake_queryid_feed_setup(autopay_contract_setup, caplog):
     datafeed, tip = await get_feed_and_tip(flex.autopay)
     assert datafeed is None
     assert tip is None
-    msg = (
-        "No feeds to report, all funded feeds had threshold gt zero and "
-        "no API support in telliot to check if threshold is met"
-    )
-    assert msg in caplog.text
+    assert "No funded feeds with telliot support found in autopay" in caplog.text
 
 
 @pytest.mark.asyncio
@@ -113,7 +110,7 @@ async def test_error_calculating_priceThreshold(autopay_contract_setup, caplog):
         gas_limit=3500000,
         legacy_gas_price=1,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed)
     assert tip_amount == int(1e18)
     # report a price that meets the threshold
     current_price = price * (1 + price_threshold / 100)
@@ -128,16 +125,62 @@ async def test_error_calculating_priceThreshold(autopay_contract_setup, caplog):
         legacy_gas_price=1,
     )
     # there should be a tip since the price threshold is met and we're able to calculate the deviation
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id, timestamp=chain.time() + 2)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.time() + 2)
     assert tip_amount == int(1e18)
     with patch(
         "telliot_feeds.feeds.matic_usd_median_feed.source.fetch_new_datapoint",
         AsyncMock(side_effect=lambda: (None, None)),
     ):
         # tip amount should be 0 because the price threshold can't be calculated
-        tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id, timestamp=chain.time() + 2)
+        tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.time() + 2)
         assert tip_amount == 0
         assert (
             'Unable to fetch data from API for {"type":"SpotPrice","asset":"matic","currency":"usd"}, to check if price'
             " threshold is met" in caplog.text
         )
+
+
+@pytest.mark.asyncio
+async def test_feed_with_manual_source(autopay_contract_setup, caplog):
+    """Test feed with threshold greater and a manual source"""
+    r = await autopay_contract_setup
+    query_data = "0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000953706f745072696365000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000466616b650000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000037573640000000000000000000000000000000000000000000000000000000000"  # noqa: E501
+    query_id = Web3.keccak(HexBytes(query_data))
+    # setup a feed on autopay
+    _, status = await r.autopay.write(
+        "setupDataFeed",
+        gas_limit=3500000,
+        legacy_gas_price=1,
+        _queryId=query_id.hex(),
+        _reward=1,
+        _startTime=chain.time(),
+        _interval=21600,
+        _window=60,
+        _priceThreshold=1,
+        _rewardIncreasePerSecond=0,
+        _queryData=query_data,
+        _amount=int(10e18),
+    )
+    assert status.ok
+    datafeed, tip = await get_feed_and_tip(r.autopay)
+    assert datafeed.query.asset == "fake"
+    assert datafeed.query.currency == "usd"
+    assert datafeed.query.type == "SpotPrice"
+    assert datafeed.source.type == "SpotPriceManualSource"
+    assert tip == 1
+    # submitting a value forces threshold check
+    # since threshold check and this is a manual source feed shouldn't be suggested
+    await r.oracle.write(
+        "submitValue",
+        _queryId=query_id,
+        _queryData=query_data,
+        _value=datafeed.query.value_type.encode(100.0),
+        _nonce=0,
+        gas_limit=3500000,
+        legacy_gas_price=1,
+    )
+    chain.mine(timedelta=1)
+    datafeed, tip = await get_feed_and_tip(r.autopay, current_timestamp=chain.time())
+    assert datafeed is None
+    assert tip is None
+    assert "No auto source for feed with query type SpotPrice to check threshold" in caplog.text
