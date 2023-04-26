@@ -55,6 +55,13 @@ add_multicall_support(
 )
 
 add_multicall_support(
+    network="Filecoin calibration Testnet",
+    network_id=314159,
+    state_override=False,
+    multicall3_address="0x08e08170712c7751b45b38865B97A50855c8ab13",
+)
+
+add_multicall_support(
     network="Filecoin",
     network_id=314,
     state_override=False,
