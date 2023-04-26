@@ -1,6 +1,7 @@
 from unittest import mock
 
 import pytest
+import requests
 from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from web3 import Web3
@@ -97,11 +98,25 @@ def test_get_native_token_feed():
 
 
 @pytest.mark.asyncio
-async def test_checking_if_online():
+async def test_checking_if_online(caplog):
     """test telliot check for internet connection"""
 
     online = await is_online()
     assert isinstance(online, bool)
+
+    with mock.patch("requests.get", side_effect=requests.exceptions.ConnectionError("test message")):
+
+        online = await is_online()
+        assert not online
+        assert "Unable to connect to internet" in caplog.text
+        assert "ConnectionError" in caplog.text
+
+    with mock.patch("requests.get", side_effect=requests.exceptions.Timeout("test message")):
+
+        online = await is_online()
+        assert not online
+        assert "Unable to connect to internet" in caplog.text
+        assert "Timeout" in caplog.text
 
 
 def test_suggest_random_feed():

@@ -77,7 +77,8 @@ async def is_online() -> bool:
     try:
         requests.get("http://1.1.1.1")
         return True
-    except requests.exceptions.ConnectionError:
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+        logger.error(f"Unable to connect to internet: {repr(e)}")
         return False
 
 
