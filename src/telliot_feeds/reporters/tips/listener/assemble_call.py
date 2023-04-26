@@ -13,6 +13,9 @@ class AssembleCall:
     Assemble call object for autopay functions to batch call them using multicall
     """
 
+    # set gas limit high to avoid out of gas errors
+    gas_limit: int = 500_000_000
+
     def __init__(self) -> None:
         self.autopay: TellorFlexAutopayContract
 
@@ -29,7 +32,9 @@ class AssembleCall:
         - dictionary of of Any type key, could be tuple, string, or number
         """
         status = ResponseStatus()
-        multi_call = Multicall(calls=calls, _w3=self.autopay.node._web3, require_success=success)
+        multi_call = Multicall(
+            calls=calls, _w3=self.autopay.node._web3, require_success=success, gas_limit=self.gas_limit
+        )
         try:
             data: dict[Any, Any] = await multi_call.coroutine()
             return data, status
