@@ -213,7 +213,7 @@ async def test_no_value_before(autopay_contract_setup, caplog):
     suggestion = await get_feed_and_tip(r.autopay, current_timestamp=chain.time())
     assert suggestion == (None, None)
     assert (
-        'No value before for {"type":"SpotPrice","asset":"matic","currency":"usd"} to check priceThreshold'
+        'No value to compare for checking price threshold: {"type":"SpotPrice","asset":"matic","currency":"usd"}'
         in caplog.text
     )
 
