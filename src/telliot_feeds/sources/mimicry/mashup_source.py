@@ -131,6 +131,9 @@ class NFTMashupSource(DataSource[str]):
             if response is not None:
                 try:
                     market_cap = response[metric]
+                    if not market_cap:
+                        logger.debug(f"No value fetched for collection: {self.collections[idx]}")
+                        return None
                     collection_mcaps.append(market_cap)
                 except KeyError as e:
                     logger.warning(
@@ -172,6 +175,9 @@ class NFTMashupSource(DataSource[str]):
             if response is not None:
                 try:
                     market_cap = response["market_data"]["market_cap"][self.currency.lower()]
+                    if not market_cap:
+                        logger.debug(f"No value fetched for token: {response['name']}")
+                        return None
                     token_mcaps.append(market_cap)
                 except Exception as e:
                     logger.warning(f"Failed to fetch token's market cap: {e}.")
