@@ -104,6 +104,16 @@ class FundedFeedFilter:
                 val = getattr(query, param)
                 setattr(datafeed.source, param, val)
 
+        # if no value before return 100% change which indicates that price threshold is met
+        if not value_before:
+            logger.debug(f"No value before for {query.type}")
+            return _get_price_change(previous_val=0, current_val=0)
+
+        # before value has to be of length 32 since uint256 has to be 32 bytes to be decoded by eth_abi
+        if len(value_before) != 32:
+            logger.info(f"Before value type isn't uint256 {value_before.hex()}; can't calculate price change")
+            return None
+        # TODO: handle case when value_before is not uint256 but is exactly 32 bytes
         value_before_decoded = query.value_type.decode(value_before)
         if not isinstance(value_before_decoded, (int, float)):
             logger.info(f"Before value is not a number {value_before_decoded} can't calculate price change")
