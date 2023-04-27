@@ -210,12 +210,10 @@ async def test_no_value_before(autopay_contract_setup, caplog):
     # bypass window to force threshold check
     chain.mine(timedelta=1)
     # check that no feed is suggested since there is no value before and not in window
-    suggestion = await get_feed_and_tip(r.autopay, current_timestamp=chain.time())
-    assert suggestion == (None, None)
-    assert (
-        'No value to compare for checking price threshold: {"type":"SpotPrice","asset":"matic","currency":"usd"}'
-        in caplog.text
-    )
+    feed, tip = await get_feed_and_tip(r.autopay, current_timestamp=chain.time())
+    assert feed is not None
+    assert tip is not None
+    assert " No value before for SpotPrice" in caplog.text
 
 
 @pytest.mark.asyncio

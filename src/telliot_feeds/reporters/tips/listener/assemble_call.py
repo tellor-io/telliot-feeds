@@ -13,8 +13,8 @@ class AssembleCall:
     Assemble call object for autopay functions to batch call them using multicall
     """
 
-    # set gas limit high to avoid out of gas errors
-    gas_limit: int = 500_000_000
+    # set gas limit to None since this will mostly be used for read-only calls
+    gas_limit: Optional[int] = None
 
     def __init__(self) -> None:
         self.autopay: TellorFlexAutopayContract

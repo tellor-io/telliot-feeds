@@ -104,10 +104,10 @@ class FundedFeedFilter:
                 val = getattr(query, param)
                 setattr(datafeed.source, param, val)
 
-        # if no value before return None since can't calculate price change
+        # if no value before short circuit and include feed to be suggested
         if not value_before:
-            logger.info(f"No value to compare for checking price threshold: {datafeed.query.descriptor}")
-            return None
+            logger.debug(f"No value before for {query.type}")
+            return _get_price_change(previous_val=0, current_val=0)
 
         # before value has to be of length 32 since uint256 has to be 32 bytes to be decoded by eth_abi
         if len(value_before) != 32:
