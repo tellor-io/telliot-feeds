@@ -189,7 +189,7 @@ async def test_feed_with_manual_source(autopay_contract_setup, caplog):
 
 @pytest.mark.asyncio
 async def test_no_value_before(autopay_contract_setup, caplog):
-    """Test for when there no prior values when checking threshold"""
+    """Test for when there are no prior values when checking threshold"""
     r = await autopay_contract_setup
     query_id = matic_usd_median_feed.query.query_id.hex()
     query_data = matic_usd_median_feed.query.query_data.hex()
@@ -218,9 +218,7 @@ async def test_no_value_before(autopay_contract_setup, caplog):
 
 @pytest.mark.asyncio
 async def test_low_gas_limit_error(autopay_contract_setup, caplog):
-    """Test ContractLogicError due to low multicall gas limit
-    This error was noticed when trying to report on optimism because of their whacky gas calculations
-    """
+    """Test ContractLogicError due to low multicall gas limit"""
     r = await autopay_contract_setup
     query_id = matic_usd_median_feed.query.query_id.hex()
     query_data = matic_usd_median_feed.query.query_data.hex()

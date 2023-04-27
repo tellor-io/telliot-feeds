@@ -171,12 +171,12 @@ class NFTMashupSource(DataSource[str]):
 
         responses = await self.fetch_urls(urls=urls)
         token_mcaps = []
-        for response in responses:
+        for idx, response in enumerate(responses):
             if response is not None:
                 try:
                     market_cap = response["market_data"]["market_cap"][self.currency.lower()]
                     if not market_cap:
-                        logger.debug(f"No value fetched for token: {response['name']}")
+                        logger.debug(f"No value fetched for token: {self.tokens[idx]}")
                         return None
                     token_mcaps.append(market_cap)
                 except Exception as e:

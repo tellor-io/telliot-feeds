@@ -104,7 +104,7 @@ class FundedFeedFilter:
                 val = getattr(query, param)
                 setattr(datafeed.source, param, val)
 
-        # if no value before short circuit and include feed to be suggested
+        # if no value before return 100% change which indicates that price threshold is met
         if not value_before:
             logger.debug(f"No value before for {query.type}")
             return _get_price_change(previous_val=0, current_val=0)
