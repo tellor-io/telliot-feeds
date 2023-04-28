@@ -30,7 +30,6 @@ logger = get_logger(__name__)
 
 
 # chains where autopay contract is deployed
-
 AUTOPAY_CHAINS = (137, 80001, 69, 1666600000, 1666700000, 421611, 42161, 10200, 100, 10, 420, 421613, 3141, 314159, 314, 11155111)
 
 
