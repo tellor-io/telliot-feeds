@@ -242,8 +242,8 @@ class Tellor360Reporter(TellorFlexReporter):
         """Fetches total time based rewards plus tips for current datafeed"""
         if self.datafeed is not None:
             try:
-                qid = self.datafeed.query.query_id
-                self.autopaytip += await fetch_feed_tip(self.autopay, qid)
+                datafeed = self.datafeed
+                self.autopaytip += await fetch_feed_tip(self.autopay, datafeed)
             except EncodingTypeError:
                 logger.warning(f"Unable to generate data/id for query: {self.datafeed.query}")
 

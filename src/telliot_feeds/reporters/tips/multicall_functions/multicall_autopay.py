@@ -1,8 +1,10 @@
+from typing import Any
 from typing import Optional
 
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
+from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.reporters.tips.listener.dtypes import FeedDetails
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
 from telliot_feeds.reporters.tips.listener.dtypes import Values
@@ -96,7 +98,7 @@ class MulticallAutopay(CallFunctions):
         return reward_claimed_status_resp, status
 
     async def currentfeeds_multiple_values_before(
-        self, query_id: bytes, month_old_timestamp: int, now_timestamp: int
+        self, datafeed: DataFeed[Any], month_old_timestamp: int, now_timestamp: int
     ) -> tuple[Optional[list[QueryIdandFeedDetails]], ResponseStatus]:
         """Batch call two functions (getDataBefore,getIndexForDataBefore)
 
@@ -117,6 +119,7 @@ class MulticallAutopay(CallFunctions):
             ('timestamps_array', b'query_id'): (timestamps)
         }
         """
+        query_id = datafeed.query.query_id
         calls = [
             self.get_current_feeds(query_id=query_id),
             self.get_multiple_values_before(
@@ -153,6 +156,7 @@ class MulticallAutopay(CallFunctions):
             feed = QueryIdandFeedDetails(
                 feed_id=feed_id,
                 query_id=query_id,
+                query_data=datafeed.query.query_data,
                 current_queryid_value=current_value,
                 current_value_timestamp=current_value_timestamp,
                 queryid_timestamps_values_list=timestamps_values_list,

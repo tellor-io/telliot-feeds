@@ -30,23 +30,8 @@ logger = get_logger(__name__)
 
 
 # chains where autopay contract is deployed
-AUTOPAY_CHAINS = (
-    137,
-    80001,
-    69,
-    1666600000,
-    1666700000,
-    421611,
-    42161,
-    10200,
-    100,
-    10,
-    420,
-    421613,
-    3141,
-    314,
-    11155111,
-)
+
+AUTOPAY_CHAINS = (137, 80001, 69, 1666600000, 1666700000, 421611, 42161, 10200, 100, 10, 420, 421613, 3141, 314159, 314, 11155111)
 
 
 @dataclass
@@ -469,7 +454,7 @@ async def _get_feed_suggestion(feeds: Any, current_values: Any) -> Any:
                 query_id_with_tips[query_tag] += feed_details.reward
         else:
             datafeed = CATALOG_FEEDS[query_tag]
-            value_now = await datafeed.source.fetch_new_datapoint()  # type: ignore
+            value_now = await datafeed.source.fetch_new_datapoint()
             # value is always a number for a price oracle submission
             # convert bytes value to int
             try:
@@ -477,20 +462,20 @@ async def _get_feed_suggestion(feeds: Any, current_values: Any) -> Any:
             except ValueError:
                 logger.info("Can't check price threshold, oracle price submission not a number")
                 continue
-            if not value_now:
+            if value_now[0] is None or value_before_now is None:
                 note = f"Unable to fetch {datafeed} price for tip calculation"
                 error_status(note=note, log=logger.warning)
                 continue
-            value_now = value_now[0]
+            current_value = value_now[0]
 
             if value_before_now == 0:
                 price_change = 10000
 
-            elif value_now >= value_before_now:
-                price_change = (10000 * (value_now - value_before_now)) / value_before_now
+            elif current_value >= value_before_now:
+                price_change = (10000 * (current_value - value_before_now)) / value_before_now
 
             else:
-                price_change = (10000 * (value_before_now - value_now)) / value_before_now
+                price_change = (10000 * (value_before_now - current_value)) / value_before_now
 
             if price_change > feed_details.priceThreshold:
                 if query_tag not in query_id_with_tips:

@@ -63,7 +63,7 @@ async def test_non_getter_calldata():
 
     # test get_response
     response = s.get_response()
-    assert response == (None, None)
+    assert response is None
 
     """Test getter calldata"""
     s.calldata = b"\x73\x25\x24\x94"  # calldata for getGovernanceAddress()
@@ -124,3 +124,43 @@ async def test_report_for_bad_calldata(tellor_360):
     # call r.ensure_staked to update staker info
     await r.ensure_staked()
     assert r.staker_info.reports_count == 1
+
+
+def test_evm_call_on_previous_block():
+    """Test an EVMCall on a block that isn't the latest block"""
+
+    s = EVMCallSource()
+    s.chainId = 1
+    s.update_web3()
+
+    # We will use `getCurrentValue` on the ETH/USD query id
+    s.calldata = bytes.fromhex("adf1639d83a7f3d48786ac2667503a61e8c415438ed2922eb86a2906e4ee66d9a2ce4992")
+    s.contractAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
+
+    current_value, current_timestamp = s.get_response()
+
+    old_block_number = s.web3.eth.get_block_number() - 2000
+
+    previous_value, previous_timestamp = s.get_response(old_block_number)
+
+    assert current_value != previous_value
+    assert current_timestamp != previous_timestamp
+
+
+@pytest.mark.asyncio
+async def test_not_injecting_middlware_twice(caplog):
+    """Test that reusing a POA chain does not crash from middleware"""
+
+    s = EVMCallSource()
+    s.chainId = 80001  # a POA chain, so it will raise web3.exceptions.ExtraDataLengthError
+    s.update_web3()
+
+    # We will use `getCurrentValue` on the ETH/USD query id
+    s.calldata = bytes.fromhex("adf1639d83a7f3d48786ac2667503a61e8c415438ed2922eb86a2906e4ee66d9a2ce4992")
+    s.contractAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
+
+    s.get_response()
+    assert "It is quite likely that you are connected to a POA chain." in caplog.text
+
+    s.get_response()
+    assert "Layer already has middleware with identifier: geth_poa_middleware" not in caplog.text

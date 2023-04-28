@@ -43,7 +43,7 @@ async def test_single_feed(autopay_contract_setup):
         **setup_datafeed_kwargs_big_window,
         _priceThreshold=price_threshold,
     )
-    tip_amount = await fetch_feed_tip(autopay=flex.autopay, query_id=query_id, timestamp=chain.time() + 4)
+    tip_amount = await fetch_feed_tip(autopay=flex.autopay, datafeed=matic_usd_median_feed, timestamp=chain.time() + 4)
     assert tip_amount == reward
 
 
@@ -62,7 +62,7 @@ async def test_priceThreshold_gt_zero(autopay_contract_setup):
     )
     get_price = await matic_usd_median_feed.source.fetch_new_datapoint()
     price = get_price[0]
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed)
     assert tip_amount == reward
     await r.oracle.write(
         "submitValue",
@@ -73,7 +73,7 @@ async def test_priceThreshold_gt_zero(autopay_contract_setup):
         _nonce=0,
         _queryData=query_data,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id, timestamp=chain.time() + 2)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.time() + 2)
     assert tip_amount == 0
 
 
@@ -95,7 +95,8 @@ async def test_ousideof_window_pt0(autopay_contract_setup):
         _rewardIncreasePerSecond=0,
         _amount=int(5 * 10**18),
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id, timestamp=chain.time() + 2)
+    chain.mine(timedelta=1)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.time())
     assert tip_amount == 0
 
 
@@ -110,7 +111,7 @@ async def test_priceThreshold_zero(autopay_contract_setup):
         **setup_datafeed_kwargs_big_window,
         _priceThreshold=price_threshold,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed)
     assert tip_amount == reward
     await r.oracle.write(
         "submitValue",
@@ -118,11 +119,10 @@ async def test_priceThreshold_zero(autopay_contract_setup):
         _value=to_bytes(int(10 * 1e18)).rjust(32, b"\0"),
         _nonce=0,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id, timestamp=chain.time() + 1)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.time() + 1)
     assert tip_amount == 0
 
 
-# @pytest.mark.skip("fails when run w/other tests")
 @pytest.mark.asyncio
 async def test_meet_priceThreshold(autopay_contract_setup):
     """Test price threshold > 0 and not first in window but meets threshold"""
@@ -136,7 +136,7 @@ async def test_meet_priceThreshold(autopay_contract_setup):
         **setup_datafeed_kwargs_big_window,
         _priceThreshold=price_threshold,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed)
     assert tip_amount == reward
     get_price = await matic_usd_median_feed.source.fetch_new_datapoint()
     # report a price that is 1 less than the current price so that threshold is met
@@ -145,11 +145,11 @@ async def test_meet_priceThreshold(autopay_contract_setup):
     await r.oracle.write(
         "submitValue",
         **txn_kwargs,
-        _value=to_bytes(int(price * 1e18)).rjust(32, b"\0"),
+        _value=int(price * 1e18).to_bytes(32, "big", signed=True),
         _nonce=0,
     )
     # tip amount should be > 0 since price threshold is met
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id, timestamp=chain.time() + 2)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.time() + 2)
     assert tip_amount == reward
 
 
@@ -170,7 +170,7 @@ async def test_onetimetip_and_feedtip(autopay_contract_setup):
         **txn_kwargs,
         _amount=reward,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id, timestamp=chain.time() + 2)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.time() + 2)
     assert tip_amount == reward * 2
 
     # submit value within window
@@ -180,7 +180,7 @@ async def test_onetimetip_and_feedtip(autopay_contract_setup):
         _value=to_bytes(int(2 * 1e18)).rjust(32, b"\0"),
         _nonce=0,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id, timestamp=chain.time() + 2)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.time() + 2)
     # tip should be 0 since there is a submission
     assert tip_amount == 0
 
@@ -204,7 +204,7 @@ async def test_onetimetip_and_feedtip_pt_gt0(autopay_contract_setup):
         **txn_kwargs,
         _amount=reward,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id, timestamp=chain.time() + 2)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.time() + 2)
     assert tip_amount == reward * 2
 
     # submit value within window
@@ -214,12 +214,11 @@ async def test_onetimetip_and_feedtip_pt_gt0(autopay_contract_setup):
         _value=to_bytes(int(2 * 1e18)).rjust(32, b"\0"),
         _nonce=0,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, query_id=query_id, timestamp=chain.time() + 2)
+    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.time() + 2)
     # tip should be 10 since price threshold is met and there is an in window submission
     assert tip_amount == reward
 
 
-@pytest.mark.skip("fails when run w/other tests")
 @pytest.mark.asyncio
 async def test_rng(autopay_contract_setup, mumbai_test_cfg, caplog):
     """Test RNG tip and submission"""

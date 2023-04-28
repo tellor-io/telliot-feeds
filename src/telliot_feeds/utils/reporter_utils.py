@@ -69,7 +69,7 @@ async def tellor_suggested_report(
 
 def suggest_random_feed() -> DataFeed[Any]:
     """Suggest a random feed to report against."""
-    return random.choice(list(CATALOG_FEEDS.values()))  # type: ignore
+    return random.choice(list(CATALOG_FEEDS.values()))
 
 
 async def is_online() -> bool:
@@ -77,7 +77,8 @@ async def is_online() -> bool:
     try:
         requests.get("http://1.1.1.1")
         return True
-    except requests.exceptions.ConnectionError:
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+        logger.error(f"Unable to connect to internet: {repr(e)}")
         return False
 
 

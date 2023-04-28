@@ -1,42 +1,48 @@
 import math
 from typing import Optional
 
-from eth_abi import encode_single
-from eth_utils.conversions import to_bytes
+from eth_abi import encode_abi
 from telliot_core.utils.response import error_status
 from web3 import Web3 as w3
 
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.reporters.tips import CATALOG_QUERY_IDS
+from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
+from telliot_feeds.reporters.tips import TYPES_WITH_GENERIC_SOURCE
 from telliot_feeds.reporters.tips.listener.dtypes import QueryIdandFeedDetails
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.query_search_utils import decode_typ_name
+from telliot_feeds.utils.query_search_utils import get_query_from_qtyp_name
+from telliot_feeds.utils.query_search_utils import qtag_from_query_catalog
+from telliot_feeds.utils.query_search_utils import query_from_query_catalog
 
 logger = get_logger(__name__)
 
 
 class FundedFeedFilter:
-    def generate_ids(self, feed: QueryIdandFeedDetails) -> tuple[bytes, bytes]:
+    def generate_ids(self, feeds: list[QueryIdandFeedDetails]) -> list[QueryIdandFeedDetails]:
         """Hash feed details to generate query id and feed id
 
         Return:
+        list of feeds with query_id and feed_id added
         - query_id: keccak(query_data)
         - feed_id: keccak(abi.encode(queryId,reward,startTime,interval,window,priceThreshold,rewardIncreasePerSecond)
         """
-        query_id = to_bytes(hexstr=w3.keccak(feed.query_data).hex())
-        feed_data = encode_single(
-            "(bytes32,uint256,uint256,uint256,uint256,uint256,uint256)",
-            [
-                query_id,
+        for feed in feeds:
+            feed.query_id = bytes(w3.keccak(feed.query_data))
+            feed_abi_types = ["bytes32", "uint256", "uint256", "uint256", "uint256", "uint256", "uint256"]
+            feed_values = [
+                feed.query_id,
                 feed.params.reward,
                 feed.params.startTime,
                 feed.params.interval,
                 feed.params.window,
                 feed.params.priceThreshold,
                 feed.params.rewardIncreasePerSecond,
-            ],
-        )
-        feed_id = to_bytes(hexstr=w3.keccak(feed_data).hex())
-        return feed_id, query_id
+            ]
+            feed_id_encoded = encode_abi(feed_abi_types, feed_values)
+            feed.feed_id = bytes(w3.keccak(feed_id_encoded))
+
+        return feeds
 
     def is_timestamp_first_in_window(
         self,
@@ -66,7 +72,7 @@ class FundedFeedFilter:
         eligible = [time_diff < feed_window, timestamp_before < current_window_start]
         return all(eligible), time_diff
 
-    async def price_change(self, query_id: bytes, value_before: float) -> Optional[float]:
+    async def price_change(self, query_data: bytes, value_before: bytes) -> Optional[float]:
         """Check if priceThreshold is met for submitting now
 
         Args:
@@ -75,38 +81,56 @@ class FundedFeedFilter:
 
         Returns: float
         """
-        if query_id not in CATALOG_QUERY_IDS:
-            return None
-
-        query_tag = CATALOG_QUERY_IDS[query_id]
-
-        if query_tag in CATALOG_FEEDS:
-            datafeed = CATALOG_FEEDS[query_tag]
+        query_id = bytes(w3.keccak(query_data))
+        query_entry = query_from_query_catalog(qid=query_id.hex())
+        if query_entry is not None:
+            query = query_entry.query
+            datafeed = CATALOG_FEEDS.get(query_entry.tag)
+            if datafeed is None:
+                logger.info(f"{query_entry.tag} not found in telliot CATALOG_FEEDS needed for priceThreshold check")
+                return None
         else:
-            logger.info(f"No Api source found for {query_tag} to check priceThreshold")
+            qtype_name = decode_typ_name(query_data)
+            datafeed = DATAFEED_BUILDER_MAPPING.get(qtype_name) if qtype_name in TYPES_WITH_GENERIC_SOURCE else None
+            if datafeed is None:
+                logger.info(f"No API source found for {query_id.hex()} to check priceThreshold")
+                return None
+            query = get_query_from_qtyp_name(query_data)
+            if query is None:
+                logger.info(f"Unable to decode query data {query_data.hex()}")
+                return None
+            datafeed.query = query
+            for param in datafeed.query.__dict__.keys():
+                val = getattr(query, param)
+                setattr(datafeed.source, param, val)
+
+        # if no value before return 100% change which indicates that price threshold is met
+        if not value_before:
+            logger.debug(f"No value before for {query.type}")
+            return _get_price_change(previous_val=0, current_val=0)
+
+        # before value has to be of length 32 since uint256 has to be 32 bytes to be decoded by eth_abi
+        if len(value_before) != 32:
+            logger.info(f"Before value type isn't uint256 {value_before.hex()}; can't calculate price change")
+            return None
+        # TODO: handle case when value_before is not uint256 but is exactly 32 bytes
+        value_before_decoded = query.value_type.decode(value_before)
+        if not isinstance(value_before_decoded, (int, float)):
+            logger.info(f"Before value is not a number {value_before_decoded} can't calculate price change")
             return None
         if query_id not in self.prices:
-            value_now = await datafeed.source.fetch_new_datapoint()  # type: ignore
+            value_now = await datafeed.source.fetch_new_datapoint()
 
-            if not value_now:
-                note = f"Unable to fetch {datafeed} price for tip calculation"
+            if not value_now[0]:
+                note = (
+                    f"Unable to fetch data from API for {datafeed.query.descriptor}, to check if price threshold is met"
+                )
                 _ = error_status(note=note, log=logger.warning)
                 return None
 
             self.prices[query_id] = value_now[0]
 
-        return _get_price_change(previous_val=value_before, current_val=self.prices[query_id])
-
-    def api_support_check(self, feeds: list[QueryIdandFeedDetails]) -> list[QueryIdandFeedDetails]:
-        """Filter funded feeds where threshold is gt zero and no telliot catalog feeds support"""
-        telliot_supported_with_api = [
-            feed
-            for feed in feeds
-            if feed.params.priceThreshold == 0
-            or (feed.query_id in CATALOG_QUERY_IDS and CATALOG_QUERY_IDS[feed.query_id] in CATALOG_FEEDS)
-        ]
-
-        return telliot_supported_with_api
+        return _get_price_change(previous_val=value_before_decoded, current_val=self.prices[query_id])
 
     def filter_historical_submissions(self, feeds: list[QueryIdandFeedDetails]) -> list[QueryIdandFeedDetails]:
         """Check list of values for older submission would've been eligible for a tip
@@ -217,17 +241,20 @@ class FundedFeedFilter:
                 continue
 
             if price_threshold != 0 and not in_eligible_window:
-                try:
-                    value_before = int(feed.current_queryid_value.hex(), 16) / 10**18
-                except ValueError:
-                    _ = error_status("Error decoding current query id value")
-                    continue
+                # See if query type has API source to check price threshold
+                if qtag_from_query_catalog(qid=feed.query_id.hex()) not in CATALOG_FEEDS:
+                    qtype = decode_typ_name(feed.query_data)
+                    if qtype not in TYPES_WITH_GENERIC_SOURCE:
+                        logger.info(f"No auto source for feed with query type {qtype} to check threshold")
+                        feeds.remove(feed)
+                        continue
                 price_change = await self.price_change(
-                    query_id=feed.query_id,
-                    value_before=value_before,
+                    query_data=feed.query_data,
+                    value_before=feed.current_queryid_value,
                 )
                 if price_change is None:
                     # unable to fetch price data
+                    feeds.remove(feed)
                     continue
                 if price_change < price_threshold:
                     feeds.remove(feed)

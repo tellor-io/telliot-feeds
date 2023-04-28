@@ -1,3 +1,4 @@
+import asyncio
 from unittest import mock
 
 import aiohttp
@@ -51,8 +52,7 @@ async def test_fetching_nft_index_mcap():
 
 @pytest.mark.asyncio
 async def test_aiohttp_errors(caplog):
-    source = NFTMashupSource()
-
+    source = NFTMashupSource(metric="market-cap", currency="usd", collections=COLLECTIONS, tokens=TOKENS, retries=1)
     with mock.patch("aiohttp.ClientSession.get", side_effect=aiohttp.ClientError):
         result = await source.fetch_new_datapoint()
 
@@ -63,7 +63,15 @@ async def test_aiohttp_errors(caplog):
 
         assert result == (None, None)
 
-    with mock.patch("aiohttp.ClientSession.get", side_effect=aiohttp.ClientResponseError):
+    with mock.patch(
+        "aiohttp.ClientSession.get",
+        side_effect=aiohttp.ClientResponseError(mock.MagicMock(), mock.MagicMock(), status=500),
+    ):
+        result = await source.fetch_new_datapoint()
+
+        assert result == (None, None)
+
+    with mock.patch("aiohttp.ClientSession.get", side_effect=asyncio.exceptions.TimeoutError):
         result = await source.fetch_new_datapoint()
 
         assert result == (None, None)

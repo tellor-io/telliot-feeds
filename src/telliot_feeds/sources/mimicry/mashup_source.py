@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.exceptions import TimeoutError
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
@@ -34,6 +35,7 @@ class NFTMashupSource(DataSource[str]):
     currency: Optional[str] = None  # ("usd")
     collections: Optional[list[tuple[str, str]]] = None  # ("chain-name", "contract-address")
     tokens: Optional[list[tuple[str, str, str]]] = None  # ("chain-name", "token-symbol", "contract-address")
+    retries: int = 3
 
     async def fetch(self, url: str, headers: Optional[dict[str, str]]) -> Optional[Any]:
         """
@@ -67,9 +69,7 @@ class NFTMashupSource(DataSource[str]):
         responses = await asyncio.gather(*tasks)
         return responses
 
-    async def fetch_url_with_retry(
-        self, url: str, headers: Optional[dict[str, str]], retries: int = 3
-    ) -> Optional[Any]:
+    async def fetch_url_with_retry(self, url: str, headers: Optional[dict[str, str]]) -> Optional[Any]:
         """
         Fetches a response from an api with retry logic.
 
@@ -80,13 +80,14 @@ class NFTMashupSource(DataSource[str]):
         Returns:
             Any: A list of responses.
         """
+        retries = self.retries
         for attempt in range(retries):
             try:
                 response = await self.fetch(url=url, headers=headers)
                 return response
-            except (ClientError, ClientConnectionError, ClientResponseError) as e:
+            except (ClientError, ClientConnectionError, ClientResponseError, TimeoutError) as e:
                 if attempt == retries - 1:
-                    logger.warning(f"Failed to fetch from {url} after {retries} attempts: {e}.")
+                    logger.warning(f"Failed to fetch from {url} after {retries} attempts: {type(e).__name__}.")
                     return None
                 wait_time = 2**attempt
                 await asyncio.sleep(wait_time)
@@ -130,6 +131,9 @@ class NFTMashupSource(DataSource[str]):
             if response is not None:
                 try:
                     market_cap = response[metric]
+                    if not market_cap:
+                        logger.debug(f"No value fetched for collection: {self.collections[idx]}")
+                        return None
                     collection_mcaps.append(market_cap)
                 except KeyError as e:
                     logger.warning(
@@ -167,10 +171,13 @@ class NFTMashupSource(DataSource[str]):
 
         responses = await self.fetch_urls(urls=urls)
         token_mcaps = []
-        for response in responses:
+        for idx, response in enumerate(responses):
             if response is not None:
                 try:
                     market_cap = response["market_data"]["market_cap"][self.currency.lower()]
+                    if not market_cap:
+                        logger.debug(f"No value fetched for token: {self.tokens[idx]}")
+                        return None
                     token_mcaps.append(market_cap)
                 except Exception as e:
                     logger.warning(f"Failed to fetch token's market cap: {e}.")
@@ -185,7 +192,7 @@ class NFTMashupSource(DataSource[str]):
         collections_mcaps = await self.fetch_collections_mcap()
         tokens_mcaps = await self.fetch_tokens_mcap()
 
-        if collections_mcaps is None or tokens_mcaps is None:
+        if not collections_mcaps or not tokens_mcaps:
             logger.warning(
                 f"Failed to fetch all market caps. tokens = {tokens_mcaps}, collections = {collections_mcaps}"
             )
