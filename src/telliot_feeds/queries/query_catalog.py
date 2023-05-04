@@ -361,3 +361,9 @@ query_catalog.add_entry(
     title="OP/USD spot price",
     q=SpotPrice(asset="op", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="grt-usd-spot",
+    title="GRT/USD spot price",
+    q=SpotPrice(asset="grt", currency="usd"),
+)
