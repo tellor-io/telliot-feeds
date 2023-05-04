@@ -9,9 +9,8 @@ from brownie import Autopay
 from brownie import chain
 from brownie import multicall as brownie_multicall
 from brownie import QueryDataStorage
-from brownie import StakingToken
+from brownie import TellorPlayground
 from brownie import TellorFlex
-from brownie import TellorFlex360
 from brownie import TellorXMasterMock
 from brownie import TellorXOracleMock
 from chained_accounts import ChainedAccount
@@ -161,13 +160,13 @@ def goerli_test_cfg(scope="function", autouse=True):
 @pytest.fixture(scope="function", autouse=True)
 def mock_token_contract():
     """mock token to use for staking"""
-    return accounts[0].deploy(StakingToken)
+    return accounts[0].deploy(TellorPlayground)
 
 
 @pytest.fixture(scope="function", autouse=True)
 def mock_flex_contract(mock_token_contract):
     """mock oracle(TellorFlex) contract to stake in"""
-    return accounts[0].deploy(TellorFlex, mock_token_contract.address, accounts[0], 10e18, 60)
+    return accounts[0].deploy(TellorFlex, mock_token_contract.address, 1, 1, 10e18, 60, "0x5c13cd9c97dbb98f2429c101a2a8150e6c7a0ddaff6124ee176a3a411067ded0")
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -176,9 +175,7 @@ def mock_autopay_contract(mock_flex_contract, mock_token_contract, query_data_st
     return accounts[0].deploy(
         Autopay,
         mock_flex_contract.address,
-        mock_token_contract.address,
         query_data_storage_contract.address,
-        # accounts[0],
         20,
     )
 
@@ -214,7 +211,7 @@ def multicall_contract():
 def tellorflex_360_contract(mock_token_contract):
     account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
     return account_fake.deploy(
-        TellorFlex360,
+        TellorFlex,
         mock_token_contract.address,
         1,
         1,

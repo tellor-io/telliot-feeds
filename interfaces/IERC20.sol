@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.3;
+pragma solidity ^0.8.3;
 
 interface IERC20 {
     function balanceOf(address account) external view returns (uint256);
-    function approve(address account, uint256 amount) external;
 
     function transfer(address recipient, uint256 amount)
         external
@@ -14,4 +13,8 @@ interface IERC20 {
         address recipient,
         uint256 amount
     ) external returns (bool);
+
+    function approve(address _spender, uint256 _amount)
+        external
+        returns (bool);
 }
