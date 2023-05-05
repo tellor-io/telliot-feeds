@@ -205,7 +205,7 @@ async def test_non_view_evm_call(tellor_360, caplog):
     negative could happen
     """
     contracts, account = tellor_360
-    signature = Web3.sha3(text="depositStake(uint256)")[:4].hex()
+    signature = Web3.keccak(text="updateStakeAmount()")[:4].hex()
     _amount = Web3.toHex(10)[2:].zfill(64)
     non_view_call_data = HexBytes(signature + _amount)
 

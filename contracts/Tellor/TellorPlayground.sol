@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.3;
+pragma solidity ^0.8.3;
 
 
 contract TellorPlayground {
@@ -129,7 +129,7 @@ contract TellorPlayground {
      * @param _user The address which will receive the tokens
      */
     function faucet(address _user) external {
-        _mint(_user, 1000 ether);
+        _mint(_user, 1000000 ether);
     }
 
     /**

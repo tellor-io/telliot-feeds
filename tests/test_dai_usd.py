@@ -26,7 +26,7 @@ async def test_dai_usd_reporter_submit_once(
         flex.autopay.connect()
 
         # mint token and send to reporter address
-        mock_token_contract.mint(account.address, 1000e18)
+        mock_token_contract.faucet(account.address)
 
         # send eth from brownie address to reporter address for txn fees
         accounts[2].transfer(account.address, "1 ether")
