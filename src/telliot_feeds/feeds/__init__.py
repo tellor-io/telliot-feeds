@@ -29,6 +29,7 @@ from telliot_feeds.feeds.fil_usd_feed import fil_usd_median_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed_example
 from telliot_feeds.feeds.gno_usd_feed import gno_usd_median_feed
+from telliot_feeds.feeds.grt_usd_feed import grt_usd_median_feed
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
 from telliot_feeds.feeds.link_usd_feed import link_usd_median_feed
 from telliot_feeds.feeds.ltc_usd_feed import ltc_usd_median_feed
@@ -134,6 +135,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "wsteth-usd-spot": wsteth_usd_median_feed,
     "wsteth-eth-spot": wsteth_eth_median_feed,
     "op-usd-spot": op_usd_median_feed,
+    "grt-usd-spot": grt_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

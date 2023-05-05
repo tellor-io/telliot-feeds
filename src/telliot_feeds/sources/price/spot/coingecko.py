@@ -52,6 +52,7 @@ coingecko_coin_id = {
     "steth": "staked-ether",
     "reth": "rocket-pool-eth",
     "op": "optimism",
+    "grt": "the-graph",
 }
 
 
