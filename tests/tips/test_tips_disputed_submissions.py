@@ -1,12 +1,12 @@
 import pytest
+from brownie import accounts
+from brownie import Autopay
 from brownie import chain
 from brownie import TellorPlayground
-from brownie import Autopay
-from brownie import accounts
+from telliot_core.tellor.tellor360.autopay import Tellor360AutopayContract
+
 from telliot_feeds.feeds import matic_usd_median_feed
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
-
-from telliot_core.tellor.tellor360.autopay import Tellor360AutopayContract
 
 
 # deploy new contracts
@@ -15,9 +15,7 @@ def deploy(query_data_storage_contract):
     # deploy playground
     playground = accounts[0].deploy(TellorPlayground)
     # deploy autopay
-    autopay = accounts[0].deploy(
-        Autopay, playground.address, query_data_storage_contract.address, 20
-    )
+    autopay = accounts[0].deploy(Autopay, playground.address, query_data_storage_contract.address, 20)
     return playground, autopay
 
 
@@ -29,7 +27,7 @@ async def test_tips_disputed_submissions(deploy, mumbai_test_cfg):
     playground, autopay = deploy
     node = mumbai_test_cfg.get_endpoint()
     node.connect()
-    txn = playground.submitValue(query_id, int.to_bytes(100,32,'big'), 0, query_data, {"from": accounts[0]})
+    txn = playground.submitValue(query_id, int.to_bytes(100, 32, "big"), 0, query_data, {"from": accounts[0]})
     assert txn.status == 1
     chain.mine(timedelta=1)
     # mint tokens
@@ -51,7 +49,7 @@ async def test_tips_disputed_submissions(deploy, mumbai_test_cfg):
     assert datafeed is not None
     assert tip is not None
     # submit a value
-    playground.submitValue(query_id, int.to_bytes(100,32,'big'), 0, query_data, {"from": accounts[0]})
+    playground.submitValue(query_id, int.to_bytes(100, 32, "big"), 0, query_data, {"from": accounts[0]})
     # tip should be none since we just submitted a value
     datafeed, tip = await get_feed_and_tip(tellor_autopay, current_timestamp=chain.time())
     assert datafeed is None
@@ -65,7 +63,7 @@ async def test_tips_disputed_submissions(deploy, mumbai_test_cfg):
     txn = autopay.tip(query_id, int(10e18), query_data, {"from": accounts[0]})
     assert txn.status == 1
     # submit a value
-    playground.submitValue(query_id, int.to_bytes(100,32,'big'), 0, query_data, {"from": accounts[0]})
+    playground.submitValue(query_id, int.to_bytes(100, 32, "big"), 0, query_data, {"from": accounts[0]})
     assert autopay.getCurrentTip(query_id) == 0
     playground.beginDispute(query_id, chain.time(), {"from": accounts[0]})
     # get feed and tip, should not be none since previous report was disputed
@@ -75,7 +73,7 @@ async def test_tips_disputed_submissions(deploy, mumbai_test_cfg):
     assert tip > 0
     # submit a value
     time = chain.time()
-    playground.submitValue(query_id, int.to_bytes(100,32,'big'), 0, query_data, {"from": accounts[0]})
+    playground.submitValue(query_id, int.to_bytes(100, 32, "big"), 0, query_data, {"from": accounts[0]})
     assert autopay.getCurrentTip(query_id) == 0
     playground.beginDispute(query_id, time, {"from": accounts[0]})
     datafeed, tip = await get_feed_and_tip(tellor_autopay, current_timestamp=chain.time())
@@ -84,7 +82,7 @@ async def test_tips_disputed_submissions(deploy, mumbai_test_cfg):
     # claimOneTimeTip
     # advance time to bypass buffer
     chain.sleep(86400)
-    txn = playground.submitValue(query_id, int.to_bytes(100,32,'big'), 0, query_data, {"from": accounts[0]})
+    txn = playground.submitValue(query_id, int.to_bytes(100, 32, "big"), 0, query_data, {"from": accounts[0]})
     assert txn.status == 1
     chain.mine(timedelta=1)
     txn = playground.approve(autopay.address, int(10e18), {"from": accounts[0]})
@@ -92,14 +90,15 @@ async def test_tips_disputed_submissions(deploy, mumbai_test_cfg):
     txn = autopay.setupDataFeed(
         query_id,
         int(1e18),  # reward
-        chain.time(), # start time
+        chain.time(),  # start time
         3600,  # interval
         600,  # window
         0,  # price threshold
         0,  # reward increase per second
         query_data,
         int(10e18),
-        {"from": accounts[0]})
+        {"from": accounts[0]},
+    )
     assert txn.status == 1
     chain.mine(timedelta=1)
     datafeed, tip = await get_feed_and_tip(tellor_autopay, current_timestamp=chain.time())
@@ -107,7 +106,7 @@ async def test_tips_disputed_submissions(deploy, mumbai_test_cfg):
     assert tip > 0
     # submit a value
     time = chain.time()
-    playground.submitValue(query_id, int.to_bytes(100,32,'big'), 0, query_data, {"from": accounts[0]})
+    playground.submitValue(query_id, int.to_bytes(100, 32, "big"), 0, query_data, {"from": accounts[0]})
     chain.mine(timedelta=1)
     datafeed, tip = await get_feed_and_tip(tellor_autopay, current_timestamp=chain.time())
     assert datafeed is None
@@ -115,7 +114,7 @@ async def test_tips_disputed_submissions(deploy, mumbai_test_cfg):
     # dispute value
     playground.beginDispute(query_id, time, {"from": accounts[0]})
     chain.mine(timedelta=1)
-    
+
     datafeed, tip = await get_feed_and_tip(tellor_autopay, current_timestamp=chain.time())
     assert datafeed is not None
     assert tip > 0

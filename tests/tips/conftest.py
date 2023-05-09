@@ -12,9 +12,7 @@ txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
 
 
 @pytest.fixture(scope="function")
-async def autopay_contract_setup(
-    mumbai_test_cfg, mock_flex_contract, mock_token_contract, query_data_storage_contract
-):
+async def autopay_contract_setup(mumbai_test_cfg, mock_flex_contract, mock_token_contract, query_data_storage_contract):
     autopay_contract = accounts[0].deploy(
         Autopay,
         mock_flex_contract.address,
@@ -42,8 +40,6 @@ async def autopay_contract_setup(
 
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
-        # init governance address
-        await flex.oracle.write("init", _governanceAddress=accounts[0].address, **txn_kwargs)
 
         # approve token to be spent by oracle
         mock_token_contract.approve(mock_flex_contract.address, 100000e18, {"from": account.address})
