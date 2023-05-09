@@ -1,6 +1,6 @@
+import datetime
 import math
 import time
-import datetime
 from unittest import mock
 from unittest.mock import AsyncMock
 from unittest.mock import patch
@@ -58,7 +58,7 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, mock_flex_con
     )
     chain.sleep(86400)
     mock_flex_contract.updateStakeAmount()
-    chain.mine(1,timedelta=1)
+    chain.mine(1, timedelta=1)
     stake_amount, status = await r.oracle.read("getStakeAmount")
     assert status.ok
     assert stake_amount == int(20e18)
