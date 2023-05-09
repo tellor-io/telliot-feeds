@@ -65,6 +65,9 @@ async def test_tips_disputed_submissions(deploy, mumbai_test_cfg):
     # submit a value
     playground.submitValue(query_id, int.to_bytes(100, 32, "big"), 0, query_data, {"from": accounts[0]})
     assert autopay.getCurrentTip(query_id) == 0
+    datafeed, tip = await get_feed_and_tip(tellor_autopay, current_timestamp=chain.time())
+    assert datafeed is None
+    assert tip is None
     playground.beginDispute(query_id, chain.time(), {"from": accounts[0]})
     # get feed and tip, should not be none since previous report was disputed
     chain.mine(timedelta=1)
