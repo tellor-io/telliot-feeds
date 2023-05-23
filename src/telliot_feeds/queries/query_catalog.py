@@ -367,3 +367,15 @@ query_catalog.add_entry(
     title="GRT/USD spot price",
     q=SpotPrice(asset="grt", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="eth-jpy-spot",
+    title="ETH/JPY spot price",
+    q=SpotPrice(asset="eth", currency="jpy"),
+)
+
+query_catalog.add_entry(
+    tag="pepe-usd-spot",
+    title="PEPE/USD spot price",
+    q=SpotPrice(asset="pepe", currency="usd"),
+)
