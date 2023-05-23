@@ -46,6 +46,7 @@ from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_f
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
 from telliot_feeds.feeds.op_usd_feed import op_usd_median_feed
+from telliot_feeds.feeds.pepe_usd_feed import pepe_usd_median_feed
 from telliot_feeds.feeds.pls_usd_feed import pls_usd_feed
 from telliot_feeds.feeds.rai_usd_feed import rai_usd_median_feed
 from telliot_feeds.feeds.reth_btc_feed import reth_btc_median_feed
@@ -73,7 +74,6 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
-from telliot_feeds.feeds.pepe_usd_feed import pepe_usd_median_feed
 
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
@@ -137,7 +137,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "wsteth-eth-spot": wsteth_eth_median_feed,
     "op-usd-spot": op_usd_median_feed,
     "grt-usd-spot": grt_usd_median_feed,
-    "pepe-usd-spot": pepe_usd_median_feed
+    "pepe-usd-spot": pepe_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
