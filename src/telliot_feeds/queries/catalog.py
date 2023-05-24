@@ -103,7 +103,7 @@ class Catalog(Base):
 
     def to_yaml(self) -> str:
         all_entries = self.find()
-        return yaml.dump(clamfig.serialize(all_entries), sort_keys=False)  # type: ignore
+        return yaml.dump(clamfig.serialize(all_entries), sort_keys=False)
 
     def to_markdown(self) -> str:
         lines = ["# TellorX Query Catalog", ""]

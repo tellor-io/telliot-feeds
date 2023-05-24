@@ -21,6 +21,15 @@ def deploy(query_data_storage_contract):
 
 @pytest.mark.asyncio
 async def test_tips_disputed_submissions(deploy, mumbai_test_cfg):
+    """Test to check if tipped query ids are suggested by tip listener after a tip eligible submission is disputed
+
+    - Tip a query id
+    - Check if the query id is suggested by tip listener
+    - Submit a value for the query id
+    - Check that the query id is not suggested by tip listener
+    - Dispute the reported value
+    - Check that the query id is suggested by tip listener
+    """
     query_id = matic_usd_median_feed.query.query_id.hex()
     query_data = matic_usd_median_feed.query.query_data.hex()
 
