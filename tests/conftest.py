@@ -7,20 +7,22 @@ import pytest_asyncio
 from brownie import accounts
 from brownie import Autopay
 from brownie import chain
+from brownie import Governance
 from brownie import multicall as brownie_multicall
 from brownie import QueryDataStorage
-from brownie import StakingToken
 from brownie import TellorFlex
-from brownie import TellorFlex360
+from brownie import TellorPlayground
 from brownie import TellorXMasterMock
 from brownie import TellorXOracleMock
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
+from hexbytes import HexBytes
 from multicall import multicall
 from multicall.constants import MULTICALL2_ADDRESSES
 from multicall.constants import Network
 from telliot_core.apps.core import TelliotCore
 from telliot_core.apps.telliot_config import TelliotConfig
+from web3 import Web3
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
@@ -31,6 +33,20 @@ from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 @pytest.fixture(scope="module", autouse=True)
 def shared_setup(module_isolation):
     pass
+
+
+@pytest.fixture(scope="module", autouse=True)
+def reset_chain(chain):
+    """Reset the chain to a clean state after each test module"""
+    chain.reset()
+
+
+@pytest.fixture(scope="function", autouse=True)
+def snapshot(chain):
+    """Take a snapshot of the chain before each test function and revert to it after the test completes"""
+    chain.snapshot()
+    yield
+    chain.revert()
 
 
 @pytest.fixture(scope="session")
@@ -138,56 +154,72 @@ def local_node_cfg(chain_id: int):
     return cfg
 
 
-@pytest.fixture
-def mumbai_test_cfg(scope="function", autouse=True):
+@pytest.fixture(scope="function", autouse=True)
+def mumbai_test_cfg():
     return local_node_cfg(chain_id=80001)
 
 
-@pytest.fixture
-def rinkeby_test_cfg(scope="function", autouse=True):
+@pytest.fixture(scope="function", autouse=True)
+def rinkeby_test_cfg():
     return local_node_cfg(chain_id=4)
 
 
-@pytest.fixture
-def ropsten_test_cfg(scope="function", autouse=True):
+@pytest.fixture(scope="function", autouse=True)
+def ropsten_test_cfg():
     return local_node_cfg(chain_id=3)
 
 
-@pytest.fixture
-def goerli_test_cfg(scope="function", autouse=True):
+@pytest.fixture(scope="function", autouse=True)
+def goerli_test_cfg():
     return local_node_cfg(chain_id=5)
 
 
 @pytest.fixture(scope="function", autouse=True)
 def mock_token_contract():
     """mock token to use for staking"""
-    return accounts[0].deploy(StakingToken)
+    return accounts[0].deploy(TellorPlayground)
 
 
 @pytest.fixture(scope="function", autouse=True)
 def mock_flex_contract(mock_token_contract):
     """mock oracle(TellorFlex) contract to stake in"""
-    return accounts[0].deploy(TellorFlex, mock_token_contract.address, accounts[0], 10e18, 60)
+    return accounts[0].deploy(
+        TellorFlex,
+        mock_token_contract.address,
+        43200,  # 12 hours reporting lock
+        Web3.toWei(100, "ether"),  # $100 stake amount dollar target
+        Web3.toWei(15, "ether"),  # $15 staking token current price
+        Web3.toWei(10, "ether"),  # 10 TRB minimum stake amount
+        HexBytes(
+            "0x5c13cd9c97dbb98f2429c101a2a8150e6c7a0ddaff6124ee176a3a411067ded0"
+        ),  # TRB/USD staking token price query id
+    )
 
 
 @pytest.fixture(scope="function", autouse=True)
-def mock_autopay_contract(mock_flex_contract, mock_token_contract, query_data_storage_contract):
+def mock_gov_contract(mock_flex_contract, mock_token_contract):
+    return accounts[0].deploy(Governance, mock_flex_contract.address, mock_token_contract.address)
+
+
+@pytest.fixture(scope="function", autouse=True)
+def init_tellorflex(mock_flex_contract, mock_gov_contract):
+    mock_flex_contract.init(mock_gov_contract.address)
+
+
+@pytest.fixture(scope="function", autouse=True)
+def mock_autopay_contract(mock_flex_contract, query_data_storage_contract):
     """mock payments(Autopay) contract for tipping and claiming tips"""
     return accounts[0].deploy(
         Autopay,
         mock_flex_contract.address,
-        mock_token_contract.address,
         query_data_storage_contract.address,
-        # accounts[0],
         20,
     )
 
 
 @pytest.fixture(scope="function", autouse=True)
 def query_data_storage_contract():
-    return accounts[0].deploy(
-        QueryDataStorage,
-    )
+    return accounts[0].deploy(QueryDataStorage)
 
 
 @pytest.fixture
@@ -210,28 +242,14 @@ def multicall_contract():
     multicall.state_override_supported = lambda _: False
 
 
-@pytest.fixture(scope="function")
-def tellorflex_360_contract(mock_token_contract):
-    account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
-    return account_fake.deploy(
-        TellorFlex360,
-        mock_token_contract.address,
-        1,
-        1,
-        1,
-        "0x5c13cd9c97dbb98f2429c101a2a8150e6c7a0ddaff6124ee176a3a411067ded0",
-    )
-
-
 @pytest_asyncio.fixture(scope="function")
-async def tellor_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_contract, mock_token_contract):
+async def tellor_360(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
     async with TelliotCore(config=mumbai_test_cfg) as core:
-        txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
         account = core.get_account()
 
         tellor360 = core.get_tellor360_contracts()
-        tellor360.oracle.address = tellorflex_360_contract.address
-        tellor360.oracle.abi = tellorflex_360_contract.abi
+        tellor360.oracle.address = mock_flex_contract.address
+        tellor360.oracle.abi = mock_flex_contract.abi
         tellor360.autopay.address = mock_autopay_contract.address
         tellor360.autopay.abi = mock_autopay_contract.abi
         tellor360.token.address = mock_token_contract.address
@@ -241,16 +259,13 @@ async def tellor_360(mumbai_test_cfg, tellorflex_360_contract, mock_autopay_cont
         tellor360.autopay.connect()
 
         # mint token and send to reporter address
-        mock_token_contract.mint(account.address, 100000e18)
+        mock_token_contract.faucet(account.address)
 
         # approve token to be spent by autopay contract
         mock_token_contract.approve(mock_autopay_contract.address, 100000e18, {"from": account.address})
 
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
-
-        # init governance address
-        await tellor360.oracle.write("init", _governanceAddress=accounts[0].address, **txn_kwargs)
 
         return tellor360, account
 
@@ -282,7 +297,7 @@ async def tellor_flex_reporter(mumbai_test_cfg, mock_flex_contract, mock_autopay
             min_native_token_balance=0,
         )
         # mint token and send to reporter address
-        mock_token_contract.mint(account.address, 1000e18)
+        mock_token_contract.faucet(account.address)
 
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")

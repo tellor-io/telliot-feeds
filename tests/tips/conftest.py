@@ -12,13 +12,10 @@ txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
 
 
 @pytest.fixture(scope="function")
-async def autopay_contract_setup(
-    mumbai_test_cfg, tellorflex_360_contract, mock_token_contract, query_data_storage_contract
-):
+async def autopay_contract_setup(mumbai_test_cfg, mock_flex_contract, mock_token_contract, query_data_storage_contract):
     autopay_contract = accounts[0].deploy(
         Autopay,
-        tellorflex_360_contract.address,
-        mock_token_contract.address,
+        mock_flex_contract.address,
         query_data_storage_contract.address,
         20,
     )
@@ -28,8 +25,8 @@ async def autopay_contract_setup(
         account = core.get_account()
 
         flex = core.get_tellor360_contracts()
-        flex.oracle.address = tellorflex_360_contract.address
-        flex.oracle.abi = tellorflex_360_contract.abi
+        flex.oracle.address = mock_flex_contract.address
+        flex.oracle.abi = mock_flex_contract.abi
         flex.autopay.address = autopay_contract.address
         flex.autopay.abi = autopay_contract.abi
         flex.token.address = mock_token_contract.address
@@ -39,15 +36,13 @@ async def autopay_contract_setup(
         flex.autopay.connect()
 
         # mint token and send to reporter address
-        mock_token_contract.mint(account.address, 100000e18)
+        mock_token_contract.faucet(account.address)
 
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
-        # init governance address
-        await flex.oracle.write("init", _governanceAddress=accounts[0].address, **txn_kwargs)
 
         # approve token to be spent by oracle
-        mock_token_contract.approve(tellorflex_360_contract.address, 100000e18, {"from": account.address})
+        mock_token_contract.approve(mock_flex_contract.address, 100000e18, {"from": account.address})
 
         _, status = await flex.oracle.write("depositStake", gas_limit=350000, legacy_gas_price=1, _amount=int(10e18))
         # check txn is successful

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.3;
+pragma solidity ^0.8.3;
 
 import "../../interfaces/IERC20.sol";
 
@@ -11,12 +11,13 @@ import "../../interfaces/IERC20.sol";
  * by a single address known as 'governance', which could be an externally owned
  * account or a contract, allowing for a flexible, modular design.
 */
-contract TellorFlex360 {
+contract TellorFlex {
     // Storage
     IERC20 public token; // token used for staking and rewards
     address public governance; // address with ability to remove values and slash reporters
     address public owner; // contract deployer, can call init function once
     uint256 public accumulatedRewardPerShare; // accumulated staking reward per staked token
+    uint256 public minimumStakeAmount; // minimum amount of tokens required to stake
     uint256 public reportingLock; // base amount of time before a reporter is able to submit a value again
     uint256 public rewardRate; // total staking rewards released per second
     uint256 public stakeAmount; // minimum amount required to be a staker
@@ -29,6 +30,7 @@ contract TellorFlex360 {
     uint256 public totalRewardDebt; // staking reward debt, used to calculate real staking rewards balance
     uint256 public totalStakeAmount; // total amount of tokens locked in contract (via stake)
     uint256 public totalStakers; // total number of stakers with at least stakeAmount staked, not exact
+    uint256 public toWithdraw; //amountLockedForWithdrawal
 
     mapping(bytes32 => Report) private reports; // mapping of query IDs to a report
     mapping(address => StakeInfo) private stakerDetails; // mapping from a persons address to their staking info
@@ -56,6 +58,26 @@ contract TellorFlex360 {
         mapping(bytes32 => uint256) reportsSubmittedByQueryId; // mapping of queryId to number of reports submitted by reporter
     }
 
+    // Events
+    event NewReport(
+        bytes32 indexed _queryId,
+        uint256 indexed _time,
+        bytes _value,
+        uint256 _nonce,
+        bytes _queryData,
+        address indexed _reporter
+    );
+    event NewStakeAmount(uint256 _newStakeAmount);
+    event NewStaker(address indexed _staker, uint256 indexed _amount);
+    event ReporterSlashed(
+        address indexed _reporter,
+        address _recipient,
+        uint256 _slashAmount
+    );
+    event StakeWithdrawn(address _staker);
+    event StakeWithdrawRequested(address _staker, uint256 _amount);
+    event ValueRemoved(bytes32 _queryId, uint256 _timestamp);
+
     // Functions
     /**
      * @dev Initializes system parameters
@@ -70,6 +92,7 @@ contract TellorFlex360 {
         uint256 _reportingLock,
         uint256 _stakeAmountDollarTarget,
         uint256 _stakingTokenPrice,
+        uint256 _minimumStakeAmount,
         bytes32 _stakingTokenPriceQueryId
     ) {
         require(_token != address(0), "must set token address");
@@ -80,7 +103,13 @@ contract TellorFlex360 {
         owner = msg.sender;
         reportingLock = _reportingLock;
         stakeAmountDollarTarget = _stakeAmountDollarTarget;
-        stakeAmount = (_stakeAmountDollarTarget * 1e18) / _stakingTokenPrice;
+        minimumStakeAmount = _minimumStakeAmount;
+        uint256 _potentialStakeAmount = (_stakeAmountDollarTarget * 1e18) / _stakingTokenPrice;
+        if(_potentialStakeAmount < _minimumStakeAmount) {
+            stakeAmount = _minimumStakeAmount;
+        } else {
+            stakeAmount = _potentialStakeAmount;
+        }
         stakingTokenPriceQueryId = _stakingTokenPriceQueryId;
     }
 
@@ -89,13 +118,30 @@ contract TellorFlex360 {
      * @param _governanceAddress address of governance contract (github.com/tellor-io/governance)
      */
     function init(address _governanceAddress) external {
-        // require(msg.sender == owner, "only owner can set governance address");
+        require(msg.sender == owner, "only owner can set governance address");
         require(governance == address(0), "governance address already set");
         require(
             _governanceAddress != address(0),
             "governance address can't be zero address"
         );
         governance = _governanceAddress;
+    }
+
+    /**
+     * @dev Funds the Flex contract with staking rewards (paid by autopay and minting)
+     * @param _amount amount of tokens to fund contract with
+     */
+    function addStakingRewards(uint256 _amount) external {
+        require(token.transferFrom(msg.sender, address(this), _amount));
+        _updateRewards();
+        stakingRewardsBalance += _amount;
+        // update reward rate = real staking rewards balance / 30 days
+        rewardRate =
+            (stakingRewardsBalance -
+                ((accumulatedRewardPerShare * totalStakeAmount) /
+                    1e18 -
+                    totalRewardDebt)) /
+            30 days;
     }
 
     /**
@@ -111,6 +157,7 @@ contract TellorFlex360 {
             if (_lockedBalance >= _amount) {
                 // if staker's locked balance covers full _amount, use that
                 _staker.lockedBalance -= _amount;
+                toWithdraw -= _amount;
             } else {
                 // otherwise, stake the whole locked balance and transfer the
                 // remaining amount from the staker's address
@@ -121,12 +168,108 @@ contract TellorFlex360 {
                         _amount - _lockedBalance
                     )
                 );
+                toWithdraw -= _staker.lockedBalance;
                 _staker.lockedBalance = 0;
+            }
+        } else {
+            if (_stakedBalance == 0) {
+                // if staked balance and locked balance equal 0, save current vote tally.
+                // voting participation used for calculating rewards
+                (bool _success, bytes memory _returnData) = governance.call(
+                    abi.encodeWithSignature("getVoteCount()")
+                );
+                if (_success) {
+                    _staker.startVoteCount = uint256(abi.decode(_returnData, (uint256)));
+                }
+                (_success,_returnData) = governance.call(
+                    abi.encodeWithSignature("getVoteTallyByAddress(address)",msg.sender)
+                );
+                if(_success){
+                    _staker.startVoteTally =  abi.decode(_returnData,(uint256));
+                }
             }
             require(token.transferFrom(msg.sender, address(this), _amount));
         }
         _updateStakeAndPayRewards(msg.sender, _stakedBalance + _amount);
         _staker.startDate = block.timestamp; // This resets the staker start date to now
+        emit NewStaker(msg.sender, _amount);
+    }
+
+    /**
+     * @dev Removes a value from the oracle.
+     * Note: this function is only callable by the Governance contract.
+     * @param _queryId is ID of the specific data feed
+     * @param _timestamp is the timestamp of the data value to remove
+     */
+    function removeValue(bytes32 _queryId, uint256 _timestamp) external {
+        require(msg.sender == governance, "caller must be governance address");
+        Report storage _report = reports[_queryId];
+        require(!_report.isDisputed[_timestamp], "value already disputed");
+        uint256 _index = _report.timestampIndex[_timestamp];
+        require(_timestamp == _report.timestamps[_index], "invalid timestamp");
+        _report.valueByTimestamp[_timestamp] = "";
+        _report.isDisputed[_timestamp] = true;
+        emit ValueRemoved(_queryId, _timestamp);
+    }
+
+    /**
+     * @dev Allows a reporter to request to withdraw their stake
+     * @param _amount amount of staked tokens requesting to withdraw
+     */
+    function requestStakingWithdraw(uint256 _amount) external {
+        StakeInfo storage _staker = stakerDetails[msg.sender];
+        require(
+            _staker.stakedBalance >= _amount,
+            "insufficient staked balance"
+        );
+        _updateStakeAndPayRewards(msg.sender, _staker.stakedBalance - _amount);
+        _staker.startDate = block.timestamp;
+        _staker.lockedBalance += _amount;
+        toWithdraw += _amount;
+        emit StakeWithdrawRequested(msg.sender, _amount);
+    }
+
+    /**
+     * @dev Slashes a reporter and transfers their stake amount to the given recipient
+     * Note: this function is only callable by the governance address.
+     * @param _reporter is the address of the reporter being slashed
+     * @param _recipient is the address receiving the reporter's stake
+     * @return _slashAmount uint256 amount of token slashed and sent to recipient address
+     */
+    function slashReporter(address _reporter, address _recipient)
+        external
+        returns (uint256 _slashAmount)
+    {
+        require(msg.sender == governance, "only governance can slash reporter");
+        StakeInfo storage _staker = stakerDetails[_reporter];
+        uint256 _stakedBalance = _staker.stakedBalance;
+        uint256 _lockedBalance = _staker.lockedBalance;
+        require(_stakedBalance + _lockedBalance > 0, "zero staker balance");
+        if (_lockedBalance >= stakeAmount) {
+            // if locked balance is at least stakeAmount, slash from locked balance
+            _slashAmount = stakeAmount;
+            _staker.lockedBalance -= stakeAmount;
+            toWithdraw -= stakeAmount;
+        } else if (_lockedBalance + _stakedBalance >= stakeAmount) {
+            // if locked balance + staked balance is at least stakeAmount,
+            // slash from locked balance and slash remainder from staked balance
+            _slashAmount = stakeAmount;
+            _updateStakeAndPayRewards(
+                _reporter,
+                _stakedBalance - (stakeAmount - _lockedBalance)
+            );
+            toWithdraw -= _lockedBalance;
+            _staker.lockedBalance = 0;
+        } else {
+            // if sum(locked balance + staked balance) is less than stakeAmount,
+            // slash sum
+            _slashAmount = _stakedBalance + _lockedBalance;
+            toWithdraw -= _lockedBalance;
+            _updateStakeAndPayRewards(_reporter, 0);
+            _staker.lockedBalance = 0;
+        }
+        require(token.transfer(_recipient, _slashAmount));
+        emit ReporterSlashed(_reporter, _recipient, _slashAmount);
     }
 
     /**
@@ -160,7 +303,7 @@ contract TellorFlex360 {
             "still in reporter time lock, please wait!"
         );
         require(
-            _queryId == keccak256(_queryData) || uint256(_queryId) <= 100,
+            _queryId == keccak256(_queryData),
             "query id must be hash of query data"
         );
         _staker.reporterLastTimestamp = block.timestamp;
@@ -177,23 +320,111 @@ contract TellorFlex360 {
         _report.reporterByTimestamp[block.timestamp] = msg.sender;
         // Disperse Time Based Reward
         uint256 _reward = ((block.timestamp - timeOfLastNewValue) * timeBasedReward) / 300; //.5 TRB per 5 minutes
+        uint256 _totalTimeBasedRewardsBalance =
+            token.balanceOf(address(this)) -
+            (totalStakeAmount + stakingRewardsBalance + toWithdraw);
+        if (_totalTimeBasedRewardsBalance > 0 && _reward > 0) {
+            if (_totalTimeBasedRewardsBalance < _reward) {
+                token.transfer(msg.sender, _totalTimeBasedRewardsBalance);
+            } else {
+                token.transfer(msg.sender, _reward);
+            }
+        }
+        // Update last oracle value and number of values submitted by a reporter
         timeOfLastNewValue = block.timestamp;
         _staker.reportsSubmitted++;
         _staker.reportsSubmittedByQueryId[_queryId]++;
+        emit NewReport(
+            _queryId,
+            block.timestamp,
+            _value,
+            _nonce,
+            _queryData,
+            msg.sender
+        );
     }
 
     /**
      * @dev Updates the stake amount after retrieving the latest
      * 12+-hour-old staking token price from the oracle
      */
-    function updateStakeAmount(uint256 _amount) external{
-            stakeAmount = _amount;
+    function updateStakeAmount() external {
+        // get staking token price
+        (bool _valFound, bytes memory _val, ) = getDataBefore(
+            stakingTokenPriceQueryId,
+            block.timestamp - 12 hours
+        );
+        if (_valFound) {
+            uint256 _stakingTokenPrice = abi.decode(_val, (uint256));
+            require(
+                _stakingTokenPrice >= 0.01 ether && _stakingTokenPrice < 1000000 ether,
+                "invalid staking token price"
+            );
+
+            uint256 _adjustedStakeAmount = (stakeAmountDollarTarget * 1e18) / _stakingTokenPrice;
+            if(_adjustedStakeAmount < minimumStakeAmount) {
+                stakeAmount = minimumStakeAmount;
+            } else {
+                stakeAmount = _adjustedStakeAmount;
+            }
+            emit NewStakeAmount(stakeAmount);
         }
+    }
+
+    /**
+     * @dev Withdraws a reporter's stake after the lock period expires
+     */
+    function withdrawStake() external {
+        StakeInfo storage _staker = stakerDetails[msg.sender];
+        // Ensure reporter is locked and that enough time has passed
+        require(
+            block.timestamp - _staker.startDate >= 7 days,
+            "7 days didn't pass"
+        );
+        require(
+            _staker.lockedBalance > 0,
+            "reporter not locked for withdrawal"
+        );
+        require(token.transfer(msg.sender, _staker.lockedBalance));
+        toWithdraw -= _staker.lockedBalance;
+        _staker.lockedBalance = 0;
+        emit StakeWithdrawn(msg.sender);
+    }
+
     // *****************************************************************************
     // *                                                                           *
     // *                               Getters                                     *
     // *                                                                           *
     // *****************************************************************************
+
+    /**
+     * @dev Returns the block number at a given timestamp
+     * @param _queryId is ID of the specific data feed
+     * @param _timestamp is the timestamp to find the corresponding block number for
+     * @return uint256 block number of the timestamp for the given data ID
+     */
+    function getBlockNumberByTimestamp(bytes32 _queryId, uint256 _timestamp)
+        external
+        view
+        returns (uint256)
+    {
+        return reports[_queryId].timestampToBlockNum[_timestamp];
+    }
+
+    /**
+     * @dev Returns the current value of a data feed given a specific ID
+     * @param _queryId is the ID of the specific data feed
+     * @return _value the latest submitted value for the given queryId
+     */
+    function getCurrentValue(bytes32 _queryId)
+        external
+        view
+        returns (bytes memory _value)
+    {
+        bool _didGet;
+        (_didGet, _value, ) = getDataBefore(_queryId, block.timestamp + 1);
+        if(!_didGet){revert();}
+    }
 
     /**
      * @dev Retrieves the latest value for the queryId before the specified timestamp
@@ -223,6 +454,14 @@ contract TellorFlex360 {
     }
 
     /**
+     * @dev Returns governance address
+     * @return address governance
+     */
+    function getGovernanceAddress() external view returns (address) {
+        return governance;
+    }
+
+    /**
      * @dev Counts the number of values that have been submitted for the request.
      * @param _queryId the id to look up
      * @return uint256 count of the number of values received for the id
@@ -233,6 +472,39 @@ contract TellorFlex360 {
         returns (uint256)
     {
         return reports[_queryId].timestamps.length;
+    }
+
+    /**
+     * @dev Returns the pending staking reward for a given address
+     * @param _stakerAddress staker address to look up
+     * @return _pendingReward - pending reward for given staker
+     */
+    function getPendingRewardByStaker(address _stakerAddress)
+        external
+        returns (uint256 _pendingReward)
+    {
+        StakeInfo storage _staker = stakerDetails[_stakerAddress];
+        _pendingReward = (_staker.stakedBalance *
+            _getUpdatedAccumulatedRewardPerShare()) /
+            1e18 -
+            _staker.rewardDebt;
+        (bool _success, bytes memory _returnData) = governance.call(
+            abi.encodeWithSignature("getVoteCount()")
+        );
+        uint256 _numberOfVotes;
+        if (_success) {
+                _numberOfVotes = uint256(abi.decode(_returnData, (uint256))) - _staker.startVoteCount;
+        }
+        if (_numberOfVotes > 0) {
+                (_success,_returnData) = governance.call(
+                    abi.encodeWithSignature("getVoteTallyByAddress(address)",_stakerAddress)
+                );
+                if(_success){
+                    _pendingReward =
+                        (_pendingReward * (abi.decode(_returnData,(uint256)) - _staker.startVoteTally))
+                        / _numberOfVotes;
+                }
+        }
     }
 
     /**
@@ -494,11 +766,49 @@ contract TellorFlex360 {
     }
 
     /**
+     * @dev Returns the index of a reporter timestamp in the timestamp array for a specific data ID
+     * @param _queryId is ID of the specific data feed
+     * @param _timestamp is the timestamp to find in the timestamps array
+     * @return uint256 of the index of the reporter timestamp in the array for specific ID
+     */
+    function getTimestampIndexByTimestamp(bytes32 _queryId, uint256 _timestamp)
+        external
+        view
+        returns (uint256)
+    {
+        return reports[_queryId].timestampIndex[_timestamp];
+    }
+
+    /**
+     * @dev Returns the address of the token used for staking
+     * @return address of the token used for staking
+     */
+    function getTokenAddress() external view returns (address) {
+        return address(token);
+    }
+
+    /**
+     * @dev Returns total amount of token staked for reporting
+     * @return uint256 total amount of token staked
+     */
+    function getTotalStakeAmount() external view returns (uint256) {
+        return totalStakeAmount;
+    }
+
+    /**
+     * @dev Returns total number of current stakers. Reporters with stakedBalance less than stakeAmount are excluded from this total
+     * @return uint256 total stakers
+     */
+    function getTotalStakers() external view returns (uint256) {
+        return totalStakers;
+    }
+
+    /**
      * @dev Returns total balance of time based rewards in contract
      * @return uint256 amount of trb
      */
     function getTotalTimeBasedRewardsBalance() external view returns (uint256) {
-        return token.balanceOf(address(this)) - (totalStakeAmount + stakingRewardsBalance);
+        return token.balanceOf(address(this)) - (totalStakeAmount + stakingRewardsBalance + toWithdraw);
     }
 
     /**
@@ -527,6 +837,14 @@ contract TellorFlex360 {
         returns (bytes memory)
     {
         return reports[_queryId].valueByTimestamp[_timestamp];
+    }
+
+    /**
+     * @dev Used during the upgrade process to verify valid Tellor contracts
+     * @return bool value used to verify valid Tellor contracts
+     */
+    function verify() external pure returns (uint256) {
+        return 9999;
     }
 
     // *****************************************************************************
@@ -591,6 +909,32 @@ contract TellorFlex360 {
                 accumulatedRewardPerShare) /
                 1e18 -
                 _staker.rewardDebt;
+            // get staker voting participation rate
+            uint256 _numberOfVotes;
+            (bool _success, bytes memory _returnData) = governance.call(
+                abi.encodeWithSignature("getVoteCount()")
+            );
+            if (_success) {
+                _numberOfVotes =
+                    uint256(abi.decode(_returnData, (uint256))) -
+                    _staker.startVoteCount;
+            }
+            if (_numberOfVotes > 0) {
+                // staking reward = pending reward * voting participation rate
+                (_success, _returnData) = governance.call(
+                    abi.encodeWithSignature("getVoteTallyByAddress(address)",_stakerAddress)
+                );
+                if(_success){
+                    uint256 _voteTally = abi.decode(_returnData,(uint256));
+                    uint256 _tempPendingReward =
+                        (_pendingReward *
+                            (_voteTally - _staker.startVoteTally)) /
+                        _numberOfVotes;
+                    if (_tempPendingReward < _pendingReward) {
+                        _pendingReward = _tempPendingReward;
+                    }
+                }
+            }
             stakingRewardsBalance -= _pendingReward;
             require(token.transfer(msg.sender, _pendingReward));
             totalRewardDebt -= _staker.rewardDebt;
@@ -615,6 +959,16 @@ contract TellorFlex360 {
             1e18;
         totalRewardDebt += _staker.rewardDebt;
         totalStakeAmount += _staker.stakedBalance;
+        // update reward rate if staking rewards are available
+        // given staker's updated parameters
+        if(rewardRate == 0) {
+            rewardRate =
+            (stakingRewardsBalance -
+                ((accumulatedRewardPerShare * totalStakeAmount) /
+                    1e18 -
+                    totalRewardDebt)) /
+            30 days;
+        }
     }
 
     /**

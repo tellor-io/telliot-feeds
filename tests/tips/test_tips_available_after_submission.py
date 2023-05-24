@@ -64,6 +64,7 @@ async def test_feed_suggestion(autopay_contract_setup, caplog):
     query, tip_amount = await get_feed_and_tip(autopay=flex.autopay, current_timestamp=chain.time() + 5)
     assert query.get_state()["query"] == {"type": "SpotPrice", "asset": "albt", "currency": "usd"}
     assert tip_amount == int(0.5 * 1e18)
+    chain.sleep(43200)
     # Second in window submission which should exhaust funds in feed
     _, status = await flex.oracle.write(
         "submitValue",

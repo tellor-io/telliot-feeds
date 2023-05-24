@@ -15,7 +15,12 @@ from telliot_feeds.reporters.reporter_autopay_utils import get_feed_tip
 
 @pytest.mark.asyncio
 async def test_main(
-    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract, multicall_contract
+    mumbai_test_cfg,
+    mock_flex_contract,
+    mock_autopay_contract,
+    mock_token_contract,
+    multicall_contract,
+    mock_gov_contract,
 ):
     async with TelliotCore(config=mumbai_test_cfg) as core:
 
@@ -33,8 +38,7 @@ async def test_main(
         flex.autopay.connect()
 
         # mint token and send to reporter address
-        mock_token_contract.mint(account.address, 1000e18)
-        assert mock_token_contract.balanceOf(account.address) == 1000e18
+        mock_token_contract.faucet(account.address)
 
         # send eth from brownie address to reporter address for txn fees
         accounts[0].transfer(account.address, "1 ether")
@@ -42,7 +46,7 @@ async def test_main(
 
         # check governance address is brownie address
         governance_address = await flex.oracle.get_governance_address()
-        assert governance_address == accounts[0]
+        assert governance_address == mock_gov_contract.address
 
         # check stake amount is ten
         stake_amount = await flex.oracle.get_stake_amount()

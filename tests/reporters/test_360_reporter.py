@@ -1,15 +1,18 @@
+import datetime
 import math
 import time
-from datetime import timedelta
 from unittest import mock
 from unittest.mock import AsyncMock
 from unittest.mock import patch
 
 import pytest
+from brownie import accounts
+from brownie import chain
 
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
+from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
@@ -19,7 +22,7 @@ CHAIN_ID = 80001
 
 
 @pytest.mark.asyncio
-async def test_report(tellor_360, caplog, guaranteed_price_source):
+async def test_report(tellor_360, caplog, guaranteed_price_source, mock_flex_contract, mock_token_contract):
     """Test 360 reporter deposit and balance changes when stakeAmount changes"""
     contracts, account = tellor_360
     feed = eth_usd_median_feed
@@ -39,12 +42,23 @@ async def test_report(tellor_360, caplog, guaranteed_price_source):
     )
 
     await r.report_once()
-    assert r.staker_info.stake_balance == int(1e18)
+    assert r.staker_info.stake_balance == int(10e18)
     # report count before first submission
     assert r.staker_info.reports_count == 0
 
     # update stakeamount increase causes reporter to deposit more to keep reporting
-    await r.oracle.write("updateStakeAmount", _amount=int(20e18), **txn_kwargs)
+    mock_token_contract.faucet(accounts[0].address)
+    mock_token_contract.approve(mock_flex_contract.address, mock_flex_contract.stakeAmount())
+    mock_flex_contract.depositStake(mock_flex_contract.stakeAmount())
+    mock_flex_contract.submitValue(
+        trb_usd_median_feed.query.query_id,
+        "0x0000000000000000000000000000000000000000000000004563918244f40000",
+        0,
+        trb_usd_median_feed.query.query_data,
+    )
+    chain.sleep(86400)
+    mock_flex_contract.updateStakeAmount()
+    chain.mine(1, timedelta=1)
     stake_amount, status = await r.oracle.read("getStakeAmount")
     assert status.ok
     assert stake_amount == int(20e18)
@@ -56,7 +70,17 @@ async def test_report(tellor_360, caplog, guaranteed_price_source):
     # report count before second report
     assert r.staker_info.reports_count == 1
     # decrease stakeAmount should increase reporting frequency
-    await r.oracle.write("updateStakeAmount", _amount=int(10e18), **txn_kwargs)
+    mock_token_contract.approve(mock_flex_contract.address, mock_flex_contract.stakeAmount())
+    mock_flex_contract.depositStake(mock_flex_contract.stakeAmount())
+    mock_flex_contract.submitValue(
+        trb_usd_median_feed.query.query_id,
+        "0x00000000000000000000000000000000000000000000021e19e0c9bab2400000",
+        0,
+        trb_usd_median_feed.query.query_data,
+    )
+    chain.sleep(86400)
+    mock_flex_contract.updateStakeAmount()
+
     stake_amount, status = await r.oracle.read("getStakeAmount")
     assert status.ok
     assert stake_amount == int(10e18)
@@ -68,7 +92,7 @@ async def test_report(tellor_360, caplog, guaranteed_price_source):
 
 
 @pytest.mark.asyncio
-async def test_fail_get_account_nonce(tellor_360, caplog, guaranteed_price_source, monkeypatch):
+async def test_fail_get_account_nonce(tellor_360, caplog, guaranteed_price_source):
     """Test 360 reporter fails to retrieve account nonce"""
     contracts, account = tellor_360
     feed = eth_usd_median_feed
@@ -164,7 +188,7 @@ async def test_adding_stake(tellor_360, guaranteed_price_source):
     # check stake amount
     stake_amount, status = await reporter.oracle.read("getStakeAmount")
     assert status.ok
-    assert stake_amount == int(1e18), "Should be 1e18"
+    assert stake_amount == int(10e18), "Should be 10e18"
 
     # check default stake value
     assert reporter.stake == 0
@@ -172,14 +196,14 @@ async def test_adding_stake(tellor_360, guaranteed_price_source):
     # first should deposits default stake
     _, status = await reporter.report_once()
     assert status.ok
-    assert reporter.staker_info.stake_balance == int(1e18), "Staker balance should be 1e18"
+    assert reporter.staker_info.stake_balance == int(10e18), "Staker balance should be 10e18"
 
     # stake more by by changing stake from default similar to how a stake amount chosen in cli
     # high stake to bypass reporter lock
-    reporter = Tellor360Reporter(**reporter_kwargs, stake=90000)
+    reporter = Tellor360Reporter(**reporter_kwargs, stake=900000)
     _, status = await reporter.report_once()
     assert status.ok
-    assert reporter.staker_info.stake_balance == pytest.approx(90000e18), "Staker balance should be 90000e18"
+    assert reporter.staker_info.stake_balance == pytest.approx(900000e18), "Staker balance should be 90000e18"
 
 
 @pytest.mark.asyncio
@@ -247,7 +271,7 @@ async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, 
         reporter_lock = 43200 / math.floor(reporter.staker_info.stake_balance / reporter.stake_amount)
         time_remaining = round(reporter.staker_info.last_report + reporter_lock - time.time())
         if time_remaining > 0:
-            hr_min_sec = str(timedelta(seconds=time_remaining))
+            hr_min_sec = str(datetime.timedelta(seconds=time_remaining))
         assert f"Currently in reporter lock. Time left: {hr_min_sec}" in caplog.text
 
 
