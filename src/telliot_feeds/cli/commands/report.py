@@ -8,6 +8,8 @@ from eth_typing import ChecksumAddress
 from eth_utils import to_checksum_address
 from telliot_core.cli.utils import async_run
 
+from telliot_feeds.cli.constants import REWARDS_CHECK_MESSAGE
+from telliot_feeds.cli.constants import STAKE_MESSAGE
 from telliot_feeds.cli.utils import build_feed_from_input
 from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import parse_profit_input
@@ -35,19 +37,6 @@ from telliot_feeds.utils.reporter_utils import prompt_for_abi
 
 
 logger = get_logger(__name__)
-
-
-STAKE_MESSAGE = (
-    "\U00002757Telliot will automatically stake more TRB "
-    "if your stake is below or falls below the stake amount required to report.\n"
-    "If you would like to stake more than required, enter the TOTAL stake amount you wish to be staked.\n"
-    "For example, if you wish to stake 1000 TRB, enter 1000.\n"
-)
-REWARDS_CHECK_MESSAGE = (
-    "If the --no-rewards-check flag is set, the reporter will not check profitability or\n"
-    "available tips for the datafeed unless the user has not selected a query tag or\n"
-    "used the random feeds flag.\n"
-)
 
 
 @click.group()
