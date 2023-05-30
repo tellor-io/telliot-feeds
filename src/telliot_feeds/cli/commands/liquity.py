@@ -3,6 +3,7 @@ from typing import Optional
 import click
 from click.core import Context
 from telliot_core.cli.utils import async_run
+from web3 import Web3
 
 from telliot_feeds.cli.constants import REWARDS_CHECK_MESSAGE
 from telliot_feeds.cli.constants import STAKE_MESSAGE
@@ -10,12 +11,13 @@ from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import parse_profit_input
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.cli.utils import valid_transaction_type
-from telliot_feeds.feeds import eth_usd_median_feed
+from telliot_feeds.feeds import CATALOG_FEEDS
+from telliot_feeds.queries.query_catalog import query_catalog
+from telliot_feeds.reporters.customized import ChainLinkFeeds
 from telliot_feeds.reporters.customized.backup_reporter import BackupReporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
-
 
 logger = get_logger(__name__)
 
@@ -144,6 +146,21 @@ def liquity_reporter() -> None:
     type=int,
     default=80,  # 80 gwei
 )
+@click.option(
+    "--query-tag",
+    "-qt",
+    "query_tag",
+    help="select datafeed using query tag",
+    required=False,
+    nargs=1,
+    default="eth-usd-spot",
+    type=click.Choice([q.tag for q in query_catalog.find()]),
+)
+@click.option(
+    "-clf",
+    "--chainlink-feed",
+    nargs=1,
+)
 @click.option("--submit-once/--submit-continuous", default=False)
 @click.option("-pwd", "--password", type=str)
 @click.option("-pd", "--price-deviation", type=float, default=0.5)
@@ -169,17 +186,34 @@ async def liquity(
     max_priority_fee_range: int,
     price_deviation: float,
     frozen_timeout: int,
+    query_tag: str,
+    chainlink_feed: str,
 ) -> None:
     """Report values to Tellor oracle if certain conditions are met."""
     click.echo("Starting Liquity Backup Reporter...")
     ctx.obj["ACCOUNT_NAME"] = account_str
     ctx.obj["SIGNATURE_ACCOUNT_NAME"] = None
+    if query_tag != "eth-usd-spot" and chainlink_feed is None:
+        raise click.UsageError("Must specify chain link feed if not using eth-usd-spot")
+    datafeed = CATALOG_FEEDS.get(query_tag)
+    if datafeed is None:
+        raise click.UsageError(f"Invalid query tag: {query_tag}, enter a valid query tag with API support, use --help")
 
     accounts = get_accounts_from_name(account_str)
     if not accounts:
         return
+    chain_id = accounts[0].chains[0]
+    if chainlink_feed is None:
+        chainlink_feed = ChainLinkFeeds.get(chain_id)
+        if chainlink_feed is None:
+            raise click.UsageError("Chain link feed not found for chain id: {chain_id}")
+    else:
+        try:
+            chainlink_feed = Web3.toChecksumAddress(chainlink_feed)
+        except ValueError:
+            raise click.UsageError("Invalid chain link feed address")
 
-    ctx.obj["CHAIN_ID"] = accounts[0].chains[0]  # used in reporter_cli_core
+    ctx.obj["CHAIN_ID"] = chain_id  # used in reporter_cli_core
     # if max_fee flag is set, then priority_fee must also be set
     if (max_fee is not None and priority_fee is None) or (max_fee is None and priority_fee is not None):
         raise click.UsageError("Must specify both max fee and priority fee")
@@ -219,7 +253,7 @@ async def liquity(
         common_reporter_kwargs = {
             "endpoint": core.endpoint,
             "account": account,
-            "datafeed": eth_usd_median_feed,
+            "datafeed": datafeed,
             "gas_limit": gas_limit,
             "max_fee": max_fee,
             "priority_fee": priority_fee,
@@ -241,6 +275,7 @@ async def liquity(
         reporter = BackupReporter(
             chainlink_is_frozen_timeout=frozen_timeout,
             chainlink_max_price_deviation=price_deviation,
+            chainlink_feed=chainlink_feed,
             **common_reporter_kwargs,
         )
 

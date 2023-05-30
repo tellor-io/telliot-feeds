@@ -4,6 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from telliot_feeds.feeds import eth_usd_median_feed
+from telliot_feeds.reporters.customized import ChainLinkFeeds
 from telliot_feeds.reporters.customized.backup_reporter import BackupReporter
 from telliot_feeds.reporters.customized.backup_reporter import RoundData
 
@@ -31,6 +32,7 @@ async def reporter(tellor_360, guaranteed_price_source, mock_flex_contract, mock
         check_rewards=False,
         chainlink_is_frozen_timeout=100,
         chainlink_max_price_deviation=0.5,
+        chainlink_feed=ChainLinkFeeds[80001],
         wait_period=0,
     )
 
@@ -57,7 +59,7 @@ async def test_recent_link_data(reporter, chain, caplog):
             )
         )
         await r.report(report_count=1)
-        assert "chainLink ETH/USD data is recent enough" in caplog.text
+        assert 'chainLink {"type":"SpotPrice","asset":"eth","currency":"usd"} data is recent enough' in caplog.text
 
 
 @pytest.mark.asyncio
@@ -92,7 +94,7 @@ async def test_tellor_data_exists(reporter, chain, caplog):
             )
         )
         await r.report(report_count=1)
-        assert "tellor ETH/USD data is recent enough" in caplog.text
+        assert 'tellor {"type":"SpotPrice","asset":"eth","currency":"usd"} data is recent enough' in caplog.text
 
 
 @pytest.mark.asyncio

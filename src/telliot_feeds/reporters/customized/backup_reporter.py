@@ -6,7 +6,6 @@ from typing import Optional
 
 from eth_abi.abi import decode_abi
 
-from telliot_feeds.reporters.customized import ChainLinkFeeds
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
 
@@ -36,24 +35,32 @@ class BackupReporter(Tellor360Reporter):
     implements conditions when intended as backup to chainlink"""
 
     def __init__(
-        self, chainlink_is_frozen_timeout: int, chainlink_max_price_deviation: float, *args: Any, **kwargs: Any
+        self,
+        chainlink_is_frozen_timeout: int,
+        chainlink_max_price_deviation: float,
+        chainlink_feed: str,
+        *args: Any,
+        **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.chainlink_is_frozen_timeout = chainlink_is_frozen_timeout
         self.chainlink_max_price_deviation = chainlink_max_price_deviation
+        self.chainlink_feed = chainlink_feed
 
     def current_time(self) -> int:
         return round(datetime.now().timestamp())
 
     def get_chainlink_latest_round_data(self) -> Optional[RoundData]:
         try:
-            data = self.web3.eth.call(
-                {"gasPrice": 0, "to": ChainLinkFeeds[self.chain_id], "data": "0xfeaf968c"}, "latest"
-            )
+            data = self.web3.eth.call({"gasPrice": 0, "to": self.chainlink_feed, "data": "0xfeaf968c"}, "latest")
             latest_round_data = decode_abi(["uint80", "int256", "uint256", "uint256", "uint80"], data)
             return RoundData(*latest_round_data)
         except Exception as e:
-            logger.warning(f"error getting chainlink round data: {e}")
+            if "Tried to read 32 bytes.  Only got 0 bytes" in str(e):
+                msg = f"Make sure you're using the correct chainlink feed address for the network: {e}"
+                logger.warning(msg)
+            else:
+                logger.warning(f"error getting chainlink previous round data: {e}")
             return None
 
     def get_chainlink_previous_round_data(self, latest_round_id: int) -> Optional[RoundData]:
@@ -62,12 +69,16 @@ class BackupReporter(Tellor360Reporter):
             # getRoundData(uint80) sig
             function_selector = "0x9a6fc8f5"
             calldata = function_selector + f"{previous_round_id:064x}"
-            data = self.web3.eth.call({"gasPrice": 0, "to": ChainLinkFeeds[self.chain_id], "data": calldata}, "latest")
+            data = self.web3.eth.call({"gasPrice": 0, "to": self.chainlink_feed, "data": calldata}, "latest")
 
             previous_round_data = decode_abi(["uint80", "int256", "uint256", "uint256", "uint80"], data)
             return RoundData(*previous_round_data)
         except Exception as e:
-            logger.warning(f"error getting chainlink previous round data: {e}")
+            if "Tried to read 32 bytes.  Only got 0 bytes" in str(e):
+                msg = f"Make sure you're using the correct chainlink feed address for the network: {e}"
+                logger.warning(msg)
+            else:
+                logger.warning(f"error getting chainlink previous round data: {e}")
             return None
 
     def chainlink_price_change_above_max(
@@ -149,10 +160,10 @@ class BackupReporter(Tellor360Reporter):
 
             if self.chainlink_price_change_above_max(chainlink_latest_round_data, chainlink_previous_round_data):
                 return True
-            logger.info("chainLink ETH/USD data is recent enough")
+            logger.info(f"chainLink {self.datafeed.query.descriptor} data is recent enough")
             return False
         else:
-            logger.info("tellor ETH/USD data is recent enough")
+            logger.info(f"tellor {self.datafeed.query.descriptor} data is recent enough")
             return False
 
     async def report(self, report_count: Optional[int] = None) -> None:
