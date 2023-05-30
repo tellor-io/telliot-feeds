@@ -160,10 +160,10 @@ class BackupReporter(Tellor360Reporter):
 
             if self.chainlink_price_change_above_max(chainlink_latest_round_data, chainlink_previous_round_data):
                 return True
-            logger.info(f"chainLink {self.datafeed.query.descriptor} data is recent enough")
+            logger.info(f"chainLink {self.datafeed.query.descriptor} data is recent enough")  # type: ignore
             return False
         else:
-            logger.info(f"tellor {self.datafeed.query.descriptor} data is recent enough")
+            logger.info(f"tellor {self.datafeed.query.descriptor} data is recent enough")  # type: ignore
             return False
 
     async def report(self, report_count: Optional[int] = None) -> None:
