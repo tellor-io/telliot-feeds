@@ -5,14 +5,10 @@ from click.core import Context
 from telliot_core.cli.utils import async_run
 from web3 import Web3
 
-from telliot_feeds.cli.constants import REWARDS_CHECK_MESSAGE
-from telliot_feeds.cli.constants import STAKE_MESSAGE
+from telliot_feeds.cli.utils import common_options
 from telliot_feeds.cli.utils import get_accounts_from_name
-from telliot_feeds.cli.utils import parse_profit_input
 from telliot_feeds.cli.utils import reporter_cli_core
-from telliot_feeds.cli.utils import valid_transaction_type
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.reporters.customized import ChainLinkFeeds
 from telliot_feeds.reporters.customized.backup_reporter import BackupReporter
 from telliot_feeds.utils.cfg import check_endpoint
@@ -28,141 +24,13 @@ def liquity_reporter() -> None:
     pass
 
 
-@click.option(
-    "--account",
-    "-a",
-    "account_str",
-    help="Name of account used for reporting, staking, etc. More info: run `telliot account --help`",
-    required=True,
-    nargs=1,
-    type=str,
-)
 @liquity_reporter.command()
-@click.option(
-    "--gas-limit",
-    "-gl",
-    "gas_limit",
-    help="use custom gas limit",
-    nargs=1,
-    type=int,
-)
-@click.option(
-    "--max-fee",
-    "-mf",
-    "max_fee",
-    help="use custom maxFeePerGas (gwei)",
-    nargs=1,
-    type=float,
-    required=False,
-)
-@click.option(
-    "--priority-fee",
-    "-pf",
-    "priority_fee",
-    help="use custom maxPriorityFeePerGas (gwei)",
-    nargs=1,
-    type=float,
-    required=False,
-)
-@click.option(
-    "--gas-price",
-    "-gp",
-    "legacy_gas_price",
-    help="use custom legacy gasPrice (gwei)",
-    nargs=1,
-    type=int,
-    required=False,
-)
-@click.option(
-    "--profit",
-    "-p",
-    "expected_profit",
-    help="lower threshold (inclusive) for expected percent profit",
-    nargs=1,
-    # User can omit profitability checks by specifying "YOLO"
-    type=click.UNPROCESSED,
-    required=False,
-    callback=parse_profit_input,
-    default="100.0",
-)
-@click.option(
-    "--tx-type",
-    "-tx",
-    "tx_type",
-    help="choose transaction type (0 for legacy txs, 2 for EIP-1559)",
-    type=click.UNPROCESSED,
-    required=False,
-    callback=valid_transaction_type,
-    default=2,
-)
-@click.option(
-    "-wp",
-    "--wait-period",
-    help="wait period between feed suggestion calls",
-    nargs=1,
-    type=int,
-    default=7,
-)
-@click.option(
-    "--stake",
-    "-s",
-    "stake",
-    help=STAKE_MESSAGE,
-    nargs=1,
-    type=float,
-    default=10.0,
-)
-@click.option(
-    "--min-native-token-balance",
-    "-mnb",
-    "min_native_token_balance",
-    help="Minimum native token balance required to report. Denominated in ether.",
-    nargs=1,
-    type=float,
-    default=0.25,
-)
-@click.option(
-    "--check-rewards/--no-check-rewards",
-    "-cr/-ncr",
-    "check_rewards",
-    default=True,
-    help=REWARDS_CHECK_MESSAGE,
-)
-@click.option(
-    "--gas-multiplier",
-    "-gm",
-    "gas_multiplier",
-    help="increase gas price by this percentage (default 1%) ie 5 = 5%",
-    nargs=1,
-    type=int,
-    default=1,  # 1% above the gas price by web3
-)
-@click.option(
-    "--max-priority-fee-range",
-    "-mpfr",
-    "max_priority_fee_range",
-    help="the maximum range of priority fees to use in gwei (default 80 gwei)",
-    nargs=1,
-    type=int,
-    default=80,  # 80 gwei
-)
-@click.option(
-    "--query-tag",
-    "-qt",
-    "query_tag",
-    help="select datafeed using query tag",
-    required=False,
-    nargs=1,
-    default="eth-usd-spot",
-    type=click.Choice([q.tag for q in query_catalog.find()]),
-)
+@common_options
 @click.option(
     "-clf",
     "--chainlink-feed",
     nargs=1,
 )
-@click.option("--submit-once/--submit-continuous", default=False)
-@click.option("-pwd", "--password", type=str)
 @click.option("-pd", "--price-deviation", type=float, default=0.5)
 @click.option("-ft", "--frozen-timeout", type=int, default=3600)
 @click.pass_context
