@@ -1,5 +1,5 @@
 """
-EUR/USD SpotPrice DataFeed
+CNY/USD SpotPrice DataFeed
 """
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.price.spot_price import SpotPrice
