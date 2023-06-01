@@ -2,6 +2,7 @@ from click.testing import CliRunner
 
 from telliot_feeds.cli.main import main as cli_main
 
+
 def test_no_chainlink_feed_found():
     """Test no address found."""
     runner = CliRunner()
@@ -20,6 +21,7 @@ def test_no_chainlink_feed_found():
 
     expected = "Error: Invalid chain link feed address"
     assert expected in result.stdout
+
 
 def test_invalid_inputs():
     """Test non numeric inputs."""
