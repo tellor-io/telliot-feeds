@@ -54,7 +54,7 @@ class ChainlinkBackupReporter(Tellor360Reporter):
             return RoundData(*latest_round_data)
         except Exception as e:
             if "Tried to read 32 bytes.  Only got 0 bytes" in str(e):
-                msg = f"Make sure you're using the correct chainlink feed address {self.chainlink_feed} for the network: {e}"
+                msg = f"Make sure you're using the correct chainlink feed address {self.chainlink_feed}: {e}"
                 logger.warning(msg)
             else:
                 logger.warning(f"error getting chainlink latest round data: {e}")

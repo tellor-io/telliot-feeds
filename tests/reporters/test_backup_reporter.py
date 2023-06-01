@@ -6,7 +6,8 @@ import pytest
 from telliot_feeds.feeds import eth_usd_median_feed
 from telliot_feeds.reporters.customized import ChainLinkFeeds
 from telliot_feeds.reporters.customized.backup_reporter import ChainlinkBackupReporter
-from telliot_feeds.reporters.customized.backup_reporter import RoundData, GetDataBefore
+from telliot_feeds.reporters.customized.backup_reporter import GetDataBefore
+from telliot_feeds.reporters.customized.backup_reporter import RoundData
 from tests.utils.utils import chain_time
 
 
@@ -120,19 +121,22 @@ async def test_price_deviation_condition(reporter, chain, caplog):
 async def test_tellor_data_none(reporter, caplog):
     """Test when tellor data is None"""
     r = await reporter
+
     def patch_tellor_data_return(return_value):
         return patch(f"{module}ChainlinkBackupReporter.get_tellor_latest_data", return_value=return_value)
+
     with patch_tellor_data_return(None):
         await r.report(report_count=1)
         assert "tellor data returned None" in caplog.text
-    
-    with patch_tellor_data_return(GetDataBefore(False, b'', 0)):
+
+    with patch_tellor_data_return(GetDataBefore(False, b"", 0)):
         await r.report(report_count=1)
         assert "No oracle submissions in tellor for query" in caplog.text
 
-    with patch_tellor_data_return(GetDataBefore(True, b'', 0)):
+    with patch_tellor_data_return(GetDataBefore(True, b"", 0)):
         await r.report(report_count=1)
         assert "tellor data is stale, time elapsed since last report" in caplog.text
+
 
 @pytest.mark.asyncio
 async def test_bad_chainlink_address_msg(reporter, caplog):
@@ -141,4 +145,4 @@ async def test_bad_chainlink_address_msg(reporter, caplog):
     bad_address = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"
     r.chainlink_feed = bad_address
     await r.report(report_count=1)
-    assert f"Make sure you're using the correct chainlink feed address {bad_address} for the network" in caplog.text
+    assert f"Make sure you're using the correct chainlink feed address {bad_address}" in caplog.text
