@@ -136,6 +136,13 @@ def reporter() -> None:
     default=True,
     help="Choose between Tellor 360 or Flex contracts",
 )
+@click.option(
+    "--random-feeds/--no-random-feeds",
+    "-rf/-nrf",
+    "use_random_feeds",
+    default=False,
+    help="Reporter will use a random datafeed from the catalog.",
+)
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("-spwd", "--signature-password", type=str)
 @click.pass_context

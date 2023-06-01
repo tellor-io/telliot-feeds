@@ -31,8 +31,8 @@ def liquity_reporter() -> None:
     "--chainlink-feed",
     nargs=1,
 )
-@click.option("-pd", "--price-deviation", type=float, default=0.5)
-@click.option("-ft", "--frozen-timeout", type=int, default=3600)
+@click.option("-pc", "--percent-change", type=float, default=0.5)
+@click.option("-ft", "--frozen-timeout", type=int, default=14400)
 @click.pass_context
 @async_run
 async def liquity(
@@ -52,7 +52,7 @@ async def liquity(
     check_rewards: bool,
     gas_multiplier: int,
     max_priority_fee_range: int,
-    price_deviation: float,
+    percent_change: float,
     frozen_timeout: int,
     query_tag: str,
     chainlink_feed: str,
@@ -61,8 +61,8 @@ async def liquity(
     click.echo("Starting Liquity Backup Reporter...")
     ctx.obj["ACCOUNT_NAME"] = account_str
     ctx.obj["SIGNATURE_ACCOUNT_NAME"] = None
-    if query_tag != "eth-usd-spot" and chainlink_feed is None:
-        raise click.UsageError("Must specify chain link feed if not using eth-usd-spot")
+    if query_tag is None:
+        query_tag = "eth-usd-spot"
     datafeed = CATALOG_FEEDS.get(query_tag)
     if datafeed is None:
         raise click.UsageError(f"Invalid query tag: {query_tag}, enter a valid query tag with API support, use --help")
@@ -74,7 +74,7 @@ async def liquity(
     if chainlink_feed is None:
         chainlink_feed = ChainLinkFeeds.get(chain_id)
         if chainlink_feed is None:
-            raise click.UsageError("Chain link feed not found for chain id: {chain_id}")
+            raise click.UsageError(f"Chain link feed not found for chain id: {chain_id}")
     else:
         try:
             chainlink_feed = Web3.toChecksumAddress(chainlink_feed)
@@ -103,7 +103,7 @@ async def liquity(
             account.unlock(password)
 
         click.echo("Reporter settings:")
-        click.echo(f"Max tolerated price change: {price_deviation * 100}%")
+        click.echo(f"Max tolerated price change: {percent_change * 100}%")
         click.echo(f"Value considered stale after: {frozen_timeout} seconds")
         click.echo(f"Transaction type: {tx_type}")
         click.echo(f"Gas Limit: {gas_limit}")
@@ -142,7 +142,7 @@ async def liquity(
 
         reporter = ChainlinkBackupReporter(
             chainlink_is_frozen_timeout=frozen_timeout,
-            chainlink_max_price_deviation=price_deviation,
+            chainlink_max_price_deviation=percent_change,
             chainlink_feed=chainlink_feed,
             **common_reporter_kwargs,
         )

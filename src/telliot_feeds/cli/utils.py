@@ -378,13 +378,6 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         help=REWARDS_CHECK_MESSAGE,
     )
     @click.option(
-        "--random-feeds/--no-random-feeds",
-        "-rf/-nrf",
-        "use_random_feeds",
-        default=False,
-        help="Reporter will use a random datafeed from the catalog.",
-    )
-    @click.option(
         "--gas-multiplier",
         "-gm",
         "gas_multiplier",
