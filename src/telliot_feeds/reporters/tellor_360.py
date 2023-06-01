@@ -11,6 +11,7 @@ from eth_utils import to_checksum_address
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
+from telliot_feeds.constants import CHAINS_WITH_TBR
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
@@ -48,13 +49,16 @@ class StakerInfo:
 
 
 class Tellor360Reporter(TellorFlexReporter):
-    def __init__(self, stake: float = 0, use_random_feeds: bool = False, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self, ignore_tbr: bool, stake: float = 0, use_random_feeds: bool = False, *args: Any, **kwargs: Any
+    ) -> None:
         self.stake_amount: Optional[int] = None
         self.staker_info: Optional[StakerInfo] = None
         self.allowed_stake_amount = 0
         super().__init__(*args, **kwargs)
         self.stake: float = stake
         self.use_random_feeds: bool = use_random_feeds
+        self.ignore_tbr: bool = ignore_tbr  # relevant only for eth-mainnet and eth-testnets
 
         assert self.acct_addr == to_checksum_address(self.account.address)
 
@@ -247,7 +251,7 @@ class Tellor360Reporter(TellorFlexReporter):
             except EncodingTypeError:
                 logger.warning(f"Unable to generate data/id for query: {self.datafeed.query}")
 
-        if self.chain_id in (1, 5):
+        if self.chain_id in CHAINS_WITH_TBR and not self.ignore_tbr:
             time_based_rewards = await get_time_based_rewards(self.oracle)
             if time_based_rewards is not None:
                 self.autopaytip += time_based_rewards
