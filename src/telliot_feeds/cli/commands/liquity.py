@@ -142,7 +142,7 @@ async def liquity(
 
         reporter = ChainlinkBackupReporter(
             chainlink_is_frozen_timeout=frozen_timeout,
-            chainlink_max_price_deviation=percent_change,
+            chainlink_max_price_change=percent_change,
             chainlink_feed=chainlink_feed,
             **common_reporter_kwargs,
         )

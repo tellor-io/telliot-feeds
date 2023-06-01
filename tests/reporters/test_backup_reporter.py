@@ -29,7 +29,7 @@ async def reporter(tellor_360, guaranteed_price_source, mock_flex_contract, mock
         datafeed=feed,
         check_rewards=False,
         chainlink_is_frozen_timeout=100,
-        chainlink_max_price_deviation=0.5,
+        chainlink_max_price_change=0.5,
         chainlink_feed=ChainLinkFeeds[80001],
         wait_period=0,
     )
@@ -96,7 +96,7 @@ async def test_tellor_data_exists(reporter, chain, caplog):
 
 
 @pytest.mark.asyncio
-async def test_price_deviation_condition(reporter, chain, caplog):
+async def test_price_change_condition(reporter, chain, caplog):
     r = await reporter
     latest_round_data = RoundData(2, 3, chain_time(chain), chain_time(chain), 2)
     # price deviation over 50%

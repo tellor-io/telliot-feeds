@@ -36,18 +36,22 @@ class ChainlinkBackupReporter(Tellor360Reporter):
     def __init__(
         self,
         chainlink_is_frozen_timeout: int,
-        chainlink_max_price_deviation: float,
+        chainlink_max_price_change: float,
         chainlink_feed: str,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.chainlink_is_frozen_timeout = chainlink_is_frozen_timeout
-        self.chainlink_max_price_deviation = chainlink_max_price_deviation
+        self.chainlink_max_price_change = chainlink_max_price_change
         self.chainlink_feed = chainlink_feed
 
     def get_chainlink_latest_round_data(self) -> Optional[RoundData]:
-        """Get latest round data from chainlink feed"""
+        """Get latest round data from chainlink feed
+
+        Returns:
+        - Optional[RoundData]: latest round data from chainlink feed
+        """
         try:
             data = self.web3.eth.call({"gasPrice": 0, "to": self.chainlink_feed, "data": "0xfeaf968c"}, "latest")
             latest_round_data = decode_abi(["uint80", "int256", "uint256", "uint256", "uint80"], data)
@@ -61,7 +65,12 @@ class ChainlinkBackupReporter(Tellor360Reporter):
             return None
 
     def get_chainlink_previous_round_data(self, latest_round_id: int) -> Optional[RoundData]:
-        """Get previous round data from chainlink feed"""
+        """Get previous round data from chainlink feed
+        param:
+        - latest_round_id: latest round id from chainlink feed
+        Returns:
+        - Optional[RoundData]: previous round data from chainlink feed
+        """
         try:
             previous_round_id = latest_round_id - 1
             # getRoundData(uint80) sig
@@ -78,7 +87,14 @@ class ChainlinkBackupReporter(Tellor360Reporter):
     def chainlink_price_change_above_max(
         self, chainlink_latest_round_data: RoundData, chainlink_previous_round_data: RoundData
     ) -> bool:
-        """Check if price change between latest and previous round is above max price deviation"""
+        """Check if price change between latest and previous round is above max price deviation
+        params:
+        - chainlink_latest_round_data: latest round data from chainlink feed
+        - chainlink_previous_round_data: previous round data from chainlink feed
+
+        Returns:
+        - bool: True if price change is above max price deviation, False otherwise
+        """
         current_price = chainlink_latest_round_data.answer
         previous_price = chainlink_previous_round_data.answer
 
@@ -86,7 +102,7 @@ class ChainlinkBackupReporter(Tellor360Reporter):
         max_price = max(current_price, previous_price)
 
         percent_change = (max_price - min_price) / max_price
-        if percent_change > self.chainlink_max_price_deviation:
+        if percent_change > self.chainlink_max_price_change:
             logger.info("chainlink price change above max")
             return True
         else:
