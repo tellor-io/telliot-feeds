@@ -10,7 +10,7 @@ from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.reporters.customized import ChainLinkFeeds
-from telliot_feeds.reporters.customized.backup_reporter import BackupReporter
+from telliot_feeds.reporters.customized.backup_reporter import ChainlinkBackupReporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
@@ -140,7 +140,7 @@ async def liquity(
             "max_priority_fee_range": max_priority_fee_range,
         }
 
-        reporter = BackupReporter(
+        reporter = ChainlinkBackupReporter(
             chainlink_is_frozen_timeout=frozen_timeout,
             chainlink_max_price_deviation=price_deviation,
             chainlink_feed=chainlink_feed,

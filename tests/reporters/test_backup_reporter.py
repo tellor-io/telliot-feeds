@@ -5,12 +5,9 @@ import pytest
 
 from telliot_feeds.feeds import eth_usd_median_feed
 from telliot_feeds.reporters.customized import ChainLinkFeeds
-from telliot_feeds.reporters.customized.backup_reporter import BackupReporter
-from telliot_feeds.reporters.customized.backup_reporter import RoundData
-
-
-def chain_time(chain):
-    return round(chain.time())
+from telliot_feeds.reporters.customized.backup_reporter import ChainlinkBackupReporter
+from telliot_feeds.reporters.customized.backup_reporter import RoundData, GetDataBefore
+from tests.utils.utils import chain_time
 
 
 @pytest.fixture(scope="function")
@@ -19,7 +16,7 @@ async def reporter(tellor_360, guaranteed_price_source, mock_flex_contract, mock
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
 
-    return BackupReporter(
+    return ChainlinkBackupReporter(
         oracle=contracts.oracle,
         token=contracts.token,
         autopay=contracts.autopay,
@@ -37,7 +34,7 @@ async def reporter(tellor_360, guaranteed_price_source, mock_flex_contract, mock
     )
 
 
-module = "telliot_feeds.reporters.customized.backup_reporter.BackupReporter."
+module = "telliot_feeds.reporters.customized.backup_reporter."
 
 
 @pytest.mark.asyncio
@@ -45,16 +42,16 @@ async def test_recent_link_data(reporter, chain, caplog):
     r = await reporter
 
     with ExitStack() as stack:
-        stack.enter_context(patch(f"{module}current_time", new=lambda _: chain_time(chain)))
+        stack.enter_context(patch(f"{module}current_time", new=lambda: chain_time(chain)))
         stack.enter_context(
             patch(
-                f"{module}get_chainlink_latest_round_data",
+                f"{module}ChainlinkBackupReporter.get_chainlink_latest_round_data",
                 return_value=RoundData(2, 1, chain_time(chain), chain_time(chain), 2),
             )
         )
         stack.enter_context(
             patch(
-                f"{module}get_chainlink_previous_round_data",
+                f"{module}ChainlinkBackupReporter.get_chainlink_previous_round_data",
                 return_value=RoundData(1, 1, chain_time(chain), chain_time(chain), 1),
             )
         )
@@ -67,10 +64,10 @@ async def test_frozen_data(reporter, chain, caplog):
     r = await reporter
     old_timestamp = chain_time(chain) - 1000
     with ExitStack() as stack:
-        stack.enter_context(patch(f"{module}current_time", new=lambda _: chain_time(chain)))
+        stack.enter_context(patch(f"{module}current_time", new=lambda: chain_time(chain)))
         stack.enter_context(
             patch(
-                f"{module}get_chainlink_latest_round_data",
+                f"{module}ChainlinkBackupReporter.get_chainlink_latest_round_data",
                 return_value=RoundData(1, 1, old_timestamp, old_timestamp, 1),
             )
         )
@@ -86,11 +83,11 @@ async def test_tellor_data_exists(reporter, chain, caplog):
     await r.report(report_count=1)
     chain.mine(1, timedelta=1)
     with ExitStack() as stack:
-        stack.enter_context(patch(f"{module}current_time", new=lambda _: round(chain.time())))
+        stack.enter_context(patch(f"{module}current_time", new=lambda: chain_time(chain)))
         stack.enter_context(
             patch(
-                f"{module}get_chainlink_latest_round_data",
-                return_value=RoundData(1, 1, round(chain.time()), round(chain.time()), 1),
+                f"{module}ChainlinkBackupReporter.get_chainlink_latest_round_data",
+                return_value=RoundData(1, 1, 1234, 1234, 1),
             )
         )
         await r.report(report_count=1)
@@ -105,9 +102,43 @@ async def test_price_deviation_condition(reporter, chain, caplog):
     previous_round_data = RoundData(1, 1, chain_time(chain), chain_time(chain), 1)
     chain.mine(1, timedelta=1)
     with ExitStack() as stack:
-        stack.enter_context(patch(f"{module}current_time", new=lambda _: chain_time(chain)))
-        stack.enter_context(patch(f"{module}get_chainlink_latest_round_data", return_value=latest_round_data))
-        stack.enter_context(patch(f"{module}get_chainlink_previous_round_data", return_value=previous_round_data))
+        stack.enter_context(patch(f"{module}current_time", new=lambda: chain_time(chain)))
+        stack.enter_context(
+            patch(f"{module}ChainlinkBackupReporter.get_chainlink_latest_round_data", return_value=latest_round_data)
+        )
+        stack.enter_context(
+            patch(
+                f"{module}ChainlinkBackupReporter.get_chainlink_previous_round_data", return_value=previous_round_data
+            )
+        )
         await r.report(report_count=1)
         assert "chainlink price change above max" in caplog.text
         assert "Sending submitValue transaction" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_tellor_data_none(reporter, caplog):
+    """Test when tellor data is None"""
+    r = await reporter
+    def patch_tellor_data_return(return_value):
+        return patch(f"{module}ChainlinkBackupReporter.get_tellor_latest_data", return_value=return_value)
+    with patch_tellor_data_return(None):
+        await r.report(report_count=1)
+        assert "tellor data returned None" in caplog.text
+    
+    with patch_tellor_data_return(GetDataBefore(False, b'', 0)):
+        await r.report(report_count=1)
+        assert "No oracle submissions in tellor for query" in caplog.text
+
+    with patch_tellor_data_return(GetDataBefore(True, b'', 0)):
+        await r.report(report_count=1)
+        assert "tellor data is stale, time elapsed since last report" in caplog.text
+
+@pytest.mark.asyncio
+async def test_bad_chainlink_address_msg(reporter, caplog):
+    """Test when chainlink address is not valid"""
+    r = await reporter
+    bad_address = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"
+    r.chainlink_feed = bad_address
+    await r.report(report_count=1)
+    assert f"Make sure you're using the correct chainlink feed address {bad_address} for the network" in caplog.text

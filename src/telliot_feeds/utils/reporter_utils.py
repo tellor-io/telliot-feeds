@@ -1,5 +1,6 @@
 import json
 import random
+from datetime import datetime
 from typing import Any
 from typing import Callable
 from typing import List
@@ -218,3 +219,7 @@ def fee_history_priority_fee_estimate(fee_history: FeeHistory, priority_fee_max:
         return priority_fee_min
     else:
         return priority_fee_average_for_percentile
+
+
+def current_time() -> int:
+    return round(datetime.now().timestamp())
