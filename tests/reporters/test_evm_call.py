@@ -4,6 +4,7 @@ import pytest
 from brownie import chain
 from eth_abi import decode_single
 from hexbytes import HexBytes
+from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
 
@@ -13,7 +14,6 @@ from telliot_feeds.feeds import evm_call_feed_example
 from telliot_feeds.queries.evm_call import EVMCall
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.sources.evm_call import EVMCallSource
-
 
 txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
 CHAIN_ID = 80001
@@ -213,7 +213,7 @@ async def test_non_view_evm_call(tellor_360, caplog):
         query=EVMCall(chainId=1337, contractAddress=contracts.oracle.address, calldata=non_view_call_data),
         source=EVMCallSource(chainId=1337, contractAddress=contracts.oracle.address, calldata=non_view_call_data),
     )
-
+    EVMCallSource.cfg.endpoints.endpoints.append(RPCEndpoint(chain_id=1337, url="http://localhost:8545"))
     ETHEREUM_CHAINS.add(1337)
     r = Tellor360Reporter(
         oracle=contracts.oracle,

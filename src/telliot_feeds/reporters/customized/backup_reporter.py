@@ -109,7 +109,14 @@ class ChainlinkBackupReporter(Tellor360Reporter):
             return False
 
     def chainlink_is_frozen(self, chainlink_latest_round_data: RoundData) -> bool:
-        """Check if chainlink is frozen based on latest round data"""
+        """Check if chainlink is frozen based on latest round data
+
+        params:
+        - chainlink_latest_round_data: latest round data from chainlink feed
+
+        Returns:
+        - bool: True if chainlink is data is stale, False otherwise
+        """
         current_timestamp = current_time()
         latest_timestamp = chainlink_latest_round_data.updatedAt
         if current_timestamp - latest_timestamp > self.chainlink_is_frozen_timeout:
@@ -119,7 +126,14 @@ class ChainlinkBackupReporter(Tellor360Reporter):
             return False
 
     def chainlink_is_broken(self, chainlink_latest_round_data: RoundData) -> bool:
-        """Check if chainlink is broken based on latest round data"""
+        """Check if chainlink is broken based on latest round data ie returns 0 for any of the fields
+
+        params:
+        - chainlink_latest_round_data: latest round data from chainlink feed
+
+        Returns:
+        - bool: True if chainlink is broken, False otherwise
+        """
         current_timestamp = current_time()
         round_id = chainlink_latest_round_data.roundId
         updated_at = chainlink_latest_round_data.updatedAt
@@ -136,6 +150,11 @@ class ChainlinkBackupReporter(Tellor360Reporter):
         return False
 
     async def get_tellor_latest_data(self) -> Optional[GetDataBefore]:
+        """Get latest data from tellor oracle (getDataBefore with current time)
+
+        Returns:
+        - Optional[GetDataBefore]: latest data from tellor oracle
+        """
         if self.datafeed is None:
             logger.debug(f"no datafeed set: {self.datafeed}")
             return None
@@ -146,7 +165,11 @@ class ChainlinkBackupReporter(Tellor360Reporter):
         return GetDataBefore(*data)
 
     async def conditions_met(self) -> bool:
-        """Trigger methods to check conditions if reporting spot is necessary"""
+        """Trigger methods to check conditions if reporting spot is necessary
+
+        Returns:
+        - bool: True if conditions are met, False otherwise
+        """
         logger.info("checking conditions and reporting if necessary")
         if self.datafeed is None:
             logger.debug(f"no datafeed was setß: {self.datafeed}")
@@ -192,7 +215,7 @@ class ChainlinkBackupReporter(Tellor360Reporter):
                     if await self.conditions_met():
                         _, _ = await self.report_once()
                     else:
-                        logger.info("no need to report")
+                        logger.info("feeds are recent enough, no need to report")
 
             else:
                 logger.warning("Unable to connect to the internet!")
