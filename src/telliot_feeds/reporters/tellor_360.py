@@ -253,6 +253,7 @@ class Tellor360Reporter(TellorFlexReporter):
         elif self.chain_id in CHAINS_WITH_TBR:
             logger.info("Fetching time based rewards")
             time_based_rewards = await get_time_based_rewards(self.oracle)
+            logger.info(f"Time based rewards: {time_based_rewards/1e18:.04f}")
             if time_based_rewards is not None:
                 self.autopaytip += time_based_rewards
         return self.autopaytip
