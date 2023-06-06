@@ -289,7 +289,7 @@ def reporter() -> None:
 @click.option("-spwd", "--signature-password", type=str)
 @click.option(
     "--ignore-tbr/--include-tbr",
-    help="optionaly ignore time based rewards in profit calculations. relevant only on eth-mainnet/testnets",
+    help="optionaly ignore time based rewards in profit calculations. relevant only on eth-mainnet/eth-testnets",
     default=False,
 )
 @click.pass_context

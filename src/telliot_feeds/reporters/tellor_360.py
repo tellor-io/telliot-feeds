@@ -286,6 +286,8 @@ class Tellor360Reporter(TellorFlexReporter):
             suggested_feed, tip_amount = await get_feed_and_tip(self.autopay)
 
             if suggested_feed is not None and tip_amount is not None:
+                logger.info(f"Most funded datafeed in Autopay: {suggested_feed.query.type}")
+                logger.info(f"Tip amount: {tip_amount/1e18}")
                 self.autopaytip += tip_amount
 
                 self.datafeed = suggested_feed
