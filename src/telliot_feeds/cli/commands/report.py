@@ -490,7 +490,6 @@ async def report(
             )
         elif tellor_360:
             reporter = Tellor360Reporter(
-                ignore_tbr=ignore_tbr,
                 **common_reporter_kwargs,
             )  # type: ignore
         else:

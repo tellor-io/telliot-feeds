@@ -50,7 +50,7 @@ class StakerInfo:
 
 class Tellor360Reporter(TellorFlexReporter):
     def __init__(
-        self, ignore_tbr: bool, stake: float = 0, use_random_feeds: bool = False, *args: Any, **kwargs: Any
+        self, stake: float = 0, use_random_feeds: bool = False, *args: Any, **kwargs: Any
     ) -> None:
         self.stake_amount: Optional[int] = None
         self.staker_info: Optional[StakerInfo] = None
@@ -58,7 +58,6 @@ class Tellor360Reporter(TellorFlexReporter):
         super().__init__(*args, **kwargs)
         self.stake: float = stake
         self.use_random_feeds: bool = use_random_feeds
-        self.ignore_tbr: bool = ignore_tbr  # relevant only for eth-mainnet and eth-testnets
 
         assert self.acct_addr == to_checksum_address(self.account.address)
 
@@ -250,8 +249,11 @@ class Tellor360Reporter(TellorFlexReporter):
                 self.autopaytip += await fetch_feed_tip(self.autopay, datafeed)
             except EncodingTypeError:
                 logger.warning(f"Unable to generate data/id for query: {self.datafeed.query}")
-
-        if self.chain_id in CHAINS_WITH_TBR and not self.ignore_tbr:
+        if self.ignore_tbr:
+            logger.info("Ignoring time based rewards")
+            return self.autopaytip
+        elif self.chain_id in CHAINS_WITH_TBR:
+            logger.info("Fetching time based rewards")
             time_based_rewards = await get_time_based_rewards(self.oracle)
             if time_based_rewards is not None:
                 self.autopaytip += time_based_rewards

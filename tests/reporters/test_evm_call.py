@@ -4,6 +4,7 @@ import pytest
 from brownie import chain
 from eth_abi import decode_single
 from hexbytes import HexBytes
+from telliot_core.apps.core import RPCEndpoint
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
 
@@ -34,6 +35,7 @@ async def test_evm_call_e2e(tellor_360, caplog):
         min_native_token_balance=0,
         datafeed=None,
         check_rewards=True,
+        ignore_tbr=False,
     )
 
     # An improvement would be to create an instance of the EVMCall query
@@ -90,6 +92,7 @@ async def test_no_endpoint_for_tipped_chain(tellor_360, caplog):
         min_native_token_balance=0,
         datafeed=None,
         check_rewards=True,
+        ignore_tbr=False,
     )
 
     q = EVMCall(
@@ -133,6 +136,7 @@ async def test_bad_contract_address(tellor_360, caplog):
         datafeed=feed,
         check_rewards=True,
         gas_limit=350000,
+        ignore_tbr=False,
     )
 
     _, status = await r.report_once()
@@ -162,6 +166,7 @@ async def test_short_call_data(tellor_360, caplog):
         datafeed=feed,
         check_rewards=True,
         gas_limit=350000,
+        ignore_tbr=False,
     )
 
     _, status = await r.report_once()
@@ -190,6 +195,7 @@ async def test_function_doesnt_exist(tellor_360, caplog):
         datafeed=feed,
         check_rewards=True,
         gas_limit=350000,
+        ignore_tbr=False,
     )
     r.check_reporter_lock = AsyncMock(lambda: ResponseStatus())
     chain.sleep(43201)
@@ -213,7 +219,7 @@ async def test_non_view_evm_call(tellor_360, caplog):
         query=EVMCall(chainId=1337, contractAddress=contracts.oracle.address, calldata=non_view_call_data),
         source=EVMCallSource(chainId=1337, contractAddress=contracts.oracle.address, calldata=non_view_call_data),
     )
-
+    EVMCallSource.cfg.endpoints.endpoints.append(RPCEndpoint(chain_id=1337, url="http://localhost:8545"))
     ETHEREUM_CHAINS.add(1337)
     r = Tellor360Reporter(
         oracle=contracts.oracle,
@@ -227,6 +233,7 @@ async def test_non_view_evm_call(tellor_360, caplog):
         datafeed=feed,
         check_rewards=True,
         gas_limit=350000,
+        ignore_tbr=False,
     )
     _, status = await r.report_once()
     assert "Result is empty bytes, call might be to a non-view function" in caplog.text
