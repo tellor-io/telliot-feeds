@@ -49,9 +49,7 @@ class StakerInfo:
 
 
 class Tellor360Reporter(TellorFlexReporter):
-    def __init__(
-        self, stake: float = 0, use_random_feeds: bool = False, *args: Any, **kwargs: Any
-    ) -> None:
+    def __init__(self, stake: float = 0, use_random_feeds: bool = False, *args: Any, **kwargs: Any) -> None:
         self.stake_amount: Optional[int] = None
         self.staker_info: Optional[StakerInfo] = None
         self.allowed_stake_amount = 0
