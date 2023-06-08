@@ -145,6 +145,11 @@ def reporter() -> None:
 )
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("-spwd", "--signature-password", type=str)
+@click.option(
+    "--ignore-tbr/--include-tbr",
+    help="optionaly ignore time based rewards in profit calculations. relevant only on eth-mainnet/eth-testnets",
+    default=False,
+)
 @click.pass_context
 @async_run
 async def report(
@@ -178,6 +183,7 @@ async def report(
     use_random_feeds: bool,
     gas_multiplier: int,
     max_priority_fee_range: int,
+    ignore_tbr: bool,
 ) -> None:
     """Report values to Tellor oracle"""
     ctx.obj["ACCOUNT_NAME"] = account_str
@@ -317,6 +323,7 @@ async def report(
             "use_random_feeds": use_random_feeds,
             "gas_multiplier": gas_multiplier,
             "max_priority_fee_range": max_priority_fee_range,
+            "ignore_tbr": ignore_tbr,
         }
 
         if sig_acct_addr:

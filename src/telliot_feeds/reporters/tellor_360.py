@@ -11,6 +11,7 @@ from eth_utils import to_checksum_address
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
+from telliot_feeds.constants import CHAINS_WITH_TBR
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
@@ -246,9 +247,13 @@ class Tellor360Reporter(TellorFlexReporter):
                 self.autopaytip += await fetch_feed_tip(self.autopay, datafeed)
             except EncodingTypeError:
                 logger.warning(f"Unable to generate data/id for query: {self.datafeed.query}")
-
-        if self.chain_id in (1, 5):
+        if self.ignore_tbr:
+            logger.info("Ignoring time based rewards")
+            return self.autopaytip
+        elif self.chain_id in CHAINS_WITH_TBR:
+            logger.info("Fetching time based rewards")
             time_based_rewards = await get_time_based_rewards(self.oracle)
+            logger.info(f"Time based rewards: {time_based_rewards/1e18:.04f}")
             if time_based_rewards is not None:
                 self.autopaytip += time_based_rewards
         return self.autopaytip
@@ -282,6 +287,8 @@ class Tellor360Reporter(TellorFlexReporter):
             suggested_feed, tip_amount = await get_feed_and_tip(self.autopay)
 
             if suggested_feed is not None and tip_amount is not None:
+                logger.info(f"Most funded datafeed in Autopay: {suggested_feed.query.type}")
+                logger.info(f"Tip amount: {tip_amount/1e18}")
                 self.autopaytip += tip_amount
 
                 self.datafeed = suggested_feed
