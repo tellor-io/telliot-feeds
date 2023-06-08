@@ -39,6 +39,7 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, mock_flex_con
         min_native_token_balance=0,
         datafeed=feed,
         check_rewards=False,
+        ignore_tbr=False,
     )
 
     await r.report_once()
@@ -108,6 +109,7 @@ async def test_fail_get_account_nonce(tellor_360, caplog, guaranteed_price_sourc
         transaction_type=0,
         min_native_token_balance=0,
         datafeed=feed,
+        ignore_tbr=False,
     )
 
     def mock_raise(*args, **kwargs):
@@ -159,6 +161,7 @@ async def test_360_reporter_rewards(tellor_360, guaranteed_price_source):
         chain_id=CHAIN_ID,
         transaction_type=0,
         min_native_token_balance=0,
+        ignore_tbr=False,
         datafeed=feed,
     )
 
@@ -182,6 +185,7 @@ async def test_adding_stake(tellor_360, guaranteed_price_source):
         "transaction_type": 0,
         "min_native_token_balance": 0,
         "datafeed": feed,
+        "ignore_tbr": False,
     }
     reporter = Tellor360Reporter(**reporter_kwargs)
 
@@ -224,6 +228,7 @@ async def test_no_native_token(tellor_360, caplog, guaranteed_price_source):
         "wait_period": 0,
         "min_native_token_balance": 100 * 10**18,
         "datafeed": feed,
+        "ignore_tbr": False,
     }
     reporter = Tellor360Reporter(**reporter_kwargs)
 
@@ -250,6 +255,7 @@ async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, 
         "wait_period": 0,
         "min_native_token_balance": 0,
         "datafeed": feed,
+        "ignore_tbr": False,
     }
 
     # mock get_feed_and_tip, which is called in the Tellor360Reporter.fetch_datafeed method
@@ -293,6 +299,7 @@ async def test_fail_gen_query_id(tellor_360, caplog, guaranteed_price_source):
         "wait_period": 0,
         "min_native_token_balance": 0,
         "datafeed": feed,
+        "ignore_tbr": False,
     }
 
     # This will cause the SpotPrice query to throw an eth_abi.exceptions.EncodingTypeError when
@@ -306,7 +313,7 @@ async def test_fail_gen_query_id(tellor_360, caplog, guaranteed_price_source):
 
 
 @pytest.mark.asyncio
-async def test_tbr_tip_increment(tellor_360, guaranteed_price_source, caplog):
+async def test_tbr_tip_increment(tellor_360, guaranteed_price_source, caplog, chain):
     contracts, account = tellor_360
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
@@ -330,6 +337,7 @@ async def test_tbr_tip_increment(tellor_360, guaranteed_price_source, caplog):
         "wait_period": 0,
         "min_native_token_balance": 0,
         "expected_profit": 1000.0,  # set expected profit high so it won't report
+        "ignore_tbr": False,
     }
 
     def mock_tbr():
@@ -347,6 +355,18 @@ async def test_tbr_tip_increment(tellor_360, guaranteed_price_source, caplog):
     with patch("telliot_feeds.reporters.tellor_360.get_time_based_rewards", mock_async_tbr):
         await reporter.report(report_count=3)
         # tip amount should increase by 1e18 each time and not more
+        assert "Fetching time based rewards" in caplog.text
+        assert "Ignoring time based rewards" not in caplog.text
         assert "Tips: 1.0" in caplog.text
         assert "Tips: 2.0" in caplog.text
         assert "Tips: 3.0" in caplog.text
+        caplog.clear()
+
+        reporter.ignore_tbr = True
+        await reporter.report(report_count=3)
+        assert "Ignoring time based rewards" in caplog.text
+        assert "Fetching time based rewards" not in caplog.text
+        assert "Tips: 1.0" in caplog.text
+        # tip amount should not increase
+        assert "Tips: 2.0" not in caplog.text
+        assert "Tips: 3.0" not in caplog.text
