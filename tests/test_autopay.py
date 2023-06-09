@@ -217,7 +217,7 @@ async def test_main(
         assert tip == 10e18
 
         # fast forward to avoid reporter time lock
-        chain.sleep(61)
+        chain.sleep(43201)
 
         # submit report for onetime tip to oracle
         # should reserve tip for first reporter

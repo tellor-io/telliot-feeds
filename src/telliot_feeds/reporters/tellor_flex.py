@@ -55,6 +55,7 @@ class TellorFlexReporter(IntervalReporter):
         wait_period: int = 7,
         min_native_token_balance: int = 10**18,
         check_rewards: bool = True,
+        ignore_tbr: bool = False,  # relevant only for eth-mainnet and eth-testnets
     ) -> None:
 
         self.endpoint = endpoint
@@ -81,6 +82,7 @@ class TellorFlexReporter(IntervalReporter):
         self.min_native_token_balance = min_native_token_balance
         self.check_rewards: bool = check_rewards
         self.web3 = self.endpoint.web3
+        self.ignore_tbr = ignore_tbr
 
         self.gas_info: dict[str, Union[float, int]] = {}
         logger.info(f"Reporting with account: {self.acct_addr}")
