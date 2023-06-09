@@ -16,6 +16,6 @@ pls_usd_median_feed = DataFeed(
             CoinGeckoSpotPriceSource(asset="pls", currency="usd"),
             CoinpaprikaSpotPriceSource(asset="pls-pulsechain", currency="usd"),
             UniswapV3PriceSource(asset="pls", currency="usd"),
-        ]
-    )
+        ],
+    ),
 )
