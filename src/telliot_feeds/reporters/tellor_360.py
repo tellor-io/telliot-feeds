@@ -26,7 +26,6 @@ from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
-from telliot_feeds.utils.stake_info import StakeInfo
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import fee_history_priority_fee_estimate
 from telliot_feeds.utils.reporter_utils import get_native_token_feed
@@ -34,6 +33,7 @@ from telliot_feeds.utils.reporter_utils import has_native_token_funds
 from telliot_feeds.utils.reporter_utils import is_online
 from telliot_feeds.utils.reporter_utils import suggest_random_feed
 from telliot_feeds.utils.reporter_utils import tkn_symbol
+from telliot_feeds.utils.stake_info import StakeInfo
 
 logger = get_logger(__name__)
 
@@ -555,7 +555,9 @@ class Tellor360Reporter:
                 return None, error_status(msg, e=e, log=logger.error)
         return self.gas_limit, ResponseStatus()
 
-    async def assemble_submission_txn(self, datafeed: DataFeed) -> Tuple[Optional[ContractFunction], ResponseStatus]:
+    async def assemble_submission_txn(
+        self, datafeed: DataFeed[Any]
+    ) -> Tuple[Optional[ContractFunction], ResponseStatus]:
         """Assemble the submitValue transaction
         Params:
             datafeed: The datafeed object
@@ -600,7 +602,7 @@ class Tellor360Reporter:
         )
         return params, ResponseStatus()
 
-    def send_transaction(self, tx_signed) -> Tuple[Optional[TxReceipt], ResponseStatus]:
+    def send_transaction(self, tx_signed: Any) -> Tuple[Optional[TxReceipt], ResponseStatus]:
         """Send a signed transaction to the blockchain and wait for confirmation
 
         Params:
@@ -697,7 +699,7 @@ class Tellor360Reporter:
 
         # Build transaction
         built_submit_val_tx = submit_val_tx.buildTransaction(
-            dict(nonce=acc_nonce, gas=gas_limit, chainId=self.chain_id, **gas_fees)
+            dict(nonce=acc_nonce, gas=gas_limit, chainId=self.chain_id, **gas_fees)  # type: ignore
         )
         lazy_unlock_account(self.account)
         local_account = self.account.local_account

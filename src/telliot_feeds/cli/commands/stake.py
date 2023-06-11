@@ -1,19 +1,17 @@
-import click
-from click.core import Context
-
-from eth_utils import to_checksum_address
-
 from typing import Optional
 
+import click
+from click.core import Context
+from eth_utils import to_checksum_address
 from telliot_core.cli.utils import async_run
 
+from telliot_feeds.cli.utils import get_accounts_from_name
+from telliot_feeds.cli.utils import reporter_cli_core
+from telliot_feeds.cli.utils import valid_transaction_type
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
-from telliot_feeds.cli.utils import get_accounts_from_name
-from telliot_feeds.cli.utils import valid_transaction_type
-from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.utils.reporter_utils import has_native_token_funds
-from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 
 @click.group()
@@ -171,5 +169,9 @@ async def stake(
             "autopay": contracts.autopay,
             "token": contracts.token,
         }
-        if has_native_token_funds(to_checksum_address(account.address), core.endpoint.web3, min_balance=int(min_native_token_balance * 10**18)):
+        if has_native_token_funds(
+            to_checksum_address(account.address),
+            core.endpoint.web3,
+            min_balance=int(min_native_token_balance * 10**18),
+        ):
             _ = await Tellor360Reporter(**common_reporter_kwargs).deposit_stake(int(amount * 1e18))

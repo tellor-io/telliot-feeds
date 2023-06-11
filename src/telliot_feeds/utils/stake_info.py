@@ -1,6 +1,9 @@
-from dataclasses import dataclass, field
-from typing import Deque, Optional
 from collections import deque
+from dataclasses import dataclass
+from dataclasses import field
+from typing import Deque
+from typing import Optional
+
 from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
@@ -70,7 +73,6 @@ class StakeInfo:
             logger.info("Staker balance is less than oracle stake amount")
             return True
         return False
-
 
     @property
     def current_stake_amount(self) -> int:

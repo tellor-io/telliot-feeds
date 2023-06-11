@@ -3,6 +3,7 @@
 Example of a subclassed Reporter.
 """
 from typing import Any
+from typing import Optional
 from typing import Tuple
 
 from chained_accounts import ChainedAccount
@@ -41,7 +42,7 @@ class FlashbotsReporter(Tellor360Reporter):
         logger.info(f"Flashbots provider endpoint: {flashbots_uri}")
         flashbot(self.endpoint._web3, self.signature_account, flashbots_uri)
 
-    def send_transaction(self, tx_signed) -> Tuple[TxReceipt, ResponseStatus]:
+    def send_transaction(self, tx_signed: Any) -> Tuple[Optional[TxReceipt], ResponseStatus]:
         status = ResponseStatus()
         # Create bundle of one pre-signed, EIP-1559 (type 2) transaction
         bundle = [

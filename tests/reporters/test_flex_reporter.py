@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 from brownie import chain
@@ -123,9 +123,7 @@ async def test_dispute(tellor_flex_reporter, caplog):
     r.stake_info.store_staker_balance(1)
 
     _ = await r.report_once()
-    assert (
-        "Your staked balance has decreased, account might be in dispute" in caplog.text
-    )
+    assert "Your staked balance has decreased, account might be in dispute" in caplog.text
 
 
 @pytest.mark.asyncio

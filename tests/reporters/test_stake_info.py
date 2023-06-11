@@ -2,6 +2,7 @@ from telliot_feeds.utils.stake_info import StakeInfo
 
 stake_info = StakeInfo()
 
+
 def test_storage_length():
     assert len(stake_info.stake_amount_history) == 0
     # Add some stake amounts
