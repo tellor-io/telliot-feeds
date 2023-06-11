@@ -126,7 +126,7 @@ query_catalog.add_entry(
 
 query_catalog.add_entry(
     tag="pls-usd-spot",
-    title="Pulsechain LiquidLoans feed",
+    title="PLS/USD spot price",
     q=SpotPrice(asset="pls", currency="usd"),
 )
 
