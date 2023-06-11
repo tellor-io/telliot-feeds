@@ -53,6 +53,7 @@ coingecko_coin_id = {
     "reth": "rocket-pool-eth",
     "op": "optimism",
     "grt": "the-graph",
+    "pls": "pulsechain",
 }
 
 
