@@ -4,7 +4,7 @@ from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.feeds.dai_usd_feed import dai_usd_median_feed
-from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 
 @pytest.mark.asyncio
@@ -16,7 +16,7 @@ async def test_dai_usd_reporter_submit_once(
         # get PubKey and PrivKey from config files
         account = core.get_account()
 
-        flex = core.get_tellorflex_contracts()
+        flex = core.get_tellor360_contracts()
         flex.oracle.address = mock_flex_contract.address
         flex.autopay.address = mock_autopay_contract.address
         flex.token.address = mock_token_contract.address
@@ -31,7 +31,7 @@ async def test_dai_usd_reporter_submit_once(
         # send eth from brownie address to reporter address for txn fees
         accounts[2].transfer(account.address, "1 ether")
 
-        r = TellorFlexReporter(
+        r = Tellor360Reporter(
             endpoint=core.endpoint,
             account=account,
             chain_id=80001,

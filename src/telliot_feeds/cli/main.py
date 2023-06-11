@@ -14,6 +14,7 @@ from telliot_feeds.cli.commands.integrations import integrations
 from telliot_feeds.cli.commands.query import query
 from telliot_feeds.cli.commands.report import report
 from telliot_feeds.cli.commands.settle import settle
+from telliot_feeds.cli.commands.stake import stake
 from telliot_feeds.utils.log import get_logger
 
 
@@ -43,6 +44,7 @@ main.add_command(settle)
 main.add_command(integrations)
 main.add_command(config)
 main.add_command(account)
+main.add_command(stake)
 
 if __name__ == "__main__":
     main()

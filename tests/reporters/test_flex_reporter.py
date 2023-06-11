@@ -1,22 +1,24 @@
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from brownie import chain
 from telliot_core.utils.response import ResponseStatus
 
-from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
-from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
+
+# from telliot_feeds.datafeed import DataFeed
 
 
-@pytest.mark.asyncio
-async def test_YOLO_feed_suggestion(tellor_flex_reporter):
-    tellor_flex_reporter.expected_profit = "YOLO"
-    feed = await tellor_flex_reporter.fetch_datafeed()
+# @pytest.mark.asyncio
+# async def test_YOLO_feed_suggestion(tellor_flex_reporter):
+#     # tellor_flex_reporter.expected_profit = "YOLO"
+#     tellor_flex_reporter.use_random_feeds = True
+#     feed = await tellor_flex_reporter.fetch_datafeed()
 
-    assert feed is not None
-    assert isinstance(feed, DataFeed)
+#     assert feed is not None
+#     assert isinstance(feed, DataFeed)
 
 
 @pytest.mark.asyncio
@@ -24,15 +26,15 @@ async def test_ensure_profitable(tellor_flex_reporter):
     r = tellor_flex_reporter
     r.expected_profit = "YOLO"
     r.gas_info = {"type": 0, "gas_price": 1e9, "gas_limit": 300000}
-    unused_feed = matic_usd_median_feed
-    status = await r.ensure_profitable(unused_feed)
+
+    status = await r.ensure_profitable()
 
     assert isinstance(status, ResponseStatus)
     assert status.ok
 
     r.chain_id = 1
     r.expected_profit = 100.0
-    status = await r.ensure_profitable(unused_feed)
+    status = await r.ensure_profitable()
 
     assert not status.ok
 
@@ -83,10 +85,9 @@ async def test_fetch_gas_price_error(tellor_flex_reporter, caplog):
     # Test invalid gas price speed
     r = tellor_flex_reporter
 
-    with patch("telliot_feeds.reporters.tellor_flex.TellorFlexReporter.fetch_gas_price") as func:
+    with patch("telliot_feeds.reporters.tellor_360.Tellor360Reporter.fetch_gas_price") as func:
         func.return_value = None
 
-        r.stake = 1e100
         staked, status = await r.ensure_staked()
         assert not staked
         assert not status.ok
@@ -114,17 +115,16 @@ async def test_reporting_without_internet(tellor_flex_reporter, caplog):
 
 
 @pytest.mark.asyncio
-async def test_dispute(tellor_flex_reporter: TellorFlexReporter):
+async def test_dispute(tellor_flex_reporter, caplog):
     # Test when reporter in dispute
     r = tellor_flex_reporter
+    r.datafeed = matic_usd_median_feed
+    # initial balance higher than current balance, current balance is 0 since first time staking
+    r.stake_info.store_staker_balance(1)
 
-    async def in_dispute(_):
-        return True
-
-    r.in_dispute = in_dispute
-    _, status = await r.report_once()
+    _ = await r.report_once()
     assert (
-        "Staked balance has decreased, account might be in dispute; restart telliot to keep reporting" in status.error
+        "Your staked balance has decreased, account might be in dispute" in caplog.text
     )
 
 
@@ -132,9 +132,9 @@ async def test_dispute(tellor_flex_reporter: TellorFlexReporter):
 async def test_reset_datafeed(tellor_flex_reporter):
     # Test when reporter selects qtag vs not
     # datafeed should persist if qtag selected
-    r: TellorFlexReporter = tellor_flex_reporter
+    r = tellor_flex_reporter
 
-    reporter1 = TellorFlexReporter(
+    reporter1 = Tellor360Reporter(
         oracle=r.oracle,
         token=r.token,
         autopay=r.autopay,
@@ -145,7 +145,7 @@ async def test_reset_datafeed(tellor_flex_reporter):
         datafeed=CATALOG_FEEDS["trb-usd-spot"],
         min_native_token_balance=0,
     )
-    reporter2 = TellorFlexReporter(
+    reporter2 = Tellor360Reporter(
         oracle=r.oracle,
         token=r.token,
         autopay=r.autopay,

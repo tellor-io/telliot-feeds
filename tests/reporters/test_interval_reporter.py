@@ -72,12 +72,12 @@ async def test_ensure_profitable(tellor_flex_reporter):
 
     assert r.expected_profit == "YOLO"
 
-    status = await r.ensure_profitable(r.datafeed)
+    status = await r.ensure_profitable()
 
     assert status.ok
 
     r.expected_profit = 1e10
-    status = await r.ensure_profitable(r.datafeed)
+    status = await r.ensure_profitable()
 
     assert not status.ok
     assert status.error == "Estimated profitability below threshold."

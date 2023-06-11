@@ -1,5 +1,6 @@
 from typing import Any
 from typing import Optional
+from typing import Union
 
 import click
 from chained_accounts import find_accounts
@@ -26,7 +27,6 @@ from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.reporters.flashbot import FlashbotsReporter
 from telliot_feeds.reporters.rng_interval import RNGReporter
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
-from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
@@ -227,13 +227,6 @@ def reporter() -> None:
     prompt=False,
 )
 @click.option(
-    "--tellor-360/--tellor-flex",
-    "-360/-flex",
-    "tellor_360",
-    default=True,
-    help="Choose between Tellor 360 or Flex contracts",
-)
-@click.option(
     "--stake",
     "-s",
     "stake",
@@ -317,7 +310,6 @@ async def report(
     custom_token_contract: Optional[ChecksumAddress],
     custom_oracle_contract: Optional[ChecksumAddress],
     custom_autopay_contract: Optional[ChecksumAddress],
-    tellor_360: bool,
     stake: float,
     account_str: str,
     signature_account: str,
@@ -406,7 +398,7 @@ async def report(
 
         _ = input("Press [ENTER] to confirm settings.")
 
-        contracts = core.get_tellor360_contracts() if tellor_360 else core.get_tellorflex_contracts()
+        contracts = core.get_tellor360_contracts()
 
         if custom_oracle_contract:
             contracts.oracle.connect()  # set telliot_core.contract.Contract.contract attribute
@@ -467,7 +459,7 @@ async def report(
             "max_priority_fee_range": max_priority_fee_range,
             "ignore_tbr": ignore_tbr,
         }
-
+        reporter: Union[FlashbotsReporter, RNGReporter, Tellor360Reporter]
         if sig_acct_addr:
             reporter = FlashbotsReporter(
                 signature_account=sig_account,
@@ -475,7 +467,7 @@ async def report(
             )
         elif rng_auto:
             common_reporter_kwargs["wait_period"] = 120 if wait_period < 120 else wait_period
-            reporter = RNGReporter(  # type: ignore
+            reporter = RNGReporter(
                 **common_reporter_kwargs,
             )
         elif reporting_diva_protocol:
@@ -488,14 +480,10 @@ async def report(
                 **common_reporter_kwargs,
                 **diva_reporter_kwargs,  # type: ignore
             )
-        elif tellor_360:
+        else:
             reporter = Tellor360Reporter(
                 **common_reporter_kwargs,
-            )  # type: ignore
-        else:
-            reporter = TellorFlexReporter(
-                **common_reporter_kwargs,
-            )  # type: ignore
+            )
 
         if submit_once:
             _, _ = await reporter.report_once()

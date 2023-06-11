@@ -43,9 +43,9 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, mock_flex_con
     )
 
     await r.report_once()
-    assert r.staker_info.stake_balance == int(10e18)
+    assert r.stake_info.current_staker_balance == int(10e18)
     # report count before first submission
-    assert r.staker_info.reports_count == 0
+    assert "reports count: 0" in caplog.text
 
     # update stakeamount increase causes reporter to deposit more to keep reporting
     mock_token_contract.faucet(accounts[0].address)
@@ -66,10 +66,10 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, mock_flex_con
 
     await r.report_once()
     # staker balance increased due to updateStakeAmount call
-    assert r.staker_info.stake_balance == stake_amount
+    assert r.stake_info.current_stake_amount == stake_amount
     assert "Currently in reporter lock. Time left: 11:59" in caplog.text  # 12hr
     # report count before second report
-    assert r.staker_info.reports_count == 1
+    assert "reports count: 1" in caplog.text
     # decrease stakeAmount should increase reporting frequency
     mock_token_contract.approve(mock_flex_contract.address, mock_flex_contract.stakeAmount())
     mock_flex_contract.depositStake(mock_flex_contract.stakeAmount())
@@ -86,7 +86,7 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, mock_flex_con
     assert status.ok
     assert stake_amount == int(10e18)
 
-    assert r.staker_info.stake_balance == int(20e18)
+    assert r.stake_info.current_staker_balance == int(20e18)
 
     await r.report_once()
     assert "Currently in reporter lock. Time left: 5:59" in caplog.text  # 6hr
@@ -200,14 +200,14 @@ async def test_adding_stake(tellor_360, guaranteed_price_source):
     # first should deposits default stake
     _, status = await reporter.report_once()
     assert status.ok
-    assert reporter.staker_info.stake_balance == int(10e18), "Staker balance should be 10e18"
+    assert reporter.stake_info.current_staker_balance == int(10e18), "Staker balance should be 10e18"
 
     # stake more by by changing stake from default similar to how a stake amount chosen in cli
     # high stake to bypass reporter lock
     reporter = Tellor360Reporter(**reporter_kwargs, stake=900000)
     _, status = await reporter.report_once()
     assert status.ok
-    assert reporter.staker_info.stake_balance == pytest.approx(900000e18), "Staker balance should be 90000e18"
+    assert reporter.stake_info.current_staker_balance == pytest.approx(900000e18), "Staker balance should be 90000e18"
 
 
 @pytest.mark.asyncio
@@ -274,8 +274,10 @@ async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, 
         # set datafeed to None so fetch_datafeed will call get_feed_and_tip
         reporter.datafeed = None
         await reporter.report(report_count=1)
-        reporter_lock = 43200 / math.floor(reporter.staker_info.stake_balance / reporter.stake_amount)
-        time_remaining = round(reporter.staker_info.last_report + reporter_lock - time.time())
+        reporter_lock = 43200 / math.floor(
+            reporter.stake_info.current_staker_balance / reporter.stake_info.current_stake_amount
+        )
+        time_remaining = round(reporter.stake_info.last_report_time + reporter_lock - time.time())
         if time_remaining > 0:
             hr_min_sec = str(datetime.timedelta(seconds=time_remaining))
         assert f"Currently in reporter lock. Time left: {hr_min_sec}" in caplog.text

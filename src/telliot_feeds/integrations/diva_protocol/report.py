@@ -11,7 +11,7 @@ from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
-from web3.datastructures import AttributeDict
+from web3.types import TxReceipt
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
@@ -215,7 +215,7 @@ class DIVAProtocolReporter(Tellor360Reporter):
 
     async def report_once(
         self,
-    ) -> Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]:
+    ) -> Tuple[Optional[TxReceipt], ResponseStatus]:
         """Report query response to a TellorFlex oracle."""
         staked, status = await self.ensure_staked()
         if not staked or not status.ok:
