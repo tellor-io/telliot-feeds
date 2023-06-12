@@ -10,6 +10,7 @@ from requests import JSONDecodeError
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
+from telliot_feeds.integrations.diva_protocol import BASE_SUBGRAPH_URL
 from telliot_feeds.utils.log import get_logger
 
 
@@ -87,7 +88,7 @@ async def fetch_from_subgraph(query: str, network: str) -> Optional[list[dict[st
         s.mount("https://", adapter)
         try:
             rsp = s.post(
-                f"https://api.thegraph.com/subgraphs/name/divaprotocol/diva-{network}-new",
+                f"{BASE_SUBGRAPH_URL}{network}",
                 json={"query": query},
             )
         except requests.exceptions.ConnectTimeout:
