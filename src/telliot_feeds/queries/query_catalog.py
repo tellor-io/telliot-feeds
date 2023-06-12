@@ -119,7 +119,9 @@ query_catalog.add_entry(
     tag="diva-protocol-example",
     title="Diva protocol example",
     q=DIVAProtocol(
-        poolId="0x1234", divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211", chainId=3
+        poolId="0x52a16114f6d8b8213c2a345ce81a7f6d7eb630b7ef25c182817495e2c7d4752e",
+        divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211",
+        chainId=3,
     ),  # todo: update w/ real pool id, address, chain id
 )
 query_catalog.add_entry(

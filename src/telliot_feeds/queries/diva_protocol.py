@@ -5,6 +5,8 @@ from typing import Union
 
 from eth_abi import decode_abi
 from eth_abi import encode_abi
+from eth_abi import encode_single
+from eth_abi.exceptions import ValueOutOfBounds
 from eth_utils import to_checksum_address
 
 from telliot_feeds.dtypes.value_type import ValueType
@@ -84,6 +86,15 @@ class DIVAProtocol(AbiQuery):
 
     def __post_init__(self) -> None:
         """Validate parameters."""
+        if self.poolId is not None:
+            # Ensure poolId is a hex string and can be encoded as bytes32
+            if not isinstance(self.poolId, str) or not self.poolId.startswith("0x"):
+                raise ValueError(f"poolId must be a hex string (e.g. 0x52a16114...). Got: {self.poolId}")
+            try:
+                encode_single("bytes32", bytes.fromhex(self.poolId[2:]))
+            except ValueOutOfBounds:
+                raise ValueError(f"poolId must be a valid bytes32 hex string. Got: {self.poolId}")
+
         parameters_set = (
             self.poolId is not None,
             self.divaDiamond is not None,
@@ -100,3 +111,60 @@ class DIVAProtocol(AbiQuery):
         - `packed`: false
         """
         return DIVAReturnType(abi_type="(ufixed256x18,ufixed256x18)", packed=False)
+
+    @property
+    def query_data(self) -> bytes:
+        """Encode the query type and parameters to create the query data."""
+        if self.poolId is None or self.divaDiamond is None or self.chainId is None:
+            raise ValueError(f"Missing required parameters: {self.poolId}, {self.divaDiamond}, {self.chainId}")
+        bytes_poolId = bytes.fromhex(self.poolId[2:])
+        param_types = [p["type"] for p in self.abi]
+        encoded_params = encode_abi(param_types, [bytes_poolId, self.divaDiamond, self.chainId])
+
+        return encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
+
+    # @staticmethod
+    # def get_query_from_data(query_data: bytes) -> Optional[OracleQuery]:
+    #     """Recreate an oracle query from the `query_data` field"""
+    #     try:
+    #         query_type, encoded_param_values = decode_abi(["string", "bytes"], query_data)
+    #     except OverflowError:
+    #         logger.error("OverflowError while decoding query data.")
+    #         return None
+    #     try:
+    #         cls = Registry.registry[query_type]
+    #     except KeyError:
+    #         logger.error(f"Unsupported query type: {query_type}")
+    #         return None
+    #     params_abi = cls.abi
+    #     param_names = [p["name"] for p in params_abi]
+    #     param_types = [p["type"] for p in params_abi]
+    #     param_values = decode_abi(param_types, encoded_param_values)
+
+    #     params = dict(zip(param_names, param_values))
+
+    #     return deserialize({"type": query_type, **params})  # type: ignore
+
+    # Above is the inherited method from AbiQuery
+    # Below is the method that overrides the inherited method
+    # @staticmethod
+    # def get_query_from_data(query_data: bytes) -> Optional[AbiQuery]:
+    #     """Recreate an oracle query from the `query_data` field"""
+    #     try:
+    #         query_type, encoded_param_values = decode_abi(["string", "bytes"], query_data)
+    #     except OverflowError:
+    #         logger.error("OverflowError while decoding query data.")
+    #         return None
+    #     try:
+    #         cls = Registry.registry[query_type]
+    #     except KeyError:
+    #         logger.error(f"Unsupported query type: {query_type}")
+    #         return None
+    #     params_abi = cls.abi
+    #     param_names = [p["name"] for p in params_abi]
+    #     param_types = [p["type"] for p in params_abi]
+    #     param_values = decode_abi(param_types, encoded_param_values)
+
+    #     params = dict(zip(param_names, param_values))
+
+    #     return deserialize({"type": query_type, **params})
