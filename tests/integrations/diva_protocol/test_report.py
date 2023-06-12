@@ -63,7 +63,7 @@ async def test_report(
     async with TelliotCore(config=goerli_test_cfg) as core:
 
         past_expiry = int(time.time()) - 1
-        pool_id = 1234
+        pool_id = "0x1234"  # todo: update w/ real pool id
         fake_pool = DivaPool(
             pool_id=pool_id,
             reference_asset="ETH/USD",

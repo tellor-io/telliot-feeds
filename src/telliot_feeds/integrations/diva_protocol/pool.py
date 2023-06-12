@@ -26,7 +26,7 @@ class DivaPool:
     https://github.com/divaprotocol/oracles#diva-smart-contract
     """
 
-    pool_id: int
+    pool_id: str  # bytes32
     reference_asset: str
     collateral_token_address: str
     collateral_token_symbol: str
@@ -39,7 +39,6 @@ def query_valid_pools(data_provider: str, expiry_since: Optional[int] = None) ->
     Generate query string to fetch pool data from DIVA Protocol subgraph.
 
     Args:
-        last_id: fetch pool with IDs later than this.
         data_provider: Who reports the data for the reference asset.
         expiry_since: Fetch pools w/ expiry >= this timestamp.
     """

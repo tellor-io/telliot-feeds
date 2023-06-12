@@ -42,7 +42,7 @@ def dict_to_pool(pool_dict: dict[str, Any]) -> DivaPool:
         DivaPool object.
     """
     return DivaPool(
-        pool_id=int(pool_dict["id"]),
+        pool_id=str(pool_dict["id"]),
         reference_asset=pool_dict["referenceAsset"],
         collateral_token_address=pool_dict["collateralToken"]["id"],
         collateral_token_symbol=pool_dict["collateralToken"]["symbol"],
@@ -98,7 +98,7 @@ def get_reported_pools() -> Any:
 
 
 def update_reported_pools(
-    pools: dict[int, int], add: Optional[list[Any]] = None, remove: Optional[list[int]] = None
+    pools: dict[str, int], add: Optional[list[Any]] = None, remove: Optional[list[str]] = None
 ) -> None:
     """
     Remove settled pools from reported pools dict & save to pickle file in

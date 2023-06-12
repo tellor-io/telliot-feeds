@@ -65,7 +65,7 @@ class DivaProtocolContract(Contract):
             account=account,
         )
 
-    async def get_pool_parameters(self, pool_id: int) -> Optional[tuple[Any]]:
+    async def get_pool_parameters(self, pool_id: str) -> Optional[tuple[Any]]:
         """Fetches info about a specific pool.
 
         Used for getting the referenceAsset mostly ('BTC/USD', for example)."""
@@ -125,7 +125,7 @@ class DivaOracleTellorContract(Contract):
 
     async def set_final_reference_value(
         self,
-        pool_id: int,
+        pool_id: str,
         legacy_gas_price: Optional[int] = None,
         max_priority_fee_per_gas: Optional[int] = None,
         max_fee_per_gas: Optional[int] = None,

@@ -23,7 +23,6 @@ def diva_oracle_mock_contract():
     return accounts[0].deploy(DIVATellorOracleMock, 3600, "0x0000000000000000000000000000000000001234")
 
 
-@pytest.mark.skip("don't use this contract currently")
 @pytest.mark.asyncio
 async def test_diva_protocol_contract(ropsten_test_cfg, diva_mock_contract):
     """Test the DIVAProtocol contract"""
@@ -35,7 +34,7 @@ async def test_diva_protocol_contract(ropsten_test_cfg, diva_mock_contract):
 
         assert diva.address == diva_mock_contract.address
 
-        p = await diva.get_pool_parameters(pool_id=3)
+        p = await diva.get_pool_parameters(pool_id="0x1234")  # todo: update w/ real pool id
         print(p)
         assert isinstance(p, PoolParameters)
         assert isinstance(p.reference_asset, str)

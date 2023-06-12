@@ -36,7 +36,7 @@ def test_constructor():
     assert query_type == "DIVAProtocol"
 
     pool_id, diva_diamond, chain_id = decode_abi(["uint256", "address", "uint256"], encoded_param_vals)
-    assert pool_id == 1234
+    assert pool_id == "0x1234"  # todo update w/ real pool id
     assert diva_diamond == "0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211".lower()
     assert chain_id == 3
 

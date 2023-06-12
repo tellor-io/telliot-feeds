@@ -62,14 +62,14 @@ class DIVAProtocol(AbiQuery):
             https://divaprotocol.io
     """
 
-    poolId: Optional[int] = None
+    poolId: Optional[str] = None
     divaDiamond: Optional[Union[str, bytes]] = None
     chainId: Optional[int] = None
 
     #: ABI used for encoding/decoding parameters
     abi = [
         {
-            "type": "uint256",
+            "type": "bytes32",
             "name": "poolId",
         },
         {

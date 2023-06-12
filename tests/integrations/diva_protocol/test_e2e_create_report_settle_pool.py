@@ -55,7 +55,6 @@ def mock_middleware_contract(mock_playground):
     return accounts[0].deploy(DIVATellorOracleMock, 0, mock_playground.address)
 
 
-@pytest.mark.skip("TODO: fix pool not in reported pools pickle file")
 @pytest.mark.asyncio
 async def test_create_report_settle_pool(
     goerli_test_cfg,

@@ -140,10 +140,10 @@ class DIVAProtocolReporter(Tellor360Reporter):
         self.datafeed = datafeed
         return datafeed
 
-    async def set_final_ref_value(self, pool_id: int, gas_price: int) -> ResponseStatus:
+    async def set_final_ref_value(self, pool_id: str, gas_price: int) -> ResponseStatus:
         return await self.middleware_contract.set_final_reference_value(pool_id=pool_id, legacy_gas_price=gas_price)
 
-    async def settle_pool(self, pool_id: int) -> ResponseStatus:
+    async def settle_pool(self, pool_id: str) -> ResponseStatus:
         """Settle pool"""
         if not self.legacy_gas_price:
             gas_price = await self.fetch_gas_price()

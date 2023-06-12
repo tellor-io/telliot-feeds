@@ -44,7 +44,7 @@ async def test_diva_datafeed(ropsten_test_cfg, diva_mock_contract) -> None:
     async with TelliotCore(config=ropsten_test_cfg) as core:
         account = core.get_account()
         feed = await assemble_diva_datafeed(
-            pool_id=3,
+            pool_id="0x1234",  # todo: update w/ real pool id
             node=core.endpoint,
             account=account,
             diva_address=diva_mock_contract.address,
@@ -64,7 +64,7 @@ async def test_diva_datafeed(ropsten_test_cfg, diva_mock_contract) -> None:
             assert isinstance(t, datetime)
 
         feed = await assemble_diva_datafeed(
-            pool_id=10,
+            pool_id="0x12345",  # todo: update w/ real pool id
             node=core.endpoint,
             account=account,
             diva_address=diva_mock_contract.address,
