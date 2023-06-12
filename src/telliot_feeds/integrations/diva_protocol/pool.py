@@ -34,7 +34,7 @@ class DivaPool:
     expiry_time: int
 
 
-def query_valid_pools(last_id: int, data_provider: str, expiry_since: Optional[int] = None) -> str:
+def query_valid_pools(data_provider: str, expiry_since: Optional[int] = None) -> str:
     """
     Generate query string to fetch pool data from DIVA Protocol subgraph.
 
@@ -45,7 +45,7 @@ def query_valid_pools(last_id: int, data_provider: str, expiry_since: Optional[i
     """
     return """
             {
-                pools (first: 100, where: {id_gt: %s, expiryTime_gte: "%s", expiryTime_lte: "%s", statusFinalReferenceValue: "Open", dataProvider: "%s"}) {
+                pools (first: 100, where: {expiryTime_gte: "%s", expiryTime_lte: "%s", statusFinalReferenceValue: "Open", dataProvider: "%s"}) {
                     id
                     referenceAsset
                     collateralToken {
@@ -57,7 +57,6 @@ def query_valid_pools(last_id: int, data_provider: str, expiry_since: Optional[i
                   }
                 }
             """ % (
-        last_id,
         expiry_since or (int(datetime.now().timestamp() - 10) - 86400),
         int(datetime.now().timestamp() - 10),
         data_provider,

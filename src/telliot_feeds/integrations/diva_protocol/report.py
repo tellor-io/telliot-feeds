@@ -104,8 +104,8 @@ class DIVAProtocolReporter(Tellor360Reporter):
         """Fetch datafeed"""
         # fetch pools from DIVA subgraph
         query = query_valid_pools(
-            last_id=0,
             data_provider=self.middleware_contract.address,
+            # todo: set expiry_since ?
         )
         pools = await self.fetch_unfiltered_pools(
             query=query,
