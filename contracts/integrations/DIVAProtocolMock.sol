@@ -81,8 +81,4 @@ contract DIVAProtocolMock {
     function changePoolExpiry(bytes32 _poolId, uint256 _expiryTime) public {
         pools[_poolId].expiryTime = _expiryTime;
     }
-
-    function getExamplePool() public view returns (Pool memory){
-        return pools[0x0ccf69d6832bcb70d201cd5d4014799d4e5b9944d7644522bfabecfe147ec2a0];
-    }
 }

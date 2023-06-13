@@ -26,7 +26,7 @@ def diva() -> None:
     "pool_id",
     help="pool ID for Diva Protocol",
     nargs=1,
-    type=str,  # todo: handle formatting of pool_id
+    type=str,
     required=True,
 )
 @click.option(

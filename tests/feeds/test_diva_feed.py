@@ -18,33 +18,12 @@ def diva_mock_contract():
     return accounts[0].deploy(DIVAProtocolMock)
 
 
-# @pytest.mark.skip
-# def test_get_variable_source() -> None:
-#     source = get_variable_source("btc", 1243)
-
-#     assert source.sources[1].asset == "xbt"
-#     assert source.sources[3].ts == 1243
-
-
-# @pytest.mark.skip
-# @pytest.mark.asyncio
-# async def test_get_pool_parameters(ropsten_test_cfg, diva_mock_contract) -> None:
-#     async with TelliotCore(config=ropsten_test_cfg) as core:
-#         account = core.get_account()
-#         params = await get_pool_params(3, core.endpoint, account, diva_mock_contract.address)
-
-#         assert isinstance(params, DivaPoolParameters)
-#         assert params.reference_asset == "ETH/USD"
-#         assert params.expiry_date == 1657349074
-
-
-@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_diva_datafeed(ropsten_test_cfg, diva_mock_contract) -> None:
     async with TelliotCore(config=ropsten_test_cfg) as core:
         account = core.get_account()
         feed = await assemble_diva_datafeed(
-            pool_id="0x1234",  # todo: update w/ real pool id
+            pool_id="0x0ccf69d6832bcb70d201cd5d4014799d4e5b9944d7644522bfabecfe147ec2a0",  # todo: u
             node=core.endpoint,
             account=account,
             diva_address=diva_mock_contract.address,
@@ -64,7 +43,7 @@ async def test_diva_datafeed(ropsten_test_cfg, diva_mock_contract) -> None:
             assert isinstance(t, datetime)
 
         feed = await assemble_diva_datafeed(
-            pool_id="0x12345",  # todo: update w/ real pool id
+            pool_id="0x17b06c50236906dd13e350f03ba7c937d810412feb2186f1dbafe6bdb9f88194",
             node=core.endpoint,
             account=account,
             diva_address=diva_mock_contract.address,

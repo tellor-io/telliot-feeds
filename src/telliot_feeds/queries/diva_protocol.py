@@ -55,7 +55,7 @@ class DIVAProtocol(AbiQuery):
 
         divaDiamond:
             Contract address where the selected pool id exists.
-            Example: "0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211"
+            Example: "0x2C9c47E7d254e493f02acfB410864b9a86c28e1D"
 
         chainId:
             Network identifier

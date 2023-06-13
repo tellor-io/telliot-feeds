@@ -120,9 +120,9 @@ query_catalog.add_entry(
     title="Diva protocol example",
     q=DIVAProtocol(
         poolId="0x52a16114f6d8b8213c2a345ce81a7f6d7eb630b7ef25c182817495e2c7d4752e",
-        divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211",
-        chainId=3,
-    ),  # todo: update w/ real pool id, address, chain id
+        divaDiamond="0x2C9c47E7d254e493f02acfB410864b9a86c28e1D",
+        chainId=80001,
+    ),
 )
 query_catalog.add_entry(
     tag="string-query-example", title="String query example", q=StringQuery(text="Where is the Atlantic ocean?")
