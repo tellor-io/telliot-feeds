@@ -22,6 +22,7 @@ yesterday = int(datetime.datetime.now().timestamp() - 60 * 60 * 24)
 one_month_ago = int(datetime.datetime.now().timestamp() - 60 * 60 * 24 * 30)
 network = "mumbai"
 # data_provider = DIVA_TELLOR_MIDDLEWARE_ADDRESS
+# todo: report some w/ Tellor, so can use middleware address instead
 data_provider = "0x9adefeb576dcf52f5220709c1b267d89d5208d78"
 
 

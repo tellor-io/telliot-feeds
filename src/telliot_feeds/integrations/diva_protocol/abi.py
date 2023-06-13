@@ -165,7 +165,7 @@ DIVA_ABI = [
         "type": "function",
     },
     {
-        "inputs": [{"internalType": "uint256", "name": "_poolId", "type": "uint256"}],
+        "inputs": [{"internalType": "bytes32", "name": "_poolId", "type": "bytes32"}],
         "name": "getPoolParameters",
         "outputs": [
             {
