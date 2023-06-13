@@ -145,7 +145,7 @@ class Tellor360Reporter:
         """
         response, status = await self.oracle.read("getStakeAmount")
         if not status.ok:
-            msg = "Unable to read current stake amount"
+            msg = f"Unable to read current stake amount: {status.e}"
             return None, error_status(msg, log=logger.error)
         stake_amount: int = response
         return stake_amount, status
@@ -158,7 +158,7 @@ class Tellor360Reporter:
         """
         response, status = await self.oracle.read("getStakerInfo", _stakerAddress=self.acct_addr)
         if not status.ok:
-            msg = "Unable to read account staker info"
+            msg = f"Unable to read account staker info {status.e}"
             return None, error_status(msg, log=logger.error)
         staker_details = StakerInfo(*response)
         return staker_details, status
@@ -167,7 +167,7 @@ class Tellor360Reporter:
         """Reads the current balance of the account"""
         response, status = await self.token.read("balanceOf", account=self.acct_addr)
         if not status.ok:
-            msg = "Unable to read account balance"
+            msg = f"Unable to read account balance: {status.e}"
             return None, error_status(msg, log=logger.error)
         wallet_balance: int = response
         logger.info(f"Current wallet TRB balance: {wallet_balance / 1e18!r}")
@@ -205,7 +205,7 @@ class Tellor360Reporter:
             "allowance", owner=self.acct_addr, spender=self.oracle.address
         )
         if not allowance_status.ok:
-            msg = "Unable to check allowance"
+            msg = f"Unable to check allowance: {allowance_status.e}"
             return False, error_status(msg, log=logger.error)
         logger.debug(f"Current allowance: {allowance / 1e18!r}")
         gas_params, status = await self.gas_params()
@@ -225,7 +225,7 @@ class Tellor360Reporter:
                 amount=amount,
             )
             if not approve_status.ok:
-                msg = "Unable to approve staking"
+                msg = f"Unable to approve staking: {approve_status.e}"
                 return False, error_status(msg, log=logger.error)
             logger.debug(f"Approve transaction status: {approve_receipt.status}, block: {approve_receipt.blockNumber}")
             # Add this to avoid nonce error from txn happening too fast
@@ -242,7 +242,7 @@ class Tellor360Reporter:
             _amount=amount,
         )
         if not deposit_status.ok:
-            msg = "Unable to deposit stake"
+            msg = f"Unable to deposit stake: {deposit_status.e}"
             return False, error_status(msg, log=logger.error)
         logger.debug(f"Deposit transaction status: {deposit_receipt.status}, block: {deposit_receipt.blockNumber}")
         return True, deposit_status
@@ -269,8 +269,10 @@ class Tellor360Reporter:
             return False, status
         # store staker balance
         self.stake_info.store_staker_balance(staker_details.stake_balance)
-        # update report count
+        # update time of last report
         self.stake_info.update_last_report_time(staker_details.last_report)
+        # update reports count
+        self.stake_info.update_reports_count(staker_details.reports_count)
         # check if staker balance changed which means a value they submitted has been disputed
         # (logs when it does)
         self.stake_info.is_in_dispute()
@@ -424,7 +426,7 @@ class Tellor360Reporter:
         gas_price = (float(price_gwei) * multiplier) if price_gwei else None
         return gas_price
 
-    def get_fee_info(self) -> Tuple[Optional[float], Optional[float]]:
+    def get_fee_info(self) -> Tuple[Optional[float], Optional[int]]:
         """Calculate max fee and priority fee if not set
         for more info:
             https://web3py.readthedocs.io/en/v5/web3.eth.html?highlight=fee%20history#web3.eth.Eth.fee_history

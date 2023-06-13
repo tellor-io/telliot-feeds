@@ -19,6 +19,7 @@ class StakeInfo:
 
     max_data: int = 2
     last_report: int = 0
+    reports_count: int = 0
 
     stake_amount_history: Deque[int] = field(default_factory=deque, init=False, repr=False)
     staker_balance_history: Deque[int] = field(default_factory=deque, init=False, repr=False)
@@ -36,8 +37,12 @@ class StakeInfo:
         self.staker_balance_history.append(stake_balance)
 
     def update_last_report_time(self, last_report: int) -> None:
-        """Update report count"""
+        """Update last report time"""
         self.last_report = last_report
+
+    def update_reports_count(self, reports_count: int) -> None:
+        """Update report count"""
+        self.reports_count = reports_count
 
     @property
     def last_report_time(self) -> int:

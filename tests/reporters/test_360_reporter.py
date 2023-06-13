@@ -8,14 +8,20 @@ from unittest.mock import patch
 import pytest
 from brownie import accounts
 from brownie import chain
+from telliot_core.utils.response import ResponseStatus
 
+from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
+from telliot_feeds.utils.log import get_logger
+from tests.utils.utils import passing_bool_w_status
 
+logger = get_logger(__name__)
 
 txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
 CHAIN_ID = 80001
@@ -372,3 +378,123 @@ async def test_tbr_tip_increment(tellor_360, guaranteed_price_source, caplog, ch
         # tip amount should not increase
         assert "Tips: 2.0" not in caplog.text
         assert "Tips: 3.0" not in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_fetch_datafeed(tellor_flex_reporter):
+    r = tellor_flex_reporter
+    r.use_random_feeds = True
+    feed = await r.fetch_datafeed()
+    assert isinstance(feed, DataFeed)
+
+    r.datafeed = None
+    assert r.datafeed is None
+    feed = await r.fetch_datafeed()
+    assert isinstance(feed, DataFeed)
+
+
+@pytest.mark.skip(reason="EIP-1559 not supported by ganache")
+@pytest.mark.asyncio
+def test_get_fee_info(tellor_flex_reporter):
+    """Test fee info for type 2 transactions."""
+    priority, max_fee = tellor_flex_reporter.get_fee_info()
+
+    assert isinstance(priority, float)
+    assert isinstance(max_fee, (float, int))
+
+
+@pytest.mark.asyncio
+async def test_get_num_reports_by_id(tellor_flex_reporter):
+    r = tellor_flex_reporter
+    num, status = await r.get_num_reports_by_id(matic_usd_median_feed.query.query_id)
+
+    assert status.ok
+    assert isinstance(num, int)
+
+
+@pytest.mark.asyncio
+async def test_ensure_staked(tellor_flex_reporter):
+    """Test staking status of reporter."""
+    staked, status = await tellor_flex_reporter.ensure_staked()
+
+    assert staked
+    assert status.ok
+
+
+@pytest.mark.asyncio
+async def test_ensure_profitable(tellor_flex_reporter):
+    """Test profitability check."""
+    r = tellor_flex_reporter
+    r.gas_info = {"type": 0, "gas_price": 1e9, "gas_limit": 300000}
+
+    assert r.expected_profit == "YOLO"
+
+    status = await r.ensure_profitable()
+
+    assert status.ok
+
+    r.expected_profit = 1e10
+    status = await r.ensure_profitable()
+
+    assert not status.ok
+    assert status.error == "Estimated profitability below threshold."
+
+
+@pytest.mark.asyncio
+async def test_ethgasstation_error(tellor_flex_reporter):
+    with mock.patch("telliot_feeds.reporters.tellor_360.Tellor360Reporter.fetch_gas_price") as func:
+        func.return_value = None
+        r = tellor_flex_reporter
+        r.stake = 1000000 * 10**18
+
+        staked, status = await r.ensure_staked()
+        assert not staked
+        assert not status.ok
+
+
+@pytest.mark.asyncio
+async def test_no_updated_value(tellor_flex_reporter, bad_datasource):
+    """Test handling for no updated value returned from datasource."""
+    r = tellor_flex_reporter
+    r.datafeed = btc_usd_median_feed
+
+    # Clear latest datapoint
+    r.datafeed.source._history.clear()
+
+    # Replace PriceAggregator's sources with test source that
+    # returns no updated DataPoint
+    r.datafeed.source.sources = [bad_datasource]
+
+    tx_receipt, status = await r.report_once()
+
+    assert not tx_receipt
+    assert not status.ok
+    assert status.error == "Unable to retrieve updated datafeed value."
+
+
+@pytest.mark.asyncio
+async def test_ensure_reporter_lock_check_after_submitval_attempt(
+    tellor_flex_reporter, guaranteed_price_source, caplog
+):
+    r = tellor_flex_reporter
+
+    async def check_reporter_lock(*args, **kwargs):
+        logger.debug(f"Checking reporter lock: {time.time()}")
+        return ResponseStatus()
+
+    r.ensure_staked = passing_bool_w_status
+    r.check_reporter_lock = check_reporter_lock
+    r.datafeed = matic_usd_median_feed
+    r.gas_limit = 350000
+
+    # Simulate fetching latest value
+    r.datafeed.source.sources = [guaranteed_price_source]
+
+    def send_failure(*args, **kwargs):
+        raise Exception("bingo")
+
+    with mock.patch("web3.eth.Eth.send_raw_transaction", side_effect=send_failure):
+        r.wait_period = 0
+        await r.report(2)
+        assert "Send transaction failed: Exception('bingo')" in caplog.text
+        assert caplog.text.count("Checking reporter lock") == 2

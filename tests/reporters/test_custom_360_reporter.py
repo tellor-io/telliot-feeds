@@ -22,8 +22,9 @@ from telliot_feeds.utils.reporter_utils import create_custom_contract
 
 
 logger = get_logger(__name__)
-
+# adding account to brownie accounts
 account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
+# adding account to telliot accounts
 try:
     account = find_accounts(name="fake_flex_custom_reporter_address", chain_id=80001)[0]
 except IndexError:
@@ -86,7 +87,7 @@ async def custom_reporter(
             r = Tellor360Reporter(
                 transaction_type=0,
                 oracle=custom_contract,
-                token=contracts.token,
+                token=custom_contract,
                 autopay=contracts.autopay,
                 endpoint=core.endpoint,
                 account=account,
@@ -107,9 +108,7 @@ async def custom_reporter(
             )
             # send eth from brownie address to reporter address for txn fees
             accounts[1].transfer(account.address, "10 ether")
-
-            mock_token_contract.approve(mock_flex_contract.address, 10e18, {"from": account_fake})
-            mock_flex_contract.depositStake(10e18, {"from": account_fake})
+            accounts[1].transfer(mock_reporter_contract.address, "10 ether")
 
             return r
 
