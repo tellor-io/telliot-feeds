@@ -119,7 +119,10 @@ class DIVAProtocol(AbiQuery):
     def query_data(self) -> bytes:
         """Encode the query type and parameters to create the query data."""
         if self.poolId is None or self.divaDiamond is None or self.chainId is None:
-            raise ValueError(f"Missing required parameters: {self.poolId}, {self.divaDiamond}, {self.chainId}")
+            raise ValueError(
+                "Missing required parameters: "
+                + f"{str(self.poolId)}, {self.divaDiamond}, {self.chainId}"  # type: ignore
+            )
         bytes_poolId = bytes.fromhex(self.poolId[2:])
         param_types = [p["type"] for p in self.abi]
         encoded_params = encode_abi(param_types, [bytes_poolId, self.divaDiamond, self.chainId])
