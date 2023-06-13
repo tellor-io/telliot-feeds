@@ -1,8 +1,11 @@
 import logging
 from dataclasses import dataclass
+from typing import Any
 from typing import Optional
 from typing import Union
 
+from clamfig import deserialize
+from clamfig.base import Registry
 from eth_abi import decode_abi
 from eth_abi import encode_abi
 from eth_abi import encode_single
@@ -123,48 +126,27 @@ class DIVAProtocol(AbiQuery):
 
         return encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
 
-    # @staticmethod
-    # def get_query_from_data(query_data: bytes) -> Optional[OracleQuery]:
-    #     """Recreate an oracle query from the `query_data` field"""
-    #     try:
-    #         query_type, encoded_param_values = decode_abi(["string", "bytes"], query_data)
-    #     except OverflowError:
-    #         logger.error("OverflowError while decoding query data.")
-    #         return None
-    #     try:
-    #         cls = Registry.registry[query_type]
-    #     except KeyError:
-    #         logger.error(f"Unsupported query type: {query_type}")
-    #         return None
-    #     params_abi = cls.abi
-    #     param_names = [p["name"] for p in params_abi]
-    #     param_types = [p["type"] for p in params_abi]
-    #     param_values = decode_abi(param_types, encoded_param_values)
+    @staticmethod
+    def get_query_from_data(query_data: bytes) -> Any:
+        """Recreate an oracle query from the `query_data` field"""
+        try:
+            query_type, encoded_param_values = decode_abi(["string", "bytes"], query_data)
+        except OverflowError:
+            logger.error("OverflowError while decoding query data.")
+            return None
+        try:
+            cls = Registry.registry[query_type]
+        except KeyError:
+            logger.error(f"Unsupported query type: {query_type}")
+            return None
+        params_abi = cls.abi
+        param_names = [p["name"] for p in params_abi]
+        param_types = [p["type"] for p in params_abi]
+        param_values = list(decode_abi(param_types, encoded_param_values))
 
-    #     params = dict(zip(param_names, param_values))
+        # Convert poolId to hex string
+        param_values[0] = "0x" + param_values[0].hex()
 
-    #     return deserialize({"type": query_type, **params})  # type: ignore
+        params = dict(zip(param_names, param_values))
 
-    # Above is the inherited method from AbiQuery
-    # Below is the method that overrides the inherited method
-    # @staticmethod
-    # def get_query_from_data(query_data: bytes) -> Optional[AbiQuery]:
-    #     """Recreate an oracle query from the `query_data` field"""
-    #     try:
-    #         query_type, encoded_param_values = decode_abi(["string", "bytes"], query_data)
-    #     except OverflowError:
-    #         logger.error("OverflowError while decoding query data.")
-    #         return None
-    #     try:
-    #         cls = Registry.registry[query_type]
-    #     except KeyError:
-    #         logger.error(f"Unsupported query type: {query_type}")
-    #         return None
-    #     params_abi = cls.abi
-    #     param_names = [p["name"] for p in params_abi]
-    #     param_types = [p["type"] for p in params_abi]
-    #     param_values = decode_abi(param_types, encoded_param_values)
-
-    #     params = dict(zip(param_names, param_values))
-
-    #     return deserialize({"type": query_type, **params})
+        return deserialize({"type": query_type, **params})

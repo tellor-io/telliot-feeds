@@ -50,7 +50,7 @@ def test_constructor():
     q = DIVAProtocol.get_query_from_data(exp_query_data)
 
     assert isinstance(q, DIVAProtocol)
-    # assert q.poolId == "0x52a16114f6d8b8213c2a345ce81a7f6d7eb630b7ef25c182817495e2c7d4752e" # todo: fix
+    assert q.poolId == "0x52a16114f6d8b8213c2a345ce81a7f6d7eb630b7ef25c182817495e2c7d4752e"  # todo: fix
 
 
 def test_constructor_error():
