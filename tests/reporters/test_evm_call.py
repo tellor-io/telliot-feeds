@@ -15,7 +15,6 @@ from telliot_feeds.queries.evm_call import EVMCall
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.sources.evm_call import EVMCallSource
 
-
 txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
 CHAIN_ID = 80001
 
