@@ -1,3 +1,4 @@
+import functools
 import os
 from typing import Any
 from typing import Callable
@@ -16,11 +17,13 @@ from simple_term_menu import TerminalMenu
 from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import cli_core
 
+from telliot_feeds.cli.constants import REWARDS_CHECK_MESSAGE
+from telliot_feeds.cli.constants import STAKE_MESSAGE
 from telliot_feeds.constants import DIVA_PROTOCOL_CHAINS
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
 from telliot_feeds.queries.abi_query import AbiQuery
-
+from telliot_feeds.queries.query_catalog import query_catalog
 
 load_dotenv()
 
@@ -285,3 +288,115 @@ def get_accounts_from_name(name: Optional[str]) -> list[ChainedAccount]:
             "\nFor more info run: `telliot account add --help`"
         )
     return accounts
+
+
+def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
+    """Decorator for common options between commands"""
+
+    @click.option(
+        "--account",
+        "-a",
+        "account_str",
+        help="Name of account used for reporting, staking, etc. More info: run `telliot account --help`",
+        required=True,
+        nargs=1,
+        type=str,
+    )
+    @click.option(
+        "--query-tag",
+        "-qt",
+        "query_tag",
+        help="select datafeed using query tag",
+        required=False,
+        nargs=1,
+        type=click.Choice([q.tag for q in query_catalog.find()]),
+    )
+    @click.option("--gas-limit", "-gl", "gas_limit", help="use custom gas limit", nargs=1, type=int)
+    @click.option(
+        "--max-fee", "-mf", "max_fee", help="use custom maxFeePerGas (gwei)", nargs=1, type=float, required=False
+    )
+    @click.option(
+        "--priority-fee",
+        "-pf",
+        "priority_fee",
+        help="use custom maxPriorityFeePerGas (gwei)",
+        nargs=1,
+        type=float,
+        required=False,
+    )
+    @click.option(
+        "--gas-price",
+        "-gp",
+        "legacy_gas_price",
+        help="use custom legacy gasPrice (gwei)",
+        nargs=1,
+        type=int,
+        required=False,
+    )
+    @click.option(
+        "-wp", "--wait-period", help="wait period between feed suggestion calls", nargs=1, type=int, default=7
+    )
+    @click.option(
+        "--profit",
+        "-p",
+        "expected_profit",
+        help="lower threshold (inclusive) for expected percent profit",
+        nargs=1,
+        # User can omit profitability checks by specifying "YOLO"
+        type=click.UNPROCESSED,
+        required=False,
+        callback=parse_profit_input,
+        default="100.0",
+    )
+    @click.option("--submit-once/--submit-continuous", default=False)
+    @click.option("-pwd", "--password", type=str)
+    @click.option(
+        "--tx-type",
+        "-tx",
+        "tx_type",
+        help="choose transaction type (0 for legacy txs, 2 for EIP-1559)",
+        type=click.UNPROCESSED,
+        required=False,
+        callback=valid_transaction_type,
+        default=2,
+    )
+    @click.option("--stake", "-s", "stake", help=STAKE_MESSAGE, nargs=1, type=float, default=10.0)
+    @click.option(
+        "--min-native-token-balance",
+        "-mnb",
+        "min_native_token_balance",
+        help="Minimum native token balance required to report. Denominated in ether.",
+        nargs=1,
+        type=float,
+        default=0.25,
+    )
+    @click.option(
+        "--check-rewards/--no-check-rewards",
+        "-cr/-ncr",
+        "check_rewards",
+        default=True,
+        help=REWARDS_CHECK_MESSAGE,
+    )
+    @click.option(
+        "--gas-multiplier",
+        "-gm",
+        "gas_multiplier",
+        help="increase gas price by this percentage (default 1%) ie 5 = 5%",
+        nargs=1,
+        type=int,
+        default=1,  # 1% above the gas price by web3
+    )
+    @click.option(
+        "--max-priority-fee-range",
+        "-mpfr",
+        "max_priority_fee_range",
+        help="the maximum range of priority fees to use in gwei (default 80 gwei)",
+        nargs=1,
+        type=int,
+        default=80,  # 80 gwei
+    )
+    @functools.wraps(f)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        return f(*args, **kwargs)
+
+    return wrapper

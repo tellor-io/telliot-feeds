@@ -11,6 +11,7 @@ from telliot_feeds.cli.commands.account import account
 from telliot_feeds.cli.commands.catalog import catalog
 from telliot_feeds.cli.commands.config import config
 from telliot_feeds.cli.commands.integrations import integrations
+from telliot_feeds.cli.commands.liquity import liquity
 from telliot_feeds.cli.commands.query import query
 from telliot_feeds.cli.commands.report import report
 from telliot_feeds.cli.commands.settle import settle
@@ -45,6 +46,7 @@ main.add_command(integrations)
 main.add_command(config)
 main.add_command(account)
 main.add_command(stake)
+main.add_command(liquity)
 
 if __name__ == "__main__":
     main()

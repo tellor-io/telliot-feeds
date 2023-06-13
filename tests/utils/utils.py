@@ -12,3 +12,7 @@ async def passing_status(*args, **kwargs):
 
 async def passing_bool_w_status(*args, **kwargs):
     return True, ResponseStatus()
+
+
+def chain_time(chain):
+    return round(chain.time())

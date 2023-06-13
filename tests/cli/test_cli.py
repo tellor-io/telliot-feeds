@@ -7,11 +7,11 @@ import click
 import pytest
 from click.testing import CliRunner
 
-from telliot_feeds.cli.commands.report import parse_profit_input
-from telliot_feeds.cli.commands.report import STAKE_MESSAGE
 from telliot_feeds.cli.commands.report import valid_diva_chain
+from telliot_feeds.cli.constants import STAKE_MESSAGE
 from telliot_feeds.cli.main import main as cli_main
 from telliot_feeds.cli.utils import build_feed_from_input
+from telliot_feeds.cli.utils import parse_profit_input
 
 
 def stop():
