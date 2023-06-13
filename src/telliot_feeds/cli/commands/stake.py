@@ -5,9 +5,9 @@ from click.core import Context
 from eth_utils import to_checksum_address
 from telliot_core.cli.utils import async_run
 
+from telliot_feeds.cli.utils import common_options
 from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
-from telliot_feeds.cli.utils import valid_transaction_type
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
@@ -20,90 +20,9 @@ def deposit_stake() -> None:
     pass
 
 
-@click.option(
-    "--account",
-    "-a",
-    "account_str",
-    help="Name of account used for reporting, staking, etc. More info: run `telliot account --help`",
-    required=True,
-    nargs=1,
-    type=str,
-)
-@click.option("--amount", "-amt", "amount", help="Amount of tokens to stake", nargs=1, type=float, required=True)
-@click.option(
-    "--gas-limit",
-    "-gl",
-    "gas_limit",
-    help="use custom gas limit",
-    nargs=1,
-    type=int,
-)
-@click.option(
-    "--max-fee",
-    "-mf",
-    "max_fee",
-    help="use custom maxFeePerGas (gwei)",
-    nargs=1,
-    type=float,
-    required=False,
-)
-@click.option(
-    "--priority-fee",
-    "-pf",
-    "priority_fee",
-    help="use custom maxPriorityFeePerGas (gwei)",
-    nargs=1,
-    type=float,
-    required=False,
-)
-@click.option(
-    "--gas-price",
-    "-gp",
-    "legacy_gas_price",
-    help="use custom legacy gasPrice (gwei)",
-    nargs=1,
-    type=int,
-    required=False,
-)
-@click.option(
-    "--tx-type",
-    "-tx",
-    "tx_type",
-    help="choose transaction type (0 for legacy txs, 2 for EIP-1559)",
-    type=click.UNPROCESSED,
-    required=False,
-    callback=valid_transaction_type,
-    default=2,
-)
-@click.option(
-    "--min-native-token-balance",
-    "-mnb",
-    "min_native_token_balance",
-    help="Minimum native token balance required to report. Denominated in ether.",
-    nargs=1,
-    type=float,
-    default=0.25,
-)
-@click.option(
-    "--gas-multiplier",
-    "-gm",
-    "gas_multiplier",
-    help="increase gas price by this percentage (default 1%) ie 5 = 5%",
-    nargs=1,
-    type=int,
-    default=1,  # 1% above the gas price by web3
-)
-@click.option(
-    "--max-priority-fee-range",
-    "-mpfr",
-    "max_priority_fee_range",
-    help="the maximum range of priority fees to use in gwei (default 80 gwei)",
-    nargs=1,
-    type=int,
-    default=80,  # 80 gwei
-)
-@click.option("-pwd", "--password", type=str)
 @deposit_stake.command()
+@common_options
+@click.option("--amount", "-amt", "amount", help="Amount of tokens to stake", nargs=1, type=float, required=True)
 @click.pass_context
 @async_run
 async def stake(

@@ -290,6 +290,49 @@ def get_accounts_from_name(name: Optional[str]) -> list[ChainedAccount]:
     return accounts
 
 
+def common_reporter_options(f: Callable[..., Any]) -> Callable[..., Any]:
+    """Decorator for common options between reporter commands"""
+
+    @click.option(
+        "--query-tag",
+        "-qt",
+        "query_tag",
+        help="select datafeed using query tag",
+        required=False,
+        nargs=1,
+        type=click.Choice([q.tag for q in query_catalog.find()]),
+    )
+    @click.option(
+        "-wp", "--wait-period", help="wait period between feed suggestion calls", nargs=1, type=int, default=7
+    )
+    @click.option("--submit-once/--submit-continuous", default=False)
+    @click.option("--stake", "-s", "stake", help=STAKE_MESSAGE, nargs=1, type=float, default=10.0)
+    @click.option(
+        "--check-rewards/--no-check-rewards",
+        "-cr/-ncr",
+        "check_rewards",
+        default=True,
+        help=REWARDS_CHECK_MESSAGE,
+    )
+    @click.option(
+        "--profit",
+        "-p",
+        "expected_profit",
+        help="lower threshold (inclusive) for expected percent profit",
+        nargs=1,
+        # User can omit profitability checks by specifying "YOLO"
+        type=click.UNPROCESSED,
+        required=False,
+        callback=parse_profit_input,
+        default="100.0",
+    )
+    @functools.wraps(f)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        return f(*args, **kwargs)
+
+    return wrapper
+
+
 def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator for common options between commands"""
 
@@ -301,15 +344,6 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         required=True,
         nargs=1,
         type=str,
-    )
-    @click.option(
-        "--query-tag",
-        "-qt",
-        "query_tag",
-        help="select datafeed using query tag",
-        required=False,
-        nargs=1,
-        type=click.Choice([q.tag for q in query_catalog.find()]),
     )
     @click.option("--gas-limit", "-gl", "gas_limit", help="use custom gas limit", nargs=1, type=int)
     @click.option(
@@ -333,22 +367,6 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         type=int,
         required=False,
     )
-    @click.option(
-        "-wp", "--wait-period", help="wait period between feed suggestion calls", nargs=1, type=int, default=7
-    )
-    @click.option(
-        "--profit",
-        "-p",
-        "expected_profit",
-        help="lower threshold (inclusive) for expected percent profit",
-        nargs=1,
-        # User can omit profitability checks by specifying "YOLO"
-        type=click.UNPROCESSED,
-        required=False,
-        callback=parse_profit_input,
-        default="100.0",
-    )
-    @click.option("--submit-once/--submit-continuous", default=False)
     @click.option("-pwd", "--password", type=str)
     @click.option(
         "--tx-type",
@@ -360,7 +378,6 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         callback=valid_transaction_type,
         default=2,
     )
-    @click.option("--stake", "-s", "stake", help=STAKE_MESSAGE, nargs=1, type=float, default=10.0)
     @click.option(
         "--min-native-token-balance",
         "-mnb",
@@ -369,13 +386,6 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         nargs=1,
         type=float,
         default=0.25,
-    )
-    @click.option(
-        "--check-rewards/--no-check-rewards",
-        "-cr/-ncr",
-        "check_rewards",
-        default=True,
-        help=REWARDS_CHECK_MESSAGE,
     )
     @click.option(
         "--gas-multiplier",

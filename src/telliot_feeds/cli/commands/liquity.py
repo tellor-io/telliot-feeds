@@ -6,6 +6,7 @@ from telliot_core.cli.utils import async_run
 from web3 import Web3
 
 from telliot_feeds.cli.utils import common_options
+from telliot_feeds.cli.utils import common_reporter_options
 from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.feeds import CATALOG_FEEDS
@@ -26,6 +27,7 @@ def liquity_reporter() -> None:
 
 @liquity_reporter.command()
 @common_options
+@common_reporter_options
 @click.option(
     "-clf",
     "--chainlink-feed",
