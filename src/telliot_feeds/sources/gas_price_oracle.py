@@ -25,56 +25,60 @@ class GasPriceOracleSource(DataSource[Any]):
     cfg: TelliotConfig = TelliotConfig()
     web3: Optional[Web3] = None
 
-    def binary_search_block(
-        self, target_timestamp: int, left_block_number: int, right_block_number: int
-    ) -> Optional[BlockData]:
+    def binary_search_block(self) -> Optional[BlockData]:
         """Binary search for the block closest to the target timestamp (not later)
-
-        Params:
-            target_timestamp: The target Unix timestamp
-            left_block_number: The left block number
-            right_block_number: The right block number
 
         Returns:
             The block closest to the target timestamp (not later)
         """
-        if self.web3 is None:
+        if not self.web3:
             raise ValueError("Web3 not instantiated")
-        if left_block_number >= right_block_number:
+        if not self.timestamp:
+            raise ValueError("Timestamp not provided")
+
+        right_block_number: int = self.web3.eth.block_number
+        left_block_number = 0
+        target_timestamp = self.timestamp
+
+        while left_block_number <= right_block_number:
+            mid = (left_block_number + right_block_number) // 2
             try:
-                left_block = self.web3.eth.get_block(left_block_number)
-                right_block = self.web3.eth.get_block(right_block_number)
+                mid_block = self.web3.eth.get_block(mid)
+            except ExtraDataLengthError as e:
+                logger.info(f"POA chain detected. Injecting POA middleware in response to exception: {e}")
+                try:
+                    self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+                except ValueError as e:
+                    logger.error(f"Unable to inject web3 middleware for POA chain connection: {e}")
+                mid_block = self.web3.eth.get_block(mid)
             except Exception as e:
                 logger.error(f"Failed to fetch block info: {e}")
                 return None
-            if left_block["timestamp"] > target_timestamp:
-                return right_block
-            if right_block["timestamp"] > target_timestamp:
-                return left_block
 
-            if left_block["timestamp"] - target_timestamp <= right_block["timestamp"] - target_timestamp:
-                return left_block
+            mid_block_timestamp = mid_block["timestamp"]
+
+            # Check for exact match
+            if mid_block_timestamp == target_timestamp:
+                return mid_block
+
+            if mid_block_timestamp < target_timestamp:
+                left_block_number = mid + 1
             else:
-                return right_block
+                right_block_number = mid - 1
 
-        mid = (left_block_number + right_block_number) // 2
-        try:
-            mid_block = self.web3.eth.get_block(mid)
-        except ExtraDataLengthError as e:
-            logger.info(f"POA chain detected. Injecting POA middleware in response to exception: {e}")
-            try:
-                self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-            except ValueError as e:
-                logger.warning(f"Unable to inject web3 middleware for POA chain connection: {e}")
-            mid_block = self.web3.eth.get_block(mid)
-        except Exception as e:
-            logger.error(f"Failed to fetch block info: {e}")
-            return None
-        mid_block_timestamp = mid_block["timestamp"]
-        if mid_block_timestamp < target_timestamp:
-            return self.binary_search_block(target_timestamp, mid + 1, right_block_number)
+        # If we've exited the loop, that means the target timestamp is not equal to any block timestamp,
+        # we'll find the block that is closest the target timestamp (not later).
+        left_block = self.web3.eth.get_block(left_block_number)
+        right_block = self.web3.eth.get_block(right_block_number)
+        if left_block["timestamp"] > target_timestamp:
+            return right_block
+        if right_block["timestamp"] > target_timestamp:
+            return left_block
+
+        if left_block["timestamp"] - target_timestamp <= right_block["timestamp"] - target_timestamp:
+            return left_block
         else:
-            return self.binary_search_block(target_timestamp, left_block_number, mid - 1)
+            return right_block
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[Any]:
         """Fetch median gas price for a given timestamp by fetching
@@ -85,8 +89,6 @@ class GasPriceOracleSource(DataSource[Any]):
         """
         if not self.chainId:
             raise ValueError("Chain ID not provided")
-        if self.timestamp is None:
-            raise ValueError("Timestamp not provided")
         try:
             self.web3 = update_web3(self.chainId, self.cfg)
         except Exception as e:
@@ -96,7 +98,7 @@ class GasPriceOracleSource(DataSource[Any]):
         if not self.web3:
             raise ValueError("Web3 not instantiated")
 
-        nearest_block = self.binary_search_block(self.timestamp, 0, self.web3.eth.block_number)
+        nearest_block = self.binary_search_block()
         if nearest_block is None:
             return None, None
         try:
