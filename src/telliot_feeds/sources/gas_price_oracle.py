@@ -117,7 +117,7 @@ class GasPriceOracleSource(DataSource[Any]):
         else:  # Odd number of transactions
             gas_price = sorted_gas_prices[middle]
 
-        datapoint = (self.web3.fromWei(int(gas_price), "gwei"), datetime_now_utc())
+        datapoint = (gas_price / 1e9, datetime_now_utc())
 
         self.store_datapoint(datapoint)
 

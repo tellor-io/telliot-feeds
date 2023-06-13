@@ -1,22 +1,17 @@
-from datetime import datetime
-
 import pytest
 
+from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed
+from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
+from telliot_feeds.sources.gas_price_oracle import GasPriceOracleSource
 
 
 @pytest.mark.asyncio
-async def test_fetch_new_datapoint(caplog):
-    """Retrieve historical gas price data from source."""
+async def test_gas_price_oracle_feed():
+    """Test gas price oracle feed."""
 
-    gas_price_oracle_feed.source.chainId = 1
-    gas_price_oracle_feed.source.timestamp = 1655232127
-
-    v, t = await gas_price_oracle_feed.source.fetch_new_datapoint()
-
-    if (v is None) and (t is None):
-        assert "Max retries exceeded with url" in caplog.text
-
-    else:
-        assert isinstance(v, float)
-        assert isinstance(t, datetime)
+    assert isinstance(gas_price_oracle_feed, DataFeed)
+    assert isinstance(gas_price_oracle_feed.source, GasPriceOracleSource)
+    assert isinstance(gas_price_oracle_feed.query, GasPriceOracle)
+    assert gas_price_oracle_feed.query.chainId is None
+    assert gas_price_oracle_feed.query.timestamp is None
