@@ -5,6 +5,26 @@ from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.sources.evm_call import EVMCallSource
+from telliot_feeds.utils.source_utils import update_web3
+
+
+@pytest.mark.asyncio
+async def test_not_injecting_middlware_twice(caplog):
+    """Test that reusing a POA chain does not crash from middleware"""
+
+    s = EVMCallSource()
+    s.chainId = 80001  # a POA chain, so it will raise web3.exceptions.ExtraDataLengthError
+    s.web3 = update_web3(s.chainId, s.cfg)
+
+    # We will use `getCurrentValue` on the ETH/USD query id
+    s.calldata = bytes.fromhex("adf1639d83a7f3d48786ac2667503a61e8c415438ed2922eb86a2906e4ee66d9a2ce4992")
+    s.contractAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
+
+    s.get_response()
+    assert "It is quite likely that you are connected to a POA chain." in caplog.text
+
+    s.get_response()
+    assert "Layer already has middleware with identifier: geth_poa_middleware" not in caplog.text
 
 
 @pytest.mark.asyncio
@@ -28,7 +48,7 @@ async def test_source():
     assert s2.calldata == b"\x18\x16\x0d\xdd"
 
     # test update_web3
-    s2.update_web3()
+    s2.web3 = update_web3(s2.chainId, s2.cfg)
     assert s2.web3 is not None
 
     # test get_response
@@ -55,7 +75,7 @@ async def test_non_getter_calldata():
     """Test if calldata is not for a getter function."""
     s = EVMCallSource()
     s.chainId = 80001
-    s.update_web3()
+    s.web3 = update_web3(s.chainId, s.cfg)
 
     """Test non getter calldata"""
     s.calldata = b"\x3a\x0c\xe3\x42"  # calldata for updateStakeAmount()
@@ -131,7 +151,7 @@ def test_evm_call_on_previous_block():
 
     s = EVMCallSource()
     s.chainId = 1
-    s.update_web3()
+    s.web3 = update_web3(s.chainId, s.cfg)
 
     # We will use `getCurrentValue` on the ETH/USD query id
     s.calldata = bytes.fromhex("adf1639d83a7f3d48786ac2667503a61e8c415438ed2922eb86a2906e4ee66d9a2ce4992")
@@ -145,22 +165,3 @@ def test_evm_call_on_previous_block():
 
     assert current_value != previous_value
     assert current_timestamp != previous_timestamp
-
-
-@pytest.mark.asyncio
-async def test_not_injecting_middlware_twice(caplog):
-    """Test that reusing a POA chain does not crash from middleware"""
-
-    s = EVMCallSource()
-    s.chainId = 80001  # a POA chain, so it will raise web3.exceptions.ExtraDataLengthError
-    s.update_web3()
-
-    # We will use `getCurrentValue` on the ETH/USD query id
-    s.calldata = bytes.fromhex("adf1639d83a7f3d48786ac2667503a61e8c415438ed2922eb86a2906e4ee66d9a2ce4992")
-    s.contractAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
-
-    s.get_response()
-    assert "It is quite likely that you are connected to a POA chain." in caplog.text
-
-    s.get_response()
-    assert "Layer already has middleware with identifier: geth_poa_middleware" not in caplog.text

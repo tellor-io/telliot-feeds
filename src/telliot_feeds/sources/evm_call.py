@@ -3,18 +3,19 @@ from typing import Any
 from typing import Optional
 from typing import Tuple
 
-import web3
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
 from web3 import middleware
 from web3 import Web3
 from web3.exceptions import ContractLogicError
+from web3.exceptions import ExtraDataLengthError
 from web3.types import BlockIdentifier
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.source_utils import update_web3
 
 
 logger = get_logger(__name__)
@@ -29,22 +30,6 @@ class EVMCallSource(DataSource[Any]):
     calldata: Optional[bytes] = None
     web3: Optional[Web3] = None
     cfg: TelliotConfig = TelliotConfig()
-
-    def update_web3(self) -> None:
-        """Return a web3 instance for the given chain ID."""
-        if not self.chainId:
-            raise ValueError("Chain ID not provided")
-
-        eps = self.cfg.endpoints.find(chain_id=self.chainId)
-        if len(eps) > 0:
-            endpoint = eps[0]
-        else:
-            raise ValueError(f"Endpoint not found for chain_id={self.chainId}")
-
-        if not endpoint.connect():
-            raise Exception(f"Endpoint not connected for chain_id={self.chainId}")
-
-        self.web3 = endpoint.web3
 
     def get_response(self, block_number: BlockIdentifier = "latest") -> Optional[Tuple[HexBytes, int]]:
         """Makes requested EVM call and returns the response from the contract
@@ -67,7 +52,7 @@ class EVMCallSource(DataSource[Any]):
 
         try:
             self.web3.eth.get_block(block_number)
-        except web3.exceptions.ExtraDataLengthError as e:
+        except ExtraDataLengthError as e:
             logger.info(f"EVMCall to POA chain detected. Injecting POA middleware in response to exception: {e}")
 
             try:
@@ -132,8 +117,10 @@ class EVMCallSource(DataSource[Any]):
         Returns:
             Current time-stamped value
         """
+        if not self.chainId:
+            raise ValueError("Chain ID not provided")
         try:
-            self.update_web3()
+            self.web3 = update_web3(self.chainId, self.cfg)
         except Exception as e:
             logger.warning(f"Error occurred while updating web3 instance: {e}")
             return None, None
