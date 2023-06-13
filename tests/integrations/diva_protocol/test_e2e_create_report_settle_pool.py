@@ -92,41 +92,39 @@ async def test_create_report_settle_pool(
             return ResponseStatus()
 
         # create pool in DIVA Protocol
-        pool_id = int(example_pools_updated[0]["id"])
+        pool_id = example_pools_updated[0]["id"]
         _ = mock_diva_contract.addPool(
             pool_id,
             [
-                example_pools_updated[0]["referenceAsset"],
-                example_pools_updated[0]["expiryTime"],
-                0,
-                0,
-                0,
-                0,
-                example_pools_updated[0]["collateralToken"]["id"],
-                0,
-                0,
+                0,  # example_pools_updated[0]["floor"],
+                0,  # example_pools_updated[0]["inflection"],
+                0,  # example_pools_updated[0]["cap"],
+                0,  # example_pools_updated[0]["gradient"],
                 example_pools_updated[0]["collateralBalance"],
-                "0x0000000000000000000000000000000000000000",
-                "0x0000000000000000000000000000000000000000",
-                0,
-                0,
-                0,
-                0,
-                0,
-                mock_middleware_contract.address,
-                0,
-                0,
-                0,
+                0,  # example_pools_updated[0]["finalReferenceValue"],
+                0,  # example_pools_updated[0]["capacity"],
+                0,  # example_pools_updated[0]["statusTimestamp"],
+                "0x0000000000000000000000000000000000000000",  # example_pools_updated[0]["shortToken"],
+                0,  # example_pools_updated[0]["payoutShort"],
+                "0x0000000000000000000000000000000000000000",  # example_pools_updated[0]["longToken"],
+                0,  # example_pools_updated[0]["payoutLong"],
+                example_pools_updated[0]["collateralToken"]["id"],
+                example_pools_updated[0]["expiryTime"],
+                mock_middleware_contract.address,  # example_pools_updated[0]["dataProvider"],
+                0,  # example_pools_updated[0]["protocolFee"],
+                0,  # example_pools_updated[0]["settlementFee"],
+                0,  # example_pools_updated[0]["statusFinalReferenceValue"],
+                example_pools_updated[0]["referenceAsset"],
             ],
             {"from": accounts[0]},
         )
         # ensure pool is created
         params = mock_diva_contract.getPoolParameters.call(pool_id, {"from": accounts[0]})  # print("params", params)
-        assert params[0] == example_pools_updated[0]["referenceAsset"], "reference asset is not correct"
-        assert params[1] == past_expired, "expiryTime is not past_expired"
-        assert params[17] == mock_middleware_contract.address, "incorrect data provider"
+        assert params[18] == example_pools_updated[0]["referenceAsset"], "reference asset is not correct"
+        assert params[13] == past_expired, "expiryTime is not past_expired"
+        assert params[14] == mock_middleware_contract.address, "incorrect data provider"
         # ensure statusFinalReferenceValue is not submitted (Open)
-        assert params[13] == 0, "statusFinalReferenceValue status should be (Open)"
+        assert params[17] == 0, "statusFinalReferenceValue status should be (Open)"
 
         # instantiate reporter w/ mock contracts & data provider and any other params
         flex = core.get_tellorflex_contracts()
@@ -136,7 +134,7 @@ async def test_create_report_settle_pool(
         flex.oracle.connect()
         flex.token.connect()
         flex.autopay.connect()
-        mock_token_contract.mint(account.address, 1000e18)
+        mock_token_contract.faucet(account.address)
         accounts[2].transfer(account.address, "1 ether")
 
         r = DIVAProtocolReporter(
@@ -152,6 +150,11 @@ async def test_create_report_settle_pool(
             wait_period=0,
             wait_before_settle=1,
         )
+
+        async def mock_check_reporter_lock():
+            return ResponseStatus()
+
+        r.check_reporter_lock = mock_check_reporter_lock
         r.ensure_staked = passing_bool_w_status
         r.fetch_unfiltered_pools = mock_fetch_pools
         r.set_final_ref_value = mock_set_final_ref_value
