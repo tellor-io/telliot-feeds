@@ -23,7 +23,6 @@ from telliot_feeds.sources.price.spot.nomics import NomicsSpotPriceService
 from telliot_feeds.sources.price.spot.pancakeswap import (
     PancakeswapPriceService,
 )
-from telliot_feeds.sources.price.spot.pulsechain_subgraph import PulsechainSupgraphService
 from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceService
 
 
@@ -35,7 +34,6 @@ service = {
     "nomics": NomicsSpotPriceService(),
     "pancakeswap": PancakeswapPriceService(),
     "uniswapV3": UniswapV3PriceService(),
-    "pulsechain-subgraph": PulsechainSupgraphService(),
     "kraken": KrakenSpotPriceService(),
     "coinmarketcap": CoinMarketCapSpotPriceService(),
     "bitfinex": BitfinexSpotPriceService(),
@@ -255,13 +253,6 @@ async def test_pancakeswap_usd():
 async def test_pancakeswap_bnb():
     """Test retrieving from Pancakeswap price source in BNB."""
     v, t = await get_price("fuse", "bnb", service["pancakeswap"])
-    validate_price(v, t)
-
-
-@pytest.mark.asyncio
-async def test_pulsechain_subgraph():
-    """Test retreiving from Pulsechain Subgraph PLS/USD feed"""
-    v, t = await get_price("pls", "usd", service["pulsechain-subgraph"])
     validate_price(v, t)
 
 

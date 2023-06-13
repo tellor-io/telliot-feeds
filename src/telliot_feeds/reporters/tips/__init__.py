@@ -37,10 +37,6 @@ def add_multicall_support(
 
 
 add_multicall_support(
-    network="PulsechainTestnet", network_id=941, multicall2_address="0x959a437F1444DaDaC8aF997E71EAF0479c810267"
-)
-
-add_multicall_support(
     network="Chiado",
     network_id=10200,
     state_override=False,
@@ -66,6 +62,20 @@ add_multicall_support(
     network_id=314,
     state_override=False,
     multicall3_address="0x5c691b93A8A77D9a36C1Cc8e4e08a4283d1665e1",
+)
+
+add_multicall_support(
+    network="Pulsechain",
+    network_id=369,
+    state_override=False,
+    multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
+)
+
+add_multicall_support(
+    network="Pulsechain Testnet",
+    network_id=943,
+    state_override=False,
+    multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
 )
 
 CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}

@@ -47,7 +47,7 @@ from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_f
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
 from telliot_feeds.feeds.op_usd_feed import op_usd_median_feed
-from telliot_feeds.feeds.pls_usd_feed import pls_usd_feed
+from telliot_feeds.feeds.pls_usd_feed import pls_usd_median_feed
 from telliot_feeds.feeds.rai_usd_feed import rai_usd_median_feed
 from telliot_feeds.feeds.reth_btc_feed import reth_btc_median_feed
 from telliot_feeds.feeds.reth_usd_feed import reth_usd_median_feed
@@ -99,7 +99,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "string-query-example": string_query_feed,
     "tellor-rng-example": tellor_rng_feed,
     "twap-eth-usd-example": twap_30d_example_manual_feed,
-    "pls-usd-spot": pls_usd_feed,
+    "pls-usd-spot": pls_usd_median_feed,
     "eth-usd-spot": eth_usd_median_feed,
     "btc-usd-spot": btc_usd_median_feed,
     "trb-usd-spot": trb_usd_median_feed,
