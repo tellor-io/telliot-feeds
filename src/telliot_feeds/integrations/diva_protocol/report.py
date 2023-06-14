@@ -41,7 +41,6 @@ class DIVAProtocolReporter(Tellor360Reporter):
         self,
         middleware_address: str = DIVA_TELLOR_MIDDLEWARE_ADDRESS,
         diva_diamond_address: str = DIVA_DIAMOND_ADDRESS,
-        network_name: str = "goerli",
         extra_undisputed_time: int = 0,
         wait_before_settle: int = 0,
         *args,
@@ -51,7 +50,6 @@ class DIVAProtocolReporter(Tellor360Reporter):
         self.extra_undisputed_time = extra_undisputed_time
         self.wait_before_settle = wait_before_settle
         self.settle_period: Optional[int] = None
-        self.network_name = network_name
         self.diva_diamond_address = diva_diamond_address
         self.middleware_contract = DivaOracleTellorContract(
             node=self.endpoint,
@@ -108,7 +106,7 @@ class DIVAProtocolReporter(Tellor360Reporter):
         )
         pools = await self.fetch_unfiltered_pools(
             query=query,
-            network=self.network_name,
+            network=self.endpoint.network,
         )
         if pools is None or len(pools) == 0:
             logger.info("No pools found from subgraph query")
