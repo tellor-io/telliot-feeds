@@ -512,13 +512,18 @@ DIVA_ABI = [
     },
     {
         "inputs": [
-            {"internalType": "uint256", "name": "_poolId", "type": "uint256"},
-            {"internalType": "uint256", "name": "_finalReferenceValue", "type": "uint256"},
-            {"internalType": "bool", "name": "_allowChallenge", "type": "bool"},
+            {"internalType": "bytes32", "name": "_poolId", "type": "bytes32"},
         ],
         "name": "setFinalReferenceValue",
         "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function",
+    },
+    {
+        "inputs": [],
+        "name": "getMinPeriodUndisputed",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
         "type": "function",
     },
 ]
