@@ -10,6 +10,7 @@ from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
+from telliot_feeds.integrations.diva_protocol import DIVA_TELLOR_MIDDLEWARE_ADDRESS
 from telliot_feeds.integrations.diva_protocol.abi import DIVA_ABI
 
 
@@ -76,21 +77,9 @@ class DivaOracleTellorContract(Contract):
         node: RPCEndpoint,
         account: Optional[ChainedAccount] = None,
     ):
-        chain_id = node.chain_id
-        # chain id is hard-coded because same on all chains, todo: update telliot-core to remove this
-        chain_id = 5
-        try:
-            contract_info = contract_directory.find(chain_id=chain_id, name="diva-oracle-tellor")[0]
-        except IndexError:
-            raise Exception(f"DIVA Tellor middleware contract not found on chain_id {chain_id}")
-        if not contract_info:
-            raise Exception(f"diva-oracle-tellor contract info not found on chain_id {chain_id}")
-
-        contract_abi = contract_info.get_abi(chain_id=chain_id)
-
         super().__init__(
-            address=contract_info.address[chain_id],
-            abi=contract_abi,
+            address=DIVA_TELLOR_MIDDLEWARE_ADDRESS,
+            abi=DIVA_ABI,
             node=node,
             account=account,
         )

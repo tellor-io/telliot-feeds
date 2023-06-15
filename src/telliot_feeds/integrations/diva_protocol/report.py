@@ -41,7 +41,7 @@ class DIVAProtocolReporter(Tellor360Reporter):
         self,
         middleware_address: str = DIVA_TELLOR_MIDDLEWARE_ADDRESS,
         diva_diamond_address: str = DIVA_DIAMOND_ADDRESS,
-        extra_undisputed_time: int = 0,
+        extra_undisputed_time: int = 10,
         wait_before_settle: int = 0,
         *args,
         **kwargs,
@@ -80,7 +80,7 @@ class DIVAProtocolReporter(Tellor360Reporter):
                 continue
 
             if report_count > 0:
-                logger.info(f"Pool {pool.pool_id} already reported. Checked against Tellor oracle.")
+                logger.debug(f"Pool {pool.pool_id} already reported. Checked against Tellor oracle.")
                 continue
 
             unreported_pools.append(pool)
@@ -189,7 +189,7 @@ class DIVAProtocolReporter(Tellor360Reporter):
             if (time_submitted + self.settle_period + self.extra_undisputed_time) < cur_time:
                 logger.info(
                     f"Settling pool {pool_id} reported at {time_submitted} given "
-                    f"current time {cur_time} and settle period {self.settle_period} plus {self.extra_undisputed_time}"
+                    f"current time {cur_time} and settle period {self.settle_period} plus {self.extra_undisputed_time} seconds"
                 )
                 status = await self.settle_pool(pool_id)
                 if not status.ok:
