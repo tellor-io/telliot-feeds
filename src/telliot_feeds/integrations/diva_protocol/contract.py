@@ -5,7 +5,6 @@ from typing import Optional
 
 from chained_accounts import ChainedAccount
 from telliot_core.contract.contract import Contract
-from telliot_core.directory import contract_directory
 from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.response import ResponseStatus
 

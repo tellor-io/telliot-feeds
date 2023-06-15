@@ -189,7 +189,8 @@ class DIVAProtocolReporter(Tellor360Reporter):
             if (time_submitted + self.settle_period + self.extra_undisputed_time) < cur_time:
                 logger.info(
                     f"Settling pool {pool_id} reported at {time_submitted} given "
-                    f"current time {cur_time} and settle period {self.settle_period} plus {self.extra_undisputed_time} seconds"
+                    f"current time {cur_time} and settle period {self.settle_period} "
+                    f"plus {self.extra_undisputed_time} seconds"
                 )
                 status = await self.settle_pool(pool_id)
                 if not status.ok:
