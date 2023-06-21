@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional, TypedDict
+from typing import Optional
+from typing import TypedDict
+
 from web3.types import Wei
 
 
@@ -16,6 +18,7 @@ class StakerInfo:
     vote_count: int
     in_total_stakers: bool
     """
+
     start_date: int
     stake_balance: int
     locked_balance: int

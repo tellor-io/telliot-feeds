@@ -2,17 +2,19 @@ import time
 from typing import Any
 from typing import Tuple
 
+from telliot_core.contract.contract import Contract
+from telliot_core.utils.response import error_status
+from telliot_core.utils.response import ResponseStatus
+
 from telliot_feeds.reporters.gas import GasFees
 from telliot_feeds.utils.log import get_logger
-
-from telliot_core.contract.contract import Contract
-from telliot_core.utils.response import ResponseStatus, error_status
 
 logger = get_logger(__name__)
 
 
 class Stake(GasFees):
     """Stake tokens to tellor oracle"""
+
     def __init__(
         self,
         oracle: Contract,

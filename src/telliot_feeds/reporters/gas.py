@@ -1,23 +1,24 @@
-from typing import Any, Dict, List, Literal, Tuple
-from typing import Optional
-from typing import Union
 from decimal import Decimal
-from chained_accounts import ChainedAccount
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Literal
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
+from chained_accounts import ChainedAccount
+from eth_utils import to_checksum_address
+from telliot_core.apps.core import RPCEndpoint
+from telliot_core.utils.response import error_status
+from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
+from web3.contract import ContractFunction
+from web3.types import FeeHistory
 from web3.types import Wei
 
-from web3.types import FeeHistory
-
-from web3.contract import ContractFunction
-from eth_utils import to_checksum_address
-
-from telliot_feeds.utils.log import get_logger
-from telliot_core.apps.core import RPCEndpoint
-
-from telliot_core.utils.response import ResponseStatus, error_status
-
 from telliot_feeds.reporters.types import GasParams
+from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import fee_history_priority_fee_estimate
 
 
@@ -29,12 +30,13 @@ FEES = Dict[FEE, Optional[Union[Wei, int]]]
 
 class GasFees:
     """Set gas fees for a transaction.
-    
+
     call update_gas_prices() to update/set gas prices
     then call get_gas_prices() to get the gas prices for a transaction assembled manually
     or call get_gas_params_core() to get the gas prices for a transaction assembled by telliot_core
     returns gas_info for the transaction type
     """
+
     gas_info: GasParams = {
         "maxPriorityFeePerGas": None,
         "maxFeePerGas": None,
@@ -127,7 +129,7 @@ class GasFees:
             self.set_gas_info({"gas": self.gas_limit})
             return self.gas_limit, ResponseStatus()
         try:
-            gas = pre_built_transaction.estimateGas({'from': self.acct_address})
+            gas = pre_built_transaction.estimateGas({"from": self.acct_address})
             self.set_gas_info({"gas": gas})
             return gas, ResponseStatus()
         except Exception as e:
@@ -201,9 +203,7 @@ class GasFees:
                 max_priority_fee = self.web3.eth._max_priority_fee()
                 return max_priority_fee if max_priority_fee < max_range else max_range, ResponseStatus()
             except ValueError:
-                logger.warning(
-                    "unable to fetch max priority fee from node using eth._max_priority_fee_per_gas method."
-                )
+                logger.warning("unable to fetch max priority fee from node using eth._max_priority_fee_per_gas method.")
         if fee_history is not None:
             return fee_history_priority_fee_estimate(fee_history, max_range), ResponseStatus()
         else:
@@ -249,7 +249,7 @@ class GasFees:
                 return None, error_status(msg, e=status.error, log=logger.error)
             else:
                 if not isinstance(_base_fee, int):
-                    base_fee = _base_fee['baseFeePerGas'][-1]
+                    base_fee = _base_fee["baseFeePerGas"][-1]
                     fee_history = _base_fee
                 else:
                     fee_history = None
@@ -281,7 +281,7 @@ class GasFees:
 
         return {
             "maxPriorityFeePerGas": priority_fee,
-            "maxFeePerGas": max_fee if max_fee > priority_fee else priority_fee
+            "maxFeePerGas": max_fee if max_fee > priority_fee else priority_fee,
         }, ResponseStatus()
 
     def update_gas_fees(self) -> ResponseStatus:
