@@ -153,8 +153,9 @@ async def report(
     build_feed: bool,
     tx_type: int,
     gas_limit: int,
-    max_fee: Optional[float],
-    priority_fee: Optional[float],
+    base_fee_per_gas: Optional[float],
+    priority_fee_per_gas: Optional[float],
+    max_fee_per_gas: Optional[float],
     legacy_gas_price: Optional[int],
     expected_profit: str,
     submit_once: bool,
@@ -188,9 +189,6 @@ async def report(
         return
 
     ctx.obj["CHAIN_ID"] = accounts[0].chains[0]  # used in reporter_cli_core
-    # if max_fee flag is set, then priority_fee must also be set
-    if (max_fee is not None and priority_fee is None) or (max_fee is None and priority_fee is not None):
-        raise click.UsageError("Must specify both max fee and priority fee")
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
@@ -246,8 +244,9 @@ async def report(
             query_tag=query_tag,
             transaction_type=tx_type,
             gas_limit=gas_limit,
-            max_fee=max_fee,
-            priority_fee=priority_fee,
+            max_fee=base_fee_per_gas,
+            priority_fee=priority_fee_per_gas,
+            base_fee=base_fee_per_gas,
             legacy_gas_price=legacy_gas_price,
             expected_profit=expected_profit,
             chain_id=core.config.main.chain_id,
@@ -301,8 +300,9 @@ async def report(
             "account": account,
             "datafeed": chosen_feed,
             "gas_limit": gas_limit,
-            "max_fee": max_fee,
-            "priority_fee": priority_fee,
+            "base_fee_per_gas": base_fee_per_gas,
+            "priority_fee_per_gas": priority_fee_per_gas,
+            "max_fee_per_gas": max_fee_per_gas,
             "legacy_gas_price": legacy_gas_price,
             "chain_id": core.config.main.chain_id,
             "wait_period": wait_period,

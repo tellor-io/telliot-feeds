@@ -2,30 +2,31 @@ from typing import Optional
 
 import click
 from click.core import Context
-from eth_utils import to_checksum_address
 from telliot_core.cli.utils import async_run
-
+from eth_utils import to_checksum_address
 from telliot_feeds.cli.utils import common_options
 from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
-from telliot_feeds.reporters.stake import Stake
+from telliot_feeds.reporters.gas import GasFees
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.reporter_utils import has_native_token_funds
 
 
 @click.group()
-def deposit_stake() -> None:
-    """Deposit tokens to the Tellor oracle."""
+def request_withdraw_stake() -> None:
+    """request to withdraw tokens from the Tellor oracle which locks them for 7 days."""
     pass
 
 
-@deposit_stake.command()
+@request_withdraw_stake.command()
 @common_options
-@click.option("--amount", "-amt", "amount", help="Amount of tokens to stake", nargs=1, type=float, required=True)
+@click.option(
+    "--amount", "-amt", "amount", help="Amount of tokens to request withdraw", nargs=1, type=float, required=True
+)
 @click.pass_context
 @async_run
-async def stake(
+async def request_withdraw(
     ctx: Context,
     account_str: str,
     amount: float,
@@ -40,7 +41,7 @@ async def stake(
     gas_multiplier: int,
     max_priority_fee_range: int,
 ) -> None:
-    """Deposit tokens to oracle"""
+    """Request withdraw of tokens from oracle"""
     ctx.obj["ACCOUNT_NAME"] = account_str
 
     accounts = get_accounts_from_name(account_str)
@@ -48,6 +49,7 @@ async def stake(
         return
 
     ctx.obj["CHAIN_ID"] = accounts[0].chains[0]  # used in reporter_cli_core
+
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
@@ -66,29 +68,32 @@ async def stake(
             account.unlock(password)
 
         contracts = core.get_tellor360_contracts()
-        # set private key for token approval txn via token contract
-        contracts.token._private_key = account.local_account.privateKey
-        # set private key for oracle stake deposit txn
+        # set private key for oracle interaction calls
         contracts.oracle._private_key = account.local_account.privateKey
 
+        class_kwargs = {
+            "endpoint": core.endpoint,
+            "account": account,
+            "gas_limit": gas_limit,
+            "base_fee_per_gas": base_fee_per_gas,
+            "priority_fee_per_gas": priority_fee_per_gas,
+            "max_fee_per_gas": max_fee_per_gas,
+            "legacy_gas_price": legacy_gas_price,
+            "transaction_type": tx_type,
+            "gas_multiplier": gas_multiplier,
+            "max_priority_fee_range": max_priority_fee_range,
+        }
         if has_native_token_funds(
             to_checksum_address(account.address),
             core.endpoint.web3,
             min_balance=int(min_native_token_balance * 10**18),
         ):
-            s = Stake(
-                endpoint=core.endpoint,
-                account=account,
-                transaction_type=tx_type,
+            gas = GasFees(**class_kwargs)
+            gas.update_gas_fees()
+            gas_info = gas.get_gas_info_core()
+            _ = await contracts.oracle.write(
+                "requestStakingWithdraw",
+                _amount=int(amount * 1e18),
                 gas_limit=gas_limit,
-                legacy_gas_price=legacy_gas_price,
-                gas_multiplier=gas_multiplier,
-                max_priority_fee_range=max_priority_fee_range,
-                priority_fee_per_gas=priority_fee_per_gas,
-                base_fee_per_gas=base_fee_per_gas,
-                max_fee_per_gas=max_fee_per_gas,
-                oracle=contracts.oracle,
-                token=contracts.token,
-                min_native_token_balance=min_native_token_balance,
+                **gas_info,
             )
-            _ = await s.deposit_stake(int(amount * 1e18))

@@ -32,10 +32,11 @@ def print_reporter_settings(
     signature_address: str,
     query_tag: str,
     gas_limit: int,
+    base_fee: Optional[float],
     priority_fee: Optional[float],
+    max_fee: Optional[float],
     expected_profit: str,
     chain_id: int,
-    max_fee: Optional[float],
     transaction_type: int,
     legacy_gas_price: Optional[int],
     reporting_diva_protocol: bool,
@@ -347,13 +348,28 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
     )
     @click.option("--gas-limit", "-gl", "gas_limit", help="use custom gas limit", nargs=1, type=int)
     @click.option(
-        "--max-fee", "-mf", "max_fee", help="use custom maxFeePerGas (gwei)", nargs=1, type=float, required=False
+        "--max-fee",
+        "-mf",
+        "max_fee_per_gas",
+        help="use custom maxFeePerGas (gwei)",
+        nargs=1,
+        type=float,
+        required=False,
     )
     @click.option(
         "--priority-fee",
         "-pf",
-        "priority_fee",
+        "priority_fee_per_gas",
         help="use custom maxPriorityFeePerGas (gwei)",
+        nargs=1,
+        type=float,
+        required=False,
+    )
+    @click.option(
+        "--base-fee",
+        "-bf",
+        "base_fee_per_gas",
+        help="use custom baseFeePerGas (gwei)",
         nargs=1,
         type=float,
         required=False,
@@ -391,7 +407,7 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         "--gas-multiplier",
         "-gm",
         "gas_multiplier",
-        help="increase gas price by this percentage (default 1%) ie 5 = 5%",
+        help="increase gas price for legacy transaction by this percentage (default 1%) ie 5 = 5%",
         nargs=1,
         type=int,
         default=1,  # 1% above the gas price by web3
@@ -400,10 +416,10 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         "--max-priority-fee-range",
         "-mpfr",
         "max_priority_fee_range",
-        help="the maximum range of priority fees to use in gwei (default 80 gwei)",
+        help="the maximum range of priority fees to use in gwei (default 3 gwei)",
         nargs=1,
         type=int,
-        default=80,  # 80 gwei
+        default=3,  # 3 gwei
     )
     @functools.wraps(f)
     def wrapper(*args: Any, **kwargs: Any) -> Any:

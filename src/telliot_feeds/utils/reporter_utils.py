@@ -197,7 +197,7 @@ def tkn_symbol(chain_id: int) -> str:
         return "Unknown native token"
 
 
-def fee_history_priority_fee_estimate(fee_history: FeeHistory, priority_fee_max: int) -> int:
+def fee_history_priority_fee_estimate(fee_history: FeeHistory, priority_fee_max: Wei) -> Wei:
     """Estimate priority fee based on a percentile of the fee history.
 
     Adapted from web3.py fee_utils.py
@@ -209,7 +209,7 @@ def fee_history_priority_fee_estimate(fee_history: FeeHistory, priority_fee_max:
     Returns:
         Estimated priority fee in wei
     """
-    priority_fee_min = 1_000_000_000  # 1 gwei
+    priority_fee_min = Wei(1_000_000_000)  # 1 gwei
     # grab only non-zero fees and average against only that list
     non_empty_block_fees = [fee[0] for fee in fee_history["reward"] if fee[0] != 0]
 

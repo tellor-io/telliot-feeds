@@ -1,33 +1,33 @@
 import asyncio
 import math
 import time
-from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
+from typing import Dict
 from typing import Optional
 from typing import Tuple
 from typing import Union
 
-from chained_accounts import ChainedAccount
 from eth_abi.exceptions import EncodingTypeError
 from eth_utils import to_checksum_address
 from telliot_core.contract.contract import Contract
-from telliot_core.model.endpoints import RPCEndpoint
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
-from web3 import Web3
 from web3.contract import ContractFunction
+from web3.types import TxParams
 from web3.types import TxReceipt
 
 from telliot_feeds.constants import CHAINS_WITH_TBR
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
+from telliot_feeds.reporters.gas import GasFees
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
+from telliot_feeds.reporters.types import GasParams
+from telliot_feeds.reporters.types import StakerInfo
 from telliot_feeds.utils.log import get_logger
-from telliot_feeds.utils.reporter_utils import fee_history_priority_fee_estimate
 from telliot_feeds.utils.reporter_utils import get_native_token_feed
 from telliot_feeds.utils.reporter_utils import has_native_token_funds
 from telliot_feeds.utils.reporter_utils import is_online
@@ -38,104 +38,43 @@ from telliot_feeds.utils.stake_info import StakeInfo
 logger = get_logger(__name__)
 
 
-@dataclass
-class StakerInfo:
-    """Data types for staker info
-    start_date: TimeStamp
-    stake_balance: int
-    locked_balance: int
-    reward_debt: int
-    last_report: TimeStamp
-    reports_count: int
-    gov_vote_count: int
-    vote_count: int
-    in_total_stakers: bool
-    """
-
-    start_date: int
-    stake_balance: int
-    locked_balance: int
-    reward_debt: int
-    last_report: int
-    reports_count: int
-    gov_vote_count: int
-    vote_count: int
-    in_total_stakers: bool
-
-
-@dataclass
-class GasParams:
-    priority_fee: Optional[float] = None
-    max_fee: Optional[float] = None
-    gas_price_in_gwei: Union[float, int, None] = None
-
-
-class Tellor360Reporter:
+class Tellor360Reporter(GasFees):
     """Reports values from given datafeeds to a TellorFlex."""
 
     def __init__(
         self,
-        endpoint: RPCEndpoint,
-        account: ChainedAccount,
-        chain_id: int,
         oracle: Contract,
         token: Contract,
+        min_native_token_balance: int,
         autopay: Contract,
+        chain_id: int,
         datafeed: Optional[DataFeed[Any]] = None,
         expected_profit: Union[str, float] = "YOLO",
-        transaction_type: int = 2,
-        gas_limit: Optional[int] = None,
-        max_fee: int = 0,
-        priority_fee: float = 0.0,
-        legacy_gas_price: Optional[int] = None,
-        gas_multiplier: int = 1,  # 1 percent
-        max_priority_fee_range: int = 80,  # 80 gwei
         wait_period: int = 7,
-        min_native_token_balance: int = 10**18,
         check_rewards: bool = True,
         ignore_tbr: bool = False,  # relevant only for eth-mainnet and eth-testnets
         stake: float = 0,
         use_random_feeds: bool = False,
+        **kwargs: Any,
     ) -> None:
-        self.endpoint = endpoint
-        self.account = account
-        self.chain_id = chain_id
+        super().__init__(**kwargs)
         self.oracle = oracle
         self.token = token
+        self.min_native_token_balance = min_native_token_balance
         self.autopay = autopay
-        # datafeed stuff
         self.datafeed = datafeed
         self.use_random_feeds: bool = use_random_feeds
         self.qtag_selected = False if self.datafeed is None else True
-        # profitibility stuff
         self.expected_profit = expected_profit
-        # stake amount stuff
         self.stake: float = stake
         self.stake_info = StakeInfo()
-
-        self.min_native_token_balance = min_native_token_balance
-        # check rewards bool flag
         self.check_rewards: bool = check_rewards
         self.autopaytip = 0
-        self.web3: Web3 = self.endpoint.web3
-        # ignore tbr bool flag to optionally disregard time based rewards
         self.ignore_tbr = ignore_tbr
-        self.last_submission_timestamp = 0
-        # gas stuff
-        self.transaction_type = transaction_type
-        self.gas_limit = gas_limit
-        self.max_fee = max_fee
         self.wait_period = wait_period
-        self.priority_fee = priority_fee
-        self.legacy_gas_price = legacy_gas_price
-        self.gas_multiplier = gas_multiplier
-        self.max_priority_fee_range = max_priority_fee_range
-        self.gas_info: dict[str, Union[float, int]] = {}
-
-        self.acct_addr = to_checksum_address(account.address)
+        self.chain_id = chain_id
+        self.acct_addr = to_checksum_address(self.account.address)
         logger.info(f"Reporting with account: {self.acct_addr}")
-        # TODO: why is this here?
-        # assert self.acct_addr == to_checksum_address(self.account.address)
 
     async def get_stake_amount(self) -> Tuple[Optional[int], ResponseStatus]:
         """Reads the current stake amount from the oracle contract
@@ -145,8 +84,8 @@ class Tellor360Reporter:
         """
         response, status = await self.oracle.read("getStakeAmount")
         if not status.ok:
-            msg = f"Unable to read current stake amount: {status.e}"
-            return None, error_status(msg, log=logger.error)
+            msg = "Unable to read current stake amount"
+            return None, error_status(msg, status.e, log=logger.error)
         stake_amount: int = response
         return stake_amount, status
 
@@ -158,45 +97,20 @@ class Tellor360Reporter:
         """
         response, status = await self.oracle.read("getStakerInfo", _stakerAddress=self.acct_addr)
         if not status.ok:
-            msg = f"Unable to read account staker info {status.e}"
-            return None, error_status(msg, log=logger.error)
+            msg = "Unable to read account staker info:"
+            return None, error_status(msg, status.e, log=logger.error)
         staker_details = StakerInfo(*response)
         return staker_details, status
 
-    async def get_current_balance(self) -> Tuple[Optional[int], ResponseStatus]:
+    async def get_current_token_balance(self) -> Tuple[Optional[int], ResponseStatus]:
         """Reads the current balance of the account"""
         response, status = await self.token.read("balanceOf", account=self.acct_addr)
         if not status.ok:
-            msg = f"Unable to read account balance: {status.e}"
-            return None, error_status(msg, log=logger.error)
+            msg = "Unable to read account balance:"
+            return None, error_status(msg, status.e, log=logger.error)
         wallet_balance: int = response
         logger.info(f"Current wallet TRB balance: {wallet_balance / 1e18!r}")
         return wallet_balance, status
-
-    async def gas_params(self) -> Tuple[Optional[GasParams], ResponseStatus]:
-        """Returns the gas params for the transaction
-
-        Returns:
-        - priority_fee: float, the priority fee in gwei
-        - max_fee: int, the max fee in wei
-        - gas_price_in_gwei: float, the gas price in gwei
-        """
-        if self.transaction_type == 2:
-            priority_fee, max_fee = self.get_fee_info()
-            if priority_fee is None or max_fee is None:
-                return None, error_status("Unable to suggest type 2 txn fees", log=logger.error)
-            return GasParams(priority_fee=priority_fee, max_fee=max_fee), ResponseStatus()
-
-        else:
-            # Fetch legacy gas price if not provided by user
-            if self.legacy_gas_price is None:
-                gas_price_in_gwei = await self.fetch_gas_price()
-                if not gas_price_in_gwei:
-                    note = "Unable to fetch gas price for staking tx type 0"
-                    return None, error_status(note, log=logger.warning)
-            else:
-                gas_price_in_gwei = self.legacy_gas_price
-        return GasParams(gas_price_in_gwei=gas_price_in_gwei), ResponseStatus()
 
     async def deposit_stake(self, amount: int) -> Tuple[bool, ResponseStatus]:
         """Deposits stake into the oracle contract"""
@@ -205,45 +119,48 @@ class Tellor360Reporter:
             "allowance", owner=self.acct_addr, spender=self.oracle.address
         )
         if not allowance_status.ok:
-            msg = f"Unable to check allowance: {allowance_status.e}"
-            return False, error_status(msg, log=logger.error)
+            msg = "Unable to check allowance:"
+            return False, error_status(msg, allowance_status.e, log=logger.error)
+
         logger.debug(f"Current allowance: {allowance / 1e18!r}")
-        gas_params, status = await self.gas_params()
-        if not status.ok or not gas_params:
-            return False, status
+        # calculate and set gas params
+        status = self.update_gas_fees()
+        if not status.ok:
+            return False, error_status("unable to calculate fees for approve/deposit txn", status.e, log=logger.error)
+
+        fees = self.get_gas_info_core()
+        logger.debug(f"Gas fees: {fees}")
         # if allowance is less than amount_to_stake then approve
         if allowance < amount:
             # Approve token spending
-            logger.info("Approving token spending")
+            logger.info(f"Approving {self.oracle.address} token spending: {amount}...")
             approve_receipt, approve_status = await self.token.write(
                 func_name="approve",
                 gas_limit=self.gas_limit,
-                max_priority_fee_per_gas=gas_params.priority_fee,
-                max_fee_per_gas=gas_params.max_fee,
-                legacy_gas_price=gas_params.gas_price_in_gwei,
+                # have to convert to gwei because of telliot_core where numbers are converted to wei
+                # consider changing this in telliot_core
                 spender=self.oracle.address,
                 amount=amount,
+                **fees,
             )
             if not approve_status.ok:
-                msg = f"Unable to approve staking: {approve_status.e}"
-                return False, error_status(msg, log=logger.error)
+                msg = "Unable to approve staking: "
+                return False, error_status(msg, approve_status.e, log=logger.error)
             logger.debug(f"Approve transaction status: {approve_receipt.status}, block: {approve_receipt.blockNumber}")
             # Add this to avoid nonce error from txn happening too fast
             time.sleep(1)
 
         # deposit stake
-        logger.info("Depositing stake")
+        logger.info(f"Now depositing stake: {amount}...")
         deposit_receipt, deposit_status = await self.oracle.write(
             func_name="depositStake",
             gas_limit=self.gas_limit,
-            max_priority_fee_per_gas=gas_params.priority_fee,
-            max_fee_per_gas=gas_params.max_fee,
-            legacy_gas_price=gas_params.gas_price_in_gwei,
             _amount=amount,
+            **fees,
         )
         if not deposit_status.ok:
-            msg = f"Unable to deposit stake: {deposit_status.e}"
-            return False, error_status(msg, log=logger.error)
+            msg = "Unable to deposit stake!"
+            return False, error_status(msg, deposit_status.e, log=logger.error)
         logger.debug(f"Deposit transaction status: {deposit_receipt.status}, block: {deposit_receipt.blockNumber}")
         return True, deposit_status
 
@@ -304,7 +221,7 @@ class Tellor360Reporter:
             amount_to_stake = max(int(to_stake_amount_1), int(to_stake_amount_2))
 
             # check TRB wallet balance!
-            wallet_balance, wallet_balance_status = await self.get_current_balance()
+            wallet_balance, wallet_balance_status = await self.get_current_token_balance()
             if not wallet_balance or not wallet_balance_status.ok:
                 return False, wallet_balance_status
 
@@ -407,56 +324,6 @@ class Tellor360Reporter:
 
         return self.datafeed
 
-    async def fetch_gas_price(self) -> Optional[float]:
-        """Fetches the current gas price from an EVM network and returns
-        an adjusted gas price.
-
-        Returns:
-            An optional integer representing the adjusted gas price in wei, or
-            None if the gas price could not be retrieved.
-        """
-        try:
-            price = self.web3.eth.gas_price
-            price_gwei = self.web3.fromWei(price, "gwei")
-        except Exception as e:
-            logger.error(f"Error fetching gas price: {e}")
-            return None
-        # increase gas price by 1.0 + gas_multiplier
-        multiplier = 1.0 + (self.gas_multiplier / 100.0)
-        gas_price = (float(price_gwei) * multiplier) if price_gwei else None
-        return gas_price
-
-    def get_fee_info(self) -> Tuple[Optional[float], Optional[int]]:
-        """Calculate max fee and priority fee if not set
-        for more info:
-            https://web3py.readthedocs.io/en/v5/web3.eth.html?highlight=fee%20history#web3.eth.Eth.fee_history
-        """
-        if self.max_fee is None:
-            try:
-                fee_history = self.web3.eth.fee_history(
-                    block_count=5, newest_block="latest", reward_percentiles=[25, 50, 75]
-                )
-                # "base fee for the next block after the newest of the returned range"
-                base_fee = fee_history.baseFeePerGas[-1] / 1e9
-                # estimate priority fee from fee history
-                priority_fee_max = int(self.max_priority_fee_range * 1e9)  # convert to wei
-                priority_fee = fee_history_priority_fee_estimate(fee_history, priority_fee_max=priority_fee_max) / 1e9
-                max_fee = base_fee + priority_fee
-                return priority_fee, max_fee
-            except Exception as e:
-                logger.warning(f"Error in calculating gas fees: {e}")
-                return None, None
-        return self.priority_fee, self.max_fee
-
-    async def get_num_reports_by_id(self, query_id: bytes) -> Tuple[int, ResponseStatus]:
-        count, read_status = await self.oracle.read(func_name="getNewValueCountbyQueryId", _queryId=query_id)
-        return count, read_status
-
-    def has_native_token(self) -> bool:
-        """Check if account has native token funds for a network for gas fees
-        of at least min_native_token_balance that is set in the cli"""
-        return has_native_token_funds(self.acct_addr, self.web3, min_balance=self.min_native_token_balance)
-
     async def ensure_profitable(self) -> ResponseStatus:
 
         status = ResponseStatus()
@@ -479,35 +346,27 @@ class Tellor360Reporter:
 
         gas_info = self.gas_info
 
-        if gas_info["type"] == 0:
-            txn_fee = int(gas_info["gas_price"] * gas_info["gas_limit"])
-            logger.info(
-                f"""
-
-                Tips: {tip/1e18}
-                Transaction fee: {self.web3.fromWei(txn_fee, 'gwei'):.09f} {tkn_symbol(self.chain_id)}
-                Gas price: {gas_info["gas_price"]} gwei
-                Gas limit: {gas_info["gas_limit"]}
-                Txn type: 0 (Legacy)
-                """
-            )
-        if gas_info["type"] == 2:
-            txn_fee = int(gas_info["max_fee"] * gas_info["gas_limit"])
-            logger.info(
-                f"""
-
-                Tips: {tip/1e18}
-                Max transaction fee: {self.web3.fromWei(txn_fee, 'gwei'):.18f} {tkn_symbol(self.chain_id)}
-                Max fee per gas: {gas_info["max_fee"]} gwei
-                Max priority fee per gas: {gas_info["priority_fee"]} gwei
-                Gas limit: {gas_info["gas_limit"]}
-                Txn type: 2 (EIP-1559)
-                """
-            )
+        m = gas_info["maxFeePerGas"] if gas_info["maxFeePerGas"] else gas_info["gasPrice"]
+        # multiply gasPrice by gasLimit
+        if m is None:
+            return error_status("Unable to calculate profitablity, no gas fees set", log=logger.warning)
+        max_fee = float(self.from_wei(m))  # type: ignore
+        gas_ = float(self.from_wei(gas_info["gas"]))  # type: ignore
+        txn_fee = max_fee * gas_
+        logger.info(
+            f"""\n
+            Tips: {tip/1e18}
+            Transaction fee: {txn_fee} {tkn_symbol(self.chain_id)}
+            Gas limit: {gas_info["gas"]}
+            Gas price: {self.from_wei(gas_info["gasPrice"])} gwei
+            Max fee per gas: {self.from_wei(gas_info["maxFeePerGas"])} gwei
+            Max priority fee per gas: {self.from_wei(gas_info["maxPriorityFeePerGas"])} gwei
+            Txn type: {self.transaction_type}\n"""
+        )
 
         # Calculate profit
         rev_usd = tip / 1e18 * price_trb_usd
-        costs_usd = txn_fee / 1e9 * price_native_token  # convert gwei costs to eth, then to usd
+        costs_usd = txn_fee * price_native_token  # convert gwei costs to eth, then to usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
         logger.info(f"tip price: {round(rev_usd, 2)}, gas costs: {costs_usd}")
@@ -532,34 +391,11 @@ class Tellor360Reporter:
 
         return status
 
-    def get_acct_nonce(self) -> Tuple[Optional[int], ResponseStatus]:
-        """Get transaction count for an address"""
-        try:
-            return self.web3.eth.get_transaction_count(self.acct_addr), ResponseStatus()
-        except ValueError as e:
-            return None, error_status("Account nonce request timed out", e=e, log=logger.warning)
-        except Exception as e:
-            return None, error_status("Unable to retrieve account nonce", e=e, log=logger.error)
+    async def get_num_reports_by_id(self, query_id: bytes) -> Tuple[int, ResponseStatus]:
+        count, read_status = await self.oracle.read(func_name="getNewValueCountbyQueryId", _queryId=query_id)
+        return count, read_status
 
-    def submit_val_tx_gas_limit(self, submit_val_tx: ContractFunction) -> Tuple[Optional[int], ResponseStatus]:
-        """Estimate gas usage for submitValue transaction
-        Args:
-            submit_val_tx: The submitValue transaction object
-        Returns a tuple of the gas limit and a ResponseStatus object"""
-        if self.gas_limit is None:
-            try:
-                gas_limit: int = submit_val_tx.estimateGas({"from": self.acct_addr})
-                if not gas_limit:
-                    return None, error_status("Unable to estimate gas for submitValue transaction")
-                return gas_limit, ResponseStatus()
-            except Exception as e:
-                msg = "Unable to estimate gas for submitValue transaction"
-                return None, error_status(msg, e=e, log=logger.error)
-        return self.gas_limit, ResponseStatus()
-
-    async def assemble_submission_txn(
-        self, datafeed: DataFeed[Any]
-    ) -> Tuple[Optional[ContractFunction], ResponseStatus]:
+    async def submission_txn_params(self, datafeed: DataFeed[Any]) -> Tuple[Optional[Dict[str, Any]], ResponseStatus]:
         """Assemble the submitValue transaction
         Params:
             datafeed: The datafeed object
@@ -573,38 +409,61 @@ class Tellor360Reporter:
             msg = "Unable to retrieve updated datafeed value."
             return None, error_status(msg, log=logger.info)
         # Get query info & encode value to bytes
-        query = datafeed.query
-        query_id = query.query_id
-        query_data = query.query_data
+        query_id = datafeed.query.query_id
+        query_data = datafeed.query.query_data
         try:
-            value = query.value_type.encode(latest_data[0])
-            logger.debug(f"IntervalReporter Encoded value: {value.hex()}")
+            value = datafeed.query.value_type.encode(latest_data[0])
+            logger.debug(f"Current query: {datafeed.query.descriptor}")
+            logger.debug(f"Reporter Encoded value: {value.hex()}")
         except Exception as e:
             msg = f"Error encoding response value {latest_data[0]}"
             return None, error_status(msg, e=e, log=logger.error)
 
         # Get nonce
         report_count, read_status = await self.get_num_reports_by_id(query_id)
-
         if not read_status.ok:
-            read_status.error = (
-                "Unable to retrieve report count: " + read_status.error
-            )  # error won't be none # noqa: E501
-            logger.error(read_status.error)
-            read_status.e = read_status.e
-            return None, read_status
+            msg = f"Unable to retrieve report count for query id: {read_status.error}"
+            return None, error_status(msg, read_status.e, logger.error)
 
-        # Start transaction build
-        submit_val_func = self.oracle.contract.get_function_by_name("submitValue")
-        params: ContractFunction = submit_val_func(
-            _queryId=query_id,
-            _value=value,
-            _nonce=report_count,
-            _queryData=query_data,
-        )
+        params = {"_queryId": query_id, "_value": value, "_nonce": report_count, "_queryData": query_data}
         return params, ResponseStatus()
 
-    def send_transaction(self, tx_signed: Any) -> Tuple[Optional[TxReceipt], ResponseStatus]:
+    def assemble_function(
+        self, function_name: str, **transaction_params: Any
+    ) -> Tuple[Optional[ContractFunction], ResponseStatus]:
+        """Assemble a contract function"""
+        try:
+            func = self.oracle.contract.get_function_by_name(function_name)(**transaction_params)
+            return func, ResponseStatus()
+        except Exception as e:
+            return None, error_status("Error assembling function", e, logger.error)
+
+    def build_transaction(
+        self, function_name: str, **transaction_params: Any
+    ) -> Tuple[Optional[TxParams], ResponseStatus]:
+        """Build a transaction"""
+
+        contract_function, status = self.assemble_function(function_name=function_name, **transaction_params)
+        if contract_function is None:
+            return None, error_status("Error building function to estimate gas", status.e, logger.error)
+
+        _, status = self.estimate_gas_amount(contract_function)
+        if not status:
+            return None, error_status(f"Error estimating gas for function: {contract_function}", status.e, logger.error)
+        # set gas parameters globally
+        status = self.update_gas_fees()
+        logger.debug(status)
+        if not status.ok:
+            return None, error_status("Error setting gas parameters", status.e, logger.error)
+
+        params, status = self.tx_params(**self.get_gas_info())
+        logger.debug(f"Transaction parameters: {params}")
+        if params is None:
+            return None, error_status("Error getting transaction parameters", status.e, logger.error)
+
+        return contract_function.buildTransaction(params), ResponseStatus()  # type: ignore
+
+    def sign_n_send_transaction(self, built_tx: Any) -> Tuple[Optional[TxReceipt], ResponseStatus]:
         """Send a signed transaction to the blockchain and wait for confirmation
 
         Params:
@@ -612,8 +471,10 @@ class Tellor360Reporter:
 
         Returns a tuple of the transaction receipt and a ResponseStatus object
         """
+        lazy_unlock_account(self.account)
+        local_account = self.account.local_account
+        tx_signed = local_account.sign_transaction(built_tx)
         try:
-            logger.debug("Sending submitValue transaction")
             tx_hash = self.web3.eth.send_raw_transaction(tx_signed.rawTransaction)
         except Exception as e:
             note = "Send transaction failed"
@@ -634,6 +495,31 @@ class Tellor360Reporter:
         except Exception as e:
             note = "Failed to confirm transaction"
             return None, error_status(note, log=logger.error, e=e)
+
+    def get_acct_nonce(self) -> Tuple[Optional[int], ResponseStatus]:
+        """Get the nonce for the account"""
+        try:
+            return self.web3.eth.get_transaction_count(self.acct_address), ResponseStatus()
+        except ValueError as e:
+            return None, error_status("Account nonce request timed out", e=e, log=logger.warning)
+        except Exception as e:
+            return None, error_status("Unable to retrieve account nonce", e=e, log=logger.error)
+
+    def tx_params(self, **gas_fees: GasParams) -> Tuple[Optional[Dict[str, Any]], ResponseStatus]:
+        """Return transaction parameters"""
+        nonce, status = self.get_acct_nonce()
+        if nonce is None:
+            return None, status
+        return {
+            "nonce": nonce,
+            "chainId": self.chain_id,
+            **gas_fees,
+        }, ResponseStatus()
+
+    def has_native_token(self) -> bool:
+        """Check if account has native token funds for a network for gas fees
+        of at least min_native_token_balance that is set in the cli"""
+        return has_native_token_funds(self.acct_addr, self.web3, min_balance=self.min_native_token_balance)
 
     async def report_once(
         self,
@@ -658,56 +544,22 @@ class Tellor360Reporter:
             msg = "Unable to suggest datafeed"
             return None, error_status(note=msg, log=logger.info)
 
-        logger.info(f"Current query: {datafeed.query.descriptor}")
-
-        submit_val_tx, status = await self.assemble_submission_txn(datafeed)
-        if not status.ok or submit_val_tx is None:
+        params, status = await self.submission_txn_params(datafeed)
+        if not status.ok or params is None:
             return None, status
 
-        # Get account nonce
-        acc_nonce, nonce_status = self.get_acct_nonce()
-        if not nonce_status.ok:
-            return None, nonce_status
-
-        gas_params, status = await self.gas_params()
-        if gas_params is None or not status.ok:
+        build_tx, status = self.build_transaction("submitValue", **params)
+        if not status.ok or build_tx is None:
             return None, status
-
-        # Estimate gas usage amount
-        gas_limit, status = self.submit_val_tx_gas_limit(submit_val_tx=submit_val_tx)
-        if not status.ok or gas_limit is None:
-            return None, status
-
-        self.gas_info["gas_limit"] = gas_limit
-        if gas_params.max_fee is not None and gas_params.priority_fee is not None:
-            self.gas_info["type"] = 2
-            self.gas_info["max_fee"] = gas_params.max_fee
-            self.gas_info["priority_fee"] = gas_params.priority_fee
-            self.gas_info["base_fee"] = gas_params.max_fee - gas_params.priority_fee
-            gas_fees = {
-                "maxPriorityFeePerGas": self.web3.toWei(gas_params.priority_fee, "gwei"),
-                "maxFeePerGas": self.web3.toWei(gas_params.max_fee, "gwei"),
-            }
-
-        if gas_params.gas_price_in_gwei is not None:
-            self.gas_info["type"] = 0
-            self.gas_info["gas_price"] = gas_params.gas_price_in_gwei
-            gas_fees = {"gasPrice": self.web3.toWei(gas_params.gas_price_in_gwei, "gwei")}
 
         # Check if profitable if not YOLO
         status = await self.ensure_profitable()
+        logger.debug(status)
         if not status.ok:
             return None, status
 
-        # Build transaction
-        built_submit_val_tx = submit_val_tx.buildTransaction(
-            dict(nonce=acc_nonce, gas=gas_limit, chainId=self.chain_id, **gas_fees)  # type: ignore
-        )
-        lazy_unlock_account(self.account)
-        local_account = self.account.local_account
-        tx_signed = local_account.sign_transaction(built_submit_val_tx)
-
-        tx_receipt, status = self.send_transaction(tx_signed)
+        logger.debug("Sending submitValue transaction")
+        tx_receipt, status = self.sign_n_send_transaction(build_tx)
 
         return tx_receipt, status
 
