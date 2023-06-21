@@ -379,3 +379,9 @@ query_catalog.add_entry(
     title="ETH/JPY spot price",
     q=SpotPrice(asset="eth", currency="jpy"),
 )
+
+query_catalog.add_entry(
+    tag="brl-usd-spot",
+    title="BRL/USD spot price",
+    q=SpotPrice(asset="brl", currency="usd"),
+)
