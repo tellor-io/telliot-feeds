@@ -513,6 +513,8 @@ DIVA_ABI = [
     {
         "inputs": [
             {"internalType": "bytes32", "name": "_poolId", "type": "bytes32"},
+            {"internalType": "address[]", "name": "_tippingTokens", "type": "address[]"},
+            {"internalType": "bool", "name": "_claimDIVAReward", "type": "bool"},
         ],
         "name": "setFinalReferenceValue",
         "outputs": [],

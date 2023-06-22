@@ -103,7 +103,7 @@ class DivaOracleTellorContract(Contract):
         legacy_gas_price: Optional[int] = None,
         max_priority_fee_per_gas: Optional[int] = None,
         max_fee_per_gas: Optional[int] = None,
-        gas_limit: int = 320000,
+        gas_limit: Optional[int] = None,
     ) -> Optional[ResponseStatus]:
         """Settle a pool.
 
@@ -113,6 +113,8 @@ class DivaOracleTellorContract(Contract):
         _, status = await self.write(
             "setFinalReferenceValue",
             _poolId=pool_id,
+            _tippingTokens=[],
+            _claimDIVAReward=False,
             gas_limit=gas_limit,
             legacy_gas_price=legacy_gas_price,
             max_priority_fee_per_gas=max_priority_fee_per_gas,

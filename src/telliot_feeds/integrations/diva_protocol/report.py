@@ -41,8 +41,8 @@ class DIVAProtocolReporter(Tellor360Reporter):
         self,
         middleware_address: str = DIVA_TELLOR_MIDDLEWARE_ADDRESS,
         diva_diamond_address: str = DIVA_DIAMOND_ADDRESS,
-        extra_undisputed_time: int = 10,
-        wait_before_settle: int = 0,
+        extra_undisputed_time: int = 30,
+        wait_before_settle: int = 30,
         *args,
         **kwargs,
     ) -> None:
@@ -354,6 +354,8 @@ class DIVAProtocolReporter(Tellor360Reporter):
             else:
                 if self.has_native_token():
                     _, _ = await self.report_once()
+                    if self.wait_before_settle > 0:
+                        logger.info(f"Sleeping for {self.wait_before_settle} seconds before settling pools")
                     await asyncio.sleep(self.wait_before_settle)
                     _ = await self.settle_pools()
 
