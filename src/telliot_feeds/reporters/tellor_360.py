@@ -21,8 +21,8 @@ from web3.types import TxReceipt
 from telliot_feeds.constants import CHAINS_WITH_TBR
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
-from telliot_feeds.reporters.stake import Stake
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
+from telliot_feeds.reporters.stake import Stake
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
 from telliot_feeds.reporters.types import GasParams

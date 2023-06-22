@@ -8,7 +8,8 @@ from unittest.mock import patch
 import pytest
 from brownie import accounts
 from brownie import chain
-from telliot_core.utils.response import ResponseStatus, error_status
+from telliot_core.utils.response import error_status
+from telliot_core.utils.response import ResponseStatus
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
@@ -512,6 +513,7 @@ async def test_check_reporter_lock(tellor_flex_reporter):
     if not status.ok:
         assert ("reporter lock" in status.error) or ("Staker balance too low" in status.error)
 
+
 @pytest.mark.asyncio
 async def test_reporting_without_internet(tellor_flex_reporter, caplog):
     async def offline():
@@ -527,7 +529,8 @@ async def test_reporting_without_internet(tellor_flex_reporter, caplog):
             await r.report()
 
         assert "Unable to connect to the internet!" in caplog.text
-        
+
+
 @pytest.mark.asyncio
 async def test_dispute(tellor_flex_reporter, caplog):
     # Test when reporter in dispute
@@ -538,6 +541,7 @@ async def test_dispute(tellor_flex_reporter, caplog):
 
     _ = await r.report_once()
     assert "Your staked balance has decreased, account might be in dispute" in caplog.text
+
 
 @pytest.mark.asyncio
 async def test_reset_datafeed(tellor_flex_reporter):
