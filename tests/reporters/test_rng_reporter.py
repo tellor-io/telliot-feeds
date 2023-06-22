@@ -183,7 +183,7 @@ async def test_repeat_auto_rng_report_value(rng_reporter: RNGReporter, monkeypat
         await rng_reporter.report(2)
         # encoded value for timestamp 1678311000
         count = caplog.text.count(
-            "IntervalReporter Encoded value: 236eabcc1c1dc5c01bd6357576b17e490eaf7aaa37b360485cddcd6877a395c3"
+            "Reporter Encoded value: 236eabcc1c1dc5c01bd6357576b17e490eaf7aaa37b360485cddcd6877a395c3"
         )
         # count is 2 because second report uses same value
         assert count == 2
@@ -203,6 +203,6 @@ async def test_unique_rng_report_value(rng_reporter: RNGReporter, monkeypatch, c
         )
         await rng_reporter.report(2)
         count = caplog.text.count(
-            "IntervalReporter Encoded value: 236eabcc1c1dc5c01bd6357576b17e490eaf7aaa37b360485cddcd6877a395c3"
+            "Reporter Encoded value: 236eabcc1c1dc5c01bd6357576b17e490eaf7aaa37b360485cddcd6877a395c3"
         )
         assert count == 1

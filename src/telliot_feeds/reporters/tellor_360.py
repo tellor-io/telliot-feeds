@@ -21,7 +21,7 @@ from web3.types import TxReceipt
 from telliot_feeds.constants import CHAINS_WITH_TBR
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
-from telliot_feeds.reporters.gas import GasFees
+from telliot_feeds.reporters.stake import Stake
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
@@ -38,13 +38,11 @@ from telliot_feeds.utils.stake_info import StakeInfo
 logger = get_logger(__name__)
 
 
-class Tellor360Reporter(GasFees):
+class Tellor360Reporter(Stake):
     """Reports values from given datafeeds to a TellorFlex."""
 
     def __init__(
         self,
-        oracle: Contract,
-        token: Contract,
         min_native_token_balance: int,
         autopay: Contract,
         chain_id: int,
@@ -58,8 +56,6 @@ class Tellor360Reporter(GasFees):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self.oracle = oracle
-        self.token = token
         self.min_native_token_balance = min_native_token_balance
         self.autopay = autopay
         self.datafeed = datafeed
@@ -111,58 +107,6 @@ class Tellor360Reporter(GasFees):
         wallet_balance: int = response
         logger.info(f"Current wallet TRB balance: {wallet_balance / 1e18!r}")
         return wallet_balance, status
-
-    async def deposit_stake(self, amount: int) -> Tuple[bool, ResponseStatus]:
-        """Deposits stake into the oracle contract"""
-        # check allowance to avoid unnecessary approval transactions
-        allowance, allowance_status = await self.token.read(
-            "allowance", owner=self.acct_addr, spender=self.oracle.address
-        )
-        if not allowance_status.ok:
-            msg = "Unable to check allowance:"
-            return False, error_status(msg, allowance_status.e, log=logger.error)
-
-        logger.debug(f"Current allowance: {allowance / 1e18!r}")
-        # calculate and set gas params
-        status = self.update_gas_fees()
-        if not status.ok:
-            return False, error_status("unable to calculate fees for approve/deposit txn", status.e, log=logger.error)
-
-        fees = self.get_gas_info_core()
-        logger.debug(f"Gas fees: {fees}")
-        # if allowance is less than amount_to_stake then approve
-        if allowance < amount:
-            # Approve token spending
-            logger.info(f"Approving {self.oracle.address} token spending: {amount}...")
-            approve_receipt, approve_status = await self.token.write(
-                func_name="approve",
-                gas_limit=self.gas_limit,
-                # have to convert to gwei because of telliot_core where numbers are converted to wei
-                # consider changing this in telliot_core
-                spender=self.oracle.address,
-                amount=amount,
-                **fees,
-            )
-            if not approve_status.ok:
-                msg = "Unable to approve staking: "
-                return False, error_status(msg, approve_status.e, log=logger.error)
-            logger.debug(f"Approve transaction status: {approve_receipt.status}, block: {approve_receipt.blockNumber}")
-            # Add this to avoid nonce error from txn happening too fast
-            time.sleep(1)
-
-        # deposit stake
-        logger.info(f"Now depositing stake: {amount}...")
-        deposit_receipt, deposit_status = await self.oracle.write(
-            func_name="depositStake",
-            gas_limit=self.gas_limit,
-            _amount=amount,
-            **fees,
-        )
-        if not deposit_status.ok:
-            msg = "Unable to deposit stake!"
-            return False, error_status(msg, deposit_status.e, log=logger.error)
-        logger.debug(f"Deposit transaction status: {deposit_receipt.status}, block: {deposit_receipt.blockNumber}")
-        return True, deposit_status
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Compares stakeAmount and stakerInfo every loop to monitor changes to the stakeAmount or stakerInfo
@@ -554,7 +498,7 @@ class Tellor360Reporter(GasFees):
 
         # Check if profitable if not YOLO
         status = await self.ensure_profitable()
-        logger.debug(status)
+        logger.debug(f"Ensure profitibility method status: {status}")
         if not status.ok:
             return None, status
 

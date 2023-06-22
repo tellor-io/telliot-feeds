@@ -34,13 +34,13 @@ class Stake(GasFees):
         )
         if not allowance_status.ok:
             msg = "Unable to check allowance:"
-            return False, error_status(msg, allowance_status.e, log=logger.error)
+            return False, error_status(msg, e=allowance_status.error, log=logger.error)
 
         logger.debug(f"Current allowance: {allowance / 1e18!r}")
         # calculate and set gas params
         status = self.update_gas_fees()
         if not status.ok:
-            return False, error_status("unable to calculate fees for approve txn", status.e, log=logger.error)
+            return False, error_status("unable to calculate fees for approve txn", e=status.error, log=logger.error)
 
         fees = self.get_gas_info_core()
         # if allowance is less than amount_to_stake then approve
@@ -58,7 +58,7 @@ class Stake(GasFees):
             )
             if not approve_status.ok:
                 msg = "Unable to approve staking: "
-                return False, error_status(msg, approve_status.e, log=logger.error)
+                return False, error_status(msg, e=approve_status.error, log=logger.error)
             logger.debug(f"Approve transaction status: {approve_receipt.status}, block: {approve_receipt.blockNumber}")
             # Add this to avoid nonce error from txn happening too fast
             time.sleep(1)
@@ -68,7 +68,7 @@ class Stake(GasFees):
         # calculate and set gas params
         status = self.update_gas_fees()
         if not status.ok:
-            return False, error_status("unable to calculate fees for deposit txn", status.e, log=logger.error)
+            return False, error_status("unable to calculate fees for deposit txn", e=status.error, log=logger.error)
 
         fees = self.get_gas_info_core()
         deposit_receipt, deposit_status = await self.oracle.write(
@@ -79,6 +79,6 @@ class Stake(GasFees):
         )
         if not deposit_status.ok:
             msg = "Unable to deposit stake!"
-            return False, error_status(msg, deposit_status.e, log=logger.error)
+            return False, error_status(msg, e=deposit_status.error, log=logger.error)
         logger.debug(f"Deposit transaction status: {deposit_receipt.status}, block: {deposit_receipt.blockNumber}")
         return True, deposit_status
