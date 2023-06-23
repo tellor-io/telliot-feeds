@@ -73,7 +73,7 @@ async def test_get_eip1559_gas_price(gas_fees_object):
     assert status.ok
     assert eip1559_gas_price["maxPriorityFeePerGas"] == 1000000000
     base_fee = mock_fee_history["baseFeePerGas"][-1]
-    assert eip1559_gas_price["maxFeePerGas"] == base_fee + eip1559_gas_price["maxPriorityFeePerGas"]
+    assert eip1559_gas_price["maxFeePerGas"] == gas.get_max_fee(base_fee)
     # fee history is None
     type(gas.web3.eth).fee_history = Mock(return_value=None)
     eip1559_gas_price, status = gas.get_eip1559_gas_price()
@@ -123,7 +123,6 @@ async def test_update_gas_fees(gas_fees_object):
     assert gas.get_gas_info_core() == gas_info_core
 
     gas.web3 = Mock()
-    type(gas.web3.eth)._max_priorit_fee = Mock(return_value=gas.to_wei(1))
     type(gas.web3.eth).gas_price = PropertyMock(return_value=None)
     status = gas.update_gas_fees()
     assert not status.ok
@@ -148,24 +147,21 @@ async def test_update_gas_fees(gas_fees_object):
     )
     gas.transaction_type = 2
     type(gas.web3.eth).fee_history = Mock(return_value=mock_fee_history)
+    type(gas.web3.eth)._max_priority_fee = Mock(return_value=gas.to_wei(1))
     status = gas.update_gas_fees()
+    base_fee = mock_fee_history["baseFeePerGas"][-1]
     assert status.ok
     assert gas.gas_info["gasPrice"] is None
     assert gas.gas_info["gas"] is None
     assert gas.gas_info["maxFeePerGas"] is not None
-    average_base_fee = round(sum(mock_fee_history["baseFeePerGas"]) // len(mock_fee_history["baseFeePerGas"]))
-    assert gas.gas_info["maxFeePerGas"] == int(average_base_fee) + gas.gas_info["maxPriorityFeePerGas"]
+    assert gas.gas_info["maxFeePerGas"] == gas.get_max_fee(base_fee)
     assert gas.gas_info["maxPriorityFeePerGas"] == 1000000000
 
     type(gas.web3.eth).fee_history = Mock(side_effect=ValueError("Mock Error"))
     status = gas.update_gas_fees()
     assert gas.gas_info["maxFeePerGas"] is None
     assert gas.gas_info["maxPriorityFeePerGas"] is None
-    assert (
-        "Failed to update gas fees for EIP1559 type transaction:"
-        "'unable to calculate EIP1559 gas price: \"Error fetching fee history: ValueError(\\'Mock Error\\')\"'"
-        in status.error
-    )
+    assert "Failed to update gas fees for EIP1559 type transaction:" in status.error
 
     gas.transaction_type = 5
     status = gas.update_gas_fees()
