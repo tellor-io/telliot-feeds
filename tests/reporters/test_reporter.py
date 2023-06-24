@@ -1,7 +1,9 @@
-import pytest
 from unittest.mock import Mock
-from telliot_feeds.reporters.types import StakerInfo
+
+import pytest
+
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
+from telliot_feeds.reporters.types import StakerInfo
 
 
 @pytest.mark.asyncio
@@ -20,6 +22,7 @@ async def test_get_stake_amount(tellor_flex_reporter):
         "Unable to read current stake amount: error reading from contract: Exception('Mocked exception')"
     )
 
+
 @pytest.mark.asyncio
 async def test_get_staker_details(tellor_flex_reporter):
     r: Tellor360Reporter = tellor_flex_reporter
@@ -37,6 +40,7 @@ async def test_get_staker_details(tellor_flex_reporter):
         "Unable to read account staker info: error reading from contract: Exception('Mocked exception')"
     )
 
+
 @pytest.mark.asyncio
 async def test_get_current_token_balance(tellor_flex_reporter):
     r: Tellor360Reporter = tellor_flex_reporter
@@ -53,6 +57,7 @@ async def test_get_current_token_balance(tellor_flex_reporter):
         "Unable to read account balance: error reading from contract: Exception('Mocked exception')"
     )
 
+
 @pytest.mark.asyncio
 async def test_ensure_staked(tellor_flex_reporter):
     r: Tellor360Reporter = tellor_flex_reporter
@@ -62,4 +67,3 @@ async def test_ensure_staked(tellor_flex_reporter):
     assert not status.ok
     assert not staked
     print(status.error)
-    
