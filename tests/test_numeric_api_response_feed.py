@@ -49,7 +49,7 @@ async def test_api_reporter_submit_once(
             autopay=flex.autopay,
             transaction_type=0,
             datafeed=numeric_api_rsp_feed,
-            max_fee=100,
+            max_fee_per_gas=100,
         )
 
         ORACLE_ADDRESSES = {mock_flex_contract.address}

@@ -40,7 +40,7 @@ async def test_dai_usd_reporter_submit_once(
             autopay=flex.autopay,
             transaction_type=0,
             datafeed=dai_usd_median_feed,
-            max_fee=100,
+            max_fee_per_gas=100,
         )
 
         ORACLE_ADDRESSES = {mock_flex_contract.address}
