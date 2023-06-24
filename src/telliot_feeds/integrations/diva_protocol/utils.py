@@ -70,19 +70,6 @@ def filter_valid_pools(pools: list[dict[str, Any]]) -> list[DivaPool]:
     ]
 
 
-def find_most_profitable_pool(pools: list[DivaPool]) -> DivaPool:
-    """
-    Find the pool with the highest profit.
-
-    Args:
-        pools: List of pools to search.
-
-    Returns:
-        Pool with the highest profit.
-    """
-    return  # type: ignore
-
-
 def get_reported_pools() -> Any:
     """
     Retrieve dictionary of reoprted pools from telliot default dir

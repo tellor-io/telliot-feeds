@@ -45,7 +45,6 @@ class DivaProtocolContract(Contract):
     """Main Diva Protocol contract."""
 
     def __init__(self, node: RPCEndpoint, account: Optional[ChainedAccount] = None):
-
         super().__init__(
             address=DIVA_DIAMOND_ADDRESS,
             abi=DIVA_ABI,
@@ -57,7 +56,6 @@ class DivaProtocolContract(Contract):
         """Fetches info about a specific pool.
 
         Used for getting the referenceAsset mostly ('BTC/USD', for example)."""
-
         pool_params, status = await self.read("getPoolParameters", _poolId=pool_id)
 
         if status.ok:
@@ -86,7 +84,6 @@ class DivaOracleTellorContract(Contract):
     async def get_min_period_undisputed(self) -> Optional[int]:
         """How long the latest value reported must remain uncontested
         before the pool can be settled."""
-
         seconds, status = await self.read("getMinPeriodUndisputed")
 
         if status.ok:
@@ -108,8 +105,6 @@ class DivaOracleTellorContract(Contract):
         """Settle a pool.
 
         Must be called after the the minimum period undisputed has elapsed."""
-
-        print(f"setfinalref middleware address: {self.address}")
         _, status = await self.write(
             "setFinalReferenceValue",
             _poolId=pool_id,
@@ -125,5 +120,7 @@ class DivaOracleTellorContract(Contract):
             return status
         else:
             logger.error("Error setting final reference value on DivaOracleTellorContract")
+            logger.info(f"Pool ID: {pool_id}")
+            logger.info(f"Middleware address: {self.address}")
             logger.error(status)
             return None
