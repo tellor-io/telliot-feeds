@@ -42,9 +42,10 @@ class FlashbotsReporter(Tellor360Reporter):
         logger.info(f"Flashbots provider endpoint: {flashbots_uri}")
         flashbot(self.endpoint._web3, self.signature_account, flashbots_uri)
 
-    def send_transaction(self, tx_signed: Any) -> Tuple[Optional[TxReceipt], ResponseStatus]:
+    def sign_n_send_transaction(self, built_tx: Any) -> Tuple[Optional[TxReceipt], ResponseStatus]:
         status = ResponseStatus()
         # Create bundle of one pre-signed, EIP-1559 (type 2) transaction
+        tx_signed = self.account.local_account.sign_transaction(built_tx)
         bundle = [
             {"signed_transaction": tx_signed.rawTransaction},
         ]

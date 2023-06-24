@@ -95,18 +95,18 @@ async def test_get_eip1559_gas_price(gas_fees_object):
     gas.base_fee_per_gas = 136
     eip1559_gas_price, status = gas.get_eip1559_gas_price()
     assert status.ok
-    assert eip1559_gas_price["maxPriorityFeePerGas"] == 1000000000  # 1 Gwei
-    assert eip1559_gas_price["maxFeePerGas"] == gas.get_max_fee(gas.to_wei(136))
+    assert eip1559_gas_price["maxPriorityFeePerGas"] == 1
+    assert eip1559_gas_price["maxFeePerGas"] == gas.get_max_fee(136)
 
     # when 1 out 3 fee args are user provided fee history from node used
     # and maxFeePerGas and priority fee are calculated from fee history
     type(gas.web3.eth).fee_history = Mock(return_value=mock_fee_history)
     gas.priority_fee_per_gas = None
-    gas.base_fee_per_gas = 150
+    gas.base_fee_per_gas = gas.from_gwei(150)
     eip1559_gas_price, status = gas.get_eip1559_gas_price()
     assert status.ok
     assert eip1559_gas_price["maxPriorityFeePerGas"] == 1000000000  # 1 Gwei
-    assert eip1559_gas_price["maxFeePerGas"] == gas.get_max_fee(gas.to_wei(150))
+    assert eip1559_gas_price["maxFeePerGas"] == gas.get_max_fee(gas.from_gwei(150))
 
 
 @pytest.mark.asyncio
@@ -119,7 +119,12 @@ async def test_update_gas_fees(gas_fees_object):
     assert gas.gas_info["gas"] is None
     assert gas.gas_info["maxFeePerGas"] is None
     assert gas.gas_info["maxPriorityFeePerGas"] is None
-    gas_info_core = {"max_fee_per_gas": None, "max_priority_fee_per_gas": None, "legacy_gas_price": 20.2}
+    gas_info_core = {
+        "gas_limit": None,
+        "max_fee_per_gas": None,
+        "max_priority_fee_per_gas": None,
+        "legacy_gas_price": 20.2,
+    }
     assert gas.get_gas_info_core() == gas_info_core
 
     gas.web3 = Mock()
@@ -147,7 +152,7 @@ async def test_update_gas_fees(gas_fees_object):
     )
     gas.transaction_type = 2
     type(gas.web3.eth).fee_history = Mock(return_value=mock_fee_history)
-    type(gas.web3.eth)._max_priority_fee = Mock(return_value=gas.to_wei(1))
+    type(gas.web3.eth)._max_priority_fee = Mock(return_value=gas.from_gwei(1))
     status = gas.update_gas_fees()
     base_fee = mock_fee_history["baseFeePerGas"][-1]
     assert status.ok
@@ -167,4 +172,4 @@ async def test_update_gas_fees(gas_fees_object):
     status = gas.update_gas_fees()
     assert gas.gas_info["maxFeePerGas"] is None
     assert gas.gas_info["maxPriorityFeePerGas"] is None
-    assert "Failed to update gas fees: 'Invalid transaction type: 5'" in status.error
+    assert "Failed to update gas fees: invalid transaction type: 5" in status.error

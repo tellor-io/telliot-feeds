@@ -35,21 +35,20 @@ class Stake(GasFees):
         if not allowance_status.ok:
             msg = "Unable to check allowance:"
             return False, error_status(msg, e=allowance_status.error, log=logger.error)
-
         logger.debug(f"Current allowance: {allowance / 1e18!r}")
-        # calculate and set gas params
-        status = self.update_gas_fees()
-        if not status.ok:
-            return False, error_status("unable to calculate fees for approve txn", e=status.error, log=logger.error)
 
-        fees = self.get_gas_info_core()
         # if allowance is less than amount_to_stake then approve
         if allowance < amount:
             # Approve token spending
             logger.info(f"Approving {self.oracle.address} token spending: {amount}...")
+            # calculate and set gas params
+            status = self.update_gas_fees()
+            if not status.ok:
+                return False, error_status("unable to calculate fees for approve txn", e=status.error, log=logger.error)
+            fees = self.get_gas_info_core()
+
             approve_receipt, approve_status = await self.token.write(
                 func_name="approve",
-                gas_limit=self.gas_limit,
                 # have to convert to gwei because of telliot_core where numbers are converted to wei
                 # consider changing this in telliot_core
                 spender=self.oracle.address,
@@ -73,7 +72,6 @@ class Stake(GasFees):
         fees = self.get_gas_info_core()
         deposit_receipt, deposit_status = await self.oracle.write(
             func_name="depositStake",
-            gas_limit=self.gas_limit,
             _amount=amount,
             **fees,
         )

@@ -43,7 +43,6 @@ class Tellor360Reporter(Stake):
 
     def __init__(
         self,
-        min_native_token_balance: int,
         autopay: Contract,
         chain_id: int,
         datafeed: Optional[DataFeed[Any]] = None,
@@ -56,13 +55,12 @@ class Tellor360Reporter(Stake):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self.min_native_token_balance = min_native_token_balance
         self.autopay = autopay
         self.datafeed = datafeed
         self.use_random_feeds: bool = use_random_feeds
         self.qtag_selected = False if self.datafeed is None else True
         self.expected_profit = expected_profit
-        self.stake: float = stake
+        self.stake: float = self.from_ether(stake)
         self.stake_info = StakeInfo()
         self.check_rewards: bool = check_rewards
         self.autopaytip = 0
@@ -78,11 +76,11 @@ class Tellor360Reporter(Stake):
         Returns:
         - (int, ResponseStatus) the current stake amount in TellorFlex
         """
-        response, status = await self.oracle.read("getStakeAmount")
+        stake_amount: int
+        stake_amount, status = await self.oracle.read("getStakeAmount")
         if not status.ok:
-            msg = "Unable to read current stake amount"
+            msg = f"Unable to read current stake amount: {status.error}"
             return None, error_status(msg, status.e, log=logger.error)
-        stake_amount: int = response
         return stake_amount, status
 
     async def get_staker_details(self) -> Tuple[Optional[StakerInfo], ResponseStatus]:
@@ -93,19 +91,19 @@ class Tellor360Reporter(Stake):
         """
         response, status = await self.oracle.read("getStakerInfo", _stakerAddress=self.acct_addr)
         if not status.ok:
-            msg = "Unable to read account staker info:"
+            msg = f"Unable to read account staker info: {status.error}"
             return None, error_status(msg, status.e, log=logger.error)
         staker_details = StakerInfo(*response)
         return staker_details, status
 
     async def get_current_token_balance(self) -> Tuple[Optional[int], ResponseStatus]:
         """Reads the current balance of the account"""
-        response, status = await self.token.read("balanceOf", account=self.acct_addr)
+        wallet_balance: int
+        wallet_balance, status = await self.token.read("balanceOf", account=self.acct_addr)
         if not status.ok:
-            msg = "Unable to read account balance:"
+            msg = f"Unable to read account balance: {status.error}"
             return None, error_status(msg, status.e, log=logger.error)
-        wallet_balance: int = response
-        logger.info(f"Current wallet TRB balance: {wallet_balance / 1e18!r}")
+        logger.info(f"Current wallet TRB balance: {self.to_ether(wallet_balance)!r}")
         return wallet_balance, status
 
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
@@ -143,7 +141,7 @@ class Tellor360Reporter(Stake):
 
             STAKER INFO
             start date: {staker_details.start_date}
-            stake_balance: {staker_details.stake_balance / 1e18!r}
+            stake_balance: {self.to_ether(staker_details.stake_balance)!r}
             locked_balance: {staker_details.locked_balance}
             last report: {staker_details.last_report}
             reports count: {staker_details.reports_count}
@@ -152,7 +150,7 @@ class Tellor360Reporter(Stake):
 
         # deposit stake if stakeAmount in oracle is greater than account stake or
         # a stake in cli is selected thats greater than account stake
-        chosen_stake_amount = (self.stake * 1e18) > staker_details.stake_balance
+        chosen_stake_amount = self.stake > staker_details.stake_balance
         if chosen_stake_amount:
             logger.info("Chosen stake is greater than account stake balance")
         if self.stake_info.stake_amount_gt_staker_balance or chosen_stake_amount:
@@ -161,7 +159,7 @@ class Tellor360Reporter(Stake):
             # current oracle stake amount vs current account stake balance
             to_stake_amount_1 = self.stake_info.current_stake_amount - staker_details.stake_balance
             # chosen stake via cli flag vs current account stake balance
-            to_stake_amount_2 = (self.stake * 1e18) - staker_details.stake_balance
+            to_stake_amount_2 = self.stake - staker_details.stake_balance
             amount_to_stake = max(int(to_stake_amount_1), int(to_stake_amount_2))
 
             # check TRB wallet balance!
@@ -171,8 +169,8 @@ class Tellor360Reporter(Stake):
 
             if amount_to_stake > wallet_balance:
                 msg = (
-                    f"Amount to stake: {amount_to_stake/1e18:.04f} "
-                    f"is greater than your balance: {wallet_balance/1e18:.04f} so "
+                    f"Amount to stake: {self.to_ether(amount_to_stake):.04f} "
+                    f"is greater than your balance: {self.to_ether(wallet_balance):.04f} so "
                     "not enough TRB to cover the stake"
                 )
                 return False, error_status(msg, log=logger.warning)
@@ -225,7 +223,7 @@ class Tellor360Reporter(Stake):
         elif self.chain_id in CHAINS_WITH_TBR:
             logger.info("Fetching time based rewards")
             time_based_rewards = await get_time_based_rewards(self.oracle)
-            logger.info(f"Time based rewards: {time_based_rewards/1e18:.04f}")
+            logger.info(f"Time based rewards: {self.to_ether(time_based_rewards):.04f}")
             if time_based_rewards is not None:
                 self.autopaytip += time_based_rewards
         return self.autopaytip
@@ -260,7 +258,7 @@ class Tellor360Reporter(Stake):
 
             if suggested_feed is not None and tip_amount is not None:
                 logger.info(f"Most funded datafeed in Autopay: {suggested_feed.query.type}")
-                logger.info(f"Tip amount: {tip_amount/1e18}")
+                logger.info(f"Tip amount: {self.to_ether(tip_amount)}")
                 self.autopaytip += tip_amount
 
                 self.datafeed = suggested_feed
@@ -274,7 +272,7 @@ class Tellor360Reporter(Stake):
         if not self.check_rewards:
             return status
 
-        tip = self.autopaytip
+        tip = self.to_ether(self.autopaytip)
         # Fetch token prices in USD
         native_token_feed = get_native_token_feed(self.chain_id)
         price_feeds = [native_token_feed, trb_usd_median_feed]
@@ -285,31 +283,30 @@ class Tellor360Reporter(Stake):
         if price_native_token is None or price_trb_usd is None:
             return error_status("Unable to fetch token price", log=logger.warning)
 
-        if not self.gas_info:
-            return error_status("Gas info not set", log=logger.warning)
+        gas_info = self.get_gas_info_core()
+        max_fee_per_gas = gas_info["max_fee_per_gas"]
+        legacy_gas_price = gas_info["legacy_gas_price"]
+        gas_limit = gas_info["gas_limit"]
 
-        gas_info = self.gas_info
-
-        m = gas_info["maxFeePerGas"] if gas_info["maxFeePerGas"] else gas_info["gasPrice"]
+        max_gas = max_fee_per_gas if max_fee_per_gas else legacy_gas_price
         # multiply gasPrice by gasLimit
-        if m is None:
+        if max_gas is None or gas_limit is None:
             return error_status("Unable to calculate profitablity, no gas fees set", log=logger.warning)
-        max_fee = float(self.from_wei(m))  # type: ignore
-        gas_ = float(self.from_wei(gas_info["gas"]))  # type: ignore
-        txn_fee = max_fee * gas_
+
+        txn_fee = max_gas * self.to_gwei(int(gas_limit))
         logger.info(
             f"""\n
-            Tips: {tip/1e18}
+            Tips: {tip}
             Transaction fee: {txn_fee} {tkn_symbol(self.chain_id)}
-            Gas limit: {gas_info["gas"]}
-            Gas price: {self.from_wei(gas_info["gasPrice"])} gwei
-            Max fee per gas: {self.from_wei(gas_info["maxFeePerGas"])} gwei
-            Max priority fee per gas: {self.from_wei(gas_info["maxPriorityFeePerGas"])} gwei
+            Gas limit: {gas_limit}
+            Gas price: {legacy_gas_price} gwei
+            Max fee per gas: {max_fee_per_gas} gwei
+            Max priority fee per gas: {gas_info["max_priority_fee_per_gas"]} gwei
             Txn type: {self.transaction_type}\n"""
         )
 
         # Calculate profit
-        rev_usd = tip / 1e18 * price_trb_usd
+        rev_usd = tip * price_trb_usd
         costs_usd = txn_fee * price_native_token  # convert gwei costs to eth, then to usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
@@ -391,14 +388,15 @@ class Tellor360Reporter(Stake):
         if contract_function is None:
             return None, error_status("Error building function to estimate gas", status.e, logger.error)
 
-        _, status = self.estimate_gas_amount(contract_function)
-        if not status:
-            return None, error_status(f"Error estimating gas for function: {contract_function}", status.e, logger.error)
         # set gas parameters globally
         status = self.update_gas_fees()
         logger.debug(status)
         if not status.ok:
             return None, error_status("Error setting gas parameters", status.e, logger.error)
+
+        _, status = self.estimate_gas_amount(contract_function)
+        if not status.ok:
+            return None, error_status(f"Error estimating gas for function: {contract_function}", status.e, logger.error)
 
         params, status = self.tx_params(**self.get_gas_info())
         logger.debug(f"Transaction parameters: {params}")

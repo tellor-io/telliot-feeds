@@ -44,6 +44,47 @@ class GasFees:
         "gas": None,
     }
 
+    @staticmethod
+    def to_gwei(value: Union[Wei, int]) -> Union[int, float]:
+        """Converts wei to gwei."""
+        converted_value = Web3.fromWei(value, "gwei")
+        # Returns float if Gwei value is Decimal, otherwise returns int
+        if isinstance(converted_value, Decimal):
+            return float(converted_value)
+        return converted_value
+
+    @staticmethod
+    def from_gwei(value: Union[int, float, Decimal]) -> Wei:
+        """Converts gwei to wei."""
+        return Web3.toWei(value, "gwei")
+
+    @staticmethod
+    def optional_to_gwei(value: Union[Wei, int, None]) -> Union[int, float, None]:
+        """Converts wei to gwei and if value is None, returns None."""
+        if value is None:
+            return None
+        return GasFees.to_gwei(value)
+
+    @staticmethod
+    def optional_from_gwei(value: Union[int, float, Decimal, None]) -> Optional[Wei]:
+        """Converts gwei to wei and if value is None, returns None."""
+        if value is None:
+            return None
+        return GasFees.from_gwei(value)
+
+    @staticmethod
+    def to_ether(value: Union[Wei, int]) -> Union[int, float]:
+        """Converts wei to ether. ie 1e18 wei = 1 ether"""
+        converted_value = Web3.fromWei(value, "ether")
+        if isinstance(converted_value, Decimal):
+            return float(converted_value)
+        return converted_value
+
+    @staticmethod
+    def from_ether(value: Union[int, float, Decimal]) -> Wei:
+        """Converts ether to wei. ie 1 ether = 1e18 wei"""
+        return Web3.toWei(value, "ether")
+
     def __init__(
         self,
         endpoint: RPCEndpoint,
@@ -65,12 +106,12 @@ class GasFees:
         self.account = account
         self.transaction_type = transaction_type
         self.gas_limit = gas_limit
-        self.legacy_gas_price = legacy_gas_price
         self.gas_multiplier = gas_multiplier
-        self.max_fee_per_gas = max_fee_per_gas
-        self.priority_fee_per_gas = priority_fee_per_gas
-        self.base_fee_per_gas = base_fee_per_gas
-        self.max_priority_fee_range = max_priority_fee_range
+        self.legacy_gas_price = self.optional_from_gwei(legacy_gas_price)
+        self.max_fee_per_gas = self.optional_from_gwei(max_fee_per_gas)
+        self.priority_fee_per_gas = self.optional_from_gwei(priority_fee_per_gas)
+        self.base_fee_per_gas = self.optional_from_gwei(base_fee_per_gas)
+        self.max_priority_fee_range = self.from_gwei(max_priority_fee_range)
         self.reward_percentile = reward_percentile or [25.0, 50.0, 75.0]
         self.block_count = block_count
         self.min_native_token_balance = min_native_token_balance
@@ -80,13 +121,15 @@ class GasFees:
         assert self.web3 is not None, f"Web3 is not initialized, check endpoint {endpoint}"
 
     def set_gas_info(self, fees: FEES) -> None:
-        """Set gas info"""
+        """Set class variable gas_info keys to values in fees"""
         for fee in fees:
             logger.debug(f"Setting gas info {fee} to {fees[fee]}")
             self.gas_info[fee] = fees[fee]
 
     def _reset_gas_info(self) -> None:
-        """Reset gas info whenever gas price fails to update"""
+        """Resets class variable gas_info keys to None values
+        This is used to reset gas_info before updating gas_info
+        """
         self.gas_info = {
             "maxPriorityFeePerGas": None,
             "maxFeePerGas": None,
@@ -98,32 +141,22 @@ class GasFees:
         """Get gas info and remove None values"""
         return {k: v for k, v in self.gas_info.items() if v is not None}
 
-    def get_gas_info_core(self) -> Dict[str, Optional[Union[int, float]]]:
-        """Convert gas info to gwei and update keys to follow telliot core naming convention"""
+    def get_gas_info_core(self) -> Dict[str, Union[int, float, Wei, None]]:
+        """Convert gas info to gwei and update keys to follow telliot core param convention"""
         gas = self.gas_info
         return {
-            "max_fee_per_gas": self.from_wei(gas["maxFeePerGas"]),
-            "max_priority_fee_per_gas": self.from_wei(gas["maxPriorityFeePerGas"]),
-            "legacy_gas_price": self.from_wei(gas["gasPrice"]),
+            "max_fee_per_gas": self.optional_to_gwei(gas["maxFeePerGas"]),
+            "max_priority_fee_per_gas": self.optional_to_gwei(gas["maxPriorityFeePerGas"]),
+            "legacy_gas_price": self.optional_to_gwei(gas["gasPrice"]),
+            "gas_limit": gas["gas"],
         }
-
-    @staticmethod
-    def from_wei(value: Optional[Wei]) -> Optional[Union[int, float]]:
-        if value is None:
-            return None
-        converted_value = Web3.fromWei(value, "gwei")
-        if isinstance(converted_value, Decimal):
-            return float(converted_value)
-        return converted_value
-
-    @staticmethod
-    def to_wei(value: Union[int, float, Decimal]) -> Wei:
-        return Web3.toWei(value, "gwei")
 
     def estimate_gas_amount(self, pre_built_transaction: ContractFunction) -> Tuple[Optional[int], ResponseStatus]:
         """Estimate the gas amount for a given transaction
-        should also take in to account the possiblity of a wrong estimation
-        'out of gas' error
+        ie how many gas units will a transaction need to be executed
+
+        Returns:
+            - gas amount in wei int
         """
         if self.gas_limit is not None:
             self.set_gas_info({"gas": self.gas_limit})
@@ -142,8 +175,7 @@ class GasFees:
             - gas_price in gwei int
         """
         if self.legacy_gas_price is not None:
-            gas_price = self.to_wei(self.legacy_gas_price)
-            return {"gasPrice": gas_price}, ResponseStatus()
+            return {"gasPrice": self.legacy_gas_price}, ResponseStatus()
 
         try:
             gas_price = self.web3.eth.gas_price
@@ -174,12 +206,12 @@ class GasFees:
             # "base fee for the next block after the newest of the returned range"
             return fee_history, ResponseStatus()
         except Exception as e:
-            return None, error_status("Error fetching fee history", e=e)
+            return None, error_status("Error fetching fee history", e=e, log=logger.error)
 
     def get_max_fee(self, base_fee: Wei) -> Wei:
         """Calculate the max fee for a type 2 (EIP1559) transaction"""
         if self.max_fee_per_gas is not None:
-            return self.to_wei(self.max_fee_per_gas)
+            return self.max_fee_per_gas
         # if a block is 100% full, the base fee per gas is set to increase by 12.5% for the next block
         percentage = 12.5
         # adding 12.5% to base_fee arg to ensure inclusion to at least the next block
@@ -189,15 +221,20 @@ class GasFees:
     def get_max_priority_fee(self, fee_history: Optional[FeeHistory] = None) -> Tuple[Optional[Wei], ResponseStatus]:
         """Return the max priority fee for a type 2 (EIP1559) transaction
         if priority fee is provided then return the provided priority fee
-        else return the max priority fee based on the fee history
+        else try to fetch a priority fee suggestion from the node using Eth._max_priority_fee method
+        with a fallback that returns the max priority fee based on the fee history
 
         Args:
             - fee_history: Optional[FeeHistory]
+
+        Returns:
+            - max_priority_fee: Wei
+            - ResponseStatus
         """
         priority_fee = self.priority_fee_per_gas
-        max_range = self.to_wei(self.max_priority_fee_range)
+        max_range = self.max_priority_fee_range
         if priority_fee is not None:
-            return self.to_wei(priority_fee), ResponseStatus()
+            return priority_fee, ResponseStatus()
         else:
             try:
                 max_priority_fee = self.web3.eth._max_priority_fee()
@@ -217,11 +254,11 @@ class GasFees:
     def get_base_fee(self) -> Tuple[Optional[Union[Wei, FeeHistory]], ResponseStatus]:
         """Return the base fee for a type 2 (EIP1559) transaction.
         if base fee is provided then return the provided base fee
-        else return the base fee based on the fee history
+        else return the base fee based on the Eth.feed_history method response
         """
         base_fee = self.base_fee_per_gas
         if base_fee is not None:
-            return self.to_wei(base_fee), ResponseStatus()
+            return base_fee, ResponseStatus()
         else:
             fee_history, status = self.fee_history()
             if fee_history is None:
@@ -261,20 +298,21 @@ class GasFees:
                 return None, error_status(msg, e=status.error, log=logger.error)
             # Get max fee
             max_fee = self.get_max_fee(base_fee)
+            logger.debug(f"base fee: {base_fee}, priority fee: {priority_fee}, max fee: {max_fee}")
         else:
             # if two args are given then we can calculate the third
             if self.base_fee_per_gas is not None and self.priority_fee_per_gas is not None:
                 # calculate max fee
-                max_fee = self.get_max_fee(self.to_wei(self.base_fee_per_gas))
-                priority_fee = self.to_wei(self.priority_fee_per_gas)
+                max_fee = self.get_max_fee(self.base_fee_per_gas)
+                priority_fee = self.priority_fee_per_gas
 
             elif self.base_fee_per_gas is not None and self.max_fee_per_gas is not None:
                 # calculate priority fee
-                priority_fee = Wei(self.to_wei(self.max_fee_per_gas) - self.to_wei(self.base_fee_per_gas))
-                max_fee = self.to_wei(self.max_fee_per_gas)
+                priority_fee = Wei(self.max_fee_per_gas - self.base_fee_per_gas)
+                max_fee = self.max_fee_per_gas
             elif self.priority_fee_per_gas is not None and self.max_fee_per_gas is not None:
-                priority_fee = self.to_wei(self.priority_fee_per_gas)
-                max_fee = self.to_wei(self.max_fee_per_gas)
+                priority_fee = self.priority_fee_per_gas
+                max_fee = self.max_fee_per_gas
             else:
                 # this should never happen?
                 return None, error_status("Error calculating EIP1559 gas price no args provided", logger.error)
@@ -285,21 +323,20 @@ class GasFees:
         }, ResponseStatus()
 
     def update_gas_fees(self) -> ResponseStatus:
-        """Return gas parameters for a transaction"""
+        """Update class gas_info with the latest gas fees whenever called"""
+        self._reset_gas_info()
         if self.transaction_type == 0:
             legacy_gas_fees, status = self.get_legacy_gas_price()
             if legacy_gas_fees is None:
-                self._reset_gas_info()
                 return error_status(
-                    "Failed to update gas fees for legacy type transaction", e=status.error, log=logger.debug
+                    "Failed to update gas fees for legacy type transaction", e=status.error, log=logger.error
                 )
             self.set_gas_info(legacy_gas_fees)
-            logger.debug(f"Gas price: {legacy_gas_fees} status: {status}")
+            logger.debug(f"Legacy transaction gas price: {legacy_gas_fees} status: {status}")
             return status
         elif self.transaction_type == 2:
             eip1559_gas_fees, status = self.get_eip1559_gas_price()
             if eip1559_gas_fees is None:
-                self._reset_gas_info()
                 return error_status(
                     "Failed to update gas fees for EIP1559 type transaction", e=status.error, log=logger.debug
                 )
@@ -307,7 +344,5 @@ class GasFees:
             logger.debug(f"Gas fees: {eip1559_gas_fees} status: {status}")
             return status
         else:
-            self._reset_gas_info()
-            msg = "Failed to update gas fees"
-            e = f"Invalid transaction type: {self.transaction_type}"
-            return error_status(msg, e=e, log=logger.error)
+            msg = f"Failed to update gas fees: invalid transaction type: {self.transaction_type}"
+            return error_status(msg, log=logger.error)

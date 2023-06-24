@@ -12,7 +12,7 @@ from tests.utils.utils import chain_time
 
 
 @pytest.fixture(scope="function")
-async def reporter(tellor_360, guaranteed_price_source, mock_flex_contract, mock_token_contract):
+async def reporter(tellor_360, guaranteed_price_source):
     contracts, account = tellor_360
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
