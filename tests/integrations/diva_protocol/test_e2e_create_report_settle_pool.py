@@ -5,7 +5,9 @@ it's reference asset and collateral token.
 Call `setFinalReferenceValue` on the DivaOracleTellor contract.
 Ensure it can't be called twice, or if there's no reported value for the pool,
 or if it's too early for the pool to be settled."""
+import json
 import os
+import pickle
 import time
 
 import pytest
@@ -78,7 +80,8 @@ async def test_create_report_settle_pool(
         # mock default_homedir to be current directory
         monkeypatch.setattr("telliot_feeds.integrations.diva_protocol.utils.default_homedir", lambda: os.getcwd())
 
-        # check initial state of pools pickle file
+        if get_reported_pools() != {}:
+            os.remove(os.getcwd() + "/" + "reported_pools.pickle")
         assert get_reported_pools() == {}, "reported pools pickle file not empty before test"
 
         # mock fetch pools from subgraph
@@ -93,6 +96,7 @@ async def test_create_report_settle_pool(
 
         # create pool in DIVA Protocol
         pool_id = example_pools_updated[0]["id"]
+        print("pool_id", pool_id)
         _ = mock_diva_contract.addPool(
             pool_id,
             [
@@ -137,6 +141,19 @@ async def test_create_report_settle_pool(
         mock_token_contract.faucet(account.address)
         accounts[2].transfer(account.address, "1 ether")
 
+        # before attempting to settle pools,
+        # update the reported timestamp so it's 30 seconds ago, so it's ready to settle
+        original_settle_pools = DIVAProtocolReporter.settle_pools
+
+        def mock_settle_pools(self):
+            reported_pools = get_reported_pools()
+            reported_pools[pool_id][0] = int(time.time()) - 90
+            pickle.dump(reported_pools, open(os.getcwd() + "/" + "reported_pools.pickle", "wb"))
+            print("mock_settle_pools called")
+            return original_settle_pools(self)
+
+        monkeypatch.setattr(DIVAProtocolReporter, "settle_pools", mock_settle_pools)
+
         r = DIVAProtocolReporter(
             endpoint=core.endpoint,
             account=account,
@@ -149,6 +166,7 @@ async def test_create_report_settle_pool(
             transaction_type=0,
             wait_period=0,
             wait_before_settle=1,
+            min_native_token_balance=0,
         )
 
         async def mock_check_reporter_lock():
@@ -166,9 +184,10 @@ async def test_create_report_settle_pool(
 
         # check reported pools pickle file state updated
         updated_pools_pkl_file = get_reported_pools()
+        print("updated_pools_pkl_file", json.dumps(updated_pools_pkl_file, indent=4))
         assert pool_id in updated_pools_pkl_file, "pool not in reported pools pickle file"
         assert "settled" in updated_pools_pkl_file[pool_id], "pool not marked as settled"
-        assert int(time.time()) - updated_pools_pkl_file[pool_id][0] < 3, "reported time is off"
+        assert int(time.time()) - 90 - updated_pools_pkl_file[pool_id][0] < 3, "reported time is off"
 
         print("Starting second report/settle attempt")
         # run report again, check no new pools picked up, does not report & settle
