@@ -8,9 +8,8 @@ from clamfig import deserialize
 from clamfig.base import Registry
 from eth_abi import decode_abi
 from eth_abi import encode_abi
-from eth_abi import encode_single
-from eth_abi.exceptions import ValueOutOfBounds
 from eth_utils import to_checksum_address
+from hexbytes import HexBytes
 
 from telliot_feeds.dtypes.value_type import ValueType
 from telliot_feeds.queries.abi_query import AbiQuery
@@ -67,7 +66,7 @@ class DIVAProtocol(AbiQuery):
             https://divaprotocol.io
     """
 
-    poolId: Optional[str] = None
+    poolId: Optional[HexBytes] = None
     divaDiamond: Optional[Union[str, bytes]] = None
     chainId: Optional[int] = None
 
@@ -90,13 +89,7 @@ class DIVAProtocol(AbiQuery):
     def __post_init__(self) -> None:
         """Validate parameters."""
         if self.poolId is not None:
-            # Ensure poolId is a hex string and can be encoded as bytes32
-            if not isinstance(self.poolId, str) or not self.poolId.startswith("0x"):
-                raise ValueError(f"poolId must be a hex string (e.g. 0x52a16114...). Got: {self.poolId}")
-            try:
-                encode_single("bytes32", bytes.fromhex(self.poolId[2:]))
-            except ValueOutOfBounds:
-                raise ValueError(f"poolId must be a valid bytes32 hex string. Got: {self.poolId}")
+            self.poolId = HexBytes(self.poolId)
 
         parameters_set = (
             self.poolId is not None,
@@ -123,9 +116,8 @@ class DIVAProtocol(AbiQuery):
                 "Missing required parameters: "
                 + f"{str(self.poolId)}, {self.divaDiamond}, {self.chainId}"  # type: ignore
             )
-        bytes_poolId = bytes.fromhex(self.poolId[2:])
         param_types = [p["type"] for p in self.abi]
-        encoded_params = encode_abi(param_types, [bytes_poolId, self.divaDiamond, self.chainId])
+        encoded_params = encode_abi(param_types, [bytes(self.poolId), self.divaDiamond, self.chainId])
 
         return encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
 
@@ -147,8 +139,7 @@ class DIVAProtocol(AbiQuery):
         param_types = [p["type"] for p in params_abi]
         param_values = list(decode_abi(param_types, encoded_param_values))
 
-        # Convert poolId to hex string
-        param_values[0] = "0x" + param_values[0].hex()
+        param_values[0] = HexBytes(param_values[0])
 
         params = dict(zip(param_names, param_values))
 

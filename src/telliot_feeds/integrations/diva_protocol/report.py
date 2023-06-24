@@ -7,6 +7,7 @@ from typing import Any
 from typing import Optional
 from typing import Tuple
 
+from hexbytes import HexBytes
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
@@ -71,7 +72,7 @@ class DIVAProtocolReporter(Tellor360Reporter):
                 continue
 
             query = DIVAProtocol(
-                poolId=pool.pool_id, divaDiamond=self.diva_diamond_address, chainId=self.endpoint.chain_id
+                poolId=HexBytes(pool.pool_id), divaDiamond=self.diva_diamond_address, chainId=self.endpoint.chain_id
             )
             report_count, read_status = await self.get_num_reports_by_id(query.query_id)
 
@@ -229,7 +230,7 @@ class DIVAProtocolReporter(Tellor360Reporter):
             msg = "Unable to fetch DIVA Protocol datafeed."
             return None, error_status(note=msg, log=logger.info)
 
-        logger.info(f"Current query: {datafeed.query.descriptor}")
+        logger.info(f"Current query: {datafeed.query}")
 
         status = ResponseStatus()
 
@@ -338,7 +339,7 @@ class DIVAProtocolReporter(Tellor360Reporter):
             # Update reported pools
             pools = get_reported_pools()
             cur_time = int(time.time())
-            update_reported_pools(pools=pools, add=[[datafeed.query.poolId, [cur_time, "not settled"]]])
+            update_reported_pools(pools=pools, add=[[datafeed.query.poolId.hex(), [cur_time, "not settled"]]])
             logger.info(f"View reported data at timestamp {cur_time}: \n{tx_url}")
         else:
             logger.error(status)

@@ -1,3 +1,5 @@
+from hexbytes import HexBytes
+
 from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import COLLECTIONS
 from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import TOKENS
 from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AmpleforthCustomSpotPrice
@@ -119,7 +121,7 @@ query_catalog.add_entry(
     tag="diva-protocol-example",
     title="Diva protocol example",
     q=DIVAProtocol(
-        poolId="0x52a16114f6d8b8213c2a345ce81a7f6d7eb630b7ef25c182817495e2c7d4752e",
+        poolId=HexBytes("0x52a16114f6d8b8213c2a345ce81a7f6d7eb630b7ef25c182817495e2c7d4752e"),
         divaDiamond="0x2C9c47E7d254e493f02acfB410864b9a86c28e1D",
         chainId=80001,
     ),

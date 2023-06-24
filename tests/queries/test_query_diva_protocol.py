@@ -6,6 +6,7 @@ Distributed under the terms of the MIT License.
 import pytest
 from eth_abi import decode_abi
 from eth_abi import encode_abi
+from hexbytes import HexBytes
 
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 
@@ -50,12 +51,12 @@ def test_constructor():
     q = DIVAProtocol.get_query_from_data(exp_query_data)
 
     assert isinstance(q, DIVAProtocol)
-    assert q.poolId == "0x52a16114f6d8b8213c2a345ce81a7f6d7eb630b7ef25c182817495e2c7d4752e"
+    assert q.poolId == HexBytes("0x52a16114f6d8b8213c2a345ce81a7f6d7eb630b7ef25c182817495e2c7d4752e")
 
 
 def test_constructor_error():
     with pytest.raises(ValueError):
-        _ = DIVAProtocol(poolId="1234", divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211", chainId=3)
+        _ = DIVAProtocol(poolId="bingobango", divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211", chainId=3)
 
 
 def test_encode_decode_reported_val():
