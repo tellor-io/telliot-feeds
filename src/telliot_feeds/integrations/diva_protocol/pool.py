@@ -10,6 +10,7 @@ from requests import JSONDecodeError
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
+from telliot_feeds.integrations.diva_protocol import BASE_SUBGRAPH_URL
 from telliot_feeds.utils.log import get_logger
 
 
@@ -25,7 +26,7 @@ class DivaPool:
     https://github.com/divaprotocol/oracles#diva-smart-contract
     """
 
-    pool_id: int
+    pool_id: str  # bytes32
     reference_asset: str
     collateral_token_address: str
     collateral_token_symbol: str
@@ -33,18 +34,17 @@ class DivaPool:
     expiry_time: int
 
 
-def query_valid_pools(last_id: int, data_provider: str, expiry_since: Optional[int] = None) -> str:
+def query_valid_pools(data_provider: str, expiry_since: Optional[int] = None) -> str:
     """
     Generate query string to fetch pool data from DIVA Protocol subgraph.
 
     Args:
-        last_id: fetch pool with IDs later than this.
         data_provider: Who reports the data for the reference asset.
         expiry_since: Fetch pools w/ expiry >= this timestamp.
     """
     return """
             {
-                pools (first: 100, where: {id_gt: %s, expiryTime_gte: "%s", expiryTime_lte: "%s", statusFinalReferenceValue: "Open", dataProvider: "%s"}) {
+                pools (first: 100, where: {expiryTime_gte: "%s", expiryTime_lte: "%s", statusFinalReferenceValue: "Open", dataProvider: "%s"}) {
                     id
                     referenceAsset
                     collateralToken {
@@ -56,9 +56,8 @@ def query_valid_pools(last_id: int, data_provider: str, expiry_since: Optional[i
                   }
                 }
             """ % (
-        last_id,
-        expiry_since or (int(datetime.now().timestamp() - 10) - 86400),
-        int(datetime.now().timestamp() - 10),
+        expiry_since or (int(datetime.now().timestamp() - 10) - 86400),  # 1 day ago
+        int(datetime.now().timestamp() - 30),  # 30 seconds ago
         data_provider,
     )
 
@@ -87,7 +86,7 @@ async def fetch_from_subgraph(query: str, network: str) -> Optional[list[dict[st
         s.mount("https://", adapter)
         try:
             rsp = s.post(
-                f"https://api.thegraph.com/subgraphs/name/divaprotocol/diva-{network}-new",
+                f"{BASE_SUBGRAPH_URL}{network}",
                 json={"query": query},
             )
         except requests.exceptions.ConnectTimeout:

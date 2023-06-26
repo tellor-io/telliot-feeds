@@ -42,7 +42,7 @@ def dict_to_pool(pool_dict: dict[str, Any]) -> DivaPool:
         DivaPool object.
     """
     return DivaPool(
-        pool_id=int(pool_dict["id"]),
+        pool_id=str(pool_dict["id"]),
         reference_asset=pool_dict["referenceAsset"],
         collateral_token_address=pool_dict["collateralToken"]["id"],
         collateral_token_symbol=pool_dict["collateralToken"]["symbol"],
@@ -70,24 +70,12 @@ def filter_valid_pools(pools: list[dict[str, Any]]) -> list[DivaPool]:
     ]
 
 
-def find_most_profitable_pool(pools: list[DivaPool]) -> DivaPool:
-    """
-    Find the pool with the highest profit.
-
-    Args:
-        pools: List of pools to search.
-
-    Returns:
-        Pool with the highest profit.
-    """
-    return  # type: ignore
-
-
 def get_reported_pools() -> Any:
     """
     Retrieve dictionary of reoprted pools from telliot default dir
     """
     pools_file = str(default_homedir()) + "/reported_pools.pickle"
+
     try:
         reported_pools = pickle.load(open(pools_file, "rb"))
     except OSError:
@@ -98,7 +86,7 @@ def get_reported_pools() -> Any:
 
 
 def update_reported_pools(
-    pools: dict[int, int], add: Optional[list[Any]] = None, remove: Optional[list[int]] = None
+    pools: dict[str, int], add: Optional[list[Any]] = None, remove: Optional[list[str]] = None
 ) -> None:
     """
     Remove settled pools from reported pools dict & save to pickle file in

@@ -1,5 +1,8 @@
+from hexbytes import HexBytes
+
 from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import COLLECTIONS
 from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import TOKENS
+from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
 from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AmpleforthCustomSpotPrice
 from telliot_feeds.queries.ampleforth.uspce import AmpleforthUSPCE
 from telliot_feeds.queries.catalog import Catalog
@@ -117,8 +120,12 @@ query_catalog.add_entry(
 )
 query_catalog.add_entry(
     tag="diva-protocol-example",
-    title="Diva protocol example",
-    q=DIVAProtocol(poolId=1234, divaDiamond="0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211", chainId=3),
+    title="DIVA Protocol example",
+    q=DIVAProtocol(
+        poolId=HexBytes("0x29a5e6c77d5ba659b3c6688799a02beb98b061c1ba6431c1e660cd8454cdc984"),
+        divaDiamond=DIVA_DIAMOND_ADDRESS,
+        chainId=80001,
+    ),
 )
 query_catalog.add_entry(
     tag="string-query-example", title="String query example", q=StringQuery(text="Where is the Atlantic ocean?")

@@ -10,27 +10,31 @@ import datetime
 
 import pytest
 
-from telliot_feeds.integrations.diva_protocol import DIVA_TELLOR_MIDDLEWARE_ADDRESS
 from telliot_feeds.integrations.diva_protocol.pool import fetch_from_subgraph
 from telliot_feeds.integrations.diva_protocol.pool import query_valid_pools
+
+# from telliot_feeds.integrations.diva_protocol import DIVA_TELLOR_MIDDLEWARE_ADDRESS
 
 
 # int timestamp of yesterday
 yesterday = int(datetime.datetime.now().timestamp() - 60 * 60 * 24)
-# int timestamp of today's date
-sep_20_2022 = int(datetime.datetime(2022, 9, 20).timestamp())
+# int timestamp of one month ago
+one_month_ago = int(datetime.datetime.now().timestamp() - 60 * 60 * 24 * 30)
+network = "mumbai"
+# data_provider = DIVA_TELLOR_MIDDLEWARE_ADDRESS
+# todo: report some w/ Tellor, so can use middleware address instead
+data_provider = "0x9adefeb576dcf52f5220709c1b267d89d5208d78"
 
 
 @pytest.mark.asyncio
 async def test_get_pools_from_subgraph():
     query = query_valid_pools(
-        last_id=0,
-        data_provider=DIVA_TELLOR_MIDDLEWARE_ADDRESS,
-        expiry_since=sep_20_2022,
+        data_provider=data_provider,
+        expiry_since=one_month_ago,
     )
     pools = await fetch_from_subgraph(
         query=query,
-        network="goerli",
+        network=network,
     )
 
     print(pools)
