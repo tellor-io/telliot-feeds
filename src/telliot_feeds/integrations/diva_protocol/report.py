@@ -4,7 +4,6 @@ DIVA Protocol Reporter
 import asyncio
 import time
 from typing import Any
-from typing import Dict
 from typing import Optional
 from typing import Tuple
 
@@ -148,7 +147,6 @@ class DIVAProtocolReporter(Tellor360Reporter):
             return error_status("unable to generate gas fees", log=logger.error)
         gas_fees = self.get_gas_info_core()
 
-        # gas_price = int(gas_price) if gas_price >= 1 else 1
         status = await self.set_final_ref_value(pool_id=pool_id, gas_fees=gas_fees)
         if status is not None and status.ok:
             logger.info(f"Pool {pool_id} settled.")
@@ -221,6 +219,7 @@ class DIVAProtocolReporter(Tellor360Reporter):
         local_account = self.account.local_account
         tx_signed = local_account.sign_transaction(built_tx)
         try:
+            logger.debug("Sending submitValue transaction")
             tx_hash = self.web3.eth.send_raw_transaction(tx_signed.rawTransaction)
         except Exception as e:
             note = "Send transaction failed"
