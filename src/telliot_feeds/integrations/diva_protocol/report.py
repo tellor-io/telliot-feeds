@@ -237,7 +237,6 @@ class DIVAProtocolReporter(Tellor360Reporter):
                 return tx_receipt, error_status(msg, log=logger.error)
 
             logger.info(f"View reported data: \n{tx_url}")
-            self.last_submission_timestamp = 0
             # Update reported pools
             pools = get_reported_pools()
             cur_time = int(time.time())

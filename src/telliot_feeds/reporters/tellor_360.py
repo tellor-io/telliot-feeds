@@ -320,15 +320,9 @@ class Tellor360Reporter(Stake):
             status.ok = False
             status.error = "Estimated profitability below threshold."
             logger.info(status.error)
-            # reset datafeed for a new suggestion if qtag wasn't selected in cli
-            if self.qtag_selected is False:
-                self.datafeed = None
             return status
         # reset autopay tip to check for tips again
         self.autopaytip = 0
-        # reset datafeed for a new suggestion if qtag wasn't selected in cli
-        if self.qtag_selected is False:
-            self.datafeed = None
 
         return status
 
@@ -502,6 +496,9 @@ class Tellor360Reporter(Stake):
 
         logger.debug("Sending submitValue transaction")
         tx_receipt, status = self.sign_n_send_transaction(build_tx)
+        # reset datafeed for a new suggestion if qtag wasn't selected in cli
+        if self.qtag_selected is False:
+            self.datafeed = None
 
         return tx_receipt, status
 
