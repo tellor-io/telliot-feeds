@@ -26,7 +26,7 @@ def diva() -> None:
     "pool_id",
     help="pool ID for Diva Protocol",
     nargs=1,
-    type=int,
+    type=str,
     required=True,
 )
 @click.option(
@@ -54,7 +54,7 @@ def diva() -> None:
 async def settle(
     ctx: Context,
     account_str: str,
-    pool_id: int,
+    pool_id: str,
     password: str,
     legacy_gas_price: int = 100,
 ) -> None:
