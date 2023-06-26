@@ -63,6 +63,8 @@ SPOT_PRICE_PAIRS = [
     "GRT/USD",
     "CNY/USD",
     "BRL/USD",
+    "OUSD/USD",
+    "OETH/ETH",
 ]
 
 
