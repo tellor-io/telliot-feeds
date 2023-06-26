@@ -1,81 +1,62 @@
 from datetime import datetime
 
 import pytest
-from brownie import accounts
-from brownie import DIVAProtocolMock
 from telliot_core.apps.core import TelliotCore
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.integrations.diva_protocol.feed import assemble_diva_datafeed
+from telliot_feeds.integrations.diva_protocol.pool import DivaPool
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
-from telliot_feeds.sources.price.historical.poloniex import (
-    PoloniexHistoricalPriceSource,
+from telliot_feeds.sources.price.historical.kraken import (
+    KrakenHistoricalPriceSource,
 )
 
 
-@pytest.fixture
-def diva_mock_contract():
-    return accounts[0].deploy(DIVAProtocolMock)
-
-
-# @pytest.mark.skip
-# def test_get_variable_source() -> None:
-#     source = get_variable_source("btc", 1243)
-
-#     assert source.sources[1].asset == "xbt"
-#     assert source.sources[3].ts == 1243
-
-
-# @pytest.mark.skip
-# @pytest.mark.asyncio
-# async def test_get_pool_parameters(ropsten_test_cfg, diva_mock_contract) -> None:
-#     async with TelliotCore(config=ropsten_test_cfg) as core:
-#         account = core.get_account()
-#         params = await get_pool_params(3, core.endpoint, account, diva_mock_contract.address)
-
-#         assert isinstance(params, DivaPoolParameters)
-#         assert params.reference_asset == "ETH/USD"
-#         assert params.expiry_date == 1657349074
-
-
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_diva_datafeed(ropsten_test_cfg, diva_mock_contract) -> None:
-    async with TelliotCore(config=ropsten_test_cfg) as core:
-        account = core.get_account()
-        feed = await assemble_diva_datafeed(
-            pool_id=3,
-            node=core.endpoint,
-            account=account,
-            diva_address=diva_mock_contract.address,
+async def test_diva_datafeed(mumbai_test_cfg) -> None:
+    async with TelliotCore(config=mumbai_test_cfg):
+        pool = DivaPool(
+            pool_id="0x0ccf69d6832bcb70d201cd5d4014799d4e5b9944d7644522bfabecfe147ec2a0",
+            reference_asset="ETH/USD",
+            collateral_token_address="0x6b175474e89094c44da98b954eedeac495271d0f",
+            collateral_token_symbol="dUSD",
+            collateral_balance=100000,
+            expiry_time=1620000000,
         )
+        feed = assemble_diva_datafeed(pool=pool)
 
         assert isinstance(feed, DataFeed)
         assert isinstance(feed.query, DIVAProtocol)
-        assert isinstance(feed.source.sources[3], PoloniexHistoricalPriceSource)
-        assert isinstance(feed.source.sources[0].ts, int)
-        assert feed.source.asset == "eth"
-        assert feed.source.sources[2].currency == "dai"
+        assert isinstance(feed.source.reference_asset_source.sources[1], KrakenHistoricalPriceSource)
+        assert isinstance(feed.source.reference_asset_source.sources[0].ts, int)
+        assert feed.source.reference_asset_source.asset == "eth"
+        assert feed.source.reference_asset_source.sources[1].currency == "usd"
 
         v, t = await feed.source.fetch_new_datapoint()
-        assert v is None or isinstance(v, float)
+        assert v is None or isinstance(v, list)
         if v is not None:
-            assert v > 1000
+            assert v[0] > 1000
+            assert v[1] == 1
             assert isinstance(t, datetime)
 
-        feed = await assemble_diva_datafeed(
-            pool_id=10,
-            node=core.endpoint,
-            account=account,
-            diva_address=diva_mock_contract.address,
+        pool2 = DivaPool(
+            pool_id="0x17b06c50236906dd13e350f03ba7c937d810412feb2186f1dbafe6bdb9f88194",
+            reference_asset="BTC/USD",
+            collateral_token_address="0x6b175474e89094c44da98b954eedeac495271d0f",
+            collateral_token_symbol="dUSD",
+            collateral_balance=100000,
+            expiry_time=1620000000,
         )
+        feed = assemble_diva_datafeed(pool=pool2)
 
-        assert feed.source.asset == "btc"
-        assert feed.source.sources[1].asset == "xbt"
+        assert isinstance(feed, DataFeed)
+        assert feed.source.reference_asset_source.asset == "btc"
+        assert feed.source.reference_asset_source.sources[1].asset == "xbt"
 
         v, t = await feed.source.fetch_new_datapoint()
 
-        assert v is None or isinstance(v, float)
+        assert v is None or isinstance(v, list)
         if v is not None:
-            assert v > 30000
+            assert v[0] > 20000
+            assert v[1] == 1
             assert isinstance(t, datetime)

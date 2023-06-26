@@ -63,7 +63,7 @@ contract DIVATellorOracleMock {
         return currentChainId;
     }
 
-    function setFinalReferenceValue(uint256 _poolId, address _divaDiamond) public {
+    function setFinalReferenceValue(bytes32 _poolId, address _divaDiamond) public {
         // bytes32 queryId = keccak256(abi.encode(_poolId, _divaDiamond, currentChainId)); // goerli chain id is 5
         // uint256 reportTime = tellorOracle.getTimestampbyQueryIdandIndex(queryId, 0); // get timestamp of first value
         // uint256 poolExpiry = divaDiamond.getPoolParameters(_poolId).expiryTime;

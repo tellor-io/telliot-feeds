@@ -45,10 +45,9 @@ def assemble_diva_datafeed(
     source.reference_asset_source = get_historical_price_source(
         asset=ref_asset, currency=ref_currency, timestamp=pool.expiry_time
     )
-    collat_token_source = get_historical_price_source(
+    source.collat_token_source = get_historical_price_source(
         asset=pool.collateral_token_symbol.lower(), currency="usd", timestamp=pool.expiry_time
     )
-    source.collat_token_source = collat_token_source
 
     feed = DataFeed(
         query=DIVAProtocol(pool.pool_id, divaDiamond=diva_diamond, chainId=chain_id),

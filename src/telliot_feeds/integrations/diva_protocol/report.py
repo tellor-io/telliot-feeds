@@ -8,6 +8,7 @@ from typing import Dict
 from typing import Optional
 from typing import Tuple
 
+from hexbytes import HexBytes
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
@@ -27,7 +28,6 @@ from telliot_feeds.integrations.diva_protocol.utils import update_reported_pools
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
-from telliot_feeds.utils.reporter_utils import has_native_token_funds
 
 
 logger = get_logger(__name__)
@@ -42,9 +42,8 @@ class DIVAProtocolReporter(Tellor360Reporter):
         self,
         middleware_address: str = DIVA_TELLOR_MIDDLEWARE_ADDRESS,
         diva_diamond_address: str = DIVA_DIAMOND_ADDRESS,
-        network_name: str = "goerli",
-        extra_undisputed_time: int = 0,
-        wait_before_settle: int = 0,
+        extra_undisputed_time: int = 30,
+        wait_before_settle: int = 30,
         *args,
         **kwargs,
     ) -> None:
@@ -52,7 +51,6 @@ class DIVAProtocolReporter(Tellor360Reporter):
         self.extra_undisputed_time = extra_undisputed_time
         self.wait_before_settle = wait_before_settle
         self.settle_period: Optional[int] = None
-        self.network_name = network_name
         self.diva_diamond_address = diva_diamond_address
         self.middleware_contract = DivaOracleTellorContract(
             node=self.endpoint,
@@ -74,18 +72,16 @@ class DIVAProtocolReporter(Tellor360Reporter):
                 continue
 
             query = DIVAProtocol(
-                poolId=pool.pool_id, divaDiamond=self.diva_diamond_address, chainId=self.endpoint.chain_id
+                poolId=HexBytes(pool.pool_id), divaDiamond=self.diva_diamond_address, chainId=self.endpoint.chain_id
             )
-            report_count, read_status = await self.oracle.read(
-                func_name="getNewValueCountbyQueryId", _queryId=query.query_id
-            )
+            report_count, read_status = await self.get_num_reports_by_id(query.query_id)
 
             if not read_status.ok:
                 logger.error(f"Unable to read from tellor oracle: {read_status.error}")
                 continue
 
             if report_count > 0:
-                logger.info(f"Pool {pool.pool_id} already reported. Checked against Tellor oracle.")
+                logger.debug(f"Pool {pool.pool_id} already reported. Checked against Tellor oracle.")
                 continue
 
             unreported_pools.append(pool)
@@ -106,12 +102,12 @@ class DIVAProtocolReporter(Tellor360Reporter):
         """Fetch datafeed"""
         # fetch pools from DIVA subgraph
         query = query_valid_pools(
-            last_id=0,
             data_provider=self.middleware_contract.address,
+            # todo: set expiry_since ?
         )
         pools = await self.fetch_unfiltered_pools(
             query=query,
-            network=self.network_name,
+            network=self.endpoint.network,
         )
         if pools is None or len(pools) == 0:
             logger.info("No pools found from subgraph query")
@@ -142,10 +138,10 @@ class DIVAProtocolReporter(Tellor360Reporter):
         self.datafeed = datafeed
         return datafeed
 
-    async def set_final_ref_value(self, pool_id: int, gas_fees: Dict[str, Any]) -> ResponseStatus:
+    async def set_final_ref_value(self, pool_id: str, gas_fees: Dict[str, Any]) -> ResponseStatus:
         return await self.middleware_contract.set_final_reference_value(pool_id=pool_id, **gas_fees)
 
-    async def settle_pool(self, pool_id: int) -> ResponseStatus:
+    async def settle_pool(self, pool_id: str) -> ResponseStatus:
         """Settle pool"""
         status = self.update_gas_fees()
         if not status.ok:
@@ -191,7 +187,8 @@ class DIVAProtocolReporter(Tellor360Reporter):
             if (time_submitted + self.settle_period + self.extra_undisputed_time) < cur_time:
                 logger.info(
                     f"Settling pool {pool_id} reported at {time_submitted} given "
-                    f"current time {cur_time} and settle period {self.settle_period} plus {self.extra_undisputed_time}"
+                    f"current time {cur_time} and settle period {self.settle_period} "
+                    f"plus {self.extra_undisputed_time} seconds"
                 )
                 status = await self.settle_pool(pool_id)
                 if not status.ok:
@@ -245,7 +242,7 @@ class DIVAProtocolReporter(Tellor360Reporter):
             pools = get_reported_pools()
             cur_time = int(time.time())
             if self.datafeed is not None:
-                update_reported_pools(pools=pools, add=[[self.datafeed.query.poolId, [cur_time, "not settled"]]])
+                update_reported_pools(pools=pools, add=[[self.datafeed.query.poolId.hex(), [cur_time, "not settled"]]])
                 logger.info(f"View reported data at timestamp {cur_time}: \n{tx_url}")
             return tx_receipt, ResponseStatus()
         except Exception as e:
@@ -259,8 +256,10 @@ class DIVAProtocolReporter(Tellor360Reporter):
             if not online:
                 logger.warning("Unable to connect to the internet!")
             else:
-                if has_native_token_funds(self.acct_addr, self.endpoint._web3):
+                if self.has_native_token():
                     _, _ = await self.report_once()
+                    if self.wait_before_settle > 0:
+                        logger.info(f"Sleeping for {self.wait_before_settle} seconds before settling pools")
                     await asyncio.sleep(self.wait_before_settle)
                     _ = await self.settle_pools()
 

@@ -16,7 +16,8 @@ from telliot_feeds.feeds.comp_usd_feed import comp_usd_median_feed
 from telliot_feeds.feeds.crv_usd_feed import crv_usd_median_feed
 from telliot_feeds.feeds.dai_usd_feed import dai_usd_median_feed
 from telliot_feeds.feeds.daily_volatility_manual_feed import daily_volatility_manual_feed
-from telliot_feeds.feeds.diva_manual_feed import diva_manual_feed
+from telliot_feeds.feeds.diva_feed import diva_example_feed
+from telliot_feeds.feeds.diva_feed import diva_manual_feed
 from telliot_feeds.feeds.doge_usd_feed import doge_usd_median_feed
 from telliot_feeds.feeds.dot_usd_feed import dot_usd_median_feed
 from telliot_feeds.feeds.eth_btc_feed import eth_btc_median_feed
@@ -96,7 +97,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "eur-usd-spot": eur_usd_median_feed,
     "snapshot-proposal-example": snapshot_feed_example,
     "numeric-api-response-example": numeric_api_response_feed,
-    "diva-protocol-example": diva_manual_feed,
+    "diva-protocol-example": diva_example_feed,
     "string-query-example": string_query_feed,
     "tellor-rng-example": tellor_rng_feed,
     "twap-eth-usd-example": twap_30d_example_manual_feed,
