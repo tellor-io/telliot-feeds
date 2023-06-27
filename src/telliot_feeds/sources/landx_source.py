@@ -2,15 +2,15 @@ import asyncio
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
-import requests
 
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.utils.log import get_logger
-from requests.adapters import HTTPAdapter
-from urllib3.util import Retry
 
 logger = get_logger(__name__)
 
@@ -31,6 +31,7 @@ class LandXSource(DataSource[Any]):
     https://api-testnet.landx.fi/api/public/commodities.
     only assets supported are ["rice", "wheat", "soybean", "corn"]
     """
+
     asset: Optional[str] = None
 
     def fetch_commodities_prices(self) -> Optional[Any]:

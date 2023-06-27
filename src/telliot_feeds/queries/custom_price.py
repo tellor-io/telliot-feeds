@@ -33,7 +33,7 @@ class CustomPrice(AbiQuery):
         {"name": "identifier", "type": "string"},
         {"name": "asset", "type": "string"},
         {"name": "currency", "type": "string"},
-        {"name": "unit", "type": "string"}
+        {"name": "unit", "type": "string"},
     ]
 
     @property
