@@ -76,6 +76,11 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
+from telliot_feeds.feeds.landx_feed import corn
+from telliot_feeds.feeds.landx_feed import wheat
+from telliot_feeds.feeds.landx_feed import rice
+from telliot_feeds.feeds.landx_feed import soy
+
 
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
@@ -141,6 +146,11 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "grt-usd-spot": grt_usd_median_feed,
     "cny-usd-spot": cny_usd_median_feed,
     "brl-usd-spot": brl_usd_median_feed,
+    "corn-usd-custom": corn,
+    "rice-usd-custom": rice,
+    "wheat-usd-custom": wheat,
+    "soy-usd-custom": soy,
+
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

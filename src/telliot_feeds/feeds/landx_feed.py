@@ -3,19 +3,19 @@ from telliot_feeds.queries.custom_price import CustomPrice
 from telliot_feeds.sources.landx_source import LandXSource
 
 corn = DataFeed(
-    query=CustomPrice(identifier="CustomPrice", asset="corn", currency="usd", unit="kilograms"),
+    query=CustomPrice(identifier="CustomPrice", asset="corn", currency="usd", unit="per_kilogram"),
     source=LandXSource(asset="corn"),
 )
 wheat = DataFeed(
-    query=CustomPrice(identifier="CustomPrice", asset="wheat", currency="usd", unit="kilograms"),
+    query=CustomPrice(identifier="CustomPrice", asset="wheat", currency="usd", unit="per_kilogram"),
     source=LandXSource(asset="wheat"),
 )
 rice = DataFeed(
-    query=CustomPrice(identifier="CustomPrice", asset="rice", currency="usd", unit="kilograms"),
+    query=CustomPrice(identifier="CustomPrice", asset="rice", currency="usd", unit="per_kilogram"),
     source=LandXSource(asset="rice"),
 )
 soy = DataFeed(
-    query=CustomPrice(identifier="CustomPrice", asset="soy", currency="usd", unit="kilograms"),
+    query=CustomPrice(identifier="CustomPrice", asset="soy", currency="usd", unit="per_kilogram"),
     source=LandXSource(asset="soy"),
 )
 
