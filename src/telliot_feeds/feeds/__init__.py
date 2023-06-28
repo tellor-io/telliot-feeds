@@ -34,6 +34,10 @@ from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed_exam
 from telliot_feeds.feeds.gno_usd_feed import gno_usd_median_feed
 from telliot_feeds.feeds.grt_usd_feed import grt_usd_median_feed
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
+from telliot_feeds.feeds.landx_feed import corn
+from telliot_feeds.feeds.landx_feed import rice
+from telliot_feeds.feeds.landx_feed import soy
+from telliot_feeds.feeds.landx_feed import wheat
 from telliot_feeds.feeds.link_usd_feed import link_usd_median_feed
 from telliot_feeds.feeds.ltc_usd_feed import ltc_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
@@ -76,11 +80,6 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
-from telliot_feeds.feeds.landx_feed import corn
-from telliot_feeds.feeds.landx_feed import wheat
-from telliot_feeds.feeds.landx_feed import rice
-from telliot_feeds.feeds.landx_feed import soy
-
 
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
@@ -150,7 +149,6 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "rice-usd-custom": rice,
     "wheat-usd-custom": wheat,
     "soy-usd-custom": soy,
-
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
