@@ -397,23 +397,23 @@ query_catalog.add_entry(
 query_catalog.add_entry(
     tag="corn-usd-custom",
     title="Corn price in usd per kilogram",
-    q=CustomPrice(identifier="CustomPrice", asset="corn", currency="usd", unit="kilograms"),
+    q=CustomPrice(identifier="landx", asset="corn", currency="usd", unit="per_kilogram"),
 )
 
 query_catalog.add_entry(
     tag="rice-usd-custom",
     title="Rice price in usd per kilogram",
-    q=CustomPrice(identifier="CustomPrice", asset="rice", currency="usd", unit="kilograms"),
+    q=CustomPrice(identifier="landx", asset="rice", currency="usd", unit="per_kilogram"),
 )
 
 query_catalog.add_entry(
     tag="wheat-usd-custom",
     title="Wheat price in usd per kilogram",
-    q=CustomPrice(identifier="CustomPrice", asset="wheat", currency="usd", unit="kilograms"),
+    q=CustomPrice(identifier="landx", asset="wheat", currency="usd", unit="per_kilogram"),
 )
 
 query_catalog.add_entry(
     tag="soy-usd-custom",
     title="Soy price in usd per kilogram",
-    q=CustomPrice(identifier="CustomPrice", asset="soy", currency="usd", unit="kilograms"),
+    q=CustomPrice(identifier="landx", asset="soy", currency="usd", unit="per_kilogram"),
 )
