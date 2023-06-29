@@ -14,6 +14,7 @@ from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feeds.feeds.cny_usd_feed import cny_usd_median_feed
 from telliot_feeds.feeds.comp_usd_feed import comp_usd_median_feed
 from telliot_feeds.feeds.crv_usd_feed import crv_usd_median_feed
+from telliot_feeds.feeds.custom_price_manual_feed import custom_price_manual_feed
 from telliot_feeds.feeds.dai_usd_feed import dai_usd_median_feed
 from telliot_feeds.feeds.daily_volatility_manual_feed import daily_volatility_manual_feed
 from telliot_feeds.feeds.diva_feed import diva_example_feed
@@ -34,6 +35,10 @@ from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed_exam
 from telliot_feeds.feeds.gno_usd_feed import gno_usd_median_feed
 from telliot_feeds.feeds.grt_usd_feed import grt_usd_median_feed
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
+from telliot_feeds.feeds.landx_feed import corn
+from telliot_feeds.feeds.landx_feed import rice
+from telliot_feeds.feeds.landx_feed import soy
+from telliot_feeds.feeds.landx_feed import wheat
 from telliot_feeds.feeds.link_usd_feed import link_usd_median_feed
 from telliot_feeds.feeds.ltc_usd_feed import ltc_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
@@ -143,6 +148,10 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "grt-usd-spot": grt_usd_median_feed,
     "cny-usd-spot": cny_usd_median_feed,
     "brl-usd-spot": brl_usd_median_feed,
+    "corn-usd-custom": corn,
+    "rice-usd-custom": rice,
+    "wheat-usd-custom": wheat,
+    "soy-usd-custom": soy,
     "ousd-usd-spot": ousd_usd_median_feed,
     "oeth-eth-spot": oeth_eth_median_feed,
 }
@@ -165,4 +174,5 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "MimicryNFTMarketIndex": mimicry_nft_market_index_feed,
     "MimicryMacroMarketMashup": mimicry_mashup_feed,
     "EVMCall": evm_call_feed,
+    "CustomPrice": custom_price_manual_feed,
 }
