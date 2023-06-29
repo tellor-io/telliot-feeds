@@ -14,6 +14,7 @@ from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feeds.feeds.cny_usd_feed import cny_usd_median_feed
 from telliot_feeds.feeds.comp_usd_feed import comp_usd_median_feed
 from telliot_feeds.feeds.crv_usd_feed import crv_usd_median_feed
+from telliot_feeds.feeds.custom_price_manual_feed import custom_price_manual_feed
 from telliot_feeds.feeds.dai_usd_feed import dai_usd_median_feed
 from telliot_feeds.feeds.daily_volatility_manual_feed import daily_volatility_manual_feed
 from telliot_feeds.feeds.diva_feed import diva_example_feed
@@ -169,4 +170,5 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "MimicryNFTMarketIndex": mimicry_nft_market_index_feed,
     "MimicryMacroMarketMashup": mimicry_mashup_feed,
     "EVMCall": evm_call_feed,
+    "CustomPrice": custom_price_manual_feed,
 }
