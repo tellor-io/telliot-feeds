@@ -54,6 +54,8 @@ coingecko_coin_id = {
     "op": "optimism",
     "grt": "the-graph",
     "pls": "pulsechain",
+    "oeth": "origin-ether",
+    "ousd": "origin-dollar",
 }
 
 

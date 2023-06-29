@@ -392,3 +392,15 @@ query_catalog.add_entry(
     title="BRL/USD spot price",
     q=SpotPrice(asset="brl", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="ousd-usd-spot",
+    title="OUSD/USD spot price",
+    q=SpotPrice(asset="ousd", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="oeth-eth-spot",
+    title="OETH/ETH spot price",
+    q=SpotPrice(asset="oeth", currency="eth"),
+)
