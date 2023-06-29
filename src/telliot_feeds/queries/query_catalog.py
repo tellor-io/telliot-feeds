@@ -417,3 +417,15 @@ query_catalog.add_entry(
     title="Soy price in usd per kilogram",
     q=CustomPrice(identifier="landx", asset="soy", currency="usd", unit="per_kilogram"),
 )
+
+  query_catalog.add_entry(
+    tag="ousd-usd-spot",
+    title="OUSD/USD spot price",
+    q=SpotPrice(asset="ousd", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="oeth-eth-spot",
+    title="OETH/ETH spot price",
+    q=SpotPrice(asset="oeth", currency="eth"),
+)
