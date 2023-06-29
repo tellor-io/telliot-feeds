@@ -418,7 +418,7 @@ query_catalog.add_entry(
     q=CustomPrice(identifier="landx", asset="soy", currency="usd", unit="per_kilogram"),
 )
 
-  query_catalog.add_entry(
+query_catalog.add_entry(
     tag="ousd-usd-spot",
     title="OUSD/USD spot price",
     q=SpotPrice(asset="ousd", currency="usd"),
