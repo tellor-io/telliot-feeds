@@ -2,9 +2,11 @@ import functools
 import os
 from typing import Any
 from typing import Callable
+from typing import cast
 from typing import get_args
 from typing import get_type_hints
 from typing import Optional
+from typing import Type
 from typing import Union
 
 import click
@@ -13,6 +15,7 @@ from chained_accounts import find_accounts
 from dotenv import load_dotenv
 from eth_typing import ChecksumAddress
 from eth_utils import to_checksum_address
+from hexbytes import HexBytes
 from simple_term_menu import TerminalMenu
 from telliot_core.apps.core import TelliotCore
 from telliot_core.cli.utils import cli_core
@@ -92,7 +95,7 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     core = cli_core(ctx)
 
     # Ensure chain id compatible with flashbots relay
-    if ctx.obj["SIGNATURE_ACCOUNT_NAME"] is not None:
+    if ctx.obj.get("SIGNATURE_ACCOUNT_NAME", None) is not None:
         # Only supports mainnet
         assert core.config.main.chain_id in (1, 5)
 
@@ -400,3 +403,12 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         return f(*args, **kwargs)
 
     return wrapper
+
+
+class CustomHexBytes(HexBytes):
+    """Wrapper around HexBytes that doesn't accept int or bool"""
+
+    def __new__(cls: Type[bytes], val: Union[bytearray, bytes, str]) -> "CustomHexBytes":
+        if isinstance(val, (int, bool)):
+            raise ValueError("Invalid value")
+        return cast(CustomHexBytes, super().__new__(cls, val))
