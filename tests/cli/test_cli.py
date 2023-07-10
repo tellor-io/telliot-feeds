@@ -178,7 +178,7 @@ def test_report_options_available():
 def test_cmd_settle():
     """Test CLI settle DIVA pool command"""
     runner = CliRunner()
-    result = runner.invoke(cli_main, ["--test-config", "settle", "--pool-id", "a;lsdkfj;ak"])
+    result = runner.invoke(cli_main, ["--test-config", "settle", "--pool-id", 1])
 
     expected = "Invalid value"
 
