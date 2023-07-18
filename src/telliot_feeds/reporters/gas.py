@@ -203,7 +203,6 @@ class GasFees:
             )
             if fee_history is None:
                 return None, error_status("unable to fetch fee history from node")
-            # "base fee for the next block after the newest of the returned range"
             return fee_history, ResponseStatus()
         except Exception as e:
             return None, error_status("Error fetching fee history", e=e, log=logger.error)
@@ -213,10 +212,8 @@ class GasFees:
         if self.max_fee_per_gas is not None:
             return self.max_fee_per_gas
         # if a block is 100% full, the base fee per gas is set to increase by 12.5% for the next block
-        percentage = 12.5
-        # adding 12.5% to base_fee arg to ensure inclusion to at least the next block
-        # if not included in current block
-        return Wei(int(base_fee * (1 + (percentage / 100))))
+        # adding 12.5% to base_fee arg to ensure inclusion to at least the next block if not included in current block
+        return Wei(int(base_fee * 1.125))
 
     def get_max_priority_fee(self, fee_history: Optional[FeeHistory] = None) -> Tuple[Optional[Wei], ResponseStatus]:
         """Return the max priority fee for a type 2 (EIP1559) transaction
@@ -314,7 +311,6 @@ class GasFees:
                 priority_fee = self.priority_fee_per_gas
                 max_fee = self.max_fee_per_gas
             else:
-                # this should never happen?
                 return None, error_status("Error calculating EIP1559 gas price no args provided", logger.error)
 
         return {

@@ -520,14 +520,10 @@ async def test_reporting_without_internet(tellor_flex_reporter, caplog):
         return False
 
     with patch("asyncio.sleep", side_effect=InterruptedError):
-
         r = tellor_flex_reporter
-
         r.is_online = lambda: offline()
-
         with pytest.raises(InterruptedError):
             await r.report()
-
         assert "Unable to connect to the internet!" in caplog.text
 
 

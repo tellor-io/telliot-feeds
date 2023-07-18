@@ -12,9 +12,7 @@ logger = get_logger(__name__)
 @dataclass
 class StakeInfo:
     """Check if a datafeed is in dispute
-    by tracking staker balance flucutations
-    and also tracking current oracle stake amount
-    keep a deque going for both
+    by tracking staker balance flucutations.
     """
 
     max_data: int = 2

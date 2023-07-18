@@ -2,6 +2,7 @@ import functools
 import os
 from typing import Any
 from typing import Callable
+from typing import Dict
 from typing import get_args
 from typing import get_type_hints
 from typing import Optional
@@ -24,6 +25,10 @@ from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
 from telliot_feeds.queries.abi_query import AbiQuery
 from telliot_feeds.queries.query_catalog import query_catalog
+from telliot_feeds.reporters.gas import GasFees
+from telliot_feeds.utils.cfg import check_endpoint
+from telliot_feeds.utils.cfg import setup_config
+from telliot_feeds.utils.reporter_utils import has_native_token_funds
 
 load_dotenv()
 
@@ -426,3 +431,47 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         return f(*args, **kwargs)
 
     return wrapper
+
+
+async def call_oracle(
+    *,
+    ctx: click.Context,
+    func: str,
+    user_inputs: Dict[str, Any],
+    **params: Any,
+) -> None:
+    # Initialize telliot core app using CLI context
+    async with reporter_cli_core(ctx) as core:
+
+        core._config, account = setup_config(core.config, account_name=ctx.obj.get("ACCOUNT_NAME"))
+
+        endpoint = check_endpoint(core._config)
+
+        if not endpoint or not account:
+            click.echo("Accounts and/or endpoint unset.")
+            click.echo(f"Account: {account}")
+            click.echo(f"Endpoint: {core._config.get_endpoint()}")
+            return
+
+        # Make sure current account is unlocked
+        if not account.is_unlocked:
+            account.unlock(user_inputs.pop("password"))
+
+        contracts = core.get_tellor360_contracts()
+        # set private key for oracle interaction calls
+        contracts.oracle._private_key = account.local_account.key
+        min_native_token_balance = user_inputs.pop("min_native_token_balance")
+        if has_native_token_funds(
+            to_checksum_address(account.address),
+            core.endpoint.web3,
+            min_balance=int(min_native_token_balance * 10**18),
+        ):
+            gas = GasFees(endpoint=core.endpoint, account=account, **user_inputs)
+            gas.update_gas_fees()
+            gas_info = gas.get_gas_info_core()
+
+            try:
+                _ = await contracts.oracle.write(func, **params, **gas_info)
+            except ValueError as e:
+                if "no gas strategy selected" in str(e):
+                    click.echo("Can't set gas fees automatically. Please specify gas fees manually.")

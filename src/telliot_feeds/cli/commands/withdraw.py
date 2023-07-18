@@ -10,22 +10,18 @@ from telliot_feeds.cli.utils import get_accounts_from_name
 
 
 @click.group()
-def request_withdraw_stake() -> None:
-    """Request to withdraw tokens from the Tellor oracle which locks them for 7 days."""
+def withdraw_stake() -> None:
+    """Withdraw staked tokens from the oracle after 7 days."""
     pass
 
 
-@request_withdraw_stake.command()
+@withdraw_stake.command()
 @common_options
-@click.option(
-    "--amount", "-amt", "amount", help="Amount of tokens to request withdraw", nargs=1, type=float, required=True
-)
 @click.pass_context
 @async_run
-async def request_withdraw(
+async def withdraw(
     ctx: Context,
     account_str: str,
-    amount: float,
     tx_type: int,
     gas_limit: int,
     base_fee_per_gas: Optional[float],
@@ -37,7 +33,7 @@ async def request_withdraw(
     gas_multiplier: int,
     max_priority_fee_range: int,
 ) -> None:
-    """Request withdraw of tokens from oracle"""
+    """Withdraw of tokens from oracle"""
     ctx.obj["ACCOUNT_NAME"] = account_str
 
     accounts = get_accounts_from_name(account_str)
@@ -58,4 +54,4 @@ async def request_withdraw(
         "gas_multiplier": gas_multiplier,
         "max_priority_fee_range": max_priority_fee_range,
     }
-    await call_oracle(ctx=ctx, func="requestStakingWithdraw", user_inputs=user_inputs, _amount=int(amount * 1e18))
+    await call_oracle(ctx=ctx, func="withdrawStake", user_inputs=user_inputs)

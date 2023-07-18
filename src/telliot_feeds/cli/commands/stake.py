@@ -67,9 +67,9 @@ async def stake(
 
         contracts = core.get_tellor360_contracts()
         # set private key for token approval txn via token contract
-        contracts.token._private_key = account.local_account.privateKey
+        contracts.token._private_key = account.local_account.key
         # set private key for oracle stake deposit txn
-        contracts.oracle._private_key = account.local_account.privateKey
+        contracts.oracle._private_key = account.local_account.key
 
         if has_native_token_funds(
             to_checksum_address(account.address),

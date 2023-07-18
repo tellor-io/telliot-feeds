@@ -136,6 +136,7 @@ class DIVAProtocolReporter(Tellor360Reporter):
             error_status(note=msg, log=logger.warning)
             return None
         self.datafeed = datafeed
+        logger.info(f"Current query: {datafeed.query}")
         return datafeed
 
     async def set_final_ref_value(self, pool_id: str, gas_fees: Dict[str, Any]) -> ResponseStatus:

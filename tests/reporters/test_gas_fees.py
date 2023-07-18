@@ -86,8 +86,7 @@ async def test_get_eip1559_gas_price(gas_fees_object):
     assert not status.ok
     assert eip1559_gas_price is None
     assert "Error fetching fee history" in status.error
-    # assert status.error == (
-    # 'unable to calculate EIP1559 gas price: "Error fetching fee history: ValueError(\'Mock Error\')')
+    assert "unable to fetch history to set base fee" in status.error
     # when 2 out 3 fee args are user provided fee history from node isn't used
     # instead maxFeePerGas is calculated from user provided values
     type(gas.web3.eth).fee_history = Mock(return_value=mock_fee_history)
