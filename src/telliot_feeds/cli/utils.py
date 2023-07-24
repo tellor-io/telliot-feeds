@@ -2,8 +2,8 @@ import functools
 import os
 from typing import Any
 from typing import Callable
-from typing import Dict
 from typing import cast
+from typing import Dict
 from typing import get_args
 from typing import get_type_hints
 from typing import Optional
@@ -478,6 +478,8 @@ async def call_oracle(
             except ValueError as e:
                 if "no gas strategy selected" in str(e):
                     click.echo("Can't set gas fees automatically. Please specify gas fees manually.")
+
+
 class CustomHexBytes(HexBytes):
     """Wrapper around HexBytes that doesn't accept int or bool"""
 

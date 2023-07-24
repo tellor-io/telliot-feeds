@@ -1,11 +1,10 @@
 from unittest import mock
 
 import pytest
+from hexbytes import HexBytes
 
 from telliot_feeds.cli.utils import build_query
 from telliot_feeds.cli.utils import call_oracle
-from hexbytes import HexBytes
-
 from telliot_feeds.cli.utils import CustomHexBytes
 from telliot_feeds.queries.abi_query import AbiQuery
 from telliot_feeds.queries.price.spot_price import SpotPrice
@@ -83,6 +82,8 @@ async def test_call_oracle(tellor_360, caplog, chain):
                 user_inputs=user_inputs,
             )
             assert "withdrawStake transaction succeeded" in caplog.text
+
+
 def test_custom_hexbytes_wrapper():
     """Test custom hexbytes wrapper."""
     # test when 0x is present and not present
