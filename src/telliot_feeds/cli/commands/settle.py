@@ -4,6 +4,7 @@ import click
 from click.core import Context
 from telliot_core.cli.utils import async_run
 
+from telliot_feeds.cli.utils import CustomHexBytes
 from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.cli.utils import valid_diva_chain
@@ -26,7 +27,7 @@ def diva() -> None:
     "pool_id",
     help="pool ID for Diva Protocol",
     nargs=1,
-    type=str,
+    type=CustomHexBytes,
     required=True,
 )
 @click.option(
@@ -54,16 +55,16 @@ def diva() -> None:
 async def settle(
     ctx: Context,
     account_str: str,
-    pool_id: str,
+    pool_id: CustomHexBytes,
     password: str,
-    legacy_gas_price: int = 100,
+    legacy_gas_price: int,
 ) -> None:
     """Settle a derivative pool in DIVA Protocol."""
     ctx.obj["ACCOUNT_NAME"] = account_str
     accounts = get_accounts_from_name(account_str)
     if not accounts:
         return
-
+    ctx.obj["CHAIN_ID"] = accounts[0].chains[0]
     try:
         if not password:
             password = getpass.getpass(f"Enter password for {account_str} keyfile: ")
@@ -85,8 +86,8 @@ async def settle(
         oracle = DivaOracleTellorContract(core.endpoint, account)
         oracle.connect()
 
-        status = await oracle.set_final_reference_value(pool_id=pool_id, legacy_gas_price=legacy_gas_price)
+        status = await oracle.set_final_reference_value(pool_id=pool_id.hex(), legacy_gas_price=legacy_gas_price)
         if status is not None and status.ok:
-            click.echo(f"Pool {pool_id} settled.")
+            click.echo(f"Pool {pool_id.hex()} settled.")
         else:
-            click.echo(f"Unable to settle Pool {pool_id}.")
+            click.echo(f"Unable to settle Pool {pool_id.hex()}.")
