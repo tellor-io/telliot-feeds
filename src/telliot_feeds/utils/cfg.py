@@ -15,7 +15,9 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-def setup_config(cfg: TelliotConfig, account_name: str) -> Tuple[TelliotConfig, Optional[ChainedAccount]]:
+def setup_config(
+    cfg: TelliotConfig, account_name: str, unsafe: bool = False
+) -> Tuple[TelliotConfig, Optional[ChainedAccount]]:
     """Setup TelliotConfig via CLI if not already configured
 
     Inputs:
@@ -50,13 +52,19 @@ def setup_config(cfg: TelliotConfig, account_name: str) -> Tuple[TelliotConfig, 
     else:
         click.echo("No accounts set.")
 
-    keep_settings = click.confirm("Proceed with current settings (y) or update (n)?", default=True)
+    if unsafe:
+        keep_settings = True
+    else:
+        keep_settings = click.confirm("Proceed with current settings (y) or update (n)?", default=True)
 
     if keep_settings:
         click.echo("Keeping current settings...")
         return cfg, accounts[0] if accounts else None
 
-    want_to_update_chain_id = click.confirm(f"Chain_id is {cfg.main.chain_id}. Do you want to update it?")
+    if unsafe:
+        want_to_update_chain_id = False
+    else:
+        want_to_update_chain_id = click.confirm(f"Chain_id is {cfg.main.chain_id}. Do you want to update it?")
 
     if want_to_update_chain_id:  # noqa: F821
         new_chain_id = click.prompt("Enter a new chain id", type=int)

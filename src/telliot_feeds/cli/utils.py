@@ -306,6 +306,14 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         type=str,
     )
     @click.option(
+        "--unsafe/--safe",
+        "-u/-sf",
+        "unsafe",
+        help="Disables config confirmation prompts",
+        required=False,
+        default=True,
+    )
+    @click.option(
         "--query-tag",
         "-qt",
         "query_tag",
