@@ -69,6 +69,7 @@ from telliot_feeds.feeds.steth_btc_feed import steth_btc_median_feed
 from telliot_feeds.feeds.steth_usd_feed import steth_usd_median_feed
 from telliot_feeds.feeds.string_query_feed import string_query_feed
 from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
+from telliot_feeds.feeds.sweth_usd_feed import sweth_usd_median_feed
 from telliot_feeds.feeds.tellor_rng_feed import tellor_rng_feed
 from telliot_feeds.feeds.tellor_rng_manual_feed import tellor_rng_manual_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
@@ -79,6 +80,7 @@ from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.feeds.vesq import vsq_usd_median_feed
+from telliot_feeds.feeds.wld_usd_feed import wld_usd_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
@@ -154,6 +156,8 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "soy-usd-custom": soy,
     "ousd-usd-spot": ousd_usd_median_feed,
     "oeth-eth-spot": oeth_eth_median_feed,
+    "wld-usd-spot": wld_usd_median_feed,
+    "sweth-usd-spot": sweth_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
