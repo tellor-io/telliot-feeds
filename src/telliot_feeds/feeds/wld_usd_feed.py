@@ -9,8 +9,6 @@ wld_usd_median_feed = DataFeed(
         asset="wld",
         currency="usd",
         algorithm="median",
-        sources=[
-            CoinGeckoSpotPriceSource(asset="wld", currency="usd")
-        ],
+        sources=[CoinGeckoSpotPriceSource(asset="wld", currency="usd")],
     ),
 )
