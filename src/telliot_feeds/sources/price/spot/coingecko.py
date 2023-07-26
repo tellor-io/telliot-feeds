@@ -56,6 +56,8 @@ coingecko_coin_id = {
     "pls": "pulsechain",
     "oeth": "origin-ether",
     "ousd": "origin-dollar",
+    "sweth": "sweth",
+    "wld": "worldcoin",
 }
 
 

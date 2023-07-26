@@ -158,16 +158,6 @@ def mumbai_test_cfg():
 
 
 @pytest.fixture(scope="function", autouse=True)
-def rinkeby_test_cfg():
-    return local_node_cfg(chain_id=4)
-
-
-@pytest.fixture(scope="function", autouse=True)
-def ropsten_test_cfg():
-    return local_node_cfg(chain_id=3)
-
-
-@pytest.fixture(scope="function", autouse=True)
 def goerli_test_cfg():
     return local_node_cfg(chain_id=5)
 
