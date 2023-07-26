@@ -22,6 +22,7 @@ uniswapV3_map = {
     "reth": "0xae78736cd615f374d3085123a210448e74fc6393",
     "pls": "0xa882606494d86804b5514e07e6bd2d6a6ee6d68a",
     "ousd": "0x2a8e1e676ec238d8a992307b495b45b3feaa5e86",
+    "sweth": "0xf951e335afb289353dc249e82926178eac7ded78",
 }
 
 

@@ -429,3 +429,15 @@ query_catalog.add_entry(
     title="OETH/ETH spot price",
     q=SpotPrice(asset="oeth", currency="eth"),
 )
+
+query_catalog.add_entry(
+    tag="wld-usd-spot",
+    title="WLD/USD spot price",
+    q=SpotPrice(asset="wld", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="sweth-usd-spot",
+    title="SWETH/USD spot price",
+    q=SpotPrice(asset="sweth", currency="usd"),
+)
