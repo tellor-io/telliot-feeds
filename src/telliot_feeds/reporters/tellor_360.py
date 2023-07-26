@@ -96,16 +96,6 @@ class Tellor360Reporter(Stake):
         staker_details = StakerInfo(*response)
         return staker_details, status
 
-    async def get_current_token_balance(self) -> Tuple[Optional[int], ResponseStatus]:
-        """Reads the current balance of the account"""
-        wallet_balance: int
-        wallet_balance, status = await self.token.read("balanceOf", account=self.acct_addr)
-        if not status.ok:
-            msg = f"Unable to read account balance: {status.error}"
-            return None, error_status(msg, status.e, log=logger.error)
-        logger.info(f"Current wallet TRB balance: {self.to_ether(wallet_balance)!r}")
-        return wallet_balance, status
-
     async def ensure_staked(self) -> Tuple[bool, ResponseStatus]:
         """Compares stakeAmount and stakerInfo every loop to monitor changes to the stakeAmount or stakerInfo
         and deposits stake if needed for continuous reporting
@@ -161,19 +151,6 @@ class Tellor360Reporter(Stake):
             # chosen stake via cli flag vs current account stake balance
             to_stake_amount_2 = self.stake - staker_details.stake_balance
             amount_to_stake = max(int(to_stake_amount_1), int(to_stake_amount_2))
-
-            # check TRB wallet balance!
-            wallet_balance, wallet_balance_status = await self.get_current_token_balance()
-            if not wallet_balance or not wallet_balance_status.ok:
-                return False, wallet_balance_status
-
-            if amount_to_stake > wallet_balance:
-                msg = (
-                    f"Amount to stake: {self.to_ether(amount_to_stake):.04f} "
-                    f"is greater than your balance: {self.to_ether(wallet_balance):.04f} so "
-                    "not enough TRB to cover the stake"
-                )
-                return False, error_status(msg, log=logger.warning)
 
             _, deposit_status = await self.deposit_stake(amount_to_stake)
             if not deposit_status.ok:

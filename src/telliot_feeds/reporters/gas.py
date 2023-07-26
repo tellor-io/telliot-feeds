@@ -321,6 +321,7 @@ class GasFees:
     def update_gas_fees(self) -> ResponseStatus:
         """Update class gas_info with the latest gas fees whenever called"""
         self._reset_gas_info()
+        self.set_gas_info({"gas": self.gas_limit})
         if self.transaction_type == 0:
             legacy_gas_fees, status = self.get_legacy_gas_price()
             if legacy_gas_fees is None:
