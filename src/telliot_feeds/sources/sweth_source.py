@@ -44,6 +44,9 @@ class swETHSpotPriceService(WebPriceService):
 
         sweth_eth_ratio_decoded = w3.toInt(sweth_eth_ratio_bytes)
         sweth_eth_ratio = w3.fromWei(sweth_eth_ratio_decoded, "ether")
+        # Maverick AMM uses square root of ratio
+        if self.contract == "0x9980ce3b5570e41324904f46A06cE7B466925E23":
+            sweth_eth_ratio = sweth_eth_ratio**2
         logger.debug(f"sweth_eth_ratio: {sweth_eth_ratio}")
         return float(sweth_eth_ratio)
 
