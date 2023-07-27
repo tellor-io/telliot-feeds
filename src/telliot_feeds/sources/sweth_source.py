@@ -22,6 +22,8 @@ class swETHSpotPriceService(WebPriceService):
         kwargs["url"] = ""
         super().__init__(**kwargs)
         self.cfg = TelliotConfig()
+        self.contract: Optional[str] = None
+        self.calldata: Optional[str] = None
 
     def get_sweth_eth_ratio(self) -> Optional[float]:
         # get endpoint
@@ -33,14 +35,13 @@ class swETHSpotPriceService(WebPriceService):
         if not ep.connect():
             logger.error("Unable to connect endpoint for mainnet to get sweth_eth_ratio")
             return None
-        w3 = ep.web3
+        w3 = ep._web3
+        if w3 is None:
+            logger.error("Unable to get web3 for mainnet to get sweth_eth_ratio")
+            return None
         # get ratio
-        sweth_eth_ratio_bytes = w3.eth.call(
-            {
-                "to": "0xf951E335afb289353dc249e82926178EaC7DEd78",
-                "data": "0xd68b2cb6",
-            }
-        )
+        sweth_eth_ratio_bytes = w3.eth.call({"to": self.contract, "data": self.calldata})
+
         sweth_eth_ratio_decoded = w3.toInt(sweth_eth_ratio_bytes)
         sweth_eth_ratio = w3.fromWei(sweth_eth_ratio_decoded, "ether")
         logger.debug(f"sweth_eth_ratio: {sweth_eth_ratio}")
@@ -76,3 +77,18 @@ class swETHSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
     service: swETHSpotPriceService = field(default_factory=swETHSpotPriceService, init=False)
+
+    def __post_init__(self) -> None:
+        self.service.contract = "0xf951E335afb289353dc249e82926178EaC7DEd78"
+        self.service.calldata = "0xd68b2cb6"
+
+
+@dataclass
+class swETHMaverickSpotPriceSource(PriceSource):
+    asset: str = ""
+    currency: str = ""
+    service: swETHSpotPriceService = field(default_factory=swETHSpotPriceService)
+
+    def __post_init__(self) -> None:
+        self.service.contract = "0x9980ce3b5570e41324904f46A06cE7B466925E23"
+        self.service.calldata = "0x91c0914e000000000000000000000000817e8c9a99db98082ca187e4f80498586bf6bc1b"
