@@ -3,9 +3,8 @@ from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
-from telliot_feeds.sources.sweth_source import swETHSpotPriceSource
-
 from telliot_feeds.sources.sweth_source import swETHMaverickSpotPriceSource
+from telliot_feeds.sources.sweth_source import swETHSpotPriceSource
 
 
 sweth_usd_median_feed = DataFeed(
