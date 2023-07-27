@@ -179,6 +179,7 @@ async def report(
     gas_multiplier: int,
     max_priority_fee_range: int,
     ignore_tbr: bool,
+    unsafe: bool,
 ) -> None:
     """Report values to Tellor oracle"""
     ctx.obj["ACCOUNT_NAME"] = account_str
@@ -192,7 +193,7 @@ async def report(
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
-        core._config, account = setup_config(core.config, account_name=account_str)
+        core._config, account = setup_config(core.config, account_name=account_str, unsafe=unsafe)
 
         endpoint = check_endpoint(core._config)
 
@@ -255,7 +256,8 @@ async def report(
             min_native_token_balance=min_native_token_balance,
         )
 
-        _ = input("Press [ENTER] to confirm settings.")
+        if not unsafe:
+            _ = input("Press [ENTER] to confirm settings.")
 
         contracts = core.get_tellor360_contracts()
 

@@ -354,6 +354,14 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         nargs=1,
         type=str,
     )
+    @click.option(
+        "--unsafe/--safe",
+        "-u/-sf",
+        "unsafe",
+        help="Disables config confirmation prompts",
+        required=False,
+        default=True,
+    )
     @click.option("--gas-limit", "-gl", "gas_limit", help="use custom gas limit", nargs=1, type=int)
     @click.option(
         "--max-fee",
