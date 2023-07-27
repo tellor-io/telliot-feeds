@@ -77,6 +77,7 @@ class swETHSpotPriceService(WebPriceService):
 
 @dataclass
 class swETHSpotPriceSource(PriceSource):
+    """Gets data from swETH contract"""
     asset: str = ""
     currency: str = ""
     service: swETHSpotPriceService = field(default_factory=swETHSpotPriceService, init=False)
@@ -88,6 +89,7 @@ class swETHSpotPriceSource(PriceSource):
 
 @dataclass
 class swETHMaverickSpotPriceSource(PriceSource):
+    """Gets data from Maverick AMM"""
     asset: str = ""
     currency: str = ""
     service: swETHSpotPriceService = field(default_factory=swETHSpotPriceService)
