@@ -25,6 +25,7 @@ def get_default_endpoint(chain_id: int = 1) -> URI:
     uri = {
         1: URI(os.environ.get("FLASHBOTS_HTTP_PROVIDER_URI", "https://relay.flashbots.net")),
         5: URI(os.environ.get("FLASHBOTS_HTTP_PROVIDER_URI_GOERLI", "https://relay-goerli.flashbots.net")),
+        11155111: URI(os.environ.get("FLASHBOTS_HTTP_PROVIDER_URI_SEPOLIA", "https://relay-sepolia.flashbots.net")),
     }
     return uri[chain_id]
 

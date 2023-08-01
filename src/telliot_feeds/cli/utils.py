@@ -103,7 +103,7 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     # Ensure chain id compatible with flashbots relay
     if ctx.obj.get("SIGNATURE_ACCOUNT_NAME", None) is not None:
         # Only supports mainnet
-        assert core.config.main.chain_id in (1, 5)
+        assert core.config.main.chain_id in (1, 5, 11155111)
 
     if ctx.obj["TEST_CONFIG"]:
         try:
