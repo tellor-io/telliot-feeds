@@ -7,6 +7,7 @@ from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.pricing.price_service import WebPriceService
 from telliot_feeds.pricing.price_source import PriceSource
 from telliot_feeds.utils.log import get_logger
@@ -67,7 +68,6 @@ class swETHSpotPriceService(WebPriceService):
         if sweth_eth_ratio is None:
             logger.error("Unable to get sweth_eth_ratio")
             return None, None
-        from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 
         source = eth_usd_median_feed.source
 
