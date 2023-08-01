@@ -13,6 +13,9 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
+MAVERICK_CONTRACT = "0x9980ce3b5570e41324904f46A06cE7B466925E23"
+SWETH_CONTRACT = "0xf951E335afb289353dc249e82926178EaC7DEd78"
+
 
 class swETHSpotPriceService(WebPriceService):
     """Custom swETH Price Service"""
@@ -45,7 +48,7 @@ class swETHSpotPriceService(WebPriceService):
         sweth_eth_ratio_decoded = w3.toInt(sweth_eth_ratio_bytes)
         sweth_eth_ratio = w3.fromWei(sweth_eth_ratio_decoded, "ether")
         # Maverick AMM uses square root of ratio
-        if self.contract == "0x9980ce3b5570e41324904f46A06cE7B466925E23":
+        if self.contract == MAVERICK_CONTRACT:
             sweth_eth_ratio = sweth_eth_ratio**2
         logger.debug(f"sweth_eth_ratio: {sweth_eth_ratio}")
         return float(sweth_eth_ratio)
@@ -84,7 +87,7 @@ class swETHSpotPriceSource(PriceSource):
     service: swETHSpotPriceService = field(default_factory=swETHSpotPriceService, init=False)
 
     def __post_init__(self) -> None:
-        self.service.contract = "0xf951E335afb289353dc249e82926178EaC7DEd78"
+        self.service.contract = SWETH_CONTRACT
         self.service.calldata = "0xd68b2cb6"
 
 
@@ -97,5 +100,5 @@ class swETHMaverickSpotPriceSource(PriceSource):
     service: swETHSpotPriceService = field(default_factory=swETHSpotPriceService)
 
     def __post_init__(self) -> None:
-        self.service.contract = "0x9980ce3b5570e41324904f46A06cE7B466925E23"
+        self.service.contract = MAVERICK_CONTRACT
         self.service.calldata = "0x91c0914e000000000000000000000000817e8c9a99db98082ca187e4f80498586bf6bc1b"
