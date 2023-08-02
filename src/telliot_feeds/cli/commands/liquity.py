@@ -6,6 +6,7 @@ from telliot_core.cli.utils import async_run
 from web3 import Web3
 
 from telliot_feeds.cli.utils import common_options
+from telliot_feeds.cli.utils import common_reporter_options
 from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.feeds import CATALOG_FEEDS
@@ -26,6 +27,7 @@ def liquity_reporter() -> None:
 
 @liquity_reporter.command()
 @common_options
+@common_reporter_options
 @click.option(
     "-clf",
     "--chainlink-feed",
@@ -39,8 +41,9 @@ async def liquity(
     ctx: Context,
     tx_type: int,
     gas_limit: int,
-    max_fee: Optional[float],
-    priority_fee: Optional[float],
+    max_fee_per_gas: Optional[float],
+    priority_fee_per_gas: Optional[float],
+    base_fee_per_gas: Optional[float],
     legacy_gas_price: Optional[int],
     expected_profit: str,
     submit_once: bool,
@@ -56,6 +59,7 @@ async def liquity(
     frozen_timeout: int,
     query_tag: str,
     chainlink_feed: str,
+    unsafe: bool,
 ) -> None:
     """Report values to Tellor oracle if certain conditions are met."""
     click.echo("Starting Liquity Backup Reporter...")
@@ -82,13 +86,10 @@ async def liquity(
             raise click.UsageError("Invalid chain link feed address")
 
     ctx.obj["CHAIN_ID"] = chain_id  # used in reporter_cli_core
-    # if max_fee flag is set, then priority_fee must also be set
-    if (max_fee is not None and priority_fee is None) or (max_fee is None and priority_fee is not None):
-        raise click.UsageError("Must specify both max fee and priority fee")
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
-        core._config, account = setup_config(core.config, account_name=account_str)
+        core._config, account = setup_config(core.config, account_name=account_str, unsafe=unsafe)
 
         endpoint = check_endpoint(core._config)
 
@@ -108,8 +109,8 @@ async def liquity(
         click.echo(f"Transaction type: {tx_type}")
         click.echo(f"Gas Limit: {gas_limit}")
         click.echo(f"Legacy gas price (gwei): {legacy_gas_price}")
-        click.echo(f"Max fee (gwei): {max_fee}")
-        click.echo(f"Priority fee (gwei): {priority_fee}")
+        click.echo(f"Max fee (gwei): {max_fee_per_gas}")
+        click.echo(f"Priority fee (gwei): {priority_fee_per_gas}")
         click.echo(f"Desired stake amount: {stake}")
         click.echo(f"Minimum native token balance (e.g. ETH if on Ethereum mainnet): {min_native_token_balance}")
         click.echo("\n")
@@ -123,8 +124,9 @@ async def liquity(
             "account": account,
             "datafeed": datafeed,
             "gas_limit": gas_limit,
-            "max_fee": max_fee,
-            "priority_fee": priority_fee,
+            "max_fee_per_gas": max_fee_per_gas,
+            "priority_fee_per_gas": priority_fee_per_gas,
+            "base_fee_per_gas": base_fee_per_gas,
             "legacy_gas_price": legacy_gas_price,
             "chain_id": core.config.main.chain_id,
             "wait_period": wait_period,

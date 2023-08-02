@@ -1,5 +1,6 @@
 from typing import Any
 from typing import Optional
+from typing import Union
 
 import click
 from chained_accounts import find_accounts
@@ -10,6 +11,7 @@ from telliot_core.cli.utils import async_run
 
 from telliot_feeds.cli.utils import build_feed_from_input
 from telliot_feeds.cli.utils import common_options
+from telliot_feeds.cli.utils import common_reporter_options
 from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import print_reporter_settings
 from telliot_feeds.cli.utils import reporter_cli_core
@@ -24,7 +26,6 @@ from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
 from telliot_feeds.reporters.flashbot import FlashbotsReporter
 from telliot_feeds.reporters.rng_interval import RNGReporter
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
-from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
@@ -52,6 +53,7 @@ def reporter() -> None:
 )
 @reporter.command()
 @common_options
+@common_reporter_options
 @click.option(
     "--build-feed",
     "-b",
@@ -130,13 +132,6 @@ def reporter() -> None:
     prompt=False,
 )
 @click.option(
-    "--tellor-360/--tellor-flex",
-    "-360/-flex",
-    "tellor_360",
-    default=True,
-    help="Choose between Tellor 360 or Flex contracts",
-)
-@click.option(
     "--random-feeds/--no-random-feeds",
     "-rf/-nrf",
     "use_random_feeds",
@@ -158,8 +153,9 @@ async def report(
     build_feed: bool,
     tx_type: int,
     gas_limit: int,
-    max_fee: Optional[float],
-    priority_fee: Optional[float],
+    base_fee_per_gas: Optional[float],
+    priority_fee_per_gas: Optional[float],
+    max_fee_per_gas: Optional[float],
     legacy_gas_price: Optional[int],
     expected_profit: str,
     submit_once: bool,
@@ -175,7 +171,6 @@ async def report(
     custom_token_contract: Optional[ChecksumAddress],
     custom_oracle_contract: Optional[ChecksumAddress],
     custom_autopay_contract: Optional[ChecksumAddress],
-    tellor_360: bool,
     stake: float,
     account_str: str,
     signature_account: str,
@@ -195,9 +190,6 @@ async def report(
         return
 
     ctx.obj["CHAIN_ID"] = accounts[0].chains[0]  # used in reporter_cli_core
-    # if max_fee flag is set, then priority_fee must also be set
-    if (max_fee is not None and priority_fee is None) or (max_fee is None and priority_fee is not None):
-        raise click.UsageError("Must specify both max fee and priority fee")
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
@@ -253,8 +245,9 @@ async def report(
             query_tag=query_tag,
             transaction_type=tx_type,
             gas_limit=gas_limit,
-            max_fee=max_fee,
-            priority_fee=priority_fee,
+            max_fee=base_fee_per_gas,
+            priority_fee=priority_fee_per_gas,
+            base_fee=base_fee_per_gas,
             legacy_gas_price=legacy_gas_price,
             expected_profit=expected_profit,
             chain_id=core.config.main.chain_id,
@@ -266,7 +259,7 @@ async def report(
         if not unsafe:
             _ = input("Press [ENTER] to confirm settings.")
 
-        contracts = core.get_tellor360_contracts() if tellor_360 else core.get_tellorflex_contracts()
+        contracts = core.get_tellor360_contracts()
 
         if custom_oracle_contract:
             contracts.oracle.connect()  # set telliot_core.contract.Contract.contract attribute
@@ -309,8 +302,9 @@ async def report(
             "account": account,
             "datafeed": chosen_feed,
             "gas_limit": gas_limit,
-            "max_fee": max_fee,
-            "priority_fee": priority_fee,
+            "base_fee_per_gas": base_fee_per_gas,
+            "priority_fee_per_gas": priority_fee_per_gas,
+            "max_fee_per_gas": max_fee_per_gas,
             "legacy_gas_price": legacy_gas_price,
             "chain_id": core.config.main.chain_id,
             "wait_period": wait_period,
@@ -327,7 +321,7 @@ async def report(
             "max_priority_fee_range": max_priority_fee_range,
             "ignore_tbr": ignore_tbr,
         }
-
+        reporter: Union[FlashbotsReporter, RNGReporter, Tellor360Reporter]
         if sig_acct_addr:
             reporter = FlashbotsReporter(
                 signature_account=sig_account,
@@ -335,7 +329,7 @@ async def report(
             )
         elif rng_auto:
             common_reporter_kwargs["wait_period"] = 120 if wait_period < 120 else wait_period
-            reporter = RNGReporter(  # type: ignore
+            reporter = RNGReporter(
                 **common_reporter_kwargs,
             )
         elif reporting_diva_protocol:
@@ -348,14 +342,10 @@ async def report(
                 **common_reporter_kwargs,
                 **diva_reporter_kwargs,  # type: ignore
             )
-        elif tellor_360:
+        else:
             reporter = Tellor360Reporter(
                 **common_reporter_kwargs,
-            )  # type: ignore
-        else:
-            reporter = TellorFlexReporter(
-                **common_reporter_kwargs,
-            )  # type: ignore
+            )
 
         if submit_once:
             _, _ = await reporter.report_once()

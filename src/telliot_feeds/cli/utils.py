@@ -3,6 +3,7 @@ import os
 from typing import Any
 from typing import Callable
 from typing import cast
+from typing import Dict
 from typing import get_args
 from typing import get_type_hints
 from typing import Optional
@@ -27,6 +28,10 @@ from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
 from telliot_feeds.queries.abi_query import AbiQuery
 from telliot_feeds.queries.query_catalog import query_catalog
+from telliot_feeds.reporters.gas import GasFees
+from telliot_feeds.utils.cfg import check_endpoint
+from telliot_feeds.utils.cfg import setup_config
+from telliot_feeds.utils.reporter_utils import has_native_token_funds
 
 load_dotenv()
 
@@ -35,10 +40,11 @@ def print_reporter_settings(
     signature_address: str,
     query_tag: str,
     gas_limit: int,
+    base_fee: Optional[float],
     priority_fee: Optional[float],
+    max_fee: Optional[float],
     expected_profit: str,
     chain_id: int,
-    max_fee: Optional[float],
     transaction_type: int,
     legacy_gas_price: Optional[int],
     reporting_diva_protocol: bool,
@@ -97,7 +103,7 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     # Ensure chain id compatible with flashbots relay
     if ctx.obj.get("SIGNATURE_ACCOUNT_NAME", None) is not None:
         # Only supports mainnet
-        assert core.config.main.chain_id in (1, 5)
+        assert core.config.main.chain_id in (1, 5, 11155111)
 
     if ctx.obj["TEST_CONFIG"]:
         try:
@@ -293,6 +299,49 @@ def get_accounts_from_name(name: Optional[str]) -> list[ChainedAccount]:
     return accounts
 
 
+def common_reporter_options(f: Callable[..., Any]) -> Callable[..., Any]:
+    """Decorator for common options between reporter commands"""
+
+    @click.option(
+        "--query-tag",
+        "-qt",
+        "query_tag",
+        help="select datafeed using query tag",
+        required=False,
+        nargs=1,
+        type=click.Choice([q.tag for q in query_catalog.find()]),
+    )
+    @click.option(
+        "-wp", "--wait-period", help="wait period between feed suggestion calls", nargs=1, type=int, default=7
+    )
+    @click.option("--submit-once/--submit-continuous", default=False)
+    @click.option("--stake", "-s", "stake", help=STAKE_MESSAGE, nargs=1, type=float, default=10.0)
+    @click.option(
+        "--check-rewards/--no-check-rewards",
+        "-cr/-ncr",
+        "check_rewards",
+        default=True,
+        help=REWARDS_CHECK_MESSAGE,
+    )
+    @click.option(
+        "--profit",
+        "-p",
+        "expected_profit",
+        help="lower threshold (inclusive) for expected percent profit",
+        nargs=1,
+        # User can omit profitability checks by specifying "YOLO"
+        type=click.UNPROCESSED,
+        required=False,
+        callback=parse_profit_input,
+        default="100.0",
+    )
+    @functools.wraps(f)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        return f(*args, **kwargs)
+
+    return wrapper
+
+
 def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator for common options between commands"""
 
@@ -313,24 +362,30 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         required=False,
         default=True,
     )
-    @click.option(
-        "--query-tag",
-        "-qt",
-        "query_tag",
-        help="select datafeed using query tag",
-        required=False,
-        nargs=1,
-        type=click.Choice([q.tag for q in query_catalog.find()]),
-    )
     @click.option("--gas-limit", "-gl", "gas_limit", help="use custom gas limit", nargs=1, type=int)
     @click.option(
-        "--max-fee", "-mf", "max_fee", help="use custom maxFeePerGas (gwei)", nargs=1, type=float, required=False
+        "--max-fee",
+        "-mf",
+        "max_fee_per_gas",
+        help="use custom maxFeePerGas (gwei)",
+        nargs=1,
+        type=float,
+        required=False,
     )
     @click.option(
         "--priority-fee",
         "-pf",
-        "priority_fee",
+        "priority_fee_per_gas",
         help="use custom maxPriorityFeePerGas (gwei)",
+        nargs=1,
+        type=float,
+        required=False,
+    )
+    @click.option(
+        "--base-fee",
+        "-bf",
+        "base_fee_per_gas",
+        help="use custom baseFeePerGas (gwei)",
         nargs=1,
         type=float,
         required=False,
@@ -344,22 +399,6 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         type=int,
         required=False,
     )
-    @click.option(
-        "-wp", "--wait-period", help="wait period between feed suggestion calls", nargs=1, type=int, default=7
-    )
-    @click.option(
-        "--profit",
-        "-p",
-        "expected_profit",
-        help="lower threshold (inclusive) for expected percent profit",
-        nargs=1,
-        # User can omit profitability checks by specifying "YOLO"
-        type=click.UNPROCESSED,
-        required=False,
-        callback=parse_profit_input,
-        default="100.0",
-    )
-    @click.option("--submit-once/--submit-continuous", default=False)
     @click.option("-pwd", "--password", type=str)
     @click.option(
         "--tx-type",
@@ -371,7 +410,6 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         callback=valid_transaction_type,
         default=2,
     )
-    @click.option("--stake", "-s", "stake", help=STAKE_MESSAGE, nargs=1, type=float, default=10.0)
     @click.option(
         "--min-native-token-balance",
         "-mnb",
@@ -382,17 +420,10 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         default=0.25,
     )
     @click.option(
-        "--check-rewards/--no-check-rewards",
-        "-cr/-ncr",
-        "check_rewards",
-        default=True,
-        help=REWARDS_CHECK_MESSAGE,
-    )
-    @click.option(
         "--gas-multiplier",
         "-gm",
         "gas_multiplier",
-        help="increase gas price by this percentage (default 1%) ie 5 = 5%",
+        help="increase gas price for legacy transaction by this percentage (default 1%) ie 5 = 5%",
         nargs=1,
         type=int,
         default=1,  # 1% above the gas price by web3
@@ -401,16 +432,60 @@ def common_options(f: Callable[..., Any]) -> Callable[..., Any]:
         "--max-priority-fee-range",
         "-mpfr",
         "max_priority_fee_range",
-        help="the maximum range of priority fees to use in gwei (default 80 gwei)",
+        help="the maximum range of priority fees to use in gwei (default 3 gwei)",
         nargs=1,
         type=int,
-        default=80,  # 80 gwei
+        default=3,  # 3 gwei
     )
     @functools.wraps(f)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         return f(*args, **kwargs)
 
     return wrapper
+
+
+async def call_oracle(
+    *,
+    ctx: click.Context,
+    func: str,
+    user_inputs: Dict[str, Any],
+    **params: Any,
+) -> None:
+    # Initialize telliot core app using CLI context
+    async with reporter_cli_core(ctx) as core:
+
+        core._config, account = setup_config(core.config, account_name=ctx.obj.get("ACCOUNT_NAME"))
+
+        endpoint = check_endpoint(core._config)
+
+        if not endpoint or not account:
+            click.echo("Accounts and/or endpoint unset.")
+            click.echo(f"Account: {account}")
+            click.echo(f"Endpoint: {core._config.get_endpoint()}")
+            return
+
+        # Make sure current account is unlocked
+        if not account.is_unlocked:
+            account.unlock(user_inputs.pop("password"))
+
+        contracts = core.get_tellor360_contracts()
+        # set private key for oracle interaction calls
+        contracts.oracle._private_key = account.local_account.key
+        min_native_token_balance = user_inputs.pop("min_native_token_balance")
+        if has_native_token_funds(
+            to_checksum_address(account.address),
+            core.endpoint.web3,
+            min_balance=int(min_native_token_balance * 10**18),
+        ):
+            gas = GasFees(endpoint=core.endpoint, account=account, **user_inputs)
+            gas.update_gas_fees()
+            gas_info = gas.get_gas_info_core()
+
+            try:
+                _ = await contracts.oracle.write(func, **params, **gas_info)
+            except ValueError as e:
+                if "no gas strategy selected" in str(e):
+                    click.echo("Can't set gas fees automatically. Please specify gas fees manually.")
 
 
 class CustomHexBytes(HexBytes):

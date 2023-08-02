@@ -4,6 +4,7 @@ DIVA Protocol Reporter
 import asyncio
 import time
 from typing import Any
+from typing import Dict
 from typing import Optional
 from typing import Tuple
 
@@ -11,8 +12,7 @@ from hexbytes import HexBytes
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
-from web3 import Web3
-from web3.datastructures import AttributeDict
+from web3.types import TxReceipt
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
@@ -136,23 +136,20 @@ class DIVAProtocolReporter(Tellor360Reporter):
             error_status(note=msg, log=logger.warning)
             return None
         self.datafeed = datafeed
+        logger.info(f"Current query: {datafeed.query}")
         return datafeed
 
-    async def set_final_ref_value(self, pool_id: str, gas_price: int) -> ResponseStatus:
-        return await self.middleware_contract.set_final_reference_value(pool_id=pool_id, legacy_gas_price=gas_price)
+    async def set_final_ref_value(self, pool_id: str, gas_fees: Dict[str, Any]) -> ResponseStatus:
+        return await self.middleware_contract.set_final_reference_value(pool_id=pool_id, **gas_fees)
 
     async def settle_pool(self, pool_id: str) -> ResponseStatus:
         """Settle pool"""
-        if not self.legacy_gas_price:
-            gas_price = await self.fetch_gas_price()
-            if not gas_price:
-                msg = "Unable to fetch gas price for tx type 0"
-                return error_status(note=msg, log=logger.warning)
-        else:
-            gas_price = self.legacy_gas_price
+        status = self.update_gas_fees()
+        if not status.ok:
+            return error_status("unable to generate gas fees", log=logger.error)
+        gas_fees = self.get_gas_info_core()
 
-        gas_price = int(gas_price) if gas_price >= 1 else 1
-        status = await self.set_final_ref_value(pool_id=pool_id, gas_price=gas_price)
+        status = await self.set_final_ref_value(pool_id=pool_id, gas_fees=gas_fees)
         if status is not None and status.ok:
             logger.info(f"Pool {pool_id} settled.")
             return status
@@ -212,139 +209,45 @@ class DIVAProtocolReporter(Tellor360Reporter):
         update_reported_pools(pools=reported_pools)
         return ResponseStatus()
 
-    async def report_once(
-        self,
-    ) -> Tuple[Optional[AttributeDict[Any, Any]], ResponseStatus]:
-        """Report query response to a TellorFlex oracle."""
-        staked, status = await self.ensure_staked()
-        if not staked or not status.ok:
-            logger.warning(status.error)
-            return None, status
+    def sign_n_send_transaction(self, built_tx: Any) -> Tuple[Optional[TxReceipt], ResponseStatus]:
+        """Send a signed transaction to the blockchain and wait for confirmation
 
-        status = await self.check_reporter_lock()
-        if not status.ok:
-            return None, status
+        Params:
+            tx_signed: The signed transaction object
 
-        datafeed = await self.fetch_datafeed()
-        if not datafeed:
-            msg = "Unable to fetch DIVA Protocol datafeed."
-            return None, error_status(note=msg, log=logger.info)
-
-        logger.info(f"Current query: {datafeed.query}")
-
-        status = ResponseStatus()
-
-        # Update datafeed value
-        latest_data = await datafeed.source.fetch_new_datapoint()
-        if latest_data[0] is None:
-            msg = "Unable to retrieve updated datafeed value."
-            return None, error_status(msg, log=logger.info)
-
-        # Get query info & encode value to bytes
-        query = datafeed.query
-        query_id = query.query_id
-        query_data = query.query_data
-        try:
-            value = query.value_type.encode(latest_data[0])
-        except Exception as e:
-            msg = f"Error encoding response value {latest_data[0]}"
-            return None, error_status(msg, e=e, log=logger.error)
-
-        # Get nonce
-        report_count, read_status = await self.get_num_reports_by_id(query_id)
-
-        if not read_status.ok:
-            status.error = "Unable to retrieve report count: " + read_status.error  # error won't be none # noqa: E501
-            logger.error(status.error)
-            status.e = read_status.e
-            return None, status
-
-        # Start transaction build
-        submit_val_func = self.oracle.contract.get_function_by_name("submitValue")
-        submit_val_tx = submit_val_func(
-            _queryId=query_id,
-            _value=value,
-            _nonce=report_count,
-            _queryData=query_data,
-        )
-        # Estimate gas usage amount
-        gas_limit, status = self.submit_val_tx_gas_limit(submit_val_tx=submit_val_tx)
-        if not status.ok or gas_limit is None:
-            return None, status
-
-        acc_nonce, nonce_status = self.get_acct_nonce()
-        if not nonce_status.ok:
-            return None, nonce_status
-
-        # Add transaction type 2 (EIP-1559) data
-        if self.transaction_type == 2:
-            priority_fee, max_fee = self.get_fee_info()
-            if priority_fee is None or max_fee is None:
-                return None, error_status("Unable to suggest type 2 txn fees", log=logger.error)
-
-            built_submit_val_tx = submit_val_tx.buildTransaction(
-                {
-                    "nonce": acc_nonce,
-                    "gas": gas_limit,
-                    "maxFeePerGas": Web3.toWei(max_fee, "gwei"),
-                    "maxPriorityFeePerGas": Web3.toWei(priority_fee, "gwei"),
-                    "chainId": self.chain_id,
-                }
-            )
-        # Add transaction type 0 (legacy) data
-        else:
-            # Fetch legacy gas price if not provided by user
-            if not self.legacy_gas_price:
-                gas_price = await self.fetch_gas_price()
-                if gas_price is None:
-                    note = "Unable to fetch gas price for tx type 0"
-                    return None, error_status(note, log=logger.warning)
-            else:
-                gas_price = self.legacy_gas_price
-
-            built_submit_val_tx = submit_val_tx.buildTransaction(
-                {
-                    "nonce": acc_nonce,
-                    "gas": gas_limit,
-                    "gasPrice": Web3.toWei(gas_price, "gwei"),
-                    "chainId": self.chain_id,
-                }
-            )
-
+        Returns a tuple of the transaction receipt and a ResponseStatus object
+        """
         lazy_unlock_account(self.account)
         local_account = self.account.local_account
-        tx_signed = local_account.sign_transaction(built_submit_val_tx)
-
+        tx_signed = local_account.sign_transaction(built_tx)
         try:
             logger.debug("Sending submitValue transaction")
-            tx_hash = self.endpoint._web3.eth.send_raw_transaction(tx_signed.rawTransaction)
+            tx_hash = self.web3.eth.send_raw_transaction(tx_signed.rawTransaction)
         except Exception as e:
             note = "Send transaction failed"
             return None, error_status(note, log=logger.error, e=e)
 
-        # Confirm submitValue transaction
         try:
-            tx_receipt = self.endpoint._web3.eth.wait_for_transaction_receipt(tx_hash, timeout=360)
+            # Confirm transaction
+            tx_receipt = self.web3.eth.wait_for_transaction_receipt(tx_hash, timeout=360)
+
             tx_url = f"{self.endpoint.explorer}/tx/{tx_hash.hex()}"
 
             if tx_receipt["status"] == 0:
-                msg = f"Transaction reverted: {tx_url}"
+                msg = f"Transaction reverted. ({tx_url})"
                 return tx_receipt, error_status(msg, log=logger.error)
-        except Exception as e:
-            note = "Failed to confirm transaction"
-            return None, error_status(note, log=logger.error, e=e)
 
-        if status.ok and not status.error:
-            self.last_submission_timestamp = 0
+            logger.info(f"View reported data: \n{tx_url}")
             # Update reported pools
             pools = get_reported_pools()
             cur_time = int(time.time())
-            update_reported_pools(pools=pools, add=[[datafeed.query.poolId.hex(), [cur_time, "not settled"]]])
-            logger.info(f"View reported data at timestamp {cur_time}: \n{tx_url}")
-        else:
-            logger.error(status)
-
-        return tx_receipt, status
+            if self.datafeed is not None:
+                update_reported_pools(pools=pools, add=[[self.datafeed.query.poolId.hex(), [cur_time, "not settled"]]])
+                logger.info(f"View reported data at timestamp {cur_time}: \n{tx_url}")
+            return tx_receipt, ResponseStatus()
+        except Exception as e:
+            note = "Failed to confirm transaction"
+            return None, error_status(note, log=logger.error, e=e)
 
     async def report(self, report_count: Optional[int] = None) -> None:
         """Report values for pool reference assets & settle pools."""

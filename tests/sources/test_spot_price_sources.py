@@ -24,6 +24,7 @@ from telliot_feeds.sources.price.spot.pancakeswap import (
     PancakeswapPriceService,
 )
 from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceService
+from telliot_feeds.sources.sweth_source import SWETH_CONTRACT
 from telliot_feeds.sources.sweth_source import swETHSpotPriceService
 
 
@@ -312,6 +313,8 @@ async def test_curvefi():
 @pytest.mark.asyncio
 async def test_sweth_source():
     """Test swETH price service"""
+    service["sweth"].contract = SWETH_CONTRACT
+    service["sweth"].calldata = "0xd68b2cb6"
     v, t = await get_price("sweth", "usd", service["sweth"])
     validate_price(v, t)
     assert v is not None

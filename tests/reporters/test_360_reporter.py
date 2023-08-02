@@ -8,14 +8,22 @@ from unittest.mock import patch
 import pytest
 from brownie import accounts
 from brownie import chain
+from telliot_core.utils.response import error_status
+from telliot_core.utils.response import ResponseStatus
 
+from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.feeds import CATALOG_FEEDS
+from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
+from telliot_feeds.utils.log import get_logger
+from tests.utils.utils import passing_bool_w_status
 
+logger = get_logger(__name__)
 
 txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
 CHAIN_ID = 80001
@@ -43,9 +51,9 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, mock_flex_con
     )
 
     await r.report_once()
-    assert r.staker_info.stake_balance == int(10e18)
+    assert r.stake_info.current_staker_balance == int(10e18)
     # report count before first submission
-    assert r.staker_info.reports_count == 0
+    assert "reports count: 0" in caplog.text
 
     # update stakeamount increase causes reporter to deposit more to keep reporting
     mock_token_contract.faucet(accounts[0].address)
@@ -66,10 +74,10 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, mock_flex_con
 
     await r.report_once()
     # staker balance increased due to updateStakeAmount call
-    assert r.staker_info.stake_balance == stake_amount
+    assert r.stake_info.current_stake_amount == stake_amount
     assert "Currently in reporter lock. Time left: 11:59" in caplog.text  # 12hr
     # report count before second report
-    assert r.staker_info.reports_count == 1
+    assert "reports count: 1" in caplog.text
     # decrease stakeAmount should increase reporting frequency
     mock_token_contract.approve(mock_flex_contract.address, mock_flex_contract.stakeAmount())
     mock_flex_contract.depositStake(mock_flex_contract.stakeAmount())
@@ -86,7 +94,7 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, mock_flex_con
     assert status.ok
     assert stake_amount == int(10e18)
 
-    assert r.staker_info.stake_balance == int(20e18)
+    assert r.stake_info.current_staker_balance == int(20e18)
 
     await r.report_once()
     assert "Currently in reporter lock. Time left: 5:59" in caplog.text  # 6hr
@@ -163,9 +171,11 @@ async def test_360_reporter_rewards(tellor_360, guaranteed_price_source):
         min_native_token_balance=0,
         ignore_tbr=False,
         datafeed=feed,
+        expected_profit="YOLO",
     )
 
     assert isinstance(await r.rewards(), int)
+    await r.report_once()
 
 
 @pytest.mark.asyncio
@@ -200,14 +210,14 @@ async def test_adding_stake(tellor_360, guaranteed_price_source):
     # first should deposits default stake
     _, status = await reporter.report_once()
     assert status.ok
-    assert reporter.staker_info.stake_balance == int(10e18), "Staker balance should be 10e18"
+    assert reporter.stake_info.current_staker_balance == int(10e18), "Staker balance should be 10e18"
 
     # stake more by by changing stake from default similar to how a stake amount chosen in cli
     # high stake to bypass reporter lock
     reporter = Tellor360Reporter(**reporter_kwargs, stake=900000)
     _, status = await reporter.report_once()
     assert status.ok
-    assert reporter.staker_info.stake_balance == pytest.approx(900000e18), "Staker balance should be 90000e18"
+    assert reporter.stake_info.current_staker_balance == pytest.approx(900000e18), "Staker balance should be 90000e18"
 
 
 @pytest.mark.asyncio
@@ -274,8 +284,10 @@ async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, 
         # set datafeed to None so fetch_datafeed will call get_feed_and_tip
         reporter.datafeed = None
         await reporter.report(report_count=1)
-        reporter_lock = 43200 / math.floor(reporter.staker_info.stake_balance / reporter.stake_amount)
-        time_remaining = round(reporter.staker_info.last_report + reporter_lock - time.time())
+        reporter_lock = 43200 / math.floor(
+            reporter.stake_info.current_staker_balance / reporter.stake_info.current_stake_amount
+        )
+        time_remaining = round(reporter.stake_info.last_report_time + reporter_lock - time.time())
         if time_remaining > 0:
             hr_min_sec = str(datetime.timedelta(seconds=time_remaining))
         assert f"Currently in reporter lock. Time left: {hr_min_sec}" in caplog.text
@@ -370,3 +382,208 @@ async def test_tbr_tip_increment(tellor_360, guaranteed_price_source, caplog, ch
         # tip amount should not increase
         assert "Tips: 2.0" not in caplog.text
         assert "Tips: 3.0" not in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_fetch_datafeed(tellor_flex_reporter):
+    r = tellor_flex_reporter
+    r.use_random_feeds = True
+    feed = await r.fetch_datafeed()
+    assert isinstance(feed, DataFeed)
+
+    r.datafeed = None
+    assert r.datafeed is None
+    feed = await r.fetch_datafeed()
+    assert isinstance(feed, DataFeed)
+
+
+@pytest.mark.skip(reason="EIP-1559 not supported by ganache")
+@pytest.mark.asyncio
+def test_get_fee_info(tellor_flex_reporter):
+    """Test fee info for type 2 transactions."""
+    tellor_flex_reporter.transaction_type = 2
+    tellor_flex_reporter.update_gas_fees()
+    gas_fees = tellor_flex_reporter.get_gas_info()
+
+    assert isinstance(gas_fees["maxPriorityFeePerGas"], int)
+    assert isinstance(gas_fees["maxFeePerGas"], int)
+
+
+@pytest.mark.asyncio
+async def test_get_num_reports_by_id(tellor_flex_reporter):
+    r = tellor_flex_reporter
+    num, status = await r.get_num_reports_by_id(matic_usd_median_feed.query.query_id)
+
+    assert status.ok
+    assert isinstance(num, int)
+
+
+@pytest.mark.asyncio
+async def test_ensure_staked(tellor_flex_reporter):
+    """Test staking status of reporter."""
+    staked, status = await tellor_flex_reporter.ensure_staked()
+
+    assert staked
+    assert status.ok
+
+
+@pytest.mark.asyncio
+async def test_ensure_profitable(tellor_flex_reporter):
+    """Test profitability check."""
+    r = tellor_flex_reporter
+    r.gas_info = {"maxPriorityFeePerGas": None, "maxFeePerGas": None, "gasPrice": 1e9, "gas": 300000}
+
+    assert r.expected_profit == "YOLO"
+
+    status = await r.ensure_profitable()
+
+    assert status.ok
+
+    r.expected_profit = 1e10
+    status = await r.ensure_profitable()
+
+    assert not status.ok
+    assert status.error == "Estimated profitability below threshold."
+
+
+@pytest.mark.asyncio
+async def test_ethgasstation_error(tellor_flex_reporter):
+    with mock.patch("telliot_feeds.reporters.tellor_360.Tellor360Reporter.update_gas_fees") as func:
+        func.return_value = error_status("failed", log=logger.error)
+        r = tellor_flex_reporter
+
+        staked, status = await r.ensure_staked()
+        assert not staked
+        assert not status.ok
+
+
+@pytest.mark.asyncio
+async def test_no_updated_value(tellor_flex_reporter, bad_datasource):
+    """Test handling for no updated value returned from datasource."""
+    r = tellor_flex_reporter
+    r.datafeed = btc_usd_median_feed
+
+    # Clear latest datapoint
+    r.datafeed.source._history.clear()
+
+    # Replace PriceAggregator's sources with test source that
+    # returns no updated DataPoint
+    r.datafeed.source.sources = [bad_datasource]
+
+    tx_receipt, status = await r.report_once()
+
+    assert not tx_receipt
+    assert not status.ok
+    assert status.error == "Unable to retrieve updated datafeed value."
+
+
+@pytest.mark.asyncio
+async def test_ensure_reporter_lock_check_after_submitval_attempt(
+    tellor_flex_reporter, guaranteed_price_source, caplog
+):
+    r = tellor_flex_reporter
+
+    async def check_reporter_lock(*args, **kwargs):
+        logger.debug(f"Checking reporter lock: {time.time()}")
+        return ResponseStatus()
+
+    r.ensure_staked = passing_bool_w_status
+    r.check_reporter_lock = check_reporter_lock
+    r.datafeed = matic_usd_median_feed
+    r.gas_limit = 350000
+
+    # Simulate fetching latest value
+    r.datafeed.source.sources = [guaranteed_price_source]
+
+    def send_failure(*args, **kwargs):
+        raise Exception("bingo")
+
+    with mock.patch("web3.eth.Eth.send_raw_transaction", side_effect=send_failure):
+        r.wait_period = 0
+        await r.report(2)
+        assert "Send transaction failed: Exception('bingo')" in caplog.text
+        assert caplog.text.count("Checking reporter lock") == 2
+
+
+@pytest.mark.asyncio
+async def test_check_reporter_lock(tellor_flex_reporter):
+    status = await tellor_flex_reporter.check_reporter_lock()
+
+    assert isinstance(status, ResponseStatus)
+    if not status.ok:
+        assert ("reporter lock" in status.error) or ("Staker balance too low" in status.error)
+
+
+@pytest.mark.asyncio
+async def test_reporting_without_internet(tellor_flex_reporter, caplog):
+    async def offline():
+        return False
+
+    with patch("asyncio.sleep", side_effect=InterruptedError):
+        r = tellor_flex_reporter
+        r.is_online = lambda: offline()
+        with pytest.raises(InterruptedError):
+            await r.report()
+        assert "Unable to connect to the internet!" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_dispute(tellor_flex_reporter, caplog):
+    # Test when reporter in dispute
+    r = tellor_flex_reporter
+    r.datafeed = matic_usd_median_feed
+    # initial balance higher than current balance, current balance is 0 since first time staking
+    r.stake_info.store_staker_balance(1)
+
+    _ = await r.report_once()
+    assert "Your staked balance has decreased, account might be in dispute" in caplog.text
+
+
+@pytest.mark.asyncio
+async def test_reset_datafeed(tellor_flex_reporter):
+    # Test when reporter selects qtag vs not
+    # datafeed should persist if qtag selected
+    r = tellor_flex_reporter
+
+    reporter1 = Tellor360Reporter(
+        oracle=r.oracle,
+        token=r.token,
+        autopay=r.autopay,
+        endpoint=r.endpoint,
+        account=r.account,
+        chain_id=80001,
+        transaction_type=0,
+        datafeed=CATALOG_FEEDS["trb-usd-spot"],
+        min_native_token_balance=0,
+    )
+    reporter2 = Tellor360Reporter(
+        oracle=r.oracle,
+        token=r.token,
+        autopay=r.autopay,
+        endpoint=r.endpoint,
+        account=r.account,
+        chain_id=80001,
+        transaction_type=0,
+        min_native_token_balance=0,
+    )
+
+    # Unlocker reporter lock checker
+    async def reporter_lock():
+        return ResponseStatus()
+
+    reporter1.check_reporter_lock = lambda: reporter_lock()
+    reporter2.check_reporter_lock = lambda: reporter_lock()
+
+    async def reprt():
+        for _ in range(3):
+            await reporter1.report_once()
+            assert reporter1.qtag_selected is True
+            assert reporter1.datafeed.query.asset == "trb"
+            chain.sleep(43201)
+
+        for _ in range(3):
+            await reporter2.report_once()
+            assert reporter2.qtag_selected is False
+            chain.sleep(43201)
+
+    _ = await reprt()

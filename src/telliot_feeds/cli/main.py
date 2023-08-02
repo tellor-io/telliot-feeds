@@ -14,7 +14,10 @@ from telliot_feeds.cli.commands.integrations import integrations
 from telliot_feeds.cli.commands.liquity import liquity
 from telliot_feeds.cli.commands.query import query
 from telliot_feeds.cli.commands.report import report
+from telliot_feeds.cli.commands.request_withdraw_stake import request_withdraw
 from telliot_feeds.cli.commands.settle import settle
+from telliot_feeds.cli.commands.stake import stake
+from telliot_feeds.cli.commands.withdraw import withdraw
 from telliot_feeds.utils.log import get_logger
 
 
@@ -44,7 +47,10 @@ main.add_command(settle)
 main.add_command(integrations)
 main.add_command(config)
 main.add_command(account)
+main.add_command(stake)
 main.add_command(liquity)
+main.add_command(request_withdraw)
+main.add_command(withdraw)
 
 if __name__ == "__main__":
     main()

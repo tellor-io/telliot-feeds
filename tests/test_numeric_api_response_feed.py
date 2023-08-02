@@ -5,7 +5,7 @@ from web3.datastructures import AttributeDict
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
-from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.sources.numeric_api_response import NumericApiResponseSource
 
 url = "https://taylorswiftapi.herokuapp.com/get"
@@ -25,7 +25,7 @@ async def test_api_reporter_submit_once(
         # get PubKey and PrivKey from config files
         account = core.get_account()
 
-        flex = core.get_tellorflex_contracts()
+        flex = core.get_tellor360_contracts()
         flex.oracle.address = mock_flex_contract.address
         flex.autopay.address = mock_autopay_contract.address
         flex.token.address = mock_token_contract.address
@@ -40,7 +40,7 @@ async def test_api_reporter_submit_once(
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
 
-        r = TellorFlexReporter(
+        r = Tellor360Reporter(
             endpoint=core.endpoint,
             account=account,
             chain_id=80001,
@@ -49,7 +49,7 @@ async def test_api_reporter_submit_once(
             autopay=flex.autopay,
             transaction_type=0,
             datafeed=numeric_api_rsp_feed,
-            max_fee=100,
+            max_fee_per_gas=100,
         )
 
         ORACLE_ADDRESSES = {mock_flex_contract.address}

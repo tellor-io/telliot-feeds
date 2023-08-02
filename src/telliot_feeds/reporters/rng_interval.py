@@ -12,7 +12,6 @@ from telliot_core.utils.response import ResponseStatus
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.tellor_rng_feed import assemble_rng_datafeed
 from telliot_feeds.queries.tellor_rng import TellorRNG
-from telliot_feeds.reporters.reporter_autopay_utils import get_feed_tip
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
 
@@ -59,22 +58,8 @@ class RNGReporter(Tellor360Reporter):
             error_status(note=msg, log=logger.warning)
             return None
         self.datafeed = datafeed
-        tip = 0
-
-        single_tip, status = await self.autopay.get_current_tip(datafeed.query.query_id)
-        if not status.ok:
-            msg = "Unable to fetch single tip"
-            error_status(msg, log=logger.warning)
-            return None
-        tip += single_tip
-
-        feed_tip = await get_feed_tip(
-            datafeed.query.query_data, self.autopay
-        )  # input query data instead of query id to use tip listener
-        if feed_tip is None:
-            msg = "Unable to fetch feed tip"
-            error_status(msg, log=logger.warning)
-            return None
-        tip += feed_tip
-        logger.debug(f"Current tip for RNG query: {tip}")
+        # if check_rewards is True, autopay and TBR(if mainnet) are checked
+        if self.check_rewards:
+            tip = await self.rewards()
+            logger.info(f"Tip found for RNG feed: {tip}")
         return datafeed

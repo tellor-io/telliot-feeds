@@ -143,7 +143,7 @@ async def test_report_for_bad_calldata(tellor_360):
     await r.report_once()
     # call r.ensure_staked to update staker info
     await r.ensure_staked()
-    assert r.staker_info.reports_count == 1
+    assert r.stake_info.reports_count == 1
 
 
 def test_evm_call_on_previous_block():

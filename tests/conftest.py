@@ -12,8 +12,6 @@ from brownie import multicall as brownie_multicall
 from brownie import QueryDataStorage
 from brownie import TellorFlex
 from brownie import TellorPlayground
-from brownie import TellorXMasterMock
-from brownie import TellorXOracleMock
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from hexbytes import HexBytes
@@ -27,7 +25,7 @@ from web3 import Web3
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
-from telliot_feeds.reporters.tellor_flex import TellorFlexReporter
+from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -212,16 +210,6 @@ def query_data_storage_contract():
     return accounts[0].deploy(QueryDataStorage)
 
 
-@pytest.fixture
-def tellorx_oracle_mock_contract():
-    return accounts[0].deploy(TellorXOracleMock)
-
-
-@pytest.fixture
-def tellorx_master_mock_contract():
-    return accounts[0].deploy(TellorXMasterMock)
-
-
 @pytest.fixture(autouse=True)
 def multicall_contract():
     #  deploy multicall contract to brownie chain and add chain id to multicall module
@@ -266,7 +254,7 @@ async def tellor_flex_reporter(mumbai_test_cfg, mock_flex_contract, mock_autopay
 
         account = core.get_account()
 
-        flex = core.get_tellorflex_contracts()
+        flex = core.get_tellor360_contracts()
         flex.oracle.address = mock_flex_contract.address
         flex.autopay.address = mock_autopay_contract.address
         flex.token.address = mock_token_contract.address
@@ -274,9 +262,9 @@ async def tellor_flex_reporter(mumbai_test_cfg, mock_flex_contract, mock_autopay
         flex.oracle.connect()
         flex.token.connect()
         flex.autopay.connect()
-        flex = core.get_tellorflex_contracts()
+        flex = core.get_tellor360_contracts()
 
-        r = TellorFlexReporter(
+        r = Tellor360Reporter(
             oracle=flex.oracle,
             token=flex.token,
             autopay=flex.autopay,
