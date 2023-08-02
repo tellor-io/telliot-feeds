@@ -59,6 +59,7 @@ async def liquity(
     frozen_timeout: int,
     query_tag: str,
     chainlink_feed: str,
+    unsafe: bool,
 ) -> None:
     """Report values to Tellor oracle if certain conditions are met."""
     click.echo("Starting Liquity Backup Reporter...")
@@ -88,7 +89,7 @@ async def liquity(
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
 
-        core._config, account = setup_config(core.config, account_name=account_str)
+        core._config, account = setup_config(core.config, account_name=account_str, unsafe=unsafe)
 
         endpoint = check_endpoint(core._config)
 
