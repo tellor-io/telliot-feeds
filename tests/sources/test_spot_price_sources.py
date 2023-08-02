@@ -24,7 +24,8 @@ from telliot_feeds.sources.price.spot.pancakeswap import (
     PancakeswapPriceService,
 )
 from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceService
-from telliot_feeds.sources.sweth_source import SWETH_CONTRACT, swETHSpotPriceService
+from telliot_feeds.sources.sweth_source import SWETH_CONTRACT
+from telliot_feeds.sources.sweth_source import swETHSpotPriceService
 
 
 service = {
