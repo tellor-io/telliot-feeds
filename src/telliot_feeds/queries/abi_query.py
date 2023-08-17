@@ -23,7 +23,7 @@ when empty strings are encoded extra zeros were being added eth-abi version >= 4
 but upgrading the package will break the telliot_feeds package due dependency version conflicts"""
 version = pkg_resources.get_distribution("eth-abi").version
 pkg_version = int(version.split(".")[0])
-print(pkg_version)
+
 
 if pkg_version < 4:
 
