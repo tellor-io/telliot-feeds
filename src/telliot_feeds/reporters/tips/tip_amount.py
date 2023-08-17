@@ -12,8 +12,6 @@ from telliot_feeds.reporters.tips.multicall_functions.multicall_autopay import M
 from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
-call = MulticallAutopay()
-filtr = FundedFeedFilter()
 
 
 async def fetch_feed_tip(
@@ -25,6 +23,8 @@ async def fetch_feed_tip(
     - query_id
 
     Returns: tip amount"""
+    call = MulticallAutopay()
+    filtr = FundedFeedFilter()
     if timestamp is None:
         timestamp = TimeStamp.now().ts
     call.autopay = autopay
