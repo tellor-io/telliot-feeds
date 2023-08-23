@@ -1,16 +1,43 @@
+import codecs
 from typing import ClassVar
 from typing import Optional
 
+import pkg_resources
 from clamfig import deserialize
 from clamfig.base import Registry
 from eth_abi import decode_abi
 from eth_abi import encode_abi
+from eth_abi.encoding import TextStringEncoder
+from eth_abi.utils.numeric import ceil32
+from eth_abi.utils.padding import zpad_right
 
 from telliot_feeds.queries.query import OracleQuery
 from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
+
+
+"""This is a temporary fix for the bug in eth-abi versions < 4.0.0
+when empty strings are encoded extra zeros were being added eth-abi version >= 4.0.0 addresses this issue
+but upgrading the package will break the telliot_feeds package due dependency version conflicts"""
+version = pkg_resources.get_distribution("eth-abi").version
+pkg_version = int(version.split(".")[0])
+
+
+if pkg_version < 4:
+
+    @classmethod
+    def encode(cls, value):  # type: ignore
+        cls.validate_value(value)
+
+        value_as_bytes = codecs.encode(value, "utf8")
+        value_length = len(value_as_bytes)
+        encoded_size = encode_abi(["uint256"], [value_length])
+        padded_value = zpad_right(value_as_bytes, ceil32(value_length))
+        return encoded_size + padded_value
+
+    TextStringEncoder.encode = encode  # type: ignore
 
 
 class AbiQuery(OracleQuery):
