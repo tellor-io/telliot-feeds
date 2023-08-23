@@ -78,6 +78,20 @@ add_multicall_support(
     multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
 )
 
+add_multicall_support(
+    network="Manta Testnet",
+    network_id=3441005,
+    state_override=False,
+    multicall3_address="0x211B1643b95Fe76f11eD8880EE810ABD9A4cf56C",
+)
+
+add_multicall_support(
+    network="Base Goerli",
+    network_id=84531,
+    state_override=False,
+    multicall3_address="0x8252eA5560755e6707c97C72e008CF22Ce0ca85F",
+)
+
 CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
 CATALOG_QUERY_DATA = {query_catalog._entries[tag].query.query_data: tag for tag in query_catalog._entries}
 # A list of query types that have a generic source that can take any properly formatted inputs and return a price
