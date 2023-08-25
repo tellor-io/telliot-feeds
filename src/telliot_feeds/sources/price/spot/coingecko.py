@@ -58,6 +58,7 @@ coingecko_coin_id = {
     "ousd": "origin-dollar",
     "sweth": "sweth",
     "wld": "worldcoin",
+    "diva": "diva-protocol",
 }
 
 

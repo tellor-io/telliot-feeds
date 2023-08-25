@@ -67,6 +67,7 @@ SPOT_PRICE_PAIRS = [
     "OUSD/USD",
     "OETH/ETH",
     "WLD/USD",
+    "DIVA/USD",
 ]
 
 
