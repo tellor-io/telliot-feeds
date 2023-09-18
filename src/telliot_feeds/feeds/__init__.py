@@ -19,6 +19,7 @@ from telliot_feeds.feeds.dai_usd_feed import dai_usd_median_feed
 from telliot_feeds.feeds.daily_volatility_manual_feed import daily_volatility_manual_feed
 from telliot_feeds.feeds.diva_feed import diva_example_feed
 from telliot_feeds.feeds.diva_feed import diva_manual_feed
+from telliot_feeds.feeds.diva_usd_feed import diva_usd_median_feed
 from telliot_feeds.feeds.doge_usd_feed import doge_usd_median_feed
 from telliot_feeds.feeds.dot_usd_feed import dot_usd_median_feed
 from telliot_feeds.feeds.eth_btc_feed import eth_btc_median_feed
@@ -158,6 +159,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "oeth-eth-spot": oeth_eth_median_feed,
     "wld-usd-spot": wld_usd_median_feed,
     "sweth-usd-spot": sweth_usd_median_feed,
+    "diva-usd-spot": diva_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

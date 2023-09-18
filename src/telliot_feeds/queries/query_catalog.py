@@ -441,3 +441,9 @@ query_catalog.add_entry(
     title="SWETH/USD spot price",
     q=SpotPrice(asset="sweth", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="diva-usd-spot",
+    title="diva/USD spot price",
+    q=SpotPrice(asset="diva", currency="usd"),
+)
