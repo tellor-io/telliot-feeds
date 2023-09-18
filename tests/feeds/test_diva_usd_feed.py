@@ -15,7 +15,7 @@ async def test_diva_usd_median_feed():
     print(f"DIVA/USD Price: {v}")
 
     # Get list of data sources from sources dict
-    source_prices = [source.latest[0] for source in diva.source.sources]
+    source_prices = [source.latest[0] for source in diva_usd_median_feed]
     print(source_prices)
 
     # Make sure error is less than decimal tolerance
