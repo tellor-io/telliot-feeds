@@ -59,6 +59,7 @@ coingecko_coin_id = {
     "sweth": "sweth",
     "wld": "worldcoin",
     "diva": "diva-protocol",
+    "cbeth": "coinbase-wrapped-staked-eth",
 }
 
 
