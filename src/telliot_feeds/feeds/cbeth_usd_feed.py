@@ -14,7 +14,7 @@ cbeth_usd_median_feed = DataFeed(
         sources=[
             CoinGeckoSpotPriceSource(asset="cbeth", currency="usd"),
             UniswapV3PriceSource(asset="cbeth", currency="usd"),
-            CoinpaprikaSpotPriceSource(asset="cbeth-coinbase-wrapped-staked-eth", currency="usd")
+            CoinpaprikaSpotPriceSource(asset="cbeth-coinbase-wrapped-staked-eth", currency="usd"),
         ],
     ),
 )
