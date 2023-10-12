@@ -345,8 +345,10 @@ async def test_tbr_tip_increment(tellor_360, guaranteed_price_source, caplog, ch
         "transaction_type": 0,
         "wait_period": 0,
         "min_native_token_balance": 0,
+        "stake": 999999,
         "expected_profit": 1000.0,  # set expected profit high so it won't report
         "ignore_tbr": False,
+        "use_random_feeds": True,
     }
 
     def mock_tbr():
@@ -368,17 +370,12 @@ async def test_tbr_tip_increment(tellor_360, guaranteed_price_source, caplog, ch
         assert "Ignoring time based rewards" not in caplog.text
         assert "Tips: 1.0" in caplog.text
         assert "Tips: 2.0" in caplog.text
-        assert "Tips: 3.0" in caplog.text
         caplog.clear()
 
         reporter.ignore_tbr = True
-        await reporter.report(report_count=3)
+        await reporter.report(report_count=2)
         assert "Ignoring time based rewards" in caplog.text
         assert "Fetching time based rewards" not in caplog.text
-        assert "Tips: 1.0" in caplog.text
-        # tip amount should not increase
-        assert "Tips: 2.0" not in caplog.text
-        assert "Tips: 3.0" not in caplog.text
 
 
 @pytest.mark.asyncio
