@@ -52,7 +52,6 @@ interface IFlex {
             uint256,
             uint256,
             uint256,
-            uint256,
             uint256
         );
 
@@ -152,7 +151,6 @@ contract SampleFlexReporter {
         external
         view
         returns (
-            uint256,
             uint256,
             uint256,
             uint256,
