@@ -13,7 +13,6 @@ class StakerInfo:
     locked_balance: int
     reward_debt: int
     last_report: TimeStamp
-    reports_count: int
     gov_vote_count: int
     vote_count: int
     in_total_stakers: bool
@@ -24,7 +23,6 @@ class StakerInfo:
     locked_balance: int
     reward_debt: int
     last_report: int
-    reports_count: int
     gov_vote_count: int
     vote_count: int
     in_total_stakers: bool

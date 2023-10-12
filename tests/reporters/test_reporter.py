@@ -143,7 +143,7 @@ async def test_staking_after_a_reporter_slashing(tellor_flex_reporter, caplog):
     with patch.object(
         Tellor360Reporter,
         "get_staker_details",
-        return_value=(StakerInfo(0, 0, 0, 0, 0, 0, 0, 0, True), ResponseStatus()),
+        return_value=(StakerInfo(0, 0, 0, 0, 0, 0, 0, True), ResponseStatus()),
     ):
         trb_balance, status = await r.get_current_token_balance()
         known_stake, status = await r.ensure_staked()
@@ -165,7 +165,6 @@ async def test_stake_info(tellor_flex_reporter, guaranteed_price_source, chain):
     r.datafeed = feed
     with patch.object(Tellor360Reporter, "check_reporter_lock", return_value=ResponseStatus()):
         assert r.stake_info.last_report == 0
-        assert r.stake_info.reports_count == 0
         assert not r.stake_info.is_in_dispute()
         assert r.stake_info.last_report_time == 0
         assert r.stake_info.last_report_time == 0
@@ -182,15 +181,11 @@ async def test_stake_info(tellor_flex_reporter, guaranteed_price_source, chain):
         await r.report_once()
         # last report time should update during the second reporting loop
         assert r.stake_info.last_report_time > 0
-        # reports count should be 1 during the second reporting loop
-        assert r.stake_info.reports_count == 1
         # should be of length always since thats the max datapoints
         assert len(r.stake_info.stake_amount_history) == 2
         assert len(r.stake_info.staker_balance_history) == 2
 
         await r.report_once()
-        # reports count should be 2 during the third reporting loop
-        assert r.stake_info.reports_count == 2
         assert len(r.stake_info.stake_amount_history) == 2
         assert len(r.stake_info.staker_balance_history) == 2
         # mock a dispute by inputing a bad value to staker balance history deque

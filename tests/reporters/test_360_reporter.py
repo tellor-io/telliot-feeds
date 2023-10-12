@@ -52,8 +52,6 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, mock_flex_con
 
     await r.report_once()
     assert r.stake_info.current_staker_balance == int(10e18)
-    # report count before first submission
-    assert "reports count: 0" in caplog.text
 
     # update stakeamount increase causes reporter to deposit more to keep reporting
     mock_token_contract.faucet(accounts[0].address)
@@ -76,8 +74,7 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, mock_flex_con
     # staker balance increased due to updateStakeAmount call
     assert r.stake_info.current_stake_amount == stake_amount
     assert "Currently in reporter lock. Time left: 11:59" in caplog.text  # 12hr
-    # report count before second report
-    assert "reports count: 1" in caplog.text
+
     # decrease stakeAmount should increase reporting frequency
     mock_token_contract.approve(mock_flex_contract.address, mock_flex_contract.stakeAmount())
     mock_flex_contract.depositStake(mock_flex_contract.stakeAmount())

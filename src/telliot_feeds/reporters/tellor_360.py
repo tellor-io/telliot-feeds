@@ -120,8 +120,6 @@ class Tellor360Reporter(Stake):
         self.stake_info.store_staker_balance(staker_details.stake_balance)
         # update time of last report
         self.stake_info.update_last_report_time(staker_details.last_report)
-        # update reports count
-        self.stake_info.update_reports_count(staker_details.reports_count)
         # check if staker balance changed which means a value they submitted has been disputed
         # (logs when it does)
         self.stake_info.is_in_dispute()
@@ -134,7 +132,6 @@ class Tellor360Reporter(Stake):
             stake_balance: {self.to_ether(staker_details.stake_balance)!r}
             locked_balance: {staker_details.locked_balance}
             last report: {staker_details.last_report}
-            reports count: {staker_details.reports_count}
             """
         )
 
