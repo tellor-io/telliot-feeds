@@ -132,7 +132,9 @@ class FundedFeedFilter:
 
         return _get_price_change(previous_val=value_before_decoded, current_val=self.prices[query_id])
 
-    def filter_historical_submissions(self, feeds: list[QueryIdandFeedDetails]) -> list[QueryIdandFeedDetails]:
+    def filter_historical_submissions(
+        self, feeds: list[QueryIdandFeedDetails], month_old: int
+    ) -> list[QueryIdandFeedDetails]:
         """Check list of values for older submission would've been eligible for a tip
         if so the timestamps will be checked later to see if a tip for them has been claimed
 
@@ -148,8 +150,9 @@ class FundedFeedFilter:
             for current, previous in zip(
                 feed.queryid_timestamps_values_list[::-1], feed.queryid_timestamps_values_list[-2::-1]
             ):
-                # if current timestamp is before feed start then no need to check
-                if feed.params.startTime > current.timestamp:
+                # if current timestamp is before feed start or
+                # timestamp to check is older than a month then no need to check
+                if feed.params.startTime > current.timestamp or current.timestamp < month_old:
                     feed.queryid_timestamps_values_list.remove(current)
                     continue
                 in_eligibile_window = self.is_timestamp_first_in_window(
