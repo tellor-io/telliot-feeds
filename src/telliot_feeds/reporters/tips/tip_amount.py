@@ -59,7 +59,7 @@ async def fetch_feed_tip(
         return tip_amount
 
     # filter out query id timestamps not eligible for tip
-    feeds_with_timestamps_filtered = filtr.filter_historical_submissions(eligible_feeds, month_old)
+    feeds_with_timestamps_filtered = filtr.filter_historical_submissions(eligible_feeds)
 
     unclaimed_count, status = await call.rewards_claimed_status_call(feeds_with_timestamps_filtered)
 

@@ -78,7 +78,7 @@ class FundedFeeds(FundedFeedFilter):
         )
         # for list of previous values, filter out any that weren't eligible for a tip
         historical_timestamps_list_filtered = self.filter_historical_submissions(
-            feeds=feeds_timestsamps_and_values_filtered, month_old=month_old_timestamp
+            feeds=feeds_timestsamps_and_values_filtered
         )
 
         # get claim status count for every query ids eligible timestamp
