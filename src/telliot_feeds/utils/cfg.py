@@ -6,6 +6,7 @@ import click
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from simple_term_menu import TerminalMenu
+from telliot_core.apps.core import Tellor360OracleContract
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.model.endpoints import RPCEndpoint
 
@@ -64,7 +65,8 @@ def setup_config(
 
             """
     )
-    click.echo(f"Your current settings...\nYour chain id: {cfg.main.chain_id}\n")
+    click.echo(f"Your current settings...\nYour chain id: {cfg.main.chain_id}")
+    click.echo(f"Oracle contract address: {check_oracle_address(cfg, account_name)}\n")
 
     if endpoint is not None:
         click.echo(
@@ -148,6 +150,16 @@ def check_accounts(cfg: TelliotConfig, account_name: str) -> List[ChainedAccount
     """Check if there is a pre-set account in the config"""
 
     return find_accounts(chain_id=cfg.main.chain_id, name=account_name)  # type: ignore
+
+
+def check_oracle_address(cfg: TelliotConfig, account_name: str) -> Optional[str]:
+    """Check oracle contract for the account's chain ID"""
+
+    try:
+        return str(Tellor360OracleContract(node=check_endpoint(cfg), account=account_name).address)
+    except Exception as e:
+        logger.warning(f"No oracle contract found on chain id{cfg.main.chain_id}: " + str(e))
+        return None
 
 
 def prompt_for_endpoint(chain_id: int) -> Optional[RPCEndpoint]:
