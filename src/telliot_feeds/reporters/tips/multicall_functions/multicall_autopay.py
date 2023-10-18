@@ -57,6 +57,11 @@ class MulticallAutopay(CallFunctions):
                 return None, error_status(note)
             values = multiple_values_response[values_tup]
             timestamps = multiple_values_response[timestamps_tup]
+            # remove old timestamps
+            if timestamps:
+                timestamps = [
+                    timestamp for timestamp in timestamps if timestamp > max_age and timestamp >= feed.params.startTime
+                ]
             # short circuit the loop since None means failed response and can't calculate tip accurately
             if values is None:
                 note = "getMultipleValuesBefore call failed"

@@ -148,10 +148,6 @@ class FundedFeedFilter:
             for current, previous in zip(
                 feed.queryid_timestamps_values_list[::-1], feed.queryid_timestamps_values_list[-2::-1]
             ):
-                # if current timestamp is before feed start then no need to check
-                if feed.params.startTime > current.timestamp:
-                    feed.queryid_timestamps_values_list.remove(current)
-                    continue
                 in_eligibile_window = self.is_timestamp_first_in_window(
                     timestamp_before=previous.timestamp,
                     timestamp_to_check=current.timestamp,
