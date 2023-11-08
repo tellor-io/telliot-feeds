@@ -60,6 +60,7 @@ coingecko_coin_id = {
     "wld": "worldcoin",
     "diva": "diva-protocol",
     "cbeth": "coinbase-wrapped-staked-eth",
+    "wbeth": "wrapped-beacon-eth",
 }
 
 
