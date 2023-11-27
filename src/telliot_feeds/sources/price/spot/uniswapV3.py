@@ -24,6 +24,7 @@ uniswapV3_map = {
     "ousd": "0x2a8e1e676ec238d8a992307b495b45b3feaa5e86",
     "sweth": "0xf951e335afb289353dc249e82926178eac7ded78",
     "cbeth": "0xbe9895146f7af43049ca1c1ae358b0541ea49704",
+    "oeth": "0x52299416c469843f4e0d54688099966a6c7d720f",
 }
 
 

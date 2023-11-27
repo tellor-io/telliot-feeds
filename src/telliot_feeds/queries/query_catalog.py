@@ -453,3 +453,9 @@ query_catalog.add_entry(
     title="CBETH/USD spot price",
     q=SpotPrice(asset="cbeth", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="oeth-usd-spot",
+    title="OETH/USD spot price",
+    q=SpotPrice(asset="oeth", currency="usd"),
+)
