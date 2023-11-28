@@ -4,8 +4,6 @@ from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 
-# from telliot_feeds.sources.price.spot.curvefi import CurveFinanceSpotPriceSource
-# from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceSource
 
 oeth_usd_median_feed = DataFeed(
     query=SpotPrice(asset="OETH", currency="USD"),
@@ -15,7 +13,7 @@ oeth_usd_median_feed = DataFeed(
         algorithm="median",
         sources=[
             CoinGeckoSpotPriceSource(asset="oeth", currency="usd"),
-            UniswapV3PriceSource(asset="eth", currency="oeth"),
+            UniswapV3PriceSource(asset="oeth", currency="usd"),
         ],
     ),
 )

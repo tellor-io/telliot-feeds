@@ -12,27 +12,17 @@ from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
-uniswapV3_map = {
-    "eth": "0x0000000000000000000000000000000000000000",
-    "wbtc": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
-    "matic": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
-    "dai": "0x6b175474e89094c44da98b954eedeac495271d0f",
-    "fuse": "0x970b9bb2c0444f5e81e9d0efb84c8ccdcdcaf84d",
-    "steth": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
-    "reth": "0xae78736cd615f374d3085123a210448e74fc6393",
-    "pls": "0xa882606494d86804b5514e07e6bd2d6a6ee6d68a",
-    "ousd": "0x2a8e1e676ec238d8a992307b495b45b3feaa5e86",
-    "sweth": "0xf951e335afb289353dc249e82926178eac7ded78",
-    "cbeth": "0xbe9895146f7af43049ca1c1ae358b0541ea49704",
+maverickV2_map = {
     "oeth": "0x856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3",
+    "": "0x7448c7456a97769f6cd04f1e83a4a23ccdc46abd",
 }
 
 
-class UniswapV3PriceService(WebPriceService):
-    """UniswapV3 Price Service in USD and ETH"""
+class MaverickV2PriceService(WebPriceService):
+    """maverickV2 Price Service in USD and ETH"""
 
     def __init__(self, **kwargs: Any) -> None:
-        kwargs["name"] = "UniswapV3 Price Service"
+        kwargs["name"] = "maverickV2 Price Service"
         kwargs["url"] = "https://api.thegraph.com"
         kwargs["timeout"] = 10.0
         super().__init__(**kwargs)
@@ -40,14 +30,15 @@ class UniswapV3PriceService(WebPriceService):
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
-        This implementation gets the price from the UniswapV3 subgraph
+        This implementation gets the price from the maverickV2 subgraph, 
+        which is similar to the UniswapV3 subgraph:
         https://docs.uniswap.org/sdk/subgraph/subgraph-examples
 
         """
 
         asset = asset.lower()
 
-        token = uniswapV3_map.get(asset, None)
+        token = maverickV2_map.get(asset, None)
         if not token:
             raise Exception("Asset not supported: {}".format(asset))
 
@@ -59,7 +50,7 @@ class UniswapV3PriceService(WebPriceService):
 
         json_data = {"query": query}
 
-        request_url = self.url + "/subgraphs/name/uniswap/uniswap-v3"
+        request_url = self.url + "/subgraphs/name/maverickprotocol/maverick-mainnet-app"
 
         with requests.Session() as s:
             try:
@@ -68,11 +59,11 @@ class UniswapV3PriceService(WebPriceService):
                 data = {"response": res}
 
             except requests.exceptions.ConnectTimeout:
-                logger.warning("Timeout Error, No prices retrieved from Uniswap")
+                logger.warning("Timeout Error, No prices retrieved from MaverickV2")
                 return None, None
 
             except Exception:
-                logger.warning("No prices retrieved from Uniswap")
+                logger.warning("No prices retrieved from MaverickV2")
                 return None, None
 
         if "error" in data:
@@ -93,13 +84,13 @@ class UniswapV3PriceService(WebPriceService):
                     token_data = response["data"]["token"]["derivedETH"]
                 price = ethprice * float(token_data)
                 if price == 0.0:
-                    msg = "Uniswap API not included, because price response is 0"
+                    msg = "MaverickV2 API not included, because price response is 0"
                     logger.warning(msg)
                     return None, None
                 else:
                     return price, datetime_now_utc()
             except KeyError as e:
-                msg = "Error parsing UniswapV3 response: KeyError: {}".format(e)
+                msg = "Error parsing MaverickV2 response: KeyError: {}".format(e)
                 logger.critical(msg)
                 return None, None
 
@@ -108,7 +99,7 @@ class UniswapV3PriceService(WebPriceService):
 
 
 @dataclass
-class UniswapV3PriceSource(PriceSource):
+class MaverickV2PriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: UniswapV3PriceService = field(default_factory=UniswapV3PriceService, init=False)
+    service: MaverickV2PriceService = field(default_factory=MaverickV2PriceService, init=False)
