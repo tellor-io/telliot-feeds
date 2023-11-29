@@ -14,7 +14,7 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 maverickV2_map = {
     "oeth": "0x856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3",
-    "": "0x7448c7456a97769f6cd04f1e83a4a23ccdc46abd",
+    "sweth": "0xf951e335afb289353dc249e82926178eac7ded78",
 }
 
 

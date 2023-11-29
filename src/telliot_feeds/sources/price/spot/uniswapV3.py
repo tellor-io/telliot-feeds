@@ -55,7 +55,7 @@ class UniswapV3PriceService(WebPriceService):
             "Content-Type": "application/json",
         }
 
-        query = "{bundles{id ethPriceUSD}token" + f'(id: "{token}")' + "{ derivedETH } }"
+        query = "{bundles{id derivedETH}token" + f'(id: "{token}")' + "{ derivedETH } }"
 
         json_data = {"query": query}
 

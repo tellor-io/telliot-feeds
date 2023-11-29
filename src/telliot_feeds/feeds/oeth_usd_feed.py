@@ -13,7 +13,7 @@ oeth_usd_median_feed = DataFeed(
         algorithm="median",
         sources=[
             CoinGeckoSpotPriceSource(asset="oeth", currency="usd"),
-            UniswapV3PriceSource(asset="oeth", currency="usd"),
+            UniswapV3PriceSource(asset="eth", currency="oeth"),
         ],
     ),
 )
