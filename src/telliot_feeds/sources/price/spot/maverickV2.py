@@ -30,7 +30,7 @@ class MaverickV2PriceService(WebPriceService):
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
-        This implementation gets the price from the maverickV2 subgraph, 
+        This implementation gets the price from the maverickV2 subgraph,
         which is similar to the UniswapV3 subgraph:
         https://docs.uniswap.org/sdk/subgraph/subgraph-examples
 
@@ -42,11 +42,14 @@ class MaverickV2PriceService(WebPriceService):
         if not token:
             raise Exception("Asset not supported: {}".format(asset))
 
+        if currency.lower() != "eth":
+            raise Exception("Eth only: {}".format(currency))
+
         headers = {
             "Content-Type": "application/json",
         }
 
-        query = "{bundles{id ethPriceUSD}token" + f'(id: "{token}")' + "{ derivedETH } }"
+        query = "{token" + f'(id: "{token}")' + "{ derivedETH } }"
 
         json_data = {"query": query}
 
@@ -74,21 +77,8 @@ class MaverickV2PriceService(WebPriceService):
             response = data["response"]
 
             try:
-                ethprice = float(response["data"]["bundles"][0]["ethPriceUSD"])
-                if asset.lower() == "eth":
-                    token_data = 1
-                elif currency.lower() == "eth":
-                    ethprice = 1
-                    token_data = response["data"]["token"]["derivedETH"]
-                else:
-                    token_data = response["data"]["token"]["derivedETH"]
-                price = ethprice * float(token_data)
-                if price == 0.0:
-                    msg = "MaverickV2 API not included, because price response is 0"
-                    logger.warning(msg)
-                    return None, None
-                else:
-                    return price, datetime_now_utc()
+                token_price = float(response["data"]["token"]["derivedETH"])
+                return token_price, datetime_now_utc()
             except KeyError as e:
                 msg = "Error parsing MaverickV2 response: KeyError: {}".format(e)
                 logger.critical(msg)
@@ -103,3 +93,14 @@ class MaverickV2PriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
     service: MaverickV2PriceService = field(default_factory=MaverickV2PriceService, init=False)
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main() -> None:
+        price_source = MaverickV2PriceSource(asset="oeth", currency="eth")
+        price, timestamp = await price_source.fetch_new_datapoint()
+        print(price, timestamp)
+
+    asyncio.run(main())

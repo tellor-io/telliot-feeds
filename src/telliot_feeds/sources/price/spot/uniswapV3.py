@@ -55,7 +55,7 @@ class UniswapV3PriceService(WebPriceService):
             "Content-Type": "application/json",
         }
 
-        query = "{bundles{id derivedETH}token" + f'(id: "{token}")' + "{ derivedETH } }"
+        query = "{bundles{id ethPriceUSD}token" + f'(id: "{token}")' + "{ derivedETH } }"
 
         json_data = {"query": query}
 
@@ -112,3 +112,14 @@ class UniswapV3PriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
     service: UniswapV3PriceService = field(default_factory=UniswapV3PriceService, init=False)
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main() -> None:
+        price_source = UniswapV3PriceSource(asset="cbeth", currency="eth")
+        price, timestamp = await price_source.fetch_new_datapoint()
+        print(price, timestamp)
+
+    asyncio.run(main())
