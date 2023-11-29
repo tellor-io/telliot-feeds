@@ -231,7 +231,7 @@ def build_query(log: Optional[Callable[[str], None]] = click.echo) -> Any:
     queries = [q for q in AbiQuery.__subclasses__() if q.__name__ not in ("LegacyRequest")]
     options = [q.__name__ for q in queries]
     # Sort options and queries by alphabetical order
-    options, queries = zip(*sorted(zip(options, queries)))
+    options, queries = [zip(*sorted(zip(options, queries)))]
 
     menu = TerminalMenu(options, title=title)
     selected_index = menu.show()
