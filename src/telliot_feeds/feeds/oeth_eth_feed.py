@@ -1,8 +1,9 @@
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.price.spot_price import SpotPrice
-#from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.maverickV2 import MaverickV2PriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
+
+# from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 
 
 oeth_eth_median_feed = DataFeed(
@@ -12,7 +13,7 @@ oeth_eth_median_feed = DataFeed(
         currency="eth",
         algorithm="median",
         sources=[
-#            CoinGeckoSpotPriceSource(asset="oeth", currency="eth"),
+            #            CoinGeckoSpotPriceSource(asset="oeth", currency="eth"),
             MaverickV2PriceSource(asset="oeth", currency="eth"),
         ],
     ),
