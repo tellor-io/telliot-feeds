@@ -455,6 +455,12 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
+    tag="wbeth-usd-spot",
+    title="WBETH/USD spot price",
+    q=SpotPrice(asset="wbeth", currency="usd"),
+)
+
+query_catalog.add_entry(
     tag="oeth-usd-spot",
     title="OETH/USD spot price",
     q=SpotPrice(asset="oeth", currency="usd"),

@@ -83,6 +83,7 @@ from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.feeds.vesq import vsq_usd_median_feed
+from telliot_feeds.feeds.wbeth_usd_feed import wbeth_usd_median_feed
 from telliot_feeds.feeds.wld_usd_feed import wld_usd_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
@@ -163,6 +164,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "sweth-usd-spot": sweth_usd_median_feed,
     "diva-usd-spot": diva_usd_median_feed,
     "cbeth-usd-spot": cbeth_usd_median_feed,
+    "wbeth-usd-spot": wbeth_usd_median_feed,
     "oeth-usd-spot": oeth_usd_median_feed,
 }
 

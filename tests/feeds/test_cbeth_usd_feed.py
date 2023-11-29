@@ -7,7 +7,7 @@ from telliot_feeds.feeds.cbeth_usd_feed import cbeth_usd_median_feed
 
 @pytest.mark.asyncio
 async def test_cbeth_usd_median_feed(caplog):
-    """Retrieve median STETH/USD price."""
+    """Retrieve median CBETH/USD price."""
     v, _ = await cbeth_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None

@@ -32,6 +32,7 @@ async def withdraw(
     min_native_token_balance: float,
     gas_multiplier: int,
     max_priority_fee_range: int,
+    unsafe: bool,
 ) -> None:
     """Withdraw of tokens from oracle"""
     ctx.obj["ACCOUNT_NAME"] = account_str
