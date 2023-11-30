@@ -54,7 +54,7 @@ from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
-from telliot_feeds.feeds.oeth_eth_feed import oeth_eth_median_feed
+from telliot_feeds.feeds.oeth_eth_feed import oeth_eth_feed
 from telliot_feeds.feeds.oeth_usd_feed import oeth_usd_median_feed
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
 from telliot_feeds.feeds.op_usd_feed import op_usd_median_feed
@@ -159,7 +159,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "wheat-usd-custom": wheat,
     "soy-usd-custom": soy,
     "ousd-usd-spot": ousd_usd_median_feed,
-    "oeth-eth-spot": oeth_eth_median_feed,
+    "oeth-eth-spot": oeth_eth_feed,
     "wld-usd-spot": wld_usd_median_feed,
     "sweth-usd-spot": sweth_usd_median_feed,
     "diva-usd-spot": diva_usd_median_feed,
