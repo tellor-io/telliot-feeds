@@ -48,7 +48,7 @@ class oethEthService(WebPriceService):
         eth_usd_source = PriceAggregator(
             algorithm="median",
             sources=[
-                # CoinGeckoSpotPriceSource(asset="eth", currency="usd"),
+                CoinGeckoSpotPriceSource(asset="eth", currency="usd"),
                 CoinbaseSpotPriceSource(asset="eth", currency="usd"),
                 GeminiSpotPriceSource(asset="eth", currency="usd"),
                 KrakenSpotPriceSource(asset="eth", currency="usd"),
