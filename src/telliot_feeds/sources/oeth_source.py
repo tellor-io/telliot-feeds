@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
+from statistics import median
 
 from telliot_core.apps.telliot_config import TelliotConfig
 
@@ -28,27 +29,11 @@ class oethEthService(WebPriceService):
         super().__init__(**kwargs)
         self.cfg = TelliotConfig()
 
-    async def get_oeth_usd(self) -> OptionalDataPoint[float]:
-        oeth_usd_source = PriceAggregator(
-            algorithm="median",
-            sources=[
-                CoinGeckoSpotPriceSource(asset="oeth", currency="usd"),
-                UniswapV3PriceSource(asset="eth", currency="oeth"),
-            ],
-        )
-
-        oeth_usd_price = await oeth_usd_source.fetch_new_datapoint()
-        if oeth_usd_price is None:
-            logger.error("Unable to get oeth/usd sources to convert.")
-            return None, None
-        print(oeth_usd_price)
-        return oeth_usd_price
-
     async def get_eth_usd(self) -> OptionalDataPoint[float]:
         eth_usd_source = PriceAggregator(
             algorithm="median",
             sources=[
-                CoinGeckoSpotPriceSource(asset="eth", currency="usd"),
+                #CoinGeckoSpotPriceSource(asset="eth", currency="usd"),
                 CoinbaseSpotPriceSource(asset="eth", currency="usd"),
                 GeminiSpotPriceSource(asset="eth", currency="usd"),
                 KrakenSpotPriceSource(asset="eth", currency="usd"),
@@ -61,6 +46,39 @@ class oethEthService(WebPriceService):
             return None, None
         print(eth_usd_price)
         return eth_usd_price
+
+
+    async def get_coingecko(self) -> OptionalDataPoint[float]:
+        coingecko_source = PriceAggregator(
+            algorithm="median",
+            sources=[
+                CoinGeckoSpotPriceSource(asset="oeth", currency="eth"),
+            ],
+        )
+
+        coingecko_price = await coingecko_source.fetch_new_datapoint()
+        if coingecko_price is None:
+            logger.error("Unable to get oeth/usd sources to convert.")
+            return None, None
+        print(coingecko_price)
+        return coingecko_price
+
+    async def get_uniswap(self) -> OptionalDataPoint[float]:
+        uniswap_source = PriceAggregator(
+            algorithm="median",
+            sources=[
+                UniswapV3PriceSource(asset="eth", currency="oeth"),
+            ],
+        )
+
+        uniswap_price = await uniswap_source.fetch_new_datapoint()
+        if uniswap_price is None:
+            logger.error("Unable to get oeth/usd sources to convert.")
+            return None, None
+        print(uniswap_price)
+        eth_price, timestamp = await self.get_eth_usd()
+        price = (uniswap_price / eth_price), timestamp
+        return price
 
     async def get_oeth_eth_mav(self) -> OptionalDataPoint[float]:
         oeth_mav_source = PriceAggregator(
@@ -81,11 +99,12 @@ class oethEthService(WebPriceService):
 
         asset = asset.lower()
         currency = currency.lower()
-        oeth_price, timestamp = await self.get_oeth_usd()
-        eth_price, timestamp = await self.get_eth_usd()
+        coingecko_price, timestamp = await self.get_coingecko()
+        uniswap_price, timestamp = await self.get_uniswap()
         mav_price, timestamp = await self.get_oeth_eth_mav()
-        if oeth_price and eth_price and mav_price is not None:
-            return ((oeth_price / eth_price) + mav_price) / 2, timestamp
+        if coingecko_price and uniswap_price and mav_price is not None:
+            source_list = [coingecko_price, uniswap_price, mav_price]
+            return median(source_list)
         else:
             logger.error("Unable to calculate OETH/ETH (please check sources).")
             return None, None
