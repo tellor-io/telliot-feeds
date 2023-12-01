@@ -55,6 +55,7 @@ from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
 from telliot_feeds.feeds.oeth_eth_feed import oeth_eth_median_feed
+from telliot_feeds.feeds.oeth_usd_feed import oeth_usd_median_feed
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
 from telliot_feeds.feeds.op_usd_feed import op_usd_median_feed
 from telliot_feeds.feeds.ousd_usd_feed import ousd_usd_median_feed
@@ -164,6 +165,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "diva-usd-spot": diva_usd_median_feed,
     "cbeth-usd-spot": cbeth_usd_median_feed,
     "wbeth-usd-spot": wbeth_usd_median_feed,
+    "oeth-usd-spot": oeth_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

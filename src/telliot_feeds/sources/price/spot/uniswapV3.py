@@ -24,6 +24,7 @@ uniswapV3_map = {
     "ousd": "0x2a8e1e676ec238d8a992307b495b45b3feaa5e86",
     "sweth": "0xf951e335afb289353dc249e82926178eac7ded78",
     "cbeth": "0xbe9895146f7af43049ca1c1ae358b0541ea49704",
+    "oeth": "0x856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3",
 }
 
 
@@ -111,3 +112,14 @@ class UniswapV3PriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
     service: UniswapV3PriceService = field(default_factory=UniswapV3PriceService, init=False)
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main() -> None:
+        price_source = UniswapV3PriceSource(asset="cbeth", currency="eth")
+        price, timestamp = await price_source.fetch_new_datapoint()
+        print(price, timestamp)
+
+    asyncio.run(main())
