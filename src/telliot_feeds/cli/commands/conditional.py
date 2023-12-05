@@ -1,4 +1,5 @@
 from typing import Optional
+from typing import Any
 
 import click
 from click.core import Context
@@ -32,7 +33,7 @@ def conditional_reporter() -> None:
 @click.option("-ft", "--stale-timeout", type=int, default=14400)
 @click.pass_context
 @async_run
-async def liquity(
+async def conditional(
     ctx: Context,
     tx_type: int,
     gas_limit: int,
@@ -127,7 +128,7 @@ async def liquity(
         }
 
         reporter = ConditionalReporter(
-            tellor_is_stale_timeout=frozen_timeout,
+            stale_timeout=stale_timeout,
             max_price_change=percent_change,
             **common_reporter_kwargs,
         )
@@ -137,3 +138,26 @@ async def liquity(
             await reporter.report(report_count=1)
         else:
             await reporter.report()
+
+if __name__ == "__main__":
+    import asyncio
+
+class main():
+    def __init__(
+        self,
+        stale_timeout: int,
+        max_price_change: float,
+        query_tag: str,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        self.tellor_is_stale_timeout = stale_timeout
+        self.max_price_change = max_price_change
+        self.query_tag = query_tag
+
+    async def main() -> None:
+        retrieved, value, timestampRetrieved = await ConditionalReporter.get_tellor_latest_data(self=self, stale_timeout=14400, max_price_change=0.05, query_tag="oeth-usd-spot")
+        print(retrieved, value, timestampRetrieved)
+
+asyncio.run(main.main())
