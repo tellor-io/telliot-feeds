@@ -10,6 +10,7 @@ from telliot_feeds.cli.utils import common_reporter_options
 from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.feeds import CATALOG_FEEDS
+from telliot_feeds.reporters.customized import ChainLinkFeeds
 from telliot_feeds.reporters.customized.conditional_reporter import ConditionalReporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
@@ -20,7 +21,7 @@ logger = get_logger(__name__)
 
 @click.group()
 def conditional_reporter() -> None:
-    """Report data on-chain if conditions are met."""
+    """Report data on-chain."""
     pass
 
 
@@ -28,10 +29,10 @@ def conditional_reporter() -> None:
 @common_options
 @common_reporter_options
 @click.option("-pc", "--percent-change", type=float, default=0.05)
-@click.option("-sto", "--stale-timeout", type=int, default=14400)
+@click.option("-ft", "--stale-timeout", type=int, default=14400)
 @click.pass_context
 @async_run
-async def conditional_report(
+async def liquity(
     ctx: Context,
     tx_type: int,
     gas_limit: int,
@@ -50,16 +51,16 @@ async def conditional_report(
     gas_multiplier: int,
     max_priority_fee_range: int,
     percent_change: float,
-    frozen_timeout: int,
+    stale_timeout: int,
     query_tag: str,
     unsafe: bool,
 ) -> None:
     """Report values to Tellor oracle if certain conditions are met."""
-    click.echo("Starting General Purpous Conditional Reporter...")
+    click.echo("Starting Liquity Backup Reporter...")
     ctx.obj["ACCOUNT_NAME"] = account_str
     ctx.obj["SIGNATURE_ACCOUNT_NAME"] = None
     if query_tag is None:
-        raise click.UsageError(f"Conditional reporting requires a valid query tag (-qt) or use --help")
+        raise click.UsageError(f"--query-tag (-qt) is required. Use --help for a list of feeds with API support.")
     datafeed = CATALOG_FEEDS.get(query_tag)
     if datafeed is None:
         raise click.UsageError(f"Invalid query tag: {query_tag}, enter a valid query tag with API support, use --help")
@@ -67,7 +68,6 @@ async def conditional_report(
     accounts = get_accounts_from_name(account_str)
     if not accounts:
         return
-    chain_id = accounts[0].chains[0]
 
     ctx.obj["CHAIN_ID"] = chain_id  # used in reporter_cli_core
     # Initialize telliot core app using CLI context
@@ -128,8 +128,7 @@ async def conditional_report(
 
         reporter = ConditionalReporter(
             tellor_is_stale_timeout=frozen_timeout,
-            tellor_max_price_change=percent_change,
-            query_tag=query_tag,
+            max_price_change=percent_change,
             **common_reporter_kwargs,
         )
 
