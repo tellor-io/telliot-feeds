@@ -70,6 +70,7 @@ class ConditionalReporter(Tellor360Reporter):
         elif time_passed_since_tellor_report > self.stale_timeout:
             logger.debug(f"tellor data is stale, time elapsed since last report: {time_passed_since_tellor_report}")
             return True
+        tellor_value = tellor_data.value
         else:
             logger.info(f"tellor {self.datafeed.query.descriptor} data is recent enough")
             return False
