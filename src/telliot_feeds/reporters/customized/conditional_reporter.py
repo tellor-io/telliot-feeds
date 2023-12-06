@@ -1,10 +1,7 @@
 import asyncio
-import pytest
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
-
-from eth_abi.abi import decode_abi
 
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
@@ -50,7 +47,7 @@ class ConditionalReporter(Tellor360Reporter):
             logger.warning(f"error getting tellor data: {status.e}")
             return None
         return GetDataBefore(*data)
-    
+
     async def conditions_met(self) -> bool:
         """Trigger methods to check conditions if reporting spot is necessary
 

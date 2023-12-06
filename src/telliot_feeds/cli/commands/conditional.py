@@ -1,17 +1,14 @@
 from typing import Optional
-from typing import Any
 
 import click
 from click.core import Context
 from telliot_core.cli.utils import async_run
-from web3 import Web3
 
 from telliot_feeds.cli.utils import common_options
 from telliot_feeds.cli.utils import common_reporter_options
 from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.reporters.customized import ChainLinkFeeds
 from telliot_feeds.reporters.customized.conditional_reporter import ConditionalReporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
@@ -29,8 +26,8 @@ def conditional_reporter() -> None:
 @conditional_reporter.command()
 @common_options
 @common_reporter_options
-@click.option("-pc", "--percent-change", type=float, default=0.05)
-@click.option("-ft", "--stale-timeout", type=int, default=14400)
+@click.option("-pc", "--percent-change", type=Optional[float], default=None)
+@click.option("-st", "--stale-timeout", type=Optional[int], default=None)
 @click.pass_context
 @async_run
 async def conditional(
@@ -51,17 +48,17 @@ async def conditional(
     check_rewards: bool,
     gas_multiplier: int,
     max_priority_fee_range: int,
-    percent_change: float,
-    stale_timeout: int,
+    percent_change: Optional[float],
+    stale_timeout: Optional[int],
     query_tag: str,
     unsafe: bool,
 ) -> None:
     """Report values to Tellor oracle if certain conditions are met."""
-    click.echo("Starting Liquity Backup Reporter...")
+    click.echo("Starting Conditional Reporter...")
     ctx.obj["ACCOUNT_NAME"] = account_str
     ctx.obj["SIGNATURE_ACCOUNT_NAME"] = None
     if query_tag is None:
-        raise click.UsageError(f"--query-tag (-qt) is required. Use --help for a list of feeds with API support.")
+        raise click.UsageError("--query-tag (-qt) is required. Use --help for a list of feeds with API support.")
     datafeed = CATALOG_FEEDS.get(query_tag)
     if datafeed is None:
         raise click.UsageError(f"Invalid query tag: {query_tag}, enter a valid query tag with API support, use --help")
@@ -69,7 +66,7 @@ async def conditional(
     accounts = get_accounts_from_name(account_str)
     if not accounts:
         return
-
+    chain_id = accounts[0].chains[0]
     ctx.obj["CHAIN_ID"] = chain_id  # used in reporter_cli_core
     # Initialize telliot core app using CLI context
     async with reporter_cli_core(ctx) as core:
@@ -90,7 +87,6 @@ async def conditional(
 
         click.echo("Reporter settings:")
         click.echo(f"Max tolerated price change: {percent_change * 100}%")
-        click.echo(f"Value considered stale after: {frozen_timeout} seconds")
         click.echo(f"Transaction type: {tx_type}")
         click.echo(f"Gas Limit: {gas_limit}")
         click.echo(f"Legacy gas price (gwei): {legacy_gas_price}")
@@ -99,6 +95,7 @@ async def conditional(
         click.echo(f"Desired stake amount: {stake}")
         click.echo(f"Minimum native token balance (e.g. ETH if on Ethereum mainnet): {min_native_token_balance}")
         click.echo("\n")
+        click.echo(f"Value considered stale after: {stale_timeout} seconds")
 
         _ = input("Press [ENTER] to confirm settings.")
 
@@ -138,26 +135,3 @@ async def conditional(
             await reporter.report(report_count=1)
         else:
             await reporter.report()
-
-if __name__ == "__main__":
-    import asyncio
-
-class main():
-    def __init__(
-        self,
-        stale_timeout: int,
-        max_price_change: float,
-        query_tag: str,
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(*args, **kwargs)
-        self.tellor_is_stale_timeout = stale_timeout
-        self.max_price_change = max_price_change
-        self.query_tag = query_tag
-
-    async def main() -> None:
-        retrieved, value, timestampRetrieved = await ConditionalReporter.get_tellor_latest_data(self=self, stale_timeout=14400, max_price_change=0.05, query_tag="oeth-usd-spot")
-        print(retrieved, value, timestampRetrieved)
-
-asyncio.run(main.main())
