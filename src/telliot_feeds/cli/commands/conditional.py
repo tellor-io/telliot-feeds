@@ -26,8 +26,20 @@ def conditional_reporter() -> None:
 @conditional_reporter.command()
 @common_options
 @common_reporter_options
-@click.option("-pc", "--percent-change", type=Optional[float], default=None)
-@click.option("-st", "--stale-timeout", type=Optional[int], default=None)
+@click.option(
+    "-pc",
+    "--percent-change",
+    help="Price change percentage for triggering a report. Default=0.5 (50%)",
+    type=float,
+    default=0.50,
+)
+@click.option(
+    "-st",
+    "--stale-timeout",
+    help="Triggers a report when the oracle value is stale. Default=86400 (24 hours)",
+    type=int,
+    default=86400,
+)
 @click.pass_context
 @async_run
 async def conditional(
@@ -48,8 +60,8 @@ async def conditional(
     check_rewards: bool,
     gas_multiplier: int,
     max_priority_fee_range: int,
-    percent_change: Optional[float],
-    stale_timeout: Optional[int],
+    percent_change: float,
+    stale_timeout: int,
     query_tag: str,
     unsafe: bool,
 ) -> None:
@@ -87,6 +99,8 @@ async def conditional(
 
         click.echo("Reporter settings:")
         click.echo(f"Max tolerated price change: {percent_change * 100}%")
+        click.echo(f"Value considered stale after: {stale_timeout} seconds")
+        click.echo(f"Transaction type: {tx_type}")
         click.echo(f"Transaction type: {tx_type}")
         click.echo(f"Gas Limit: {gas_limit}")
         click.echo(f"Legacy gas price (gwei): {legacy_gas_price}")
@@ -95,7 +109,6 @@ async def conditional(
         click.echo(f"Desired stake amount: {stake}")
         click.echo(f"Minimum native token balance (e.g. ETH if on Ethereum mainnet): {min_native_token_balance}")
         click.echo("\n")
-        click.echo(f"Value considered stale after: {stale_timeout} seconds")
 
         _ = input("Press [ENTER] to confirm settings.")
 
