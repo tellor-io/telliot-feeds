@@ -1,4 +1,5 @@
 from typing import Optional
+from typing import TypeVar
 
 import click
 from click.core import Context
@@ -15,7 +16,7 @@ from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
-
+T = TypeVar("T")
 
 @click.group()
 def conditional_reporter() -> None:

@@ -2,6 +2,7 @@ import asyncio
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
+from typing import TypeVar
 
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.datasource import OptionalDataPoint
@@ -11,7 +12,7 @@ from telliot_feeds.utils.reporter_utils import current_time
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 
 logger = get_logger(__name__)
-
+T = TypeVar("T")
 
 @dataclass
 class GetDataBefore:
