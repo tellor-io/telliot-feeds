@@ -4,9 +4,11 @@ from typing import Any
 from typing import Optional
 
 from telliot_feeds.feeds import DataFeed
+from telliot_feeds.datasource import OptionalDataPoint
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.reporter_utils import current_time
+from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 
 logger = get_logger(__name__)
 
@@ -34,58 +36,53 @@ class ConditionalReporter(Tellor360Reporter):
         self.stale_timeout = stale_timeout
         self.max_price_change = max_price_change
 
-    async def get_tellor_latest_data(self) -> Optional[GetDataBefore]:
+    def get_tellor_latest_data(self) -> Optional[GetDataBefore]:
         """Get latest data from tellor oracle (getDataBefore with current time)
-
         Returns:
         - Optional[GetDataBefore]: latest data from tellor oracle
         """
         if self.datafeed is None:
             logger.debug(f"no datafeed set: {self.datafeed}")
             return None
-        data, status = await self.oracle.read("getDataBefore", self.datafeed.query.query_id, current_time())
+        data, status = self.oracle.read("getDataBefore", self.datafeed.query.query_id, current_time())
         if not status.ok:
             logger.warning(f"error getting tellor data: {status.e}")
             return None
         return GetDataBefore(*data)
     
-    async def fetch_median_value(self) -> Optional[DataFeed[Any]]:
-        """Fetches datafeed
-
-        If the user did not select a query tag, there will have been no datafeed passed to
-        the reporter upon instantiation.
-        If the user uses the random feeds flag, the datafeed will be chosen randomly.
-        If the user did not select a query tag or use the random feeds flag, the datafeed will
-        be chosen based on the most funded datafeed in the AutoPay contract.
-
-        If the no-rewards-check flag is used, the reporter will not check profitability or
-        available tips for the datafeed unless the user has not selected a query tag or
-        used the random feeds flag.
+    def get_telliot_feed_data(self) -> OptionalDataPoint[T]:
+        """Fetch spot price data from API sources and calculate a value
+        Returns:
+        - Optional[GetDataBefore]: latest data from tellor oracle
         """
-        # reset autopay tip every time fetch_datafeed is called
-        # so that tip is checked fresh every time and not carry older tips
-        self.autopaytip = 0
-        # TODO: This should be removed and moved to profit check method perhaps
-        if self.check_rewards:
-            # calculate tbr and
-            _ = await self.rewards()
+        v, _ = eth_usd_median_feed.source.fetch_new_datapoint()
+        logger.info(f"telliot feeds value: {v}")
+        return v
 
-        if self.use_random_feeds:
-            self.datafeed = suggest_random_feed()
+    def tellor_price_change_above_max(
+        self, tellor_latest_data: GetDataBefore, telliot_feed_data: OptionalDataPoint
+    ) -> bool:
+        """Check if spot price change since last report is above max price deviation
+        params:
+        - tellor_latest_data: latest data from tellor oracle
+        - telliot_feed_data: latest data from API sources
 
-        # Fetch datafeed based on whichever is most funded in the AutoPay contract
-        if self.datafeed is None:
-            suggested_feed, tip_amount = await get_feed_and_tip(self.autopay)
+        Returns:
+        - bool: True if price change is above max price deviation, False otherwise
+        """
+        oracle_price = tellor_latest_data.answer
+        feed_price = telliot_feed_data.answer
 
-            if suggested_feed is not None and tip_amount is not None:
-                logger.info(f"Most funded datafeed in Autopay: {suggested_feed.query.type}")
-                logger.info(f"Tip amount: {self.to_ether(tip_amount)}")
-                self.autopaytip += tip_amount
+        min_price = min(oracle_price, feed_price)
+        max_price = max(oracle_price, feed_price)
 
-                self.datafeed = suggested_feed
-                return self.datafeed
-
-        return self.datafeed
+        percent_change = (max_price - min_price) / max_price
+        if percent_change > self.max_price_change:
+            logger.info("feed price change above max")
+            return True
+        else:
+            return False
+    
 
     async def conditions_met(self) -> bool:
         """Trigger methods to check conditions if reporting spot is necessary
@@ -97,27 +94,24 @@ class ConditionalReporter(Tellor360Reporter):
         if self.datafeed is None:
             logger.debug(f"no datafeed was setß: {self.datafeed}. Please provide a spot-price query type (see --help)")
             return False
-        tellor_data = await self.get_tellor_latest_data()
+        tellor_latest_data = await self.get_tellor_latest_data()
+        telliot_feed_data = self.get_telliot_feed_data()
         time = current_time()
-        time_passed_since_tellor_report = time - tellor_data.timestampRetrieved if tellor_data else time
-        tellor_value = tellor_data.value
-        if tellor_data is None:
+        time_passed_since_tellor_report = time - tellor_latest_data.timestampRetrieved if tellor_latest_data else time
+        if tellor_latest_data is None:
             logger.debug("tellor data returned None")
             return True
-        elif not tellor_data.retrieved:
+        elif not tellor_latest_data.retrieved:
             logger.debug(f"No oracle submissions in tellor for query: {self.datafeed.query.descriptor}")
             return True
         elif time_passed_since_tellor_report > self.stale_timeout:
             logger.debug(f"tellor data is stale, time elapsed since last report: {time_passed_since_tellor_report}")
             return True
-        eilf tellor_value
+        elif self.tellor_price_change_above_max(tellor_latest_data, telliot_feed_data):
+            return True 
         else:
             logger.info(f"tellor {self.datafeed.query.descriptor} data is recent enough")
             return False
-
-
-
-
 
 
     async def report(self, report_count: Optional[int] = None) -> None:
