@@ -89,6 +89,7 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
+from telliot_feeds.feeds.pyth_usd_feed import pyth_usd_median_feed
 
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
@@ -166,6 +167,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "cbeth-usd-spot": cbeth_usd_median_feed,
     "wbeth-usd-spot": wbeth_usd_median_feed,
     "oeth-usd-spot": oeth_usd_median_feed,
+    "pyth-usd-spot": pyth_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
