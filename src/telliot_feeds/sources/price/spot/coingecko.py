@@ -61,6 +61,7 @@ coingecko_coin_id = {
     "diva": "diva-protocol",
     "cbeth": "coinbase-wrapped-staked-eth",
     "wbeth": "wrapped-beacon-eth",
+    "pyth": "pyth-network",
 }
 
 
