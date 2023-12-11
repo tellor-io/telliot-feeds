@@ -4,6 +4,8 @@ from typing import Any
 from typing import Optional
 from typing import TypeVar
 
+from eth_abi.abi import decode_abi
+
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.datasource import OptionalDataPoint
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
@@ -37,7 +39,7 @@ class ConditionalReporter(Tellor360Reporter):
         self.stale_timeout = stale_timeout
         self.max_price_change = max_price_change
 
-    def get_tellor_latest_data(self) -> Optional[GetDataBefore]:
+    async def get_tellor_latest_data(self) -> Optional[GetDataBefore]:
         """Get latest data from tellor oracle (getDataBefore with current time)
         Returns:
         - Optional[GetDataBefore]: latest data from tellor oracle
@@ -45,18 +47,20 @@ class ConditionalReporter(Tellor360Reporter):
         if self.datafeed is None:
             logger.debug(f"no datafeed set: {self.datafeed}")
             return None
-        data, status = self.oracle.read("getDataBefore", self.datafeed.query.query_id, current_time())
+        data, status = await self.oracle.read("getDataBefore", self.datafeed.query.query_id, current_time())
         if not status.ok:
             logger.warning(f"error getting tellor data: {status.e}")
             return None
+        data = decode_abi(["bool", "uint256", "int256"], data)
         return GetDataBefore(*data)
     
-    def get_telliot_feed_data(self) -> OptionalDataPoint[T]:
+
+    async def get_telliot_feed_data(self) -> OptionalDataPoint[T]:
         """Fetch spot price data from API sources and calculate a value
         Returns:
         - Optional[GetDataBefore]: latest data from tellor oracle
         """
-        v, _ = eth_usd_median_feed.source.fetch_new_datapoint()
+        v, _ = await eth_usd_median_feed.source.fetch_new_datapoint()
         logger.info(f"telliot feeds value: {v}")
         return v
 
@@ -71,8 +75,8 @@ class ConditionalReporter(Tellor360Reporter):
         Returns:
         - bool: True if price change is above max price deviation, False otherwise
         """
-        oracle_price = tellor_latest_data.answer
-        feed_price = telliot_feed_data.answer
+        oracle_price = tellor_latest_data.value
+        feed_price = telliot_feed_data
 
         min_price = min(oracle_price, feed_price)
         max_price = max(oracle_price, feed_price)
@@ -96,7 +100,7 @@ class ConditionalReporter(Tellor360Reporter):
             logger.debug(f"no datafeed was setß: {self.datafeed}. Please provide a spot-price query type (see --help)")
             return False
         tellor_latest_data = await self.get_tellor_latest_data()
-        telliot_feed_data = self.get_telliot_feed_data()
+        telliot_feed_data = await self.get_telliot_feed_data()
         time = current_time()
         time_passed_since_tellor_report = time - tellor_latest_data.timestampRetrieved if tellor_latest_data else time
         if tellor_latest_data is None:
