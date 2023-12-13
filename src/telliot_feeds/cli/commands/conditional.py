@@ -18,6 +18,7 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 T = TypeVar("T")
 
+
 @click.group()
 def conditional_reporter() -> None:
     """Report data on-chain."""
