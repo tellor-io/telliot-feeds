@@ -6,8 +6,6 @@ from typing import TypeVar
 
 from web3 import Web3
 
-from telliot_feeds.datasource import OptionalDataPoint
-from telliot_feeds.dtypes.value_type import ValueType
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
@@ -66,7 +64,8 @@ class ConditionalReporter(Tellor360Reporter):
         return v
 
     def tellor_price_change_above_max(
-        self, tellor_latest_data: GetDataBefore, telliot_feed_data: Optional[float]) -> bool:
+        self, tellor_latest_data: GetDataBefore, telliot_feed_data: Optional[float]
+    ) -> bool:
         """Check if spot price change since last report is above max price deviation
         params:
         - tellor_latest_data: latest data from tellor oracle
@@ -81,7 +80,7 @@ class ConditionalReporter(Tellor360Reporter):
         if feed_price is None:
             logger.warning("No feed data available")
             return False
-        
+
         min_price = min(oracle_price, feed_price)
         max_price = max(oracle_price, feed_price)
         logger.info(f"oracle price on-chain = {oracle_price}")
