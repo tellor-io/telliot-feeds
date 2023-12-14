@@ -42,6 +42,7 @@ class ConditionalReporter(Tellor360Reporter):
 
     async def get_tellor_latest_data(self) -> Optional[GetDataBefore]:
         """Get latest data from tellor oracle (getDataBefore with current time)
+        
         Returns:
         - Optional[GetDataBefore]: latest data from tellor oracle
         """
