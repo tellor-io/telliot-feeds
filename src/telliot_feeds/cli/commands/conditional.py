@@ -31,16 +31,16 @@ def conditional_reporter() -> None:
 @click.option(
     "-pc",
     "--percent-change",
-    help="Price change percentage for triggering a report. Default=0.5 (50%)",
+    help="Price change percentage for triggering a report. Default=0.01 (1%)",
     type=float,
     default=0.50,
 )
 @click.option(
     "-st",
     "--stale-timeout",
-    help="Triggers a report when the oracle value is stale. Default=86400 (24 hours)",
+    help="Triggers a report when the oracle value is stale. Default=85500 (23.75 hours)",
     type=int,
-    default=86400,
+    default=85500,
 )
 @click.pass_context
 @async_run
