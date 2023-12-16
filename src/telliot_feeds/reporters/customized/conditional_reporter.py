@@ -84,8 +84,7 @@ class ConditionalReporter(Tellor360Reporter):
 
         min_price = min(oracle_price, feed_price)
         max_price = max(oracle_price, feed_price)
-        logger.info(f"oracle price on-chain = {oracle_price}")
-        logger.info(f"telliot feed price = {feed_price}")
+        logger.info(f"Latest Tellor price = {oracle_price}")
         percent_change = (max_price - min_price) / max_price
         logger.info(f"feed price change = {percent_change}")
         if percent_change > self.max_price_change:
