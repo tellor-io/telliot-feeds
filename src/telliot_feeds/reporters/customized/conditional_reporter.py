@@ -42,7 +42,7 @@ class ConditionalReporter(Tellor360Reporter):
 
     async def get_tellor_latest_data(self) -> Optional[GetDataBefore]:
         """Get latest data from tellor oracle (getDataBefore with current time)
-        
+
         Returns:
         - Optional[GetDataBefore]: latest data from tellor oracle
         """
@@ -101,7 +101,7 @@ class ConditionalReporter(Tellor360Reporter):
         """
         logger.info("checking conditions and reporting if necessary")
         if self.datafeed is None:
-            logger.debug(f"no datafeed was setß: {self.datafeed}. Please provide a spot-price query type (see --help)")
+            logger.info(f"no datafeed was setß: {self.datafeed}. Please provide a spot-price query type (see --help)")
             return False
         tellor_latest_data = await self.get_tellor_latest_data()
         telliot_feed_data = await self.get_telliot_feed_data(datafeed=self.datafeed)
@@ -117,9 +117,10 @@ class ConditionalReporter(Tellor360Reporter):
             logger.debug(f"tellor data is stale, time elapsed since last report: {time_passed_since_tellor_report}")
             return True
         elif self.tellor_price_change_above_max(tellor_latest_data, telliot_feed_data):
+            logger.debug("tellor price change above max")
             return True
         else:
-            logger.info(f"tellor {self.datafeed.query.descriptor} data is recent enough")
+            logger.debug(f"tellor {self.datafeed.query.descriptor} data is recent enough")
             return False
 
     async def report(self, report_count: Optional[int] = None) -> None:
