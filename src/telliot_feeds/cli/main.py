@@ -1,4 +1,4 @@
-""" Telliot CLItel
+""" Telliot CLI
 
 A simple interface for interacting with telliot_feeds's functionality.
 Configure telliot_feeds's settings via this interface's command line flags
