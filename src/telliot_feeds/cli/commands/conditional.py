@@ -33,7 +33,7 @@ def conditional_reporter() -> None:
     "--percent-change",
     help="Price change percentage for triggering a report. Default=0.01 (1%)",
     type=float,
-    default=0.50,
+    default=0.01,
 )
 @click.option(
     "-st",
