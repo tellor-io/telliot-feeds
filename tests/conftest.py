@@ -158,8 +158,8 @@ def mumbai_test_cfg():
 
 
 @pytest.fixture(scope="function", autouse=True)
-def goerli_test_cfg():
-    return local_node_cfg(chain_id=5)
+def sepolia_test_cfg():
+    return local_node_cfg(chain_id=11155111)
 
 
 @pytest.fixture(scope="function", autouse=True)

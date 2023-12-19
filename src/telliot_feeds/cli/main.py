@@ -9,6 +9,7 @@ from click.core import Context
 
 from telliot_feeds.cli.commands.account import account
 from telliot_feeds.cli.commands.catalog import catalog
+from telliot_feeds.cli.commands.conditional import conditional
 from telliot_feeds.cli.commands.config import config
 from telliot_feeds.cli.commands.integrations import integrations
 from telliot_feeds.cli.commands.liquity import liquity
@@ -51,6 +52,7 @@ main.add_command(stake)
 main.add_command(liquity)
 main.add_command(request_withdraw)
 main.add_command(withdraw)
+main.add_command(conditional)
 
 if __name__ == "__main__":
     main()
