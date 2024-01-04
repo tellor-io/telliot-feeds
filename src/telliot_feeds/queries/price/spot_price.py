@@ -72,6 +72,7 @@ SPOT_PRICE_PAIRS = [
     "WBETH/USD",
     "OETH/USD",
     "PYTH/USD",
+    "OGV/ETH",
 ]
 
 

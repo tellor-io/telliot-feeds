@@ -471,3 +471,9 @@ query_catalog.add_entry(
     title="PYTH/USD spot price",
     q=SpotPrice(asset="pyth", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="ogv-eth-spot",
+    title="OGV/ETH spot price",
+    q=SpotPrice(asset="ogv", currency="eth"),
+)

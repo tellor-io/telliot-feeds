@@ -62,6 +62,7 @@ coingecko_coin_id = {
     "cbeth": "coinbase-wrapped-staked-eth",
     "wbeth": "wrapped-beacon-eth",
     "pyth": "pyth-network",
+    "ogv": "origin-defi-governance",
 }
 
 
