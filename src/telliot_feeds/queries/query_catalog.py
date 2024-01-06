@@ -477,3 +477,9 @@ query_catalog.add_entry(
     title="OGV/ETH spot price",
     q=SpotPrice(asset="ogv", currency="eth"),
 )
+
+query_catalog.add_entry(
+    tag="brc20-ordi-usd-spot",
+    title="ORDI/USD spot price",
+    q=CustomPrice(identifier="brc20", asset="ordi", currency="usd", unit=""),
+)
