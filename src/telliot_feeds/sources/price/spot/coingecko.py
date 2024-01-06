@@ -63,6 +63,7 @@ coingecko_coin_id = {
     "wbeth": "wrapped-beacon-eth",
     "pyth": "pyth-network",
     "ogv": "origin-defi-governance",
+    "ordi": "ordinals",
 }
 
 
@@ -123,3 +124,64 @@ class CoinGeckoSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
     service: CoinGeckoSpotPriceService = field(default_factory=CoinGeckoSpotPriceService, init=False)
+
+
+class CoinGeckoBRC20SpotPriceService(WebPriceService):
+    """CoinGecko Price Service"""
+
+    def __init__(self, **kwargs: Any) -> None:
+        kwargs["name"] = "CoinGecko Price Service"
+        kwargs["url"] = "https://api.coingecko.com"
+        super().__init__(**kwargs)
+
+    async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
+        """Implement PriceServiceInterface
+
+        This implementation gets the price from the Coingecko API
+
+        Note that coingecko does not return a timestamp so one is
+        locally generated.
+        """
+
+        asset = asset.lower()
+        currency = currency.lower()
+
+        coin_id = coingecko_coin_id.get(asset, None)
+        if not coin_id:
+            raise Exception("Asset not supported: {}".format(asset))
+
+        url_params = urlencode({"ids": coin_id, "vs_currencies": currency})
+        request_url = "/api/v3/simple/price?{}".format(url_params)
+
+        d = self.get_url(request_url)
+
+        if "error" in d:
+            if "api.coingecko.com used Cloudflare to restrict access" in str(d["exception"]):
+                logger.warning("CoinGecko API rate limit exceeded")
+            else:
+                logger.error(d)
+            return None, None
+        elif "response" in d:
+            response = d["response"]
+
+            try:
+                price = float(response[coin_id][currency])
+                return price, datetime_now_utc()
+            except KeyError as e:
+                msg = "Error parsing Coingecko API response: KeyError: {}".format(e)
+                logger.error(msg)
+                return None, None
+
+        else:
+            msg = "Invalid response from get_url"
+            logger.error(msg)
+            return None, None
+
+
+@dataclass
+class CoinGeckoBRC20SpotPriceSource(PriceSource):
+    identifier: str = ""
+    asset: str = ""
+    currency: str = ""
+    unit: str = ""
+    service: CoinGeckoBRC20SpotPriceService = field(default_factory=CoinGeckoBRC20SpotPriceService, init=False)
