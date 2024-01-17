@@ -31,8 +31,7 @@ class agniFinancePriceService(WebPriceService):
         """Implement PriceServiceInterface
 
         This implementation gets the price from the agniFinance subgraph
-        https://agni.finance/graph/subgraphs/name/agni/exchange-v3/graphql?query=qu
-        ery+b+%7B%0A++__typename+%23%23+Placeholder+value%0A%7D
+        https://agni.finance/graph/subgraphs/name/agni/exchange-v3/graphql?
         """
 
         asset = asset.lower()
@@ -49,7 +48,7 @@ class agniFinancePriceService(WebPriceService):
 
         json_data = {"query": query}
 
-        request_url = self.url + "/subgraphs/name/uniswap/uniswap-v3"
+        request_url = self.url + "/graph/subgraphs/name/agni/exchange-v3"
 
         with requests.Session() as s:
             try:
@@ -58,11 +57,11 @@ class agniFinancePriceService(WebPriceService):
                 data = {"response": res}
 
             except requests.exceptions.ConnectTimeout:
-                logger.warning("Timeout Error, No prices retrieved from Uniswap")
+                logger.warning("Timeout Error, No prices retrieved from AGNI Finance")
                 return None, None
 
             except Exception:
-                logger.warning("No prices retrieved from Uniswap")
+                logger.warning("No prices retrieved from AGNI Finance")
                 return None, None
 
         if "error" in data:
@@ -83,13 +82,13 @@ class agniFinancePriceService(WebPriceService):
                     token_data = response["data"]["token"]["derivedETH"]
                 price = ethprice * float(token_data)
                 if price == 0.0:
-                    msg = "Uniswap API not included, because price response is 0"
+                    msg = "AGNI Finance API not included, because price response is 0"
                     logger.warning(msg)
                     return None, None
                 else:
                     return price, datetime_now_utc()
             except KeyError as e:
-                msg = "Error parsing agniFinance response: KeyError: {}".format(e)
+                msg = "Error parsing AGNI Finance response: KeyError: {}".format(e)
                 logger.critical(msg)
                 return None, None
 
@@ -102,14 +101,3 @@ class agniFinancePriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
     service: agniFinancePriceService = field(default_factory=agniFinancePriceService, init=False)
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    async def main() -> None:
-        price_source = agniFinancePriceSource(asset="cbeth", currency="eth")
-        price, timestamp = await price_source.fetch_new_datapoint()
-        print(price, timestamp)
-
-    asyncio.run(main())
