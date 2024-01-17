@@ -45,6 +45,7 @@ from telliot_feeds.feeds.landx_feed import wheat
 from telliot_feeds.feeds.link_usd_feed import link_usd_median_feed
 from telliot_feeds.feeds.ltc_usd_feed import ltc_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
+from telliot_feeds.feeds.meth_usd_feed import meth_usd_median_feed
 from telliot_feeds.feeds.mimicry.collection_stat_feed import mimicry_collection_stat_feed
 from telliot_feeds.feeds.mimicry.collection_stat_feed import mimicry_example_feed
 from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import mimicry_mashup_example_feed
@@ -92,7 +93,6 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
-from telliot_feeds.feeds.meth_usd_feed import meth_usd_median_feed
 
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
