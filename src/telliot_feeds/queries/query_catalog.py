@@ -489,3 +489,9 @@ query_catalog.add_entry(
     title="METH/USD spot price",
     q=SpotPrice(asset="meth", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="wbtc-usd-spot",
+    title="WBTC/USD spot price",
+    q=SpotPrice(asset="wbtc", currency="usd"),
+)
