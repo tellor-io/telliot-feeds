@@ -65,6 +65,7 @@ coingecko_coin_id = {
     "ogv": "origin-defi-governance",
     "ordi": "ordinals",
     "meth": "mantle-staked-ether",
+    "wbtc": "wrapped-bitcoin",
 }
 
 
