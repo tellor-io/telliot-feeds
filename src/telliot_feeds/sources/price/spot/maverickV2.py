@@ -18,7 +18,7 @@ maverickV2_map = {
 
 
 class MaverickV2PriceService(WebPriceService):
-    """maverickV2 Price Service in USD and ETH"""
+    """maverickV2 Price Service in ETH"""
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "maverickV2 Price Service"

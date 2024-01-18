@@ -1,6 +1,5 @@
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.price.spot_price import SpotPrice
-from telliot_feeds.sources.price.spot.binance import BinanceSpotPriceSource
 from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceSource
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceSource
@@ -14,11 +13,10 @@ eth_usd_median_feed = DataFeed(
         currency="usd",
         algorithm="median",
         sources=[
-            CoinGeckoSpotPriceSource(asset="eth", currency="usd"),
-            BinanceSpotPriceSource(asset="eth", currency="usdt"),
-            CoinbaseSpotPriceSource(asset="eth", currency="usd"),
-            GeminiSpotPriceSource(asset="eth", currency="usd"),
-            KrakenSpotPriceSource(asset="eth", currency="usd"),
+            CoinGeckoSpotPriceSource(asset="btc", currency="usd"),
+            CoinbaseSpotPriceSource(asset="btc", currency="usd"),
+            GeminiSpotPriceSource(asset="btc", currency="usd"),
+            KrakenSpotPriceSource(asset="btc", currency="usd"),
         ],
     ),
 )

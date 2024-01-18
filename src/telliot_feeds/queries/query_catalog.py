@@ -483,3 +483,9 @@ query_catalog.add_entry(
     title="ORDI/USD spot price",
     q=CustomPrice(identifier="brc20", asset="ordi", currency="usd", unit=""),
 )
+
+query_catalog.add_entry(
+    tag="meth-usd-spot",
+    title="METH/USD spot price",
+    q=SpotPrice(asset="meth", currency="usd"),
+)

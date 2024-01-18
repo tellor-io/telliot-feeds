@@ -64,6 +64,7 @@ coingecko_coin_id = {
     "pyth": "pyth-network",
     "ogv": "origin-defi-governance",
     "ordi": "ordinals",
+    "meth": "mantle-staked-ether",
 }
 
 
