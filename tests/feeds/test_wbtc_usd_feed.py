@@ -20,4 +20,3 @@ async def test_wbtc_usd_median_feed(caplog):
 
     # Make sure error is less than decimal tolerance
     assert (v - statistics.median(source_prices)) < 10**-6
-
