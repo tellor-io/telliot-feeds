@@ -12,31 +12,31 @@ from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
-agniFinance_map = {
+fusionX_map = {
     "weth": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead1111",
     "meth": "0xcda86a272531e8640cd7f1a92c01839911b90bb0",
 }
 
 
-class agniFinancePriceService(WebPriceService):
-    """agniFinance Price Service in USD and ETH"""
+class fusionXPriceService(WebPriceService):
+    """fusionX Price Service in USD and ETH"""
 
     def __init__(self, **kwargs: Any) -> None:
-        kwargs["name"] = "agniFinance subgraph"
-        kwargs["url"] = "https://agni.finance"
+        kwargs["name"] = "fusionX subgraph"
+        kwargs["url"] = "https://graphv3.fusionx.finance"
         kwargs["timeout"] = 10.0
         super().__init__(**kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
-        This implementation gets the price from the agniFinance subgraph
-        https://agni.finance/graph/subgraphs/name/agni/exchange-v3/graphql?
+        This implementation gets the price from the fusionX subgraph
+        https://graphv3.fusionx.finance/subgraphs/name/fusionx/exchange-v3/graphql?
         """
 
         asset = asset.lower()
 
-        token = agniFinance_map.get(asset, None)
+        token = fusionX_map.get(asset, None)
         if not token:
             raise Exception("Asset not supported: {}".format(asset))
 
@@ -48,7 +48,7 @@ class agniFinancePriceService(WebPriceService):
 
         json_data = {"query": query}
 
-        request_url = self.url + "/graph/subgraphs/name/agni/exchange-v3"
+        request_url = self.url + "/subgraphs/name/fusionx/exchange-v3"
 
         with requests.Session() as s:
             try:
@@ -57,11 +57,11 @@ class agniFinancePriceService(WebPriceService):
                 data = {"response": res}
 
             except requests.exceptions.ConnectTimeout:
-                logger.warning("Timeout Error, No prices retrieved from AGNI Finance")
+                logger.warning("Timeout Error, No prices retrieved from fusionX Finance")
                 return None, None
 
             except Exception:
-                logger.warning("No prices retrieved from AGNI Finance")
+                logger.warning("No prices retrieved from fusionX Finance")
                 return None, None
 
         if "error" in data:
@@ -82,13 +82,13 @@ class agniFinancePriceService(WebPriceService):
                     token_data = response["data"]["token"]["derivedETH"]
                 price = ethprice * float(token_data)
                 if price == 0.0:
-                    msg = "AGNI Finance API not included, because price response is 0"
+                    msg = "fusionX Finance API not included, because price response is 0"
                     logger.warning(msg)
                     return None, None
                 else:
                     return price, datetime_now_utc()
             except KeyError as e:
-                msg = "Error parsing AGNI Finance response: KeyError: {}".format(e)
+                msg = "Error parsing fusionX Finance response: KeyError: {}".format(e)
                 logger.critical(msg)
                 return None, None
 
@@ -97,7 +97,7 @@ class agniFinancePriceService(WebPriceService):
 
 
 @dataclass
-class agniFinancePriceSource(PriceSource):
+class fusionXPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: agniFinancePriceService = field(default_factory=agniFinancePriceService, init=False)
+    service: fusionXPriceService = field(default_factory=fusionXPriceService, init=False)
