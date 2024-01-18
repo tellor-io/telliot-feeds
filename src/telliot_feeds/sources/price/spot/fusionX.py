@@ -13,7 +13,6 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 fusionX_map = {
-    "weth": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead1111",
     "meth": "0xcda86a272531e8640cd7f1a92c01839911b90bb0",
 }
 
