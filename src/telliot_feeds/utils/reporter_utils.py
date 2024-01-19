@@ -197,6 +197,8 @@ def tkn_symbol(chain_id: int) -> str:
         return "FIL"
     elif chain_id in PULSECHAIN_CHAINS:
         return "PLS"
+    elif chain_id in MANTLE_CHAINS:
+        return "MNT"
     else:
         return "Unknown native token"
 
