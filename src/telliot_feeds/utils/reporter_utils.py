@@ -23,6 +23,7 @@ from web3.types import Wei
 from telliot_feeds.constants import ETHEREUM_CHAINS
 from telliot_feeds.constants import FILECOIN_CHAINS
 from telliot_feeds.constants import GNOSIS_CHAINS
+from telliot_feeds.constants import MANTLE_CHAINS
 from telliot_feeds.constants import POLYGON_CHAINS
 from telliot_feeds.constants import PULSECHAIN_CHAINS
 from telliot_feeds.datafeed import DataFeed
@@ -30,6 +31,7 @@ from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.fil_usd_feed import fil_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
+from telliot_feeds.feeds.mnt_usd_feed import mnt_usd_median_feed
 from telliot_feeds.feeds.pls_usd_feed import pls_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.queries.query_catalog import query_catalog
@@ -178,6 +180,8 @@ def get_native_token_feed(chain_id: int) -> DataFeed[float]:
         return fil_usd_median_feed
     elif chain_id in PULSECHAIN_CHAINS:
         return pls_usd_median_feed
+    elif chain_id in MANTLE_CHAINS:
+        return mnt_usd_median_feed
     else:
         raise ValueError(f"Cannot fetch native token feed. Invalid chain ID: {chain_id}")
 

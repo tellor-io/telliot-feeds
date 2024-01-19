@@ -495,3 +495,9 @@ query_catalog.add_entry(
     title="WBTC/USD spot price",
     q=SpotPrice(asset="wbtc", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="mnt-usd-spot",
+    title="MNT/USD spot price",
+    q=SpotPrice(asset="mnt", currency="usd"),
+)

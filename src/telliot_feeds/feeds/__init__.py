@@ -54,6 +54,7 @@ from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_
 from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_feed
 from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_usd_feed
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
+from telliot_feeds.feeds.mnt_usd_feed import mnt_usd_median_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
 from telliot_feeds.feeds.oeth_eth_feed import oeth_eth_median_feed
@@ -176,6 +177,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "brc20-ordi-usd-spot": ordi_usd_median_feed,
     "meth-usd-spot": meth_usd_median_feed,
     "wbtc-usd-spot": wbtc_usd_median_feed,
+    "mnt-usd-spot": mnt_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
