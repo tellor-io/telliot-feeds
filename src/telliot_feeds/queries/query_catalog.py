@@ -501,3 +501,15 @@ query_catalog.add_entry(
     title="MNT/USD spot price",
     q=SpotPrice(asset="mnt", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="usdy-usd-spot",
+    title="USDY/USD spot price",
+    q=SpotPrice(asset="usdy", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="wmnt-usd-spot",
+    title="WMNT/USD spot price",
+    q=SpotPrice(asset="wmnt", currency="usd"),
+)

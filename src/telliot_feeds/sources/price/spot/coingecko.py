@@ -67,6 +67,8 @@ coingecko_coin_id = {
     "meth": "mantle-staked-ether",
     "wbtc": "wrapped-bitcoin",
     "mnt": "mantle",
+    "usdy": "ondo-us-dollar-yield",
+    "wmnt": "wrapped-mantle",
 }
 
 
