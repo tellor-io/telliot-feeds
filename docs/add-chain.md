@@ -10,8 +10,3 @@
 3. Make sure there's a datafeed for the chain's native token in `src/telliot_feeds/feeds/`. If there isn't, add one by following the steps [here](https://tellor-io.github.io/telliot-feeds/add-spot-price/).
 4. Support profit checks by updating `get_native_token_feed` in `src/telliot_feeds/utils/reporter_utils.py` to return the datafeed for your new chain's native token.
 5. Once you've done a new release of `telliot-core`, update that dependency in this package's `setup.cfg` to the new version.
-
-add chain id to constans.py. If the native token is the same as one of the others in the list, move ahead to step _
-import this into reporter_utils.py along with the feed for the native token
-delete the legacy gas step?
-
