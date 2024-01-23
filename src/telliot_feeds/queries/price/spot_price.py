@@ -76,6 +76,9 @@ SPOT_PRICE_PAIRS = [
     "ORDI/USD",
     "METH/USD",
     "WBTC/USD",
+    "MNT/USD",
+    "USDY/USD",
+    "WMNT/USD",
 ]
 
 

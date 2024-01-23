@@ -15,6 +15,11 @@ logger = get_logger(__name__)
 agniFinance_map = {
     "weth": "0xdeaddeaddeaddeaddeaddeaddeaddeaddead1111",
     "meth": "0xcda86a272531e8640cd7f1a92c01839911b90bb0",
+    "usdy": "0x5be26527e817998a7206475496fde1e68957c5a6",
+    "wmnt": "0x78c1b0c915c4faa5fffa6cabf0219da63d7f4cb8",
+    "wbtc": "0xcabae6f6ea1ecab08ad02fe02ce9a44f09aebfa2",
+    "usdt": "0x201eba5cc46d216ce6dc03f6a759e8e766e956ae",
+    "usdc": "0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9",
 }
 
 
