@@ -7,20 +7,26 @@ from dataclasses import dataclass
 from typing import Optional
 
 from telliot_feeds.dtypes.value_type import ValueType
-from telliot_feeds.queries.json_query import JsonQuery
+from telliot_feeds.queries.abi_query import AbiQuery
 
 
 @dataclass
-class ipfsCID_query(JsonQuery):
+class ipfsCID(AbiQuery):
     """
     A query type for IPFS content identifier CIDs
     More info: add link to dataspec
     """
 
-    #: Static query text
-    text: Optional[str]
+    #: Static url
+    url: Optional[str]
 
+    def __init__(self, url: Optional[str]):
+        self.url = url
+
+    #: ABI used for encoding/decoding parameters
+    abi = [{"name": "url", "type": "string"}]
+           
     @property
     def value_type(self) -> ValueType:
-        """Returns a default text response type."""
+        """Returns a datatype for ipfs CIDs."""
         return ValueType(abi_type="string", packed=False)
