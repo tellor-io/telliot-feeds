@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from telliot_feeds.queries.abi_query import AbiQuery
 from telliot_feeds.dtypes.value_type import ValueType
+from telliot_feeds.queries.abi_query import AbiQuery
+
 
 @dataclass
 class BTCBalance(AbiQuery):
@@ -30,4 +31,3 @@ class BTCBalance(AbiQuery):
         """
 
         return ValueType(abi_type="uint256", packed=False)
-
