@@ -11,7 +11,7 @@ from telliot_feeds.queries.json_query import JsonQuery
 
 
 @dataclass
-class ipfsCID(JsonQuery):
+class ipfsCID_query(JsonQuery):
     """
     A query type for IPFS content identifier CIDs
     More info: add link to dataspec
