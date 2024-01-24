@@ -1,18 +1,16 @@
-""" Unit tests for static queries
+from eth_abi import decode_abi
 
-Copyright (c) 2021-, Tellor Development Community
-Distributed under the terms of the MIT License.
-"""
+
 from telliot_feeds.queries.ipfsCID_query import ipfsCID
 
 
 def test_ipfsCID_query():
     """Test static query"""
-    q = ipfsCID(url="https://raw.githubusercontent.com/tellor-io/dataSpecs/main/README.md")
+    q = ipfsCID(
+        url="https://raw.githubusercontent.com/tellor-io/dataSpecs/main/README.md",
+    )
 
-    assert q.query_data == b'{"type":"ipfsCID","url":"https://raw.githubusercontent.com/tellor-io/dataSpecs/main/README.md"}'
-
-    exp_query_id = "7358f056230629915e1e6a8ef2c2f02496de3de644cbfadfced0449b784f8d47"
+    exp_query_id = "da3b2bd336f0d02af24c096b613920170cabc486a3537596fa5a34d26e2927d1"
     assert q.query_id.hex() == exp_query_id
 
     exp_query_data = (
@@ -31,37 +29,35 @@ def test_ipfsCID_query():
         b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
         b'\x00\x00\x00\x00\x00\x00\x00Dhttps://raw.githubusercontent.com/tellor-io/'
         b'dataSpecs/main/README.md\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
     )
 
     assert q.query_data == exp_query_data
 
     query_type, encoded_param_vals = decode_abi(["string", "bytes"], q.query_data)
-    assert query_type == "NumericApiResponse"
+    assert query_type == "ipfsCID"
 
     url = decode_abi([q.abi[0]["type"]], encoded_param_vals)[0]
     assert (
-        url == "https://samples.openweathermap.org/data/2.5/weather?q=Lond`on,uk&appid=b6907d289e10d714a6e88b30761fae22"
+        url == "https://raw.githubusercontent.com/tellor-io/dataSpecs/main/README.md"
     )
 
-    q = NumericApiResponse.get_query_from_data(exp_query_data)
-    assert isinstance(q, NumericApiResponse)
-    assert q.parseStr == "temp_min, description"
+    q = ipfsCID.get_query_from_data(exp_query_data)
+    assert isinstance(q, ipfsCID)
 
 
 def test_encode_decode():
-    q = NumericApiResponse(
-        url="https://samples.openweathermap.org/data/2.5/weather?q=Lond`on,uk&appid=b6907d289e10d714a6e88b30761fae22",
-        parseStr="temp_min",
+    q = ipfsCID(
+        url="https://raw.githubusercontent.com/tellor-io/dataSpecs/main/README.md",
     )
 
-    data = 1234.1234
+    data = "QmdW4FNKsPS9yykKN5sC7Q53pdWJRz2TXgVRGnZHawP7qe"
     submit_value = q.value_type.encode(data)
     assert isinstance(submit_value, bytes)
 
     decoded_data = q.value_type.decode(submit_value)
-    assert isinstance(decoded_data, float)
-    assert decoded_data == 1234.1234
+    assert isinstance(decoded_data, str)
+    assert decoded_data == "QmdW4FNKsPS9yykKN5sC7Q53pdWJRz2TXgVRGnZHawP7qe"
 
 
 
