@@ -27,12 +27,12 @@ adapter = HTTPAdapter(max_retries=retry_strategy)
 class BTCBalanceSource(DataSource[Any]):
     """DataSource for returning the balance of a BTC address at a given timestamp."""
 
-    address: Optional[str] = None
+    btcAddress: Optional[str] = None
     timestamp: Optional[int] = None
 
     async def get_response(self) -> Optional[Any]:
         """gets balance of address from https://blockchain.info/multiaddr?active=$address|$address"""
-        if not self.address:
+        if not self.btcAddress:
             raise ValueError("BTC address not provided")
         if not self.timestamp:
             raise ValueError("Timestamp not provided")
@@ -42,7 +42,7 @@ class BTCBalanceSource(DataSource[Any]):
             return None
 
         with requests.Session() as s:
-            url = f"https://blockchain.info/multiaddr?active={self.address}|{self.address}"
+            url = f"https://blockchain.info/multiaddr?active={self.btcAddress}|{self.btcAddress}"
             try:
                 rsp = s.get(url)
             except requests.exceptions.ConnectTimeout:
