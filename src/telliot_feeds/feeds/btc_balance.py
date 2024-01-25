@@ -16,5 +16,5 @@ btcAddressEx = "bc1q06ywseed6sc3x2fafppchefqq8v9cqd0l6vx03"
 timestampEx = 1706051388
 btc_balance_feed_example = DataFeed(
     source=BTCBalanceSource(btcAddress=btcAddressEx, timestamp=timestampEx),
-    query=BTCBalance(btcAddress = btcAddressEx, timestamp=timestampEx),
+    query=BTCBalance(btcAddress=btcAddressEx, timestamp=timestampEx),
 )
