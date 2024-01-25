@@ -518,5 +518,5 @@ query_catalog.add_entry(
 query_catalog.add_entry(
     tag="btc-bal-example",
     title="BTC balance example",
-    q=BTCBalance(address="bc1q06ywseed6sc3x2fafppchefqq8v9cqd0l6vx03", timestamp=1706051389),
+    q=BTCBalance(btcAddress="bc1q06ywseed6sc3x2fafppchefqq8v9cqd0l6vx03", timestamp=1706051389),
 )
