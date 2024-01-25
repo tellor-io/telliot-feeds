@@ -11,6 +11,7 @@ from telliot_feeds.feeds.bch_usd_feed import bch_usd_median_feed
 from telliot_feeds.feeds.bct_usd_feed import bct_usd_median_feed
 from telliot_feeds.feeds.brc20_ordi_usd_feed import ordi_usd_median_feed
 from telliot_feeds.feeds.brl_usd_feed import brl_usd_median_feed
+from telliot_feeds.feeds.btc_balance import btc_balance_feed
 from telliot_feeds.feeds.btc_balance import btc_balance_feed_example
 from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feeds.feeds.cbeth_usd_feed import cbeth_usd_median_feed
@@ -98,7 +99,6 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
-
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "ampleforth-custom": ampl_usd_vwap_feed,
@@ -205,4 +205,5 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "MimicryMacroMarketMashup": mimicry_mashup_feed,
     "EVMCall": evm_call_feed,
     "CustomPrice": custom_price_manual_feed,
+    "BTCBalance": btc_balance_feed,
 }
