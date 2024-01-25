@@ -1,5 +1,5 @@
 from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.queries.fileCID_query import FileCID
+from telliot_feeds.queries.fileCID import FileCID
 from telliot_feeds.sources.manual.fileCID_manual_source import fileCIDManualSource
 
 url = None

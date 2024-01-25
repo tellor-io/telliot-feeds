@@ -1,7 +1,7 @@
 from eth_abi import decode_abi
 
 
-from telliot_feeds.queries.fileCID_query import FileCID
+from telliot_feeds.queries.fileCID import FileCID
 
 
 def test_FileCID_query():
@@ -58,14 +58,6 @@ def test_encode_decode():
     decoded_data = q.value_type.decode(submit_value)
     assert isinstance(decoded_data, str)
     assert decoded_data == "QmdW4FNKsPS9yykKN5sC7Q53pdWJRz2TXgVRGnZHawP7qe"
-
-
-
-
-
-
-
-
 
     submit_value = q.value_type.encode("QmdW4FNKsPS9yykKN5sC7Q53pdWJRz2TXgVRGnZHawP7qe")
     assert isinstance(submit_value, bytes)
