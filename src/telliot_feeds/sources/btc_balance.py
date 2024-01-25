@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
@@ -36,6 +37,10 @@ class BTCBalanceSource(DataSource[Any]):
             raise ValueError("BTC address not provided")
         if not self.timestamp:
             raise ValueError("Timestamp not provided")
+
+        if self.timestamp > int(time.time()):
+            logger.warning("Timestamp is greater than current timestamp")
+            return None
 
         block_num = await self.block_num_from_timestamp(self.timestamp)
         if block_num is None:
@@ -86,7 +91,9 @@ class BTCBalanceSource(DataSource[Any]):
                 return 0
 
             # Use the balance from the last transaction as the BTC balance
-            btc_balance = last_tx["balance"]
+            btc_balance = int(last_tx["balance"])
+            # convert to 18 decimals
+            btc_balance = btc_balance * 10**10
             return btc_balance
 
     async def block_num_from_timestamp(self, timestamp: int) -> Optional[int]:

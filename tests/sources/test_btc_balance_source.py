@@ -14,7 +14,7 @@ async def test_btc_balance():
         btc_bal_source = BTCBalanceSource(btcAddress="bc1q06ywseed6sc3x2fafppchefqq8v9cqd0l6vx03", timestamp=1706051389)
         v, t = await btc_bal_source.fetch_new_datapoint()
 
-        assert v == 151914
+        assert v == 1519140000000000
 
         assert isinstance(v, int)
         assert isinstance(t, datetime)
