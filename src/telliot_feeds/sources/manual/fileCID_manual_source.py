@@ -11,7 +11,7 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-class ipfsCIDQueryManualSource(DataSource[Optional[str]]):
+class fileCIDManualSource(DataSource[Optional[str]]):
     async def fetch_new_datapoint(self) -> OptionalDataPoint[str]:
 
         print("enter CID:\n")

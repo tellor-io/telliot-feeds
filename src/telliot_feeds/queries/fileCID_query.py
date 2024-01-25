@@ -11,7 +11,7 @@ from telliot_feeds.queries.abi_query import AbiQuery
 
 
 @dataclass
-class ipfsCID(AbiQuery):
+class FileCID(AbiQuery):
     """
     A query type for IPFS content identifier CIDs
     More info: add link to dataspec

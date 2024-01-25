@@ -1,16 +1,16 @@
 from eth_abi import decode_abi
 
 
-from telliot_feeds.queries.ipfsCID_query import ipfsCID
+from telliot_feeds.queries.fileCID_query import FileCID
 
 
-def test_ipfsCID_query():
+def test_FileCID_query():
     """Test static query"""
-    q = ipfsCID(
+    q = FileCID(
         url="https://raw.githubusercontent.com/tellor-io/dataSpecs/main/README.md",
     )
 
-    exp_query_id = "da3b2bd336f0d02af24c096b613920170cabc486a3537596fa5a34d26e2927d1"
+    exp_query_id = "81c2d4d0f826cc936f6bfc110120445d648b9f6ab815984420598bea60b416ca"
     assert q.query_id.hex() == exp_query_id
 
     exp_query_data = (
@@ -19,7 +19,7 @@ def test_ipfsCID_query():
         b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
         b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80'
         b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x07ipfsCID\x00'
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x07FileCID\x00'
         b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
         b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
         b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -35,19 +35,19 @@ def test_ipfsCID_query():
     assert q.query_data == exp_query_data
 
     query_type, encoded_param_vals = decode_abi(["string", "bytes"], q.query_data)
-    assert query_type == "ipfsCID"
+    assert query_type == "FileCID"
 
     url = decode_abi([q.abi[0]["type"]], encoded_param_vals)[0]
     assert (
         url == "https://raw.githubusercontent.com/tellor-io/dataSpecs/main/README.md"
     )
 
-    q = ipfsCID.get_query_from_data(exp_query_data)
-    assert isinstance(q, ipfsCID)
+    q = FileCID.get_query_from_data(exp_query_data)
+    assert isinstance(q, FileCID)
 
 
 def test_encode_decode():
-    q = ipfsCID(
+    q = FileCID(
         url="https://raw.githubusercontent.com/tellor-io/dataSpecs/main/README.md",
     )
 
