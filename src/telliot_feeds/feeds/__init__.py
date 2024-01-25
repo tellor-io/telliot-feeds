@@ -97,6 +97,8 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
+from telliot_feeds.feeds.btc_balance_feed import bitcoin_balance_feed
+from telliot_feeds.feeds.btc_balance_feed import btc_balance_feed_example
 
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
@@ -182,6 +184,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "mnt-usd-spot": mnt_usd_median_feed,
     "usdy-usd-spot": usdy_usd_median_feed,
     "wmnt-usd-spot": wmnt_usd_median_feed,
+    "btc-bal-example": btc_balance_feed_example
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
@@ -203,4 +206,5 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "MimicryMacroMarketMashup": mimicry_mashup_feed,
     "EVMCall": evm_call_feed,
     "CustomPrice": custom_price_manual_feed,
+    "BTCBalance": bitcoin_balance_feed,
 }
