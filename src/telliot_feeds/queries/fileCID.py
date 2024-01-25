@@ -25,7 +25,7 @@ class FileCID(AbiQuery):
 
     #: ABI used for encoding/decoding parameters
     abi = [{"name": "url", "type": "string"}]
-           
+
     @property
     def value_type(self) -> ValueType:
         """Returns a datatype for ipfs CIDs."""
