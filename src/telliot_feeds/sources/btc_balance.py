@@ -32,7 +32,7 @@ class BTCBalanceSource(DataSource[Any]):
     timestamp: Optional[int] = None
 
     async def get_response(self) -> Optional[Any]:
-        """gets balance of address from https://blockchain.info/multiaddr?active=$address|$address"""
+        """gets balance of address from https://blockchain.info/"""
         if not self.btcAddress:
             raise ValueError("BTC address not provided")
         if not self.timestamp:
@@ -97,7 +97,7 @@ class BTCBalanceSource(DataSource[Any]):
             return btc_balance
 
     async def block_num_from_timestamp(self, timestamp: int) -> Optional[int]:
-        """Fetches next Bitcoin blockhash after timestamp from API."""
+        """Fetches next Bitcoin block number after timestamp from API."""
         with requests.Session() as s:
             s.mount("https://", adapter)
         ts = timestamp + 480 * 60

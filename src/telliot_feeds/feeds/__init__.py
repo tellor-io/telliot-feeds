@@ -32,6 +32,8 @@ from telliot_feeds.feeds.eth_usd_30day_volatility import eth_usd_30day_volatilit
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.eul_usd_feed import eul_usd_median_feed
 from telliot_feeds.feeds.eur_usd_feed import eur_usd_median_feed
+from telliot_feeds.feeds.evm_balance import evm_balance_feed
+from telliot_feeds.feeds.evm_balance import evm_balance_feed_example
 from telliot_feeds.feeds.evm_call_feed import evm_call_feed
 from telliot_feeds.feeds.evm_call_feed import evm_call_feed_example
 from telliot_feeds.feeds.fil_usd_feed import fil_usd_median_feed
@@ -184,6 +186,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "usdy-usd-spot": usdy_usd_median_feed,
     "wmnt-usd-spot": wmnt_usd_median_feed,
     "btc-bal-example": btc_balance_feed_example,
+    "evm-bal-example": evm_balance_feed_example,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
@@ -206,4 +209,5 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "EVMCall": evm_call_feed,
     "CustomPrice": custom_price_manual_feed,
     "BTCBalance": btc_balance_feed,
+    "EVMBalance": evm_balance_feed,
 }
