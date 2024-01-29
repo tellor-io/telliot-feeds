@@ -80,7 +80,7 @@ class BTCBalanceSource(DataSource[Any]):
                 if not tx.get("block_height") or not isinstance(tx["block_height"], int):
                     logger.error("Invalid transaction found: missing or non-integer block_height")
                     return None
-            
+
             # Sort transactions by time in ascending order
             sorted_txs = sorted(data["txs"], key=lambda tx: (tx["block_height"], tx["tx_index"]))
 
