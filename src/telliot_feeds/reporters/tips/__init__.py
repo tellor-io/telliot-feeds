@@ -99,6 +99,13 @@ add_multicall_support(
     multicall3_address="0xbc3295180704476e4D40400b39d1d75892D91327",
 )
 
+add_multicall_support(
+    network="Mantle",
+    network_id=5000,
+    state_override=False,
+    multicall3_address="0x5Dbd743481a4027d6632E169592860a1Ca38C637",
+)
+
 CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
 CATALOG_QUERY_DATA = {query_catalog._entries[tag].query.query_data: tag for tag in query_catalog._entries}
 # A list of query types that have a generic source that can take any properly formatted inputs and return a price
