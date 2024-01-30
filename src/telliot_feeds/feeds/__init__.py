@@ -37,6 +37,7 @@ from telliot_feeds.feeds.evm_balance import evm_balance_feed_example
 from telliot_feeds.feeds.evm_call_feed import evm_call_feed
 from telliot_feeds.feeds.evm_call_feed import evm_call_feed_example
 from telliot_feeds.feeds.fil_usd_feed import fil_usd_median_feed
+from telliot_feeds.feeds.fileCID_manual_feed import fileCID_manual_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed_example
 from telliot_feeds.feeds.gno_usd_feed import gno_usd_median_feed
@@ -208,6 +209,7 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "MimicryMacroMarketMashup": mimicry_mashup_feed,
     "EVMCall": evm_call_feed,
     "CustomPrice": custom_price_manual_feed,
+    "FileCID": fileCID_manual_feed,
     "BTCBalance": btc_balance_feed,
     "EVMBalance": evm_balance_feed,
 }
