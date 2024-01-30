@@ -13,10 +13,10 @@ eth_usd_median_feed = DataFeed(
         currency="usd",
         algorithm="median",
         sources=[
-            CoinGeckoSpotPriceSource(asset="btc", currency="usd"),
-            CoinbaseSpotPriceSource(asset="btc", currency="usd"),
-            GeminiSpotPriceSource(asset="btc", currency="usd"),
-            KrakenSpotPriceSource(asset="btc", currency="usd"),
+            CoinGeckoSpotPriceSource(asset="eth", currency="usd"),
+            CoinbaseSpotPriceSource(asset="eth", currency="usd"),
+            GeminiSpotPriceSource(asset="eth", currency="usd"),
+            KrakenSpotPriceSource(asset="eth", currency="usd"),
         ],
     ),
 )
