@@ -5,10 +5,12 @@ from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import TOKENS
 from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
 from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AmpleforthCustomSpotPrice
 from telliot_feeds.queries.ampleforth.uspce import AmpleforthUSPCE
+from telliot_feeds.queries.btc_balance import BTCBalance
 from telliot_feeds.queries.catalog import Catalog
 from telliot_feeds.queries.custom_price import CustomPrice
 from telliot_feeds.queries.daily_volatility import DailyVolatility
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
+from telliot_feeds.queries.evm_balance import EVMBalance
 from telliot_feeds.queries.evm_call import EVMCall
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
 from telliot_feeds.queries.mimicry.collection_stat import MimicryCollectionStat
@@ -512,4 +514,16 @@ query_catalog.add_entry(
     tag="wmnt-usd-spot",
     title="WMNT/USD spot price",
     q=SpotPrice(asset="wmnt", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="btc-bal-example",
+    title="BTC balance example",
+    q=BTCBalance(btcAddress="bc1q06ywseed6sc3x2fafppchefqq8v9cqd0l6vx03", timestamp=1706051389),
+)
+
+query_catalog.add_entry(
+    tag="evm-bal-example",
+    title="EVM balance example",
+    q=EVMBalance(chainId=11155111, evmAddress="0x210766226c54CDD6bD0401749D43E7a5585e3868", timestamp=1706302197),
 )
