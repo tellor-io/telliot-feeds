@@ -25,7 +25,6 @@ uniswapV3_map = {
     "sweth": "0xf951e335afb289353dc249e82926178eac7ded78",
     "cbeth": "0xbe9895146f7af43049ca1c1ae358b0541ea49704",
     "oeth": "0x856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3",
-    "ogv": "0x9c354503c38481a7a7a51629142963f98ecc12d0",
     "wbtc": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
     "mnt": "0x3c3a81e81dc49a522a592e7622a7e711c06bf354",
 }

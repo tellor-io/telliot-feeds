@@ -12,8 +12,22 @@ from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
-uniswapV3Pool_map = {
+
+
+"""
+Use the UniswapV3 subgraph playground to determine 
+if the spot price asset is token0 or token1. 
+Add the pool's contract address to either the
+uniswapV3token0_map or uniswapV3token1_map accordingly
+https://thegraph.com/hosted-service/subgraph/uniswap/uniswap-v3
+"""
+uniswapV3token0_map = {
     "oeth": "0x52299416c469843f4e0d54688099966a6c7d720f",
+}
+
+
+uniswapV3token1_map = {
+    "ogv": "0xa0b30e46f6aeb8f5a849241d703254bb4a719d92",
 }
 
 
@@ -36,15 +50,15 @@ class UniswapV3PoolPriceService(WebPriceService):
 
         asset = asset.lower()
 
-        pool = uniswapV3Pool_map.get(asset, None)
+        pool = [uniswapV3token0_map.get(asset, None), uniswapV3token1_map.get(asset, None)]
         if not pool:
             raise Exception("Asset not supported: {}".format(asset))
 
         headers = {
             "Content-Type": "application/json",
         }
-
-        query = "{pool" + f'(id: "{pool}")' + "{ token0Price } }"
+        
+        query = "{pool" + f'(id: "{pool}")' + "{ token1Price } }"
 
         json_data = {"query": query}
 
@@ -72,10 +86,10 @@ class UniswapV3PoolPriceService(WebPriceService):
             response = data["response"]
 
             try:
-                token_price = float(response["data"]["pool"]["token0Price"])
+                token_price = float(response["data"]["pool"]["token1Price"])
                 return token_price, datetime_now_utc()
             except KeyError as e:
-                msg = "Error parsing MaverickV2 response: KeyError: {}".format(e)
+                msg = "Error parsing UniswapV3 pool response: KeyError: {}".format(e)
                 logger.critical(msg)
                 return None, None
 
