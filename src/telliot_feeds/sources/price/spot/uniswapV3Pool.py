@@ -21,12 +21,12 @@ Add the pool's contract address to either the
 uniswapV3token0_map or uniswapV3token1_map accordingly
 https://thegraph.com/hosted-service/subgraph/uniswap/uniswap-v3
 """
-uniswapV3token0_map = {
+uniswapV3token0__pool_map = {
     "oeth": "0x52299416c469843f4e0d54688099966a6c7d720f",
 }
 
 
-uniswapV3token1_map = {
+uniswapV3token1__pool_map = {
     "ogv": "0xa0b30e46f6aeb8f5a849241d703254bb4a719d92",
 }
 
@@ -50,15 +50,21 @@ class UniswapV3PoolPriceService(WebPriceService):
 
         asset = asset.lower()
 
-        pool = [uniswapV3token0_map.get(asset, None), uniswapV3token1_map.get(asset, None)]
-        if not pool:
+        pool0 = uniswapV3token0__pool_map.get(asset, None)
+
+        pool1 = uniswapV3token1__pool_map.get(asset, None)
+
+        if not pool0 and not pool1:
             raise Exception("Asset not supported: {}".format(asset))
 
         headers = {
             "Content-Type": "application/json",
         }
-        
-        query = "{pool" + f'(id: "{pool}")' + "{ token1Price } }"
+        if pool0:
+            query = "{pool" + f'(id: "{pool0}")' + "{ token0Price } }"
+
+        if pool1:
+            query = "{pool" + f'(id: "{pool1}")' + "{ token1Price } }"
 
         json_data = {"query": query}
 
