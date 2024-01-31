@@ -12,8 +12,14 @@ from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
-uniswapV3Pool_map = {
+
+uniswapV3token0__pool_map = {
     "oeth": "0x52299416c469843f4e0d54688099966a6c7d720f",
+}
+
+
+uniswapV3token1__pool_map = {
+    "ogv": "0xa0b30e46f6aeb8f5a849241d703254bb4a719d92",
 }
 
 
@@ -28,23 +34,27 @@ class UniswapV3PoolPriceService(WebPriceService):
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
-
         This implementation gets the price from the UniswapV3 subgraph using the pool query
         https://docs.uniswap.org/sdk/subgraph/subgraph-examples
 
         """
-
         asset = asset.lower()
+        pool0 = uniswapV3token0__pool_map.get(asset, None)
+        pool1 = uniswapV3token1__pool_map.get(asset, None)
 
-        pool = uniswapV3Pool_map.get(asset, None)
-        if not pool:
+        if not pool0 and not pool1:
             raise Exception("Asset not supported: {}".format(asset))
 
         headers = {
             "Content-Type": "application/json",
         }
+        if pool0:
+            query = "{pool" + f'(id: "{pool0}")' + "{ token0Price } }"
+            key = "token0Price"
 
-        query = "{pool" + f'(id: "{pool}")' + "{ token0Price } }"
+        if pool1:
+            query = "{pool" + f'(id: "{pool1}")' + "{ token1Price } }"
+            key = "token1Price"
 
         json_data = {"query": query}
 
@@ -72,10 +82,10 @@ class UniswapV3PoolPriceService(WebPriceService):
             response = data["response"]
 
             try:
-                token_price = float(response["data"]["pool"]["token0Price"])
+                token_price = float(response["data"]["pool"][key])
                 return token_price, datetime_now_utc()
             except KeyError as e:
-                msg = "Error parsing MaverickV2 response: KeyError: {}".format(e)
+                msg = "Error parsing UniswapV3 pool response: KeyError: {}".format(e)
                 logger.critical(msg)
                 return None, None
 

@@ -40,7 +40,7 @@ class GeminiSpotPriceService(WebPriceService):
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
-        This implementation gets the price from the Bittrex API
+        This implementation gets the price from the Gemini API
 
         Note that the timestamp returned form the coinbase API could be used
         instead of the locally generated timestamp.
