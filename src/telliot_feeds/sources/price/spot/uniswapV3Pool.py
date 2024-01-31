@@ -13,14 +13,6 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
-
-"""
-Use the UniswapV3 subgraph playground to determine 
-if the spot price asset is token0 or token1. 
-Add the pool's contract address to either the
-uniswapV3token0_map or uniswapV3token1_map accordingly
-https://thegraph.com/hosted-service/subgraph/uniswap/uniswap-v3
-"""
 uniswapV3token0__pool_map = {
     "oeth": "0x52299416c469843f4e0d54688099966a6c7d720f",
 }
@@ -42,16 +34,12 @@ class UniswapV3PoolPriceService(WebPriceService):
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
-
         This implementation gets the price from the UniswapV3 subgraph using the pool query
         https://docs.uniswap.org/sdk/subgraph/subgraph-examples
 
         """
-
         asset = asset.lower()
-
         pool0 = uniswapV3token0__pool_map.get(asset, None)
-
         pool1 = uniswapV3token1__pool_map.get(asset, None)
 
         if not pool0 and not pool1:
@@ -100,7 +88,7 @@ class UniswapV3PoolPriceService(WebPriceService):
                 msg = "Error parsing UniswapV3 pool response: KeyError: {}".format(e)
                 logger.critical(msg)
                 return None, None
-        
+
         else:
             raise Exception("Invalid response from get_url")
 
