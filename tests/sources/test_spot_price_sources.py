@@ -11,7 +11,6 @@ from requests.exceptions import JSONDecodeError
 from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.sources.price.spot.bitfinex import BitfinexSpotPriceService
-from telliot_feeds.sources.price.spot.bittrex import BittrexSpotPriceService
 from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceService
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceService
 from telliot_feeds.sources.price.spot.coinmarketcap import CoinMarketCapSpotPriceService
@@ -31,7 +30,6 @@ from telliot_feeds.sources.sweth_source import swETHSpotPriceService
 service = {
     "coinbase": CoinbaseSpotPriceService(),
     "coingecko": CoinGeckoSpotPriceService(),
-    "bittrex": BittrexSpotPriceService(),
     "gemini": GeminiSpotPriceService(),
     "nomics": NomicsSpotPriceService(),
     "pancakeswap": PancakeswapPriceService(),
@@ -146,42 +144,6 @@ async def test_coinmarketcap(caplog, coinmarketcap_key):
 
     else:
         print("No CoinMarketCap API key ")
-
-
-@pytest.mark.asyncio
-async def test_bittrex(caplog):
-    """Test retrieving from Bittrex price source."""
-    v, t = await get_price("btc", "usd", service["bittrex"])
-
-    if "Unable to decode Bittrex JSON" in caplog.text:
-        assert v is None
-        assert t is None
-    else:
-        validate_price(v, t)
-
-    # test rate limiting
-    def mock_get_url(*args, **kwargs):
-        return {"error": "blah", "exception": Exception("restrictions that prevent you from accessing the site")}
-
-    with mock.patch(
-        "telliot_feeds.sources.price.spot.bittrex.BittrexSpotPriceService.get_url", side_effect=mock_get_url
-    ):
-        v, t = await get_price("btc", "usd", service["bittrex"])
-        assert v is None
-        assert t is None
-        assert "Bittrex API rate limit exceeded" in caplog.text
-
-    # test unknown error
-    def mock_get_url2(*args, **kwargs):
-        return {"error": "bingo", "exception": Exception("bango")}
-
-    with mock.patch(
-        "telliot_feeds.sources.price.spot.bittrex.BittrexSpotPriceService.get_url", side_effect=mock_get_url2
-    ):
-        v, t = await get_price("btc", "usd", service["bittrex"])
-        assert v is None
-        assert t is None
-        assert "Exception('bango')" in caplog.text
 
 
 @pytest.mark.asyncio
