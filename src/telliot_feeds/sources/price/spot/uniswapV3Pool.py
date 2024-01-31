@@ -62,9 +62,11 @@ class UniswapV3PoolPriceService(WebPriceService):
         }
         if pool0:
             query = "{pool" + f'(id: "{pool0}")' + "{ token0Price } }"
+            key = "token0Price"
 
         if pool1:
             query = "{pool" + f'(id: "{pool1}")' + "{ token1Price } }"
+            key = "token1Price"
 
         json_data = {"query": query}
 
@@ -92,13 +94,13 @@ class UniswapV3PoolPriceService(WebPriceService):
             response = data["response"]
 
             try:
-                token_price = float(response["data"]["pool"]["token1Price"])
+                token_price = float(response["data"]["pool"][key])
                 return token_price, datetime_now_utc()
             except KeyError as e:
                 msg = "Error parsing UniswapV3 pool response: KeyError: {}".format(e)
                 logger.critical(msg)
                 return None, None
-
+        
         else:
             raise Exception("Invalid response from get_url")
 
