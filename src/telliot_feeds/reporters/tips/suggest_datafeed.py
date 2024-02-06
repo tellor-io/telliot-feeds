@@ -56,7 +56,8 @@ async def get_feed_and_tip(
         datafeed = feed_from_catalog_feeds(query_data)
 
         if datafeed is None:
-            datafeed = feed_in_feed_builder_mapping(query_data)
+            # TODO: add skip manual feed flag to make optional; currently skips all manual feeds
+            datafeed = feed_in_feed_builder_mapping(query_data, skip_manual_feeds=True)
 
         if datafeed is not None:
             query = get_query_from_qtyp_name(query_data)

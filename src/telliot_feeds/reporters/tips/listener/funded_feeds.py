@@ -39,8 +39,11 @@ class FundedFeeds(FundedFeedFilter):
             return None, error_status(note="No funded feeds returned by autopay function call")
 
         # List of feeds with telliot supported query types
+        # TODO: make skipping manual feeds optional
         supported_funded_feeds = [
-            (feed, query_data) for (feed, query_data) in funded_feeds if feed_in_feed_builder_mapping(query_data)
+            (feed, query_data)
+            for (feed, query_data) in funded_feeds
+            if feed_in_feed_builder_mapping(query_data, skip_manual_feeds=True)
         ]
 
         if not supported_funded_feeds:
