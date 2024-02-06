@@ -60,7 +60,7 @@ def feed_from_catalog_feeds(qdata: bytes) -> Optional[DataFeed[Any]]:
     return CATALOG_FEEDS.get(qtag) if qtag else None
 
 
-def feed_in_feed_builder_mapping(qdata: bytes, skip_manual_feeds: bool) -> Optional[DataFeed[Any]]:
+def feed_in_feed_builder_mapping(qdata: bytes, skip_manual_feeds: bool = False) -> Optional[DataFeed[Any]]:
     """Get feed if query type in DATAFEED_BUILDER_MAPPING
 
     Args:
