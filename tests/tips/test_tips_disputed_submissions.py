@@ -127,6 +127,6 @@ async def test_tips_disputed_submissions(deploy, mumbai_test_cfg):
     playground.beginDispute(query_id, time, {"from": accounts[0]})
     chain.mine(timedelta=1)
 
-    datafeed, tip = await get_feed_and_tip(tellor_autopay,skip_manual_feeds=False,  current_timestamp=chain.time())
+    datafeed, tip = await get_feed_and_tip(tellor_autopay, skip_manual_feeds=False, current_timestamp=chain.time())
     assert datafeed is not None
     assert tip > 0

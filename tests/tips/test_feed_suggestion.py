@@ -163,7 +163,7 @@ async def test_feed_with_manual_source(autopay_contract_setup, caplog):
         _amount=int(10e18),
     )
     assert status.ok
-    
+
     datafeed, tip = await get_feed_and_tip(r.autopay, skip_manual_feeds=False)
     assert datafeed.query.asset == "fake"
     assert datafeed.query.currency == "usd"
