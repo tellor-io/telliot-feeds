@@ -22,7 +22,7 @@ logger = get_logger(__name__)
 # suggest a feed here not a query tag, because build feed portion
 # or check both mappings for type
 async def get_feed_and_tip(
-    autopay: TellorFlexAutopayContract, current_timestamp: Optional[TimeStamp] = None
+    autopay: TellorFlexAutopayContract, skip_manual_feeds: bool, current_timestamp: Optional[TimeStamp] = None
 ) -> Optional[Tuple[Optional[DataFeed[Any]], Optional[int]]]:
     """Fetch feeds with their tip and filter to get a feed suggestion with the max tip
 
@@ -57,7 +57,7 @@ async def get_feed_and_tip(
 
         if datafeed is None:
             # TODO: add skip manual feed flag to make optional; currently skips all manual feeds
-            datafeed = feed_in_feed_builder_mapping(query_data, skip_manual_feeds=True)
+            datafeed = feed_in_feed_builder_mapping(query_data, skip_manual_feeds=skip_manual_feeds)
 
         if datafeed is not None:
             query = get_query_from_qtyp_name(query_data)

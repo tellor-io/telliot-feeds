@@ -66,6 +66,7 @@ async def conditional(
     stale_timeout: int,
     query_tag: str,
     unsafe: bool,
+    skip_manual_feeds: bool,
 ) -> None:
     """Report values to Tellor oracle if certain conditions are met."""
     click.echo("Starting Conditional Reporter...")
@@ -137,6 +138,7 @@ async def conditional(
             "check_rewards": check_rewards,
             "gas_multiplier": gas_multiplier,
             "max_priority_fee_range": max_priority_fee_range,
+            "skip_manual_feeds": skip_manual_feeds,
         }
 
         reporter = ConditionalReporter(

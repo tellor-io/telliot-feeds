@@ -39,7 +39,7 @@ async def test_mashup_type(autopay_contract_setup, caplog):
     )
     chain.mine(timedelta=1)
     reporting_time = chain.time()
-    datafeed, tip = await get_feed_and_tip(r.autopay, current_timestamp=reporting_time)
+    datafeed, tip = await get_feed_and_tip(r.autopay, skip_manual_feeds=False, current_timestamp=reporting_time)
     assert datafeed.query.type == "MimicryMacroMarketMashup"
     time_diff = reporting_time - start_time
     assert tip == 2500000000000000 + (1000000000000000 * time_diff)
@@ -68,7 +68,7 @@ async def test_collection_type(autopay_contract_setup):
     )
     chain.mine(timedelta=1)
     reporting_time = chain.time()
-    datafeed, tip = await get_feed_and_tip(r.autopay, current_timestamp=reporting_time)
+    datafeed, tip = await get_feed_and_tip(r.autopay, skip_manual_feeds=False, current_timestamp=reporting_time)
     assert datafeed.query.type == "MimicryCollectionStat"
     time_diff = reporting_time - start_time
     assert tip == 2500000000000000 + (1000000000000000 * time_diff)

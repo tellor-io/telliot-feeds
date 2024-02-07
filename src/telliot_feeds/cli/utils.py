@@ -334,7 +334,8 @@ def common_reporter_options(f: Callable[..., Any]) -> Callable[..., Any]:
         required=False,
         callback=parse_profit_input,
         default="100.0",
-    )
+    )  
+    @click.option("--skip-manual-feeds", help="skip feeds that require manual value input when listening to tips", nargs=1, type=bool, default=True)
     @functools.wraps(f)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         return f(*args, **kwargs)
