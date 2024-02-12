@@ -67,4 +67,6 @@ async def get_feed_and_tip(
                 setattr(datafeed.source, param, val)
             break
 
+    if datafeed is None:
+        return None, None
     return datafeed, tip_amount

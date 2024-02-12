@@ -250,3 +250,31 @@ async def test_low_gas_limit_error(autopay_contract_setup, caplog):
     feed, tip_amount = await get_feed_and_tip(r.autopay, skip_manual_feeds=False, current_timestamp=chain.time())
     assert feed is not None
     assert tip_amount is not None
+
+
+@pytest.mark.asyncio
+async def test_skip_manual_feed(autopay_contract_setup, caplog):
+    """Test feed tips when skip_manual_feeds is True"""
+    flex = await autopay_contract_setup
+    jai_usd_query_data = "0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000953706f745072696365000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000036a6169000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000037573640000000000000000000000000000000000000000000000000000000000"  # noqa: E501
+    jai_usd_query_id = "0x8cad613ed5dbbcb23c028a6656cb051a1adf2954c8aaa4cb834b1e7e45069ca4"
+    # setup a feed on autopay
+    _, status = await flex.autopay.write(
+        "setupDataFeed",
+        gas_limit=3500000,
+        legacy_gas_price=1,
+        _queryId=jai_usd_query_id,
+        _reward=1,
+        _startTime=chain.time(),
+        _interval=21600,
+        _window=60,
+        _priceThreshold=1,
+        _rewardIncreasePerSecond=0,
+        _queryData=jai_usd_query_data,
+        _amount=int(1 * 10**18),
+    )
+    assert status.ok
+    datafeed, tip = await get_feed_and_tip(flex.autopay, skip_manual_feeds=True)
+    assert datafeed is None
+    assert tip is None
+    assert f"There is a tip for this query type: SpotPrice. Query data: {jai_usd_query_data[2:]}" in caplog.text
