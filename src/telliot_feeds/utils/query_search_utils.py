@@ -4,6 +4,7 @@ from typing import Optional
 
 from clamfig.base import Registry
 from eth_abi import decode_single
+from eth_abi.exceptions import NonEmptyPaddingBytes
 from web3 import Web3 as w3
 
 from telliot_feeds.feeds import CATALOG_FEEDS
@@ -11,6 +12,9 @@ from telliot_feeds.feeds import DataFeed
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
 from telliot_feeds.queries.query import OracleQuery
 from telliot_feeds.queries.query_catalog import query_catalog
+from telliot_feeds.utils.log import get_logger
+
+logger = get_logger(__name__)
 
 
 def decode_typ_name(qdata: bytes) -> str:
@@ -27,6 +31,12 @@ def decode_typ_name(qdata: bytes) -> str:
     except OverflowError:
         # string query for some reason encoding isn't the same as the others
         qtype_name = ast.literal_eval(qdata.decode("utf-8"))["type"]
+    except NonEmptyPaddingBytes:
+        logger.error(f"NonEmptyPaddingBytes error for query data: {qdata.hex()}")
+        return ""
+    except Exception as e:
+        logger.error(f"Error decoding query type name for query data: {qdata.hex()}; error: {e}")
+        return ""
     return qtype_name
 
 
