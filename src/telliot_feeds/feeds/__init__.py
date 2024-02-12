@@ -213,3 +213,16 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "BTCBalance": btc_balance_feed,
     "EVMBalance": evm_balance_feed,
 }
+
+# populate list with feeds that require manual input
+MANUAL_FEEDS: list[str] = [
+    "SpotPrice",
+    "DivaProtocol",
+    "SnapshotOracle",
+    "NumericApiManualResponse",
+    "TWAP",
+    "DailyVolatility",
+    "TellorRNGManualResponse",
+    "CustomPrice",
+    "FileCID",
+]

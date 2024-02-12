@@ -42,7 +42,9 @@ async def test_feed_suggestion(autopay_contract_setup, caplog):
         **data_feed,
     )
     # First report should get a funded query suggestion
-    query, tip_amount = await get_feed_and_tip(autopay=flex.autopay, current_timestamp=chain.time())
+    query, tip_amount = await get_feed_and_tip(
+        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.time()
+    )
     assert query.get_state()["query"] == {"type": "SpotPrice", "asset": "albt", "currency": "usd"}
     assert tip_amount == int(0.5 * 1e18)
     get_price = await albt_usd_median_feed.source.fetch_new_datapoint()
@@ -56,12 +58,16 @@ async def test_feed_suggestion(autopay_contract_setup, caplog):
     )
     assert status.ok
     # Funded query shouldn't be suggested immediately after a report submission thats in window
-    tip_amount = await get_feed_and_tip(autopay=flex.autopay, current_timestamp=chain.time() + 5)
+    tip_amount = await get_feed_and_tip(
+        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.time() + 5
+    )
     assert tip_amount == (None, None)
     assert "No tips available in autopay" in caplog.text
     # bypass time until next window
     chain.sleep(3600)
-    query, tip_amount = await get_feed_and_tip(autopay=flex.autopay, current_timestamp=chain.time() + 5)
+    query, tip_amount = await get_feed_and_tip(
+        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.time() + 5
+    )
     assert query.get_state()["query"] == {"type": "SpotPrice", "asset": "albt", "currency": "usd"}
     assert tip_amount == int(0.5 * 1e18)
     chain.sleep(43200)
@@ -74,12 +80,16 @@ async def test_feed_suggestion(autopay_contract_setup, caplog):
     )
     assert status.ok
     # Should be no tips available in autopay immediately after an in window report submission
-    tip_amount = await get_feed_and_tip(autopay=flex.autopay, current_timestamp=chain.time() + 5)
+    tip_amount = await get_feed_and_tip(
+        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.time() + 5
+    )
     assert tip_amount == (None, None)
     # bypass time until next window
     chain.sleep(3600)
     # This feeds should no longer be suggested since two previous submissions exhausted the funds
-    tip_amount = await get_feed_and_tip(autopay=flex.autopay, current_timestamp=chain.time() + 5)
+    tip_amount = await get_feed_and_tip(
+        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.time() + 5
+    )
     assert tip_amount == (None, None)
 
 
@@ -97,7 +107,9 @@ async def test_one_time_tip_suggestion(autopay_contract_setup):
         _amount=int(1e18),
     )
     # Feed suggestion should be tipped query id
-    query, tip_amount = await get_feed_and_tip(autopay=flex.autopay, current_timestamp=chain.time())
+    query, tip_amount = await get_feed_and_tip(
+        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.time()
+    )
     assert query.get_state()["query"] == {"type": "SpotPrice", "asset": "albt", "currency": "usd"}
     assert tip_amount == 1e18
     _, status = await flex.oracle.write(
@@ -108,5 +120,5 @@ async def test_one_time_tip_suggestion(autopay_contract_setup):
     )
     assert status.ok
     # One time tipped query id should no longer be suggested after a submission
-    tip_amount = await get_feed_and_tip(autopay=flex.autopay, current_timestamp=chain.time())
+    tip_amount = await get_feed_and_tip(autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.time())
     assert tip_amount == (None, None)

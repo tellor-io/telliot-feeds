@@ -60,6 +60,7 @@ async def liquity(
     query_tag: str,
     chainlink_feed: str,
     unsafe: bool,
+    skip_manual_feeds: bool,
 ) -> None:
     """Report values to Tellor oracle if certain conditions are met."""
     click.echo("Starting Liquity Backup Reporter...")
@@ -140,6 +141,7 @@ async def liquity(
             "check_rewards": check_rewards,
             "gas_multiplier": gas_multiplier,
             "max_priority_fee_range": max_priority_fee_range,
+            "skip_manual_feeds": skip_manual_feeds,
         }
 
         reporter = ChainlinkBackupReporter(

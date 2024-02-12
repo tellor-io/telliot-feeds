@@ -21,7 +21,7 @@ log.DuplicateFilter.filter = lambda _, x: True
 async def test_no_tips(autopay_contract_setup, caplog):
     """Test no tips in autopay"""
     flex = await autopay_contract_setup
-    await get_feed_and_tip(flex.autopay)
+    await get_feed_and_tip(flex.autopay, skip_manual_feeds=False)
     assert "No one time tip funded queries available" in caplog.text
     assert "No funded feeds returned by autopay function call" in caplog.text
     assert "No tips available in autopay" in caplog.text
@@ -31,7 +31,7 @@ async def test_no_tips(autopay_contract_setup, caplog):
 async def test_funded_feeds_only(setup_datafeed, caplog):
     """Test feed tips but no one time tips and no reported timestamps"""
     flex = await setup_datafeed
-    datafeed, tip = await get_feed_and_tip(flex.autopay)
+    datafeed, tip = await get_feed_and_tip(flex.autopay, skip_manual_feeds=False)
     assert isinstance(datafeed, DataFeed)
     assert isinstance(tip, int)
     assert tip == int(1e18)
@@ -42,7 +42,7 @@ async def test_funded_feeds_only(setup_datafeed, caplog):
 async def test_one_time_tips_only(setup_one_time_tips, caplog):
     """Test one time tips but no feed tips"""
     flex = await setup_one_time_tips
-    datafeed, tip = await get_feed_and_tip(flex.autopay)
+    datafeed, tip = await get_feed_and_tip(flex.autopay, skip_manual_feeds=False)
     assert isinstance(datafeed, DataFeed)
     assert isinstance(tip, int)
     assert "No funded feeds returned by autopay function call" in caplog.text
@@ -54,7 +54,7 @@ async def test_fetching_tips(tip_feeds_and_one_time_tips):
     A one time tip of 24 TRB exists autopay and plus 1 TRB in a feed
     its the highest so it should be the suggested query"""
     flex = await tip_feeds_and_one_time_tips
-    datafeed, tip = await get_feed_and_tip(flex.autopay)
+    datafeed, tip = await get_feed_and_tip(flex.autopay, skip_manual_feeds=False)
     assert isinstance(datafeed, DataFeed)
     assert isinstance(tip, int)
     assert tip == len(query_catalog._entries) * int(1e18)
@@ -82,7 +82,7 @@ async def test_fake_queryid_feed_setup(autopay_contract_setup, caplog):
         _amount=int(1 * 10**18),
     )
     assert status.ok
-    datafeed, tip = await get_feed_and_tip(flex.autopay)
+    datafeed, tip = await get_feed_and_tip(flex.autopay, skip_manual_feeds=False)
     assert datafeed is None
     assert tip is None
     assert "No funded feeds with telliot support found in autopay" in caplog.text
@@ -163,7 +163,8 @@ async def test_feed_with_manual_source(autopay_contract_setup, caplog):
         _amount=int(10e18),
     )
     assert status.ok
-    datafeed, tip = await get_feed_and_tip(r.autopay)
+
+    datafeed, tip = await get_feed_and_tip(r.autopay, skip_manual_feeds=False)
     assert datafeed.query.asset == "fake"
     assert datafeed.query.currency == "usd"
     assert datafeed.query.type == "SpotPrice"
@@ -181,7 +182,7 @@ async def test_feed_with_manual_source(autopay_contract_setup, caplog):
         legacy_gas_price=1,
     )
     chain.mine(timedelta=1)
-    datafeed, tip = await get_feed_and_tip(r.autopay, current_timestamp=chain.time())
+    datafeed, tip = await get_feed_and_tip(r.autopay, skip_manual_feeds=False, current_timestamp=chain.time())
     assert datafeed is None
     assert tip is None
     assert "No auto source for feed with query type SpotPrice to check threshold" in caplog.text
@@ -210,7 +211,7 @@ async def test_no_value_before(autopay_contract_setup, caplog):
     # bypass window to force threshold check
     chain.mine(timedelta=1)
     # check that no feed is suggested since there is no value before and not in window
-    feed, tip = await get_feed_and_tip(r.autopay, current_timestamp=chain.time())
+    feed, tip = await get_feed_and_tip(r.autopay, skip_manual_feeds=False, current_timestamp=chain.time())
     assert feed is not None
     assert tip is not None
     assert " No value before for SpotPrice" in caplog.text
@@ -241,11 +242,39 @@ async def test_low_gas_limit_error(autopay_contract_setup, caplog):
 
     # imitate a low gas limit caused error
     with patch.object(AssembleCall, "gas_limit", 5000):
-        suggestion = await get_feed_and_tip(r.autopay, current_timestamp=chain.time())
+        suggestion = await get_feed_and_tip(r.autopay, skip_manual_feeds=False, current_timestamp=chain.time())
         assert suggestion == (None, None)
         assert "Error getting eligible funded feeds: multicall failed to fetch data: ContractLogicError" in caplog.text
 
     # should be no error when using default gas limit
-    feed, tip_amount = await get_feed_and_tip(r.autopay, current_timestamp=chain.time())
+    feed, tip_amount = await get_feed_and_tip(r.autopay, skip_manual_feeds=False, current_timestamp=chain.time())
     assert feed is not None
     assert tip_amount is not None
+
+
+@pytest.mark.asyncio
+async def test_skip_manual_feed(autopay_contract_setup, caplog):
+    """Test feed tips when skip_manual_feeds is True"""
+    flex = await autopay_contract_setup
+    jai_usd_query_data = "0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000953706f745072696365000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000036a6169000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000037573640000000000000000000000000000000000000000000000000000000000"  # noqa: E501
+    jai_usd_query_id = "0x8cad613ed5dbbcb23c028a6656cb051a1adf2954c8aaa4cb834b1e7e45069ca4"
+    # setup a feed on autopay
+    _, status = await flex.autopay.write(
+        "setupDataFeed",
+        gas_limit=3500000,
+        legacy_gas_price=1,
+        _queryId=jai_usd_query_id,
+        _reward=1,
+        _startTime=chain.time(),
+        _interval=21600,
+        _window=60,
+        _priceThreshold=1,
+        _rewardIncreasePerSecond=0,
+        _queryData=jai_usd_query_data,
+        _amount=int(1 * 10**18),
+    )
+    assert status.ok
+    datafeed, tip = await get_feed_and_tip(flex.autopay, skip_manual_feeds=True)
+    assert datafeed is None
+    assert tip is None
+    assert f"There is a tip for this query type: SpotPrice. Query data: {jai_usd_query_data[2:]}" in caplog.text

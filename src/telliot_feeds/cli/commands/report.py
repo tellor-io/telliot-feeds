@@ -180,6 +180,7 @@ async def report(
     max_priority_fee_range: int,
     ignore_tbr: bool,
     unsafe: bool,
+    skip_manual_feeds: bool,
 ) -> None:
     """Report values to Tellor oracle"""
     ctx.obj["ACCOUNT_NAME"] = account_str
@@ -320,6 +321,7 @@ async def report(
             "gas_multiplier": gas_multiplier,
             "max_priority_fee_range": max_priority_fee_range,
             "ignore_tbr": ignore_tbr,
+            "skip_manual_feeds": skip_manual_feeds,
         }
         reporter: Union[FlashbotsReporter, RNGReporter, Tellor360Reporter]
         if sig_acct_addr:

@@ -52,11 +52,13 @@ class Tellor360Reporter(Stake):
         ignore_tbr: bool = False,  # relevant only for eth-mainnet and eth-testnets
         stake: float = 0,
         use_random_feeds: bool = False,
+        skip_manual_feeds: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.autopay = autopay
         self.datafeed = datafeed
+        self.skip_manual_feeds = skip_manual_feeds
         self.use_random_feeds: bool = use_random_feeds
         self.qtag_selected = False if self.datafeed is None else True
         self.expected_profit = expected_profit
@@ -231,7 +233,7 @@ class Tellor360Reporter(Stake):
 
         # Fetch datafeed based on whichever is most funded in the AutoPay contract
         if self.datafeed is None:
-            suggested_feed, tip_amount = await get_feed_and_tip(self.autopay)
+            suggested_feed, tip_amount = await get_feed_and_tip(self.autopay, self.skip_manual_feeds)
 
             if suggested_feed is not None and tip_amount is not None:
                 logger.info(f"Most funded datafeed in Autopay: {suggested_feed.query.type}")

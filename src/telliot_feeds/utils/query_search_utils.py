@@ -9,8 +9,12 @@ from web3 import Web3 as w3
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
+from telliot_feeds.feeds import MANUAL_FEEDS
 from telliot_feeds.queries.query import OracleQuery
 from telliot_feeds.queries.query_catalog import query_catalog
+from telliot_feeds.utils.log import get_logger
+
+logger = get_logger(__name__)
 
 
 def decode_typ_name(qdata: bytes) -> str:
@@ -56,7 +60,7 @@ def feed_from_catalog_feeds(qdata: bytes) -> Optional[DataFeed[Any]]:
     return CATALOG_FEEDS.get(qtag) if qtag else None
 
 
-def feed_in_feed_builder_mapping(qdata: bytes) -> Optional[DataFeed[Any]]:
+def feed_in_feed_builder_mapping(qdata: bytes, skip_manual_feeds: bool = False) -> Optional[DataFeed[Any]]:
     """Get feed if query type in DATAFEED_BUILDER_MAPPING
 
     Args:
@@ -65,6 +69,11 @@ def feed_in_feed_builder_mapping(qdata: bytes) -> Optional[DataFeed[Any]]:
     Return: DataFeed
     """
     qtyp_name = decode_typ_name(qdata)
+    if skip_manual_feeds:
+        if qtyp_name in MANUAL_FEEDS:
+            logger.info(f"There is a tip for this query type: {qtyp_name}. Query data: {qdata.hex()}, (manual feed)")
+            return None
+
     return DATAFEED_BUILDER_MAPPING.get(qtyp_name)
 
 
