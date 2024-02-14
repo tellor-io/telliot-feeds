@@ -511,6 +511,12 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
+    tag="wmnt-usd-spot",
+    title="WMNT/USD spot price",
+    q=SpotPrice(asset="wmnt", currency="usd"),
+)
+
+query_catalog.add_entry(
     tag="btc-bal-example",
     title="BTC balance example",
     q=BTCBalance(btcAddress="bc1q06ywseed6sc3x2fafppchefqq8v9cqd0l6vx03", timestamp=1706051389),
