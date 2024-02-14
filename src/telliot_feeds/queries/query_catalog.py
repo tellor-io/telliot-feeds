@@ -511,12 +511,6 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
-    tag="wmnt-usd-spot",
-    title="WMNT/USD spot price",
-    q=SpotPrice(asset="wmnt", currency="usd"),
-)
-
-query_catalog.add_entry(
     tag="btc-bal-example",
     title="BTC balance example",
     q=BTCBalance(btcAddress="bc1q06ywseed6sc3x2fafppchefqq8v9cqd0l6vx03", timestamp=1706051389),
@@ -526,4 +520,10 @@ query_catalog.add_entry(
     tag="evm-bal-example",
     title="EVM balance example",
     q=EVMBalance(chainId=11155111, evmAddress="0x210766226c54CDD6bD0401749D43E7a5585e3868", timestamp=1706302197),
+)
+
+query_catalog.add_entry(
+    tag="primeeth-eth-spot",
+    title="PRIMEETH/ETH spot price",
+    q=SpotPrice(asset="primeeth", currency="eth"),
 )

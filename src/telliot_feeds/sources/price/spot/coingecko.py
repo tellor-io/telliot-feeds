@@ -69,6 +69,7 @@ coingecko_coin_id = {
     "mnt": "mantle",
     "usdy": "ondo-us-dollar-yield",
     "wmnt": "wrapped-mantle",
+    "primeeth": "prime-staked-eth",
 }
 
 
