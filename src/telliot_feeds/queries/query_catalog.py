@@ -527,3 +527,9 @@ query_catalog.add_entry(
     title="EVM balance example",
     q=EVMBalance(chainId=11155111, evmAddress="0x210766226c54CDD6bD0401749D43E7a5585e3868", timestamp=1706302197),
 )
+
+query_catalog.add_entry(
+    tag="primeeth-eth-spot",
+    title="PRIMEETH/ETH spot price",
+    q=SpotPrice(asset="primeeth", currency="eth"),
+)
