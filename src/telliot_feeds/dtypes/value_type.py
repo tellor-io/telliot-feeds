@@ -24,7 +24,7 @@ class ValueType(Serializable):
     """
 
     # ABI Encoding type string
-    abi_type: str = "uint256"
+    abi_type: str = "string"
 
     #: True if the value should be encoded using packed bytes format.
     packed: bool = False
