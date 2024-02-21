@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class BTCBalanceCurrentReturnType(ValueType):
+class EVMBalanceCurrentReturnType(ValueType):
 
     abi_type: str = "(uint256, uint256)"
 
     def encode(self, value: list[int]) -> bytes:
-        """An encoder for BTCBalanceCurrent response type
+        """An encoder for EVMBalanceCurrent response type
 
         Encodes a tuple of int values.
         """
@@ -27,7 +27,7 @@ class BTCBalanceCurrentReturnType(ValueType):
         return encode_abi(["uint256", "uint256"], [int(v) for v in value])
 
     def decode(self, bytes_val: bytes) -> list[int]:
-        """A decoder for BTCBalanceCurrent response type
+        """A decoder for EVMBalanceCurrent response type
 
         Decodes a tuple of int values.
         """
@@ -36,26 +36,28 @@ class BTCBalanceCurrentReturnType(ValueType):
 
 
 @dataclass
-class BTCBalanceCurrent(AbiQuery):
-    """Returns the current BTC balance of a given address.
+class EVMBalanceCurrent(AbiQuery):
+    """Returns the current native EVM token balance of a given address and chain id.
 
-    More info: https://github.com/tellor-io/dataSpecs/blob/main/types/BTCBalanceCurrent.md
+    More info: https://github.com/tellor-io/dataSpecs/blob/main/types/EVMBalanceCurrent.md
 
     Attributes:
-        btcAddress: the address of the bitcoin hodler
+        chainId: the chain id of the relevant evm network
+        evmAddress: the address of the hodler
     """
 
-    btcAddress: Optional[str] = None
+    chainId: Optional[int] = None
+    evmAddress: Optional[str] = None
 
     #: ABI used for encoding/decoding parameters
-    abi = [{"name": "btcAddress", "type": "string"}]
+    abi = [{"name": "chainId", "type": "uint256"}, {"name": "evmAddress", "type": "address"}]
 
     @property
     def value_type(self) -> ValueType:
-        """Data type returned for a BTCBalance query.
+        """Data type returned for a EVMBalance query.
 
-        - 'uint256': balance in satoshis
+        - 'uint256': balance in wei
         - 'packed': false
         """
 
-        return BTCBalanceCurrentReturnType(abi_type="uint256, uint256", packed=False)
+        return EVMBalanceCurrentReturnType(abi_type="uint256, uint256", packed=False)

@@ -10,9 +10,7 @@ from telliot_feeds.queries.btc_balance_current import BTCBalanceCurrent
 
 def test_btc_balance_current_query():
     """Validate btc balance query"""
-    q = BTCBalanceCurrent(
-        btcAddress="bc1q06ywseed6sc3x2fafppchefqq8v9cqd0l6vx03"
-    )
+    q = BTCBalanceCurrent(btcAddress="bc1q06ywseed6sc3x2fafppchefqq8v9cqd0l6vx03")
     assert q.value_type.abi_type == "uint256, uint256"
     assert q.value_type.packed is False
 

@@ -1,4 +1,3 @@
-import time
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
@@ -78,8 +77,12 @@ class BTCBalanceCurrentSource(DataSource[Any]):
 
             # Sort transactions by time in ascending order, excluding transactions with null block_height
             sorted_txs = sorted(
-                [tx for tx in data["txs"] if tx.get("block_height") is not None and isinstance(tx["block_height"], int)],
-                key=lambda tx: (tx["block_height"], tx["tx_index"])
+                [
+                    tx
+                    for tx in data["txs"]
+                    if tx.get("block_height") is not None and isinstance(tx["block_height"], int)
+                ],
+                key=lambda tx: (tx["block_height"], tx["tx_index"]),
             )
 
             #    Find the most recent transaction before the query's timestamp
@@ -151,7 +154,7 @@ class BTCBalanceCurrentSource(DataSource[Any]):
             return None
         logger.info(f"Using BTC block number {block['height']}")
         return int(block["height"])
-    
+
     async def block_num_with_delay(self) -> Optional[int]:
         """Fetches the latest Bitcoin block number from API, subtracts block_delay."""
         with requests.Session() as s:
@@ -220,4 +223,3 @@ class BTCBalanceCurrentSource(DataSource[Any]):
         datapoint = ([balance, block_timestamp], datetime_now_utc())
         self.store_datapoint(datapoint)
         return datapoint
-    
