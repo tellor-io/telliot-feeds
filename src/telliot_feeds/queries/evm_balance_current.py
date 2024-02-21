@@ -56,8 +56,12 @@ class EVMBalanceCurrent(AbiQuery):
     def value_type(self) -> ValueType:
         """Data type returned for a EVMBalance query.
 
-        - 'uint256': balance in wei
-        - 'packed': false
+        balance: 
+            - 'uint256': balance in wei
+            - 'packed': false
+        timestamp:
+            - 'uint256': block timestamp
+            - 'packed': false
         """
 
         return EVMBalanceCurrentReturnType(abi_type="uint256, uint256", packed=False)

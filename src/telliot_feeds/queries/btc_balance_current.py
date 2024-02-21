@@ -53,9 +53,12 @@ class BTCBalanceCurrent(AbiQuery):
     @property
     def value_type(self) -> ValueType:
         """Data type returned for a BTCBalance query.
-
-        - 'uint256': balance in satoshis
-        - 'packed': false
+        balance
+            - 'uint256': balance btc to 18 decimal places
+            - 'packed': false
+        timestamp
+            - 'uint256': block timestamp
+            - 'packed': false
         """
 
         return BTCBalanceCurrentReturnType(abi_type="uint256, uint256", packed=False)
