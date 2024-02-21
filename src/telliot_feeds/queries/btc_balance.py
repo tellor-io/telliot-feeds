@@ -26,7 +26,7 @@ class BTCBalance(AbiQuery):
     def value_type(self) -> ValueType:
         """Data type returned for a BTCBalance query.
 
-        - 'uint256': balance in satoshis
+        - 'uint256': balance in btc to 18 decimal places
         - 'packed': false
         """
 
