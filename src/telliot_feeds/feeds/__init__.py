@@ -11,6 +11,8 @@ from telliot_feeds.feeds.bch_usd_feed import bch_usd_median_feed
 from telliot_feeds.feeds.bct_usd_feed import bct_usd_median_feed
 from telliot_feeds.feeds.brc20_ordi_usd_feed import ordi_usd_median_feed
 from telliot_feeds.feeds.brl_usd_feed import brl_usd_median_feed
+from telliot_feeds.feeds.btc_balance_current import btc_balance_current_feed
+from telliot_feeds.feeds.btc_balance_current import btc_balance_current_feed_example
 from telliot_feeds.feeds.btc_balance import btc_balance_feed
 from telliot_feeds.feeds.btc_balance import btc_balance_feed_example
 from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
@@ -188,6 +190,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "usdy-usd-spot": usdy_usd_median_feed,
     "wmnt-usd-spot": wmnt_usd_median_feed,
     "btc-bal-example": btc_balance_feed_example,
+    "btc-bal-current-example": btc_balance_current_feed,
     "evm-bal-example": evm_balance_feed_example,
     "primeeth-eth-spot": primeeth_eth_median_feed,
 }
@@ -214,6 +217,7 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "FileCID": fileCID_manual_feed,
     "BTCBalance": btc_balance_feed,
     "EVMBalance": evm_balance_feed,
+    "BTCBalanceCurrent": btc_balance_current_feed,
 }
 
 # populate list with feeds that require manual input

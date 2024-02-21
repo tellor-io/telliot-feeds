@@ -6,6 +6,7 @@ from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
 from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AmpleforthCustomSpotPrice
 from telliot_feeds.queries.ampleforth.uspce import AmpleforthUSPCE
 from telliot_feeds.queries.btc_balance import BTCBalance
+from telliot_feeds.queries.btc_balance_current import BTCBalanceCurrent
 from telliot_feeds.queries.catalog import Catalog
 from telliot_feeds.queries.custom_price import CustomPrice
 from telliot_feeds.queries.daily_volatility import DailyVolatility
@@ -520,6 +521,12 @@ query_catalog.add_entry(
     tag="btc-bal-example",
     title="BTC balance example",
     q=BTCBalance(btcAddress="bc1q06ywseed6sc3x2fafppchefqq8v9cqd0l6vx03", timestamp=1706051389),
+)
+
+query_catalog.add_entry(
+    tag="btc-bal-current-example",
+    title="BTC balance current example",
+    q=BTCBalanceCurrent(btcAddress="bc1q06ywseed6sc3x2fafppchefqq8v9cqd0l6vx03"),
 )
 
 query_catalog.add_entry(
