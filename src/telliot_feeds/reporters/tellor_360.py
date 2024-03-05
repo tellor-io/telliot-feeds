@@ -220,6 +220,7 @@ class Tellor360Reporter(Stake):
         available tips for the datafeed unless the user has not selected a query tag or
         used the random feeds flag.
         """
+        logger.info(f"Datafeed before fetch_datafeed: {self.datafeed}")
         # reset autopay tip every time fetch_datafeed is called
         # so that tip is checked fresh every time and not carry older tips
         self.autopaytip = 0
@@ -242,7 +243,7 @@ class Tellor360Reporter(Stake):
 
                 self.datafeed = suggested_feed
                 return self.datafeed
-
+        
         return self.datafeed
 
     async def ensure_profitable(self) -> ResponseStatus:
@@ -458,6 +459,8 @@ class Tellor360Reporter(Stake):
         if not datafeed:
             msg = "Unable to suggest datafeed"
             return None, error_status(note=msg, log=logger.info)
+        
+        logger.info(f"Datafeed at end of fetch_datafeed: {self.datafeed}")
 
         params, status = await self.submission_txn_params(datafeed)
         if not status.ok or params is None:

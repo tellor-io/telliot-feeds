@@ -100,13 +100,15 @@ class ConditionalReporter(Tellor360Reporter):
         - bool: True if conditions are met, False otherwise
         """
         logger.info("checking conditions and reporting if necessary")
+        logger.info(f"Starting conditions_met() with datafeed: {self.datafeed}")
         if self.datafeed is None:
             logger.info(f"no datafeed was setß: {self.datafeed}. Please provide a spot-price query type (see --help)")
-            return False
+            raise Exception(f"no datafeed was setß: {self.datafeed}. So we are now Exiting")
         tellor_latest_data = await self.get_tellor_latest_data()
         telliot_feed_data = await self.get_telliot_feed_data(datafeed=self.datafeed)
         time = current_time()
         time_passed_since_tellor_report = time - tellor_latest_data.timestampRetrieved if tellor_latest_data else time
+        logger.info(f"Returning from conditions_met() with datafeed: {self.datafeed}")
         if tellor_latest_data is None:
             logger.debug("tellor data returned None")
             return True
@@ -131,7 +133,9 @@ class ConditionalReporter(Tellor360Reporter):
             if online:
                 if self.has_native_token():
                     if await self.conditions_met():
-                        _, _ = await self.report_once()
+                        tx_receipt, status = await self.report_once()
+                        if self.datafeed is None:
+                            logger.debug(f"Datafeed is empty upon return from report_once. (Datafeed: {self.datafeed}, tx_receipt: {tx_receipt}, status: {status})")
                     else:
                         logger.info("feeds are recent enough, no need to report")
 
@@ -140,6 +144,7 @@ class ConditionalReporter(Tellor360Reporter):
 
             logger.info(f"Sleeping for {self.wait_period} seconds")
             await asyncio.sleep(self.wait_period)
+            logger.info(f"Looping through in report() again with datafeed: {self.datafeed}")
 
             if report_count is not None:
                 report_count -= 1
