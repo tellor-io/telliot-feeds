@@ -1,8 +1,10 @@
 import asyncio
+import time
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
 from typing import TypeVar
+
 
 from web3 import Web3
 
@@ -103,7 +105,8 @@ class ConditionalReporter(Tellor360Reporter):
         logger.info(f"Starting conditions_met() with datafeed: {self.datafeed}")
         if self.datafeed is None:
             logger.info(f"no datafeed was setß: {self.datafeed}. Please provide a spot-price query type (see --help)")
-            raise Exception(f"no datafeed was setß: {self.datafeed}. So we are now Exiting")
+            ##raise Exception(f"no datafeed was setß: {self.datafeed}. So we are now Exiting")
+            return False
         tellor_latest_data = await self.get_tellor_latest_data()
         telliot_feed_data = await self.get_telliot_feed_data(datafeed=self.datafeed)
         time = current_time()
@@ -127,6 +130,7 @@ class ConditionalReporter(Tellor360Reporter):
 
     async def report(self, report_count: Optional[int] = None) -> None:
         """Submit values to Tellor oracles on an interval."""
+        startTime = time.time()
 
         while report_count is None or report_count > 0:
             online = await self.is_online()
@@ -136,7 +140,12 @@ class ConditionalReporter(Tellor360Reporter):
                         tx_receipt, status = await self.report_once()
                         if self.datafeed is None:
                             logger.debug(f"Datafeed is empty upon return from report_once. (Datafeed: {self.datafeed}, tx_receipt: {tx_receipt}, status: {status})")
+                            logger.debug(f"report_once() has returned with a self.datafeed of None with a total runtime of {time.time() - startTime} seconds")
+                            raise Exception("Datafeed is None")
                     else:
+                        if self.datafeed is None:
+                            logger.debug(f"Conditions_met has returned with a datafeed of None with a total runtime of {time.time() - startTime} seconds")
+                            raise Exception("Datafeed is None")
                         logger.info("feeds are recent enough, no need to report")
 
             else:
