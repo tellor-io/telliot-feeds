@@ -1,6 +1,7 @@
 """Bitfinex data source."""
 import asyncio
 import logging
+import time
 from typing import Any
 
 import requests
@@ -92,6 +93,7 @@ def retrieve_bitfinex_trades(route: str, start: int, end: int) -> Any:
     if len(all_trades) >= 10000:
         logger.warning(f"Bitfinex response too big, scrolling: {route} ({start} - {end})")
         last_timestamp = all_trades[-1][1]
+        time.sleep(5)
         next_frame = retrieve_bitfinex_trades(route, last_timestamp, end)
         all_trades.extend(next_frame)
     logger.info(f"Bitfinex trades for {route}: {len(all_trades)}")
