@@ -39,6 +39,7 @@ class ConditionalReporter(Tellor360Reporter):
         self.stale_timeout = stale_timeout
         self.max_price_change = max_price_change
         self.datafeed = datafeed
+        self.qtag_selected = True
 
     async def get_tellor_latest_data(self) -> Optional[GetDataBefore]:
         """Get latest data from tellor oracle (getDataBefore with current time)
