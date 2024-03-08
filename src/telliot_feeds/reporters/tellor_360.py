@@ -228,6 +228,8 @@ class Tellor360Reporter(Stake):
             # calculate tbr and
             _ = await self.rewards()
 
+        logger.info(f"autopaytip after calling check_rewards: {self.autopaytip}")
+
         if self.use_random_feeds:
             self.datafeed = suggest_random_feed()
 
@@ -243,6 +245,7 @@ class Tellor360Reporter(Stake):
                 self.datafeed = suggested_feed
                 return self.datafeed
 
+        logger.info(f"Returning out from fetch_datafeed with either the predefined datafeed, random datafeed, or no datafeed")
         return self.datafeed
 
     async def ensure_profitable(self) -> ResponseStatus:
@@ -462,10 +465,12 @@ class Tellor360Reporter(Stake):
         params, status = await self.submission_txn_params(datafeed)
         if not status.ok or params is None:
             return None, status
+        logger.info(f"Built params object for updating value in datafeed query: {datafeed.query}")
 
         build_tx, status = self.build_transaction("submitValue", **params)
         if not status.ok or build_tx is None:
             return None, status
+        logger.info(f"Build transaction object for calling submitValue")
 
         # Check if profitable if not YOLO
         status = await self.ensure_profitable()
@@ -473,11 +478,13 @@ class Tellor360Reporter(Stake):
         if not status.ok:
             return None, status
 
-        logger.debug("Sending submitValue transaction")
+        logger.debug("Sending submitValue transaction after we ensured the report as profitable")
         tx_receipt, status = self.sign_n_send_transaction(build_tx)
         # reset datafeed for a new suggestion if qtag wasn't selected in cli
         if self.qtag_selected is False:
             self.datafeed = None
+
+        logger.info(f"Reported Value from report_once() and are returning with a datafeed of {datafeed}")
 
         return tx_receipt, status
 

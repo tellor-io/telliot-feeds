@@ -58,6 +58,7 @@ async def get_feed_and_tip(
         if datafeed is None:
             # TODO: add skip manual feed flag to make optional; currently skips all manual feeds
             datafeed = feed_in_feed_builder_mapping(query_data, skip_manual_feeds=skip_manual_feeds)
+            logger.info(f"creating data feed using feed_in_feed_builder_mapping for query_data: {query_data}")
 
         if datafeed is not None:
             query = get_query_from_qtyp_name(query_data)
@@ -67,6 +68,10 @@ async def get_feed_and_tip(
                 setattr(datafeed.source, param, val)
             break
 
+    
+
     if datafeed is None:
+        logger.error("No datafeed was found or created for get_feed_and_tip and thus no report will be made")
         return None, None
+    logger.info(f"Returning from get_feed_and_tip with datafeed: {datafeed}, with a tip amount of {tip_amount}")
     return datafeed, tip_amount

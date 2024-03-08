@@ -72,11 +72,14 @@ class FundedFeeds(FundedFeedFilter):
 
         if not status.ok or not feeds_timestsamps_and_values_lis:
             return None, status
+        logger.info(f"Length of Suported Feeds before filtering: {len(qtype_supported_feeds)}")
+
 
         # filter out feeds that aren't eligible to submit for NOW
         feeds_timestsamps_and_values_filtered = await self.window_and_priceThreshold_unmet_filter(
             feeds=feeds_timestsamps_and_values_lis, now_timestamp=now_timestamp
         )
+        logger.info(f"Length of Supported feeds after filtering out feeds not eligible to submit now: {len(feeds_timestsamps_and_values_filtered)}")
         # for list of previous values, filter out any that weren't eligible for a tip
         historical_timestamps_list_filtered = self.filter_historical_submissions(
             feeds=feeds_timestsamps_and_values_filtered
@@ -93,6 +96,8 @@ class FundedFeeds(FundedFeedFilter):
         funded_feeds = self.calculate_true_feed_balance(
             feeds=historical_timestamps_list_filtered, unclaimed_timestamps_count=reward_claimed_status
         )
+
+        logger.info(f"Number of funded_feeds with tips available returning from filtered_funded_feeds(): {len(funded_feeds)}")
 
         return funded_feeds, ResponseStatus()
 
@@ -123,9 +128,11 @@ class FundedFeeds(FundedFeedFilter):
         querydata_and_tip = {}
         for funded_feed in eligible_funded_feeds:
             query_data = funded_feed.query_data
+            logger.info(f"Rewards for query data ({query_data}): {funded_feed.params.reward}")
             if query_data not in querydata_and_tip:
                 querydata_and_tip[query_data] = funded_feed.params.reward
             else:
                 querydata_and_tip[query_data] += funded_feed.params.reward
 
+        logger.info(f"Number of funded feeds returned in querydata_and_tip: {len(eligible_funded_feeds)}")
         return querydata_and_tip

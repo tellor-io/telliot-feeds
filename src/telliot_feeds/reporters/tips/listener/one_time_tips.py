@@ -24,12 +24,15 @@ async def get_funded_one_time_tips(autopay: TellorFlexAutopayContract) -> Option
 
     for (query_data, reward) in list(onetime_tips):
         if query_data == b"":
+            logger.info(f"one time tip being removed because of empty query_data string")
             onetime_tips.remove((query_data, reward))
             continue
 
         if not qtype_name_in_registry(query_data):
+            logger.info(f"Removing a one time tip because the qtype name was not found in registry for queryData: {query_data}")
             onetime_tips.remove((query_data, reward))
 
     single_tips = {query_data: reward for (query_data, reward) in onetime_tips}
+    logger.info(f"Returning {len(single_tips)} from get_funded_one_time_tips")
 
     return single_tips
