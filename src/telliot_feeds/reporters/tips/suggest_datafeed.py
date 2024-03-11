@@ -39,6 +39,7 @@ async def get_feed_and_tip(
     multi_call = MulticallAutopay()
 
     funded_feeds = FundedFeeds(autopay=autopay, multi_call=multi_call)
+    logger.info(f"About to call functions looking for tips using a current timestamp of {current_timestamp}")
 
     logger.info("Calling function to get feed_tips")
     feed_tips = await funded_feeds.querydata_and_tip(current_time=current_timestamp)
