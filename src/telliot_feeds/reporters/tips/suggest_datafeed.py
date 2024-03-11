@@ -53,6 +53,7 @@ async def get_feed_and_tip(
     for suggestion in sorted_tips:
         query_data, tip_amount = suggestion
         if tip_amount == 0:
+            logger.info("returning from get_feed_and_tip() due to a suggest feed having a tip amount of 0")
             return None, None
 
         datafeed = feed_from_catalog_feeds(query_data)
