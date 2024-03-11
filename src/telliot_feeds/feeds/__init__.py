@@ -79,6 +79,7 @@ from telliot_feeds.feeds.rai_usd_feed import rai_usd_median_feed
 from telliot_feeds.feeds.reth_btc_feed import reth_btc_median_feed
 from telliot_feeds.feeds.reth_usd_feed import reth_usd_median_feed
 from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
+from telliot_feeds.feeds.sdai_usd_feed import sdai_usd_median_feed
 from telliot_feeds.feeds.shib_usd_feed import shib_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_feed_example
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
@@ -198,6 +199,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "evm-bal-current-example": evm_balance_current_feed_example,
     "primeeth-eth-spot": primeeth_eth_median_feed,
     "wusdm-usd-spot": wusdm_usd_median_feed,
+    "sdai-usd-spot": sdai_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

@@ -553,3 +553,9 @@ query_catalog.add_entry(
     title="WUSDM/USD spot price",
     q=SpotPrice(asset="wusdm", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="sdai-usd-spot",
+    title="SDAI/USD spot price",
+    q=SpotPrice(asset="sdai", currency="usd"),
+)

@@ -71,6 +71,7 @@ coingecko_coin_id = {
     "wmnt": "wrapped-mantle",
     "primeeth": "prime-staked-eth",
     "wusdm": "wrapped-usdm",
+    "sdai": "savings-dai",
 }
 
 
