@@ -60,6 +60,7 @@ class FundedFeeds(FundedFeedFilter):
 
         qtype_supported_feeds, status = await self.get_funded_feed_queries()
         if not status.ok or not qtype_supported_feeds:
+            logger.info(f"error found or no supported funded feeds returned from get_funded_feed_queries(): {status}")
             return None, status
 
         # assemble both feed id and query id
@@ -71,6 +72,7 @@ class FundedFeeds(FundedFeedFilter):
         )
 
         if not status.ok or not feeds_timestsamps_and_values_lis:
+            logger.info(f"status not ok after calling month_of_timestamps_and_values(): {status}")
             return None, status
         logger.info(f"Length of Suported Feeds before filtering: {len(qtype_supported_feeds)}")
 
@@ -111,6 +113,7 @@ class FundedFeeds(FundedFeedFilter):
         - key: querydata
         - value: tip amount
         """
+        logger.info("Starting looking for querydata_and_tip data in funded feeds")
         one_month_ago = current_time - 2_592_000
         # week_ago = current_time - 604_800
         # one_day_ago = current_time - 259_200

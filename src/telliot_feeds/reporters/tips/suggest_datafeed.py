@@ -40,7 +40,9 @@ async def get_feed_and_tip(
 
     funded_feeds = FundedFeeds(autopay=autopay, multi_call=multi_call)
 
+    logger.info("Calling function to get feed_tips")
     feed_tips = await funded_feeds.querydata_and_tip(current_time=current_timestamp)
+    logger.info("Calling functin to get onetime_tips")
     onetime_tips = await get_funded_one_time_tips(autopay=autopay)
 
     if not feed_tips and not onetime_tips:
