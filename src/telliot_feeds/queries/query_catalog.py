@@ -547,3 +547,9 @@ query_catalog.add_entry(
     title="PRIMEETH/ETH spot price",
     q=SpotPrice(asset="primeeth", currency="eth"),
 )
+
+query_catalog.add_entry(
+    tag="wusdm-usd-spot",
+    title="WUSDM/USD spot price",
+    q=SpotPrice(asset="wusdm", currency="usd"),
+)
