@@ -107,7 +107,7 @@ from telliot_feeds.feeds.wld_usd_feed import wld_usd_median_feed
 from telliot_feeds.feeds.wmnt_usd_feed import wmnt_usd_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
-from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_median_feed
+from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
 
@@ -200,7 +200,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "evm-bal-current-example": evm_balance_current_feed_example,
     "primeeth-eth-spot": primeeth_eth_median_feed,
     "usdm-usd-spot": usdm_usd_median_feed,
-    "wusdm-usd-spot": wusdm_usd_median_feed,
+    "wusdm-usd-spot": wusdm_usd_feed,
     "sdai-usd-spot": sdai_usd_median_feed,
 }
 
