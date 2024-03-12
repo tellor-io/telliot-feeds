@@ -34,12 +34,13 @@ class CurveFiUSDPriceService(WebPriceService):
             logger.error(f"Asset not mapped for curve price Source: {asset}")
             return None, None
         asset_address = ethereum_contract_map[asset]
-            
+
         if currency != "usd":
-            logger.error(f"Service for usd pairs only")
+            logger.error("Service for usd pairs only")
             return None, None
 
         request_url = f"/ethereum/{asset_address}"
+
         d = self.get_url(request_url)
 
         if "error" in d:
@@ -48,9 +49,10 @@ class CurveFiUSDPriceService(WebPriceService):
         elif "response" in d:
             response = d["response"]
             data = response.get("data")
+            print(data)
 
             if data is None:
-                logger.error("Error parsing Curve api response (check address mapping)")
+                logger.error("Error parsing Curve api response")
                 return None, None
             asset_price = data.get("usd_price")
             if asset_price is None:
@@ -72,6 +74,7 @@ class CurveFiUSDPriceService(WebPriceService):
 
         else:
             raise Exception("Invalid response from get_url")
+        return None, None
 
 
 @dataclass

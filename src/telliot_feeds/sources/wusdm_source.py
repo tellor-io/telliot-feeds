@@ -27,7 +27,7 @@ class wUSDMSpotPriceService(WebPriceService):
         super().__init__(**kwargs)
         self.cfg = TelliotConfig()
 
-    def get_wusdm_steth_ratio(self) -> Optional[float]:
+    def get_wusdm_usd_ratio(self) -> Optional[float]:
         # get endpoint
         endpoint = self.cfg.endpoints.find(chain_id=1)
         if not endpoint:
@@ -41,13 +41,14 @@ class wUSDMSpotPriceService(WebPriceService):
         # get ratio
         wusdm_eth_ratio_bytes = w3.eth.call(
             {
-                "to": "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
-                "data": "0xbb2952fc0000000000000000000000000000000000000000000000000de0b6b3a7640000",
+                "to": "0x57F5E098CaD7A3D1Eed53991D4d66C45C9AF7812",
+                "data": "0x07a2d13a0000000000000000000000000000000000000000000000000de0b6b3a7640000",
             }
         )
-        wusdm_eth_ratio_decoded = w3.toInt(wusdm_eth_ratio_bytes)
-        wusdm_eth_ratio = w3.fromWei(wusdm_eth_ratio_decoded, "ether")
-        return float(wusdm_eth_ratio)
+        wusdm_usd_ratio_decoded = w3.toInt(wusdm_eth_ratio_bytes)
+        wusdm_usd_ratio = w3.fromWei(wusdm_usd_ratio_decoded, "ether")
+        print(f"Ratio from wUSDM contract: {wusdm_usd_ratio}")
+        return float(wusdm_usd_ratio)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """This implementation gets the price of USDM from multiple sources and
@@ -56,7 +57,7 @@ class wUSDMSpotPriceService(WebPriceService):
         asset = asset.lower()
         currency = currency.lower()
 
-        wusdm_ratio = self.get_wusdm_steth_ratio()
+        wusdm_ratio = self.get_wusdm_usd_ratio()
         if wusdm_ratio is None:
             logger.error("Unable to get wUSDM_USDM_ratio")
             return None, None
@@ -71,25 +72,25 @@ class wUSDMSpotPriceService(WebPriceService):
             ],
         )
 
-        steth_price, timestamp = await source.fetch_new_datapoint()
-        if steth_price is None:
+        wusdm_price, timestamp = await source.fetch_new_datapoint()
+        if wusdm_price is None:
             logger.error("Unable to get steth price")
             return None, None
-        return steth_price * wsteth_ratio, timestamp
+        return wusdm_price * wusdm_ratio, timestamp
 
 
 @dataclass
-class WstETHSpotPriceSource(PriceSource):
+class wUSDMSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: WstETHSpotPriceService = field(default_factory=WstETHSpotPriceService, init=False)
+    service: wUSDMSpotPriceService = field(default_factory=wUSDMSpotPriceService, init=False)
 
 
 if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        source = WstETHSpotPriceSource(asset="wsteth", currency="eth")
+        source = wUSDMSpotPriceSource(asset="wusdm", currency="usd")
         v, _ = await source.fetch_new_datapoint()
         print(v)
 

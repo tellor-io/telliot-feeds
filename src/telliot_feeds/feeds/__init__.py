@@ -96,6 +96,7 @@ from telliot_feeds.feeds.twap_manual_feed import twap_30d_example_manual_feed
 from telliot_feeds.feeds.twap_manual_feed import twap_manual_feed
 from telliot_feeds.feeds.uni_usd_feed import uni_usd_median_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
+from telliot_feeds.feeds.usdm_usd_feed import usdm_usd_median_feed
 from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
 from telliot_feeds.feeds.usdy_usd_feed import usdy_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
@@ -106,7 +107,6 @@ from telliot_feeds.feeds.wld_usd_feed import wld_usd_median_feed
 from telliot_feeds.feeds.wmnt_usd_feed import wmnt_usd_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
-from telliot_feeds.feeds.usdm_usd_feed import usdm_usd_median_feed
 from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
