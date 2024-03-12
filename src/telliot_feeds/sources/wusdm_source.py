@@ -74,7 +74,7 @@ class wUSDMSpotPriceService(WebPriceService):
 
         wusdm_price, timestamp = await source.fetch_new_datapoint()
         if wusdm_price is None:
-            logger.error("Unable to get steth price")
+            logger.error("Unable to get wusdm price")
             return None, None
         return wusdm_price * wusdm_ratio, timestamp
 

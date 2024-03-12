@@ -15,6 +15,9 @@ logger = get_logger(__name__)
 ethereum_contract_map = {
     "usdm": "0x59D9356E565Ab3A36dD77763Fc0d87fEaf85508C",
     "sdai": "0x83F20F44975D03b1b09e64809B757c47f942BEeA",
+    "eth": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    "steth": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+    "btc": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
 }
 
 
@@ -46,35 +49,28 @@ class CurveFiUSDPriceService(WebPriceService):
         if "error" in d:
             logger.error(d)
             return None, None
-        elif "response" in d:
-            response = d["response"]
-            data = response.get("data")
-            print(data)
 
-            if data is None:
-                logger.error("Error parsing Curve api response")
-                return None, None
-            asset_price = data.get("usd_price")
-            if asset_price is None:
-                logger.error("Failed to parse response data from Curve Finance API")
-                return None, None
-            asset_price = None
-            for asset_price in data:
-                if data["address"] == asset_address:
-                    asset_price = data.get("usd_price")
-                    break
-                if asset_price is not None:
-                    break
+        response = d.get("response")
+        if response is None:
+            logger.error("Error parsing Curve Finance API response, 'response' key not found")
+            return None, None
 
-            if asset_price is None:
-                logger.error(f"Unable to find price for {asset} from Curve Finance API")
-                return None, None
-            if currency == "usd":
-                return asset_price, datetime_now_utc()
+        data = response.get("data")
+        if data is None:
+            logger.error("Error parsing Curve Finance API response 'data' key not found")
+            return None, None
 
-        else:
-            raise Exception("Invalid response from get_url")
-        return None, None
+        asset_price = data.get("usd_price")
+        if asset_price is None:
+            logger.error("Failed to parse response data from Curve Finance API 'usd_price' key not found")
+            return None, None
+
+        isAddress = data.get("address", "").lower() == asset_address.lower()
+
+        if not isAddress:
+            logger.error("Asset '0x' address in API response doesn't match contract address stored")
+            return None, None
+        return asset_price, datetime_now_utc()
 
 
 @dataclass
