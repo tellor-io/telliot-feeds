@@ -549,6 +549,12 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
+    tag="usdm-usd-spot",
+    title="USDM/USD spot price",
+    q=SpotPrice(asset="usdm", currency="usd"),
+)
+
+query_catalog.add_entry(
     tag="wusdm-usd-spot",
     title="WUSDM/USD spot price",
     q=SpotPrice(asset="wusdm", currency="usd"),

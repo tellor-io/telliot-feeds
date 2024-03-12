@@ -82,6 +82,7 @@ SPOT_PRICE_PAIRS = [
     "PRIMEETH/ETH",
     "WUSDM/USD",
     "SDAI/USD",
+    "USDM/USD",
 ]
 
 
