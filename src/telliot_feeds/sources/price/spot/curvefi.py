@@ -16,6 +16,7 @@ contract_map = {
     "eth": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "steth": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
     "btc": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+    "sfrax": "0xe3b3FE7bcA19cA77Ad877A5Bebab186bEcfAD906",
 }
 
 
