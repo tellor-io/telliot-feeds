@@ -34,7 +34,7 @@ class FundedFeeds(FundedFeedFilter):
         """
         funded_feeds: list[tuple[FeedDetails, bytes]]
         funded_feeds, status = await self.autopay.read("getFundedFeedDetails")
-
+        logger.info(f"Data from funded_feeds smart contract call: feeds: {funded_feeds}, Status: {status}")
         if not status.ok or not funded_feeds:
             return None, error_status(note="No funded feeds returned by autopay function call")
 
@@ -43,7 +43,6 @@ class FundedFeeds(FundedFeedFilter):
         supported_funded_feeds = [
             (feed, query_data) for (feed, query_data) in funded_feeds if feed_in_feed_builder_mapping(query_data)
         ]
-
         if not supported_funded_feeds:
             return None, error_status(note="No funded feeds with telliot support found in autopay")
         # create list of QueryIdFeedIdDetails data type that represents all relevant info about a feed
@@ -113,10 +112,11 @@ class FundedFeeds(FundedFeedFilter):
         - key: querydata
         - value: tip amount
         """
-        logger.info("Starting looking for querydata_and_tip data in funded feeds")
         one_month_ago = current_time - 2_592_000
         # week_ago = current_time - 604_800
         # one_day_ago = current_time - 259_200
+        logger.info(f"Starting looking for querydata_and_tip data in funded feeds with current Timestamp: {current_time} and one month ago timestamp of {one_month_ago}")
+
 
         eligible_funded_feeds, status = await self.filtered_funded_feeds(
             now_timestamp=current_time, month_old_timestamp=one_month_ago
