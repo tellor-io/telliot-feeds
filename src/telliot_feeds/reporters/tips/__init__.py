@@ -106,6 +106,13 @@ add_multicall_support(
     multicall3_address="0x5Dbd743481a4027d6632E169592860a1Ca38C637",
 )
 
+add_multicall_support(
+    network="Polygon zkEVM Cardona Testnet",
+    network_id=2442,
+    state_override=False,
+    multicall3_address="0x7Fa83caCD47589fB192A680CD809430D995f98e8",
+)
+
 CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
 CATALOG_QUERY_DATA = {query_catalog._entries[tag].query.query_data: tag for tag in query_catalog._entries}
 # A list of query types that have a generic source that can take any properly formatted inputs and return a price
