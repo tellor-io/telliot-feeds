@@ -80,6 +80,9 @@ SPOT_PRICE_PAIRS = [
     "USDY/USD",
     "WMNT/USD",
     "PRIMEETH/ETH",
+    "WUSDM/USD",
+    "SDAI/USD",
+    "USDM/USD",
 ]
 
 

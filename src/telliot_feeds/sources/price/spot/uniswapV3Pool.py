@@ -16,6 +16,7 @@ logger = get_logger(__name__)
 uniswapV3token0__pool_map = {
     "oeth": "0x52299416c469843f4e0d54688099966a6c7d720f",
     "primeeth": "0xb6934f4cf655c93e897514dc7c2af5a143b9ca22",
+    "usdm": "0x4a25dbdf9629b1782c3e2c7de3bdce41f1c7f801",
 }
 
 
