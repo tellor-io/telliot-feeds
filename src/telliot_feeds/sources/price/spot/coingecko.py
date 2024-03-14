@@ -73,6 +73,7 @@ coingecko_coin_id = {
     "usdm": "usdm",
     "sdai": "savings-dai",
     "sfrax": "staked-frax",
+    "frax": "frax",
 }
 
 

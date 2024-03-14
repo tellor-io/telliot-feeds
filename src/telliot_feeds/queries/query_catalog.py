@@ -571,3 +571,9 @@ query_catalog.add_entry(
     title="SFRAX/USD spot price",
     q=SpotPrice(asset="sfrax", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="frax-usd-spot",
+    title="FRAX/USD spot price",
+    q=SpotPrice(asset="frax", currency="usd"),
+)
