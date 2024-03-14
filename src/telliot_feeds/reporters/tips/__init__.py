@@ -114,10 +114,24 @@ add_multicall_support(
 )
 
 add_multicall_support(
-    network="Linea Goerli",
+    network="Polygon zkEVM",
     network_id=59140,
     state_override=False,
-    multicall3_address="0x8B07Cc84782F819f7e1F88953Ce39C4f576018C9",
+    multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
+)
+
+add_multicall_support(
+    network="Linea Goerli",
+    network_id=369,
+    state_override=False,
+    multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
+)
+
+add_multicall_support(
+    network="Linea",
+    network_id=369,
+    state_override=False,
+    multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
 )
 
 CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
