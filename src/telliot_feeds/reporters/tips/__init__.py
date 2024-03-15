@@ -115,21 +115,21 @@ add_multicall_support(
 
 add_multicall_support(
     network="Polygon zkEVM",
-    network_id=59140,
+    network_id=1101,
     state_override=False,
     multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
 )
 
 add_multicall_support(
     network="Linea Goerli",
-    network_id=369,
+    network_id=59140,
     state_override=False,
     multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
 )
 
 add_multicall_support(
     network="Linea",
-    network_id=369,
+    network_id=59144,
     state_override=False,
     multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
 )
