@@ -1,5 +1,3 @@
-import statistics
-
 import pytest
 
 from telliot_feeds.feeds.sfrax_usd_feed import sfrax_usd_feed
