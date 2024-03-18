@@ -72,6 +72,8 @@ coingecko_coin_id = {
     "primeeth": "prime-staked-eth",
     "usdm": "usdm",
     "sdai": "savings-dai",
+    "sfrax": "staked-frax",
+    "frax": "frax",
 }
 
 

@@ -15,9 +15,11 @@ logger = get_logger(__name__)
 ethereum_contract_map = {
     "usdm": "0x59D9356E565Ab3A36dD77763Fc0d87fEaf85508C",
     "sdai": "0x83F20F44975D03b1b09e64809B757c47f942BEeA",
+    "sfrax": "0xA663B02CF0a4b149d2aD41910CB81e23e1c41c32",
     "eth": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     "steth": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
     "btc": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+    "frax": "0x853d955acef822db058eb8505911ed77f175b99e",
 }
 
 
