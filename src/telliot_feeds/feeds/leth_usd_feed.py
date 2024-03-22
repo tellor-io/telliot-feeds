@@ -4,14 +4,7 @@ from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 
 
-meth_usd_median_feed = DataFeed(
+leth_usd_median_feed = DataFeed(
     query=SpotPrice(asset="LETH", currency="USD"),
-    source=PriceAggregator(
-        asset="leth",
-        currency="usd",
-        algorithm="median",
-        sources=[
-            CoinGeckoSpotPriceSource(asset="leth", currency="usd"),
-        ],
-    ),
+    source=CoinGeckoSpotPriceSource(asset="leth", currency="usd")
 )
