@@ -74,6 +74,7 @@ coingecko_coin_id = {
     "sdai": "savings-dai",
     "sfrax": "staked-frax",
     "frax": "frax",
+    "leth": "veno-finance-staked-eth",
 }
 
 
