@@ -26,6 +26,7 @@ from telliot_feeds.constants import GNOSIS_CHAINS
 from telliot_feeds.constants import MANTLE_CHAINS
 from telliot_feeds.constants import POLYGON_CHAINS
 from telliot_feeds.constants import PULSECHAIN_CHAINS
+from telliot_feeds.constants import FRAX_CHAINS
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
@@ -182,6 +183,8 @@ def get_native_token_feed(chain_id: int) -> DataFeed[float]:
         return pls_usd_median_feed
     elif chain_id in MANTLE_CHAINS:
         return mnt_usd_median_feed
+    elif chain_id in FRAX_CHAINS:
+        return eth_usd_median_feed
     else:
         raise ValueError(f"Cannot fetch native token feed. Invalid chain ID: {chain_id}")
 
@@ -199,6 +202,8 @@ def tkn_symbol(chain_id: int) -> str:
         return "PLS"
     elif chain_id in MANTLE_CHAINS:
         return "MNT"
+    elif chain_id in FRAX_CHAINS:
+        return "frxETH"
     else:
         return "Unknown native token"
 
