@@ -22,11 +22,11 @@ from web3.types import Wei
 
 from telliot_feeds.constants import ETHEREUM_CHAINS
 from telliot_feeds.constants import FILECOIN_CHAINS
+from telliot_feeds.constants import FRAX_CHAINS
 from telliot_feeds.constants import GNOSIS_CHAINS
 from telliot_feeds.constants import MANTLE_CHAINS
 from telliot_feeds.constants import POLYGON_CHAINS
 from telliot_feeds.constants import PULSECHAIN_CHAINS
-from telliot_feeds.constants import FRAX_CHAINS
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
