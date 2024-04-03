@@ -57,13 +57,14 @@ class gydSpotPriceService(WebPriceService):
         gyd_priced_in_currency = w3.fromWei(gyd_currency_price_decoded, "ether")
         gyd_priced_in_currency_float: Optional[float] = float(gyd_priced_in_currency)
 
-        if contractAddress == GYD_SDAI_POOL_ADDRESS.lower():
+        if contractAddress.lower() == GYD_SDAI_POOL_ADDRESS.lower():
             currency_spot_price, timestamp = await sdai_usd_median_feed.source.fetch_new_datapoint()
-        elif contractAddress == GYD_USDC_POOL_ADDRESS.lower():
+        elif contractAddress.lower() == GYD_USDC_POOL_ADDRESS.lower():
             currency_spot_price, timestamp = await usdc_usd_median_feed.source.fetch_new_datapoint()
-        elif contractAddress == GYD_USDT_POOL_ADDRESS.lower():
+        elif contractAddress.lower() == GYD_USDT_POOL_ADDRESS.lower():
             currency_spot_price, timestamp = await usdt_usd_median_feed.source.fetch_new_datapoint()
         else:
+            print("Returning from inside the else statement after getting the currency spot price")
             return None
 
         print(
@@ -95,8 +96,6 @@ class gydSpotPriceService(WebPriceService):
                 r = s.post(baseURL, headers=headers, json=json_data, timeout=self.timeout)
                 res = r.json()
                 data = {"response": res}
-                print(f"Data from post request: {data}")
-
             except requests.exceptions.ConnectTimeout:
                 logger.warning("Timeout Error, No data retrieved from Balancer Pools")
                 return []
@@ -118,7 +117,6 @@ class gydSpotPriceService(WebPriceService):
                 gyd_sdai_liquidity = 0
                 poolsArr = response["data"]["pools"]
                 for d in poolsArr:
-                    print(d)
                     if d["address"].lower() == GYD_SDAI_POOL_ADDRESS.lower():
                         gyd_sdai_liquidity = d["totalLiquidity"]
                     elif d["address"].lower() == GYD_USDC_POOL_ADDRESS.lower():
@@ -153,12 +151,15 @@ class gydSpotPriceService(WebPriceService):
         gyd_from_usdc_pool = await self.get_spot_from_pool(GYD_USDC_POOL_ADDRESS)
         gyd_from_usdt_pool = await self.get_spot_from_pool(GYD_USDT_POOL_ADDRESS)
         gyd_from_sdai_pool = await self.get_spot_from_pool(GYD_SDAI_POOL_ADDRESS)
+        
 
         liquidity_data = await self.get_total_liquidity_of_pools()
         gyd_usdc_weight = liquidity_data[0] / liquidity_data[3]
         gyd_usdt_weight = liquidity_data[1] / liquidity_data[3]
         gyd_sdai_weight = liquidity_data[2] / liquidity_data[3]
 
+        
+        #print(f"GYD/USDC: {gyd_from_usdc_pool}, GYD/UDST: {gyd_from_usdt_pool}, GYD/sDAI: {gyd_from_sdai_pool}")
         if gyd_from_usdc_pool is not None and gyd_from_usdt_pool is not None and gyd_from_sdai_pool is not None:
             gyd_weighted_price = (
                 (gyd_usdc_weight) * (gyd_from_usdc_pool)
