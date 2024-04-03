@@ -67,7 +67,7 @@ class gydSpotPriceService(WebPriceService):
             return None
         
         print(f"GYD Priced in currency: {gyd_priced_in_currency}, coingecko price for currency: {currency_spot_price}, at {timestamp}")
-        if currency_spot_price is not None:
+        if currency_spot_price is not None and gyd_priced_in_currency_float is not None:
             return (gyd_priced_in_currency_float / currency_spot_price)
         else:
             return None
