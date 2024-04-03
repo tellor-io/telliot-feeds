@@ -55,9 +55,9 @@ class gydSpotPriceService(WebPriceService):
 
         gyd_currency_price_decoded = w3.toInt(gyd_priced_in_currency)
         gyd_priced_in_currency = w3.fromWei(gyd_currency_price_decoded, "ether")
-        gyd_priced_in_currency_float = float(gyd_priced_in_currency)
+        gyd_priced_in_currency_float: Optional[float] = float(gyd_priced_in_currency)
 
-        currency_spot_price: Optional[float]
+        currency_spot_price = Any
         if contractAddress == GYD_SDAI_POOL_ADDRESS.lower():
             currency_spot_price, timestamp = await sdai_usd_median_feed.source.fetch_new_datapoint()
         elif contractAddress == GYD_USDC_POOL_ADDRESS.lower():
@@ -67,9 +67,8 @@ class gydSpotPriceService(WebPriceService):
         else:
             return None
         
-        currency_float = float(currency_spot_price)
         print(f"GYD Priced in currency: {gyd_priced_in_currency}, coingecko price for currency: {currency_spot_price}, at {timestamp}")
-        return (gyd_priced_in_currency_float / currency_float)
+        return (gyd_priced_in_currency_float / currency_spot_price)
 
     async def get_total_liquidity_of_pools(self) -> list[Optional[float]]:
         baseURL = "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2"
