@@ -151,15 +151,13 @@ class gydSpotPriceService(WebPriceService):
         gyd_from_usdc_pool = await self.get_spot_from_pool(GYD_USDC_POOL_ADDRESS)
         gyd_from_usdt_pool = await self.get_spot_from_pool(GYD_USDT_POOL_ADDRESS)
         gyd_from_sdai_pool = await self.get_spot_from_pool(GYD_SDAI_POOL_ADDRESS)
-        
 
         liquidity_data = await self.get_total_liquidity_of_pools()
         gyd_usdc_weight = liquidity_data[0] / liquidity_data[3]
         gyd_usdt_weight = liquidity_data[1] / liquidity_data[3]
         gyd_sdai_weight = liquidity_data[2] / liquidity_data[3]
 
-        
-        #print(f"GYD/USDC: {gyd_from_usdc_pool}, GYD/UDST: {gyd_from_usdt_pool}, GYD/sDAI: {gyd_from_sdai_pool}")
+        # print(f"GYD/USDC: {gyd_from_usdc_pool}, GYD/UDST: {gyd_from_usdt_pool}, GYD/sDAI: {gyd_from_sdai_pool}")
         if gyd_from_usdc_pool is not None and gyd_from_usdt_pool is not None and gyd_from_sdai_pool is not None:
             gyd_weighted_price = (
                 (gyd_usdc_weight) * (gyd_from_usdc_pool)
