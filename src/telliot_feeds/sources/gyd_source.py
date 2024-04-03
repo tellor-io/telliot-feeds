@@ -57,7 +57,6 @@ class gydSpotPriceService(WebPriceService):
         gyd_priced_in_currency = w3.fromWei(gyd_currency_price_decoded, "ether")
         gyd_priced_in_currency_float: Optional[float] = float(gyd_priced_in_currency)
 
-        currency_spot_price = Any
         if contractAddress == GYD_SDAI_POOL_ADDRESS.lower():
             currency_spot_price, timestamp = await sdai_usd_median_feed.source.fetch_new_datapoint()
         elif contractAddress == GYD_USDC_POOL_ADDRESS.lower():
@@ -68,9 +67,12 @@ class gydSpotPriceService(WebPriceService):
             return None
         
         print(f"GYD Priced in currency: {gyd_priced_in_currency}, coingecko price for currency: {currency_spot_price}, at {timestamp}")
-        return (gyd_priced_in_currency_float / currency_spot_price)
+        if currency_spot_price is not None:
+            return (gyd_priced_in_currency_float / currency_spot_price)
+        else:
+            return None
 
-    async def get_total_liquidity_of_pools(self) -> list[Optional[float]]:
+    async def get_total_liquidity_of_pools(self) -> list[float]:
         baseURL = "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2"
         gyd_token_contract_address = "0xe07F9D810a48ab5c3c914BA3cA53AF14E4491e8A"
         headers = {
@@ -156,23 +158,17 @@ class gydSpotPriceService(WebPriceService):
         gyd_usdt_weight = liquidity_data[1] / liquidity_data[3]
         gyd_sdai_weight = liquidity_data[2] / liquidity_data[3]
 
-        gyd_weighted_price = (
-            (gyd_usdc_weight) * (gyd_from_usdc_pool)
-            + (gyd_usdt_weight) * (gyd_from_usdt_pool)
-            + (gyd_sdai_weight) * (gyd_from_sdai_pool)
-        )
-        print(f"GYD weighted price: {gyd_weighted_price}")
-        timestamp = datetime_now_utc()
-        # coinGeckoService = CoinGeckoSpotPriceSource(asset="gyd", currency="usd")
-        # gyd_price_api, timestamp = await coinGeckoService.fetch_new_datapoint()
-        # print(f"Coin gecko price for gyd: {gyd_price_api}")
-        # print(f"All Prices returned: [{gyd_from_sdai_pool}, {gyd_from_usdc_pool}, {gyd_from_usdt_pool}, {gyd_price_api}]")
-
-        # gydSpotPrice = statistics.median([gyd_weighted_price, gyd_price_api])
-        # if gydSpotPrice is None:
-        #     logger.error("Unable to get price for gyd")
-        #     return None, None
-        return float(gyd_weighted_price), timestamp
+        if gyd_from_usdc_pool is not None and gyd_from_usdt_pool is not None and gyd_from_sdai_pool is not None:
+            gyd_weighted_price = (
+                (gyd_usdc_weight) * (gyd_from_usdc_pool)
+                + (gyd_usdt_weight) * (gyd_from_usdt_pool)
+                + (gyd_sdai_weight) * (gyd_from_sdai_pool)
+            )
+            print(f"GYD weighted price: {gyd_weighted_price}")
+            timestamp = datetime_now_utc()
+            return gyd_weighted_price, timestamp
+        else:
+            return None, None
 
 
 @dataclass
