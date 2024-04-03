@@ -13,7 +13,7 @@ gyd_usd_median_feed = DataFeed(
         algorithm="median",
         sources=[
             CoinGeckoSpotPriceSource(asset="gyd", currency="usd"),
-            GYDCustomSpotPriceSource(asset="gyd", currency="usd"),
+            gydCustomSpotPriceSource(asset="gyd", currency="usd"),
         ],
     ),
 )

@@ -34,15 +34,15 @@ class gydSpotPriceService(WebPriceService):
         super().__init__(**kwargs)
         self.cfg = TelliotConfig()
 
-    async def get_spot_from_pool(self, contractAddress: str, feedToConvertAssetToUSD: DataFeed[Any]) -> OptionalDataPoint[float]:
+    async def get_spot_from_pool(self, contractAddress: str, feedToConvertAssetToUSD: DataFeed[float]) -> OptionalDataPoint[float]:
         endpoint = self.cfg.endpoints.find(chain_id=1)
         if not endpoint:
             logger.error("Endpoint not found for mainnet to get wsteth_eth_ratio")
-            return None
+            return None, None
         ep = endpoint[0]
         if not ep.connect():
             logger.error("Unable to connect endpoint for mainnet to get wsteth_eth_ratio")
-            return None
+            return None, None
         w3 = ep.web3
 
         ## calls the getPrice() read function from a balancer pool to get the price of gyd priced in the other asset in the pool
