@@ -55,13 +55,13 @@ class gydSpotPriceService(WebPriceService):
 
         gyd_currency_price_decoded = w3.toInt(gyd_priced_in_currency)
         gyd_priced_in_currency = w3.fromWei(gyd_currency_price_decoded, "ether")
+        gyd_priced_in_currency_float = float(gyd_priced_in_currency)
 
         currency_spot_price, timestamp = await feedToConvertAssetToUSD.source.fetch_new_datapoint()
         print(f"GYD Priced in currency: {gyd_priced_in_currency}, coingecko price for currency: {currency_spot_price}, at {timestamp}")
-        return float(gyd_priced_in_currency) / float(currency_spot_price)
+        return gyd_priced_in_currency_float / float(currency_spot_price)
 
     async def get_total_liquidity_of_pools(self) -> Optional[list[float]]:
-        poolAddressArr = [GYD_USDC_POOL_ADDRESS, GYD_SDAI_POOL_ADDRESS, GYD_USDT_POOL_ADDRESS]
         baseURL = "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2"
         gyd_token_contract_address = "0xe07F9D810a48ab5c3c914BA3cA53AF14E4491e8A"
         headers = {
