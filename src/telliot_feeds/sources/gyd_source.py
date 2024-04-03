@@ -65,10 +65,12 @@ class gydSpotPriceService(WebPriceService):
             currency_spot_price, timestamp = await usdt_usd_median_feed.source.fetch_new_datapoint()
         else:
             return None
-        
-        print(f"GYD Priced in currency: {gyd_priced_in_currency}, coingecko price for currency: {currency_spot_price}, at {timestamp}")
+
+        print(
+            f"GYD Priced in currency: {gyd_priced_in_currency}, coingecko price for currency: {currency_spot_price}, at {timestamp}"
+        )
         if currency_spot_price is not None and gyd_priced_in_currency_float is not None:
-            return (gyd_priced_in_currency_float / currency_spot_price)
+            return gyd_priced_in_currency_float / currency_spot_price
         else:
             return None
 
@@ -151,7 +153,6 @@ class gydSpotPriceService(WebPriceService):
         gyd_from_usdc_pool = await self.get_spot_from_pool(GYD_USDC_POOL_ADDRESS)
         gyd_from_usdt_pool = await self.get_spot_from_pool(GYD_USDT_POOL_ADDRESS)
         gyd_from_sdai_pool = await self.get_spot_from_pool(GYD_SDAI_POOL_ADDRESS)
-
 
         liquidity_data = await self.get_total_liquidity_of_pools()
         gyd_usdc_weight = liquidity_data[0] / liquidity_data[3]
