@@ -57,7 +57,15 @@ class gydSpotPriceService(WebPriceService):
         gyd_priced_in_currency = w3.fromWei(gyd_currency_price_decoded, "ether")
         gyd_priced_in_currency_float = float(gyd_priced_in_currency)
 
-        currency_spot_price, timestamp = await feedToConvertAssetToUSD.source.fetch_new_datapoint()
+        if contractAddress == GYD_SDAI_POOL_ADDRESS.lower():
+            currency_spot_price, timestamp = await sdai_usd_median_feed.source.fetch_new_datapoint()
+        elif contractAddress == GYD_USDC_POOL_ADDRESS.lower():
+            currency_spot_price, timestamp = await usdc_usd_median_feed.source.fetch_new_datapoint()
+        elif contractAddress == GYD_USDT_POOL_ADDRESS.lower():
+            currency_spot_price, timestamp = await usdt_usd_median_feed.source.fetch_new_datapoint()
+        else:
+            return None, None
+        
         currency_float = float(currency_spot_price)
         print(f"GYD Priced in currency: {gyd_priced_in_currency}, coingecko price for currency: {currency_spot_price}, at {timestamp}")
         return (gyd_priced_in_currency_float / currency_float), timestamp
@@ -148,9 +156,9 @@ class gydSpotPriceService(WebPriceService):
         gyd_sdai_weight = liquidity_data[2] / liquidity_data[3]
 
         gyd_weighted_price = (
-            (gyd_usdc_weight) * (gyd_from_usdc_pool)
-            + (gyd_usdt_weight) * (gyd_from_usdt_pool)
-            + (gyd_sdai_weight) * (gyd_from_sdai_pool)
+            (gyd_usdc_weight) * float(gyd_from_usdc_pool)
+            + (gyd_usdt_weight) * float(gyd_from_usdt_pool)
+            + (gyd_sdai_weight) * float(gyd_from_sdai_pool)
         )
         print(f"GYD weighted price: {gyd_weighted_price}")
         timestamp = datetime_now_utc()
