@@ -85,6 +85,7 @@ SPOT_PRICE_PAIRS = [
     "USDM/USD",
     "SFRAX/USD",
     "FRAX/USD",
+    "GYD/USD",
 ]
 
 
