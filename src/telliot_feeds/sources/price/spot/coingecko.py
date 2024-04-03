@@ -74,6 +74,7 @@ coingecko_coin_id = {
     "sdai": "savings-dai",
     "sfrax": "staked-frax",
     "frax": "frax",
+    "gyd": "gyroscope-gyd",
 }
 
 
@@ -114,6 +115,7 @@ class CoinGeckoSpotPriceService(WebPriceService):
             return None, None
         elif "response" in d:
             response = d["response"]
+            logger.info(f"Coingecko Response: {response}")
 
             try:
                 price = float(response[coin_id][currency])
