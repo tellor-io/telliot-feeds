@@ -16,7 +16,6 @@ gyd_usd_median_feed = DataFeed(
             GYDCustomSpotPriceSource(asset="gyd", currency="usd"),
         ],
     ),
-    
 )
 
 
@@ -30,6 +29,5 @@ if __name__ == "__main__":
 
         # res = await source.service.get_total_liquidity_of_pools()
         # print(res)
-
 
     asyncio.run(main())

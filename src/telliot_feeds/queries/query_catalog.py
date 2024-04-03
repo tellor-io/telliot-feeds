@@ -578,8 +578,4 @@ query_catalog.add_entry(
     q=SpotPrice(asset="frax", currency="usd"),
 )
 
-query_catalog.add_entry(
-    tag="gyd-usd-spot",
-    title="GYD/USD spot price",
-    q=SpotPrice(asset="gyd", currency="usd")
-)
+query_catalog.add_entry(tag="gyd-usd-spot", title="GYD/USD spot price", q=SpotPrice(asset="gyd", currency="usd"))

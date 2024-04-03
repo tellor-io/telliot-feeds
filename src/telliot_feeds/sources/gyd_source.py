@@ -23,6 +23,7 @@ GYD_USDC_POOL_ADDRESS = "0xC2AA60465BfFa1A88f5bA471a59cA0435c3ec5c1"
 GYD_USDT_POOL_ADDRESS = "0xfbfaD5fa9E99081da6461F36f229B5cC88A64c63"
 GYD_SDAI_POOL_ADDRESS = "0x2191Df821C198600499aA1f0031b1a7514D7A7D9"
 
+
 class gydSpotPriceService(WebPriceService):
     """Custom GYD Price Service"""
 
@@ -33,7 +34,7 @@ class gydSpotPriceService(WebPriceService):
         super().__init__(**kwargs)
         self.cfg = TelliotConfig()
 
-    async def get_spot_from_pool(self, contractAddress: str, feedToConvertAssetToUSD: DataFeed) -> Optional[float]:
+    async def get_spot_from_pool(self, contractAddress: str, feedToConvertAssetToUSD: DataFeed[Any]) -> Optional[float]:
         endpoint = self.cfg.endpoints.find(chain_id=1)
         if not endpoint:
             logger.error("Endpoint not found for mainnet to get wsteth_eth_ratio")
@@ -49,17 +50,17 @@ class gydSpotPriceService(WebPriceService):
             {
                 "to": contractAddress,
                 "data": "0x98d5fdca",
-            }  
+            }
         )
 
         gyd_currency_price_decoded = w3.toInt(gyd_priced_in_currency)
         gyd_priced_in_currency = w3.fromWei(gyd_currency_price_decoded, "ether")
 
-        currency_spot_price, _ = await feedToConvertAssetToUSD.source.fetch_new_datapoint()
-        print(f"GYD Priced in currency: {gyd_priced_in_currency}, coingecko price for currency: {currency_spot_price}")
-        return float(gyd_priced_in_currency) / currency_spot_price
-    
-    async def get_total_liquidity_of_pools(self) -> Optional[list]:
+        currency_spot_price, timestamp = await feedToConvertAssetToUSD.source.fetch_new_datapoint()
+        print(f"GYD Priced in currency: {gyd_priced_in_currency}, coingecko price for currency: {currency_spot_price}, at {timestamp}")
+        return float(gyd_priced_in_currency) / float(currency_spot_price)
+
+    async def get_total_liquidity_of_pools(self) -> Optional[list[float]]:
         poolAddressArr = [GYD_USDC_POOL_ADDRESS, GYD_SDAI_POOL_ADDRESS, GYD_USDT_POOL_ADDRESS]
         baseURL = "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2"
         gyd_token_contract_address = "0xe07F9D810a48ab5c3c914BA3cA53AF14E4491e8A"
@@ -67,10 +68,15 @@ class gydSpotPriceService(WebPriceService):
             "Content-Type": "application/json",
         }
 
-        query = "{pools(where: {tokensList_contains: [" + f'"{gyd_token_contract_address}"' + "] } )" + "{ address, id, name, totalLiquidity } }"
+        query = (
+            "{pools(where: {tokensList_contains: ["
+            + f'"{gyd_token_contract_address}"'
+            + "] } )"
+            + "{ address, id, name, totalLiquidity } }"
+        )
 
         json_data = {"query": query}
-        
+
         with requests.Session() as s:
             try:
                 r = s.post(baseURL, headers=headers, json=json_data, timeout=self.timeout)
@@ -107,7 +113,12 @@ class gydSpotPriceService(WebPriceService):
                     elif d["address"].lower() == GYD_USDT_POOL_ADDRESS.lower():
                         gyd_usdt_liquidity = d["totalLiquidity"]
 
-                return [float(gyd_usdc_liquidity), float(gyd_usdt_liquidity), float(gyd_sdai_liquidity), float(gyd_usdc_liquidity) + float(gyd_usdt_liquidity) + float(gyd_sdai_liquidity)]
+                return [
+                    float(gyd_usdc_liquidity),
+                    float(gyd_usdt_liquidity),
+                    float(gyd_sdai_liquidity),
+                    float(gyd_usdc_liquidity) + float(gyd_usdt_liquidity) + float(gyd_sdai_liquidity),
+                ]
             except KeyError as e:
                 msg = "Error parsing BalancerV2 response: KeyError: {}".format(e)
                 logger.critical(msg)
@@ -115,9 +126,7 @@ class gydSpotPriceService(WebPriceService):
 
         else:
             raise Exception("Invalid response from get_url")
-        return []
 
-    
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """This implemenation gets the price from 3 balancer pools and coingecko"""
 
@@ -127,7 +136,7 @@ class gydSpotPriceService(WebPriceService):
         if currency != "usd":
             logger.error("GYD price service only works for usd")
             return None, None
-        
+
         gyd_from_usdc_pool = await self.get_spot_from_pool(GYD_USDC_POOL_ADDRESS, usdc_usd_median_feed)
         gyd_from_usdt_pool = await self.get_spot_from_pool(GYD_USDT_POOL_ADDRESS, usdt_usd_median_feed)
         gyd_from_sdai_pool = await self.get_spot_from_pool(GYD_SDAI_POOL_ADDRESS, sdai_usd_median_feed)
@@ -137,7 +146,11 @@ class gydSpotPriceService(WebPriceService):
         gyd_usdt_weight = liquidity_data[1] / liquidity_data[3]
         gyd_sdai_weight = liquidity_data[2] / liquidity_data[3]
 
-        gyd_weighted_price = (gyd_usdc_weight)*(gyd_from_usdc_pool) + (gyd_usdt_weight)*(gyd_from_usdt_pool) + (gyd_sdai_weight)*(gyd_from_sdai_pool)
+        gyd_weighted_price = (
+            (gyd_usdc_weight) * (gyd_from_usdc_pool)
+            + (gyd_usdt_weight) * (gyd_from_usdt_pool)
+            + (gyd_sdai_weight) * (gyd_from_sdai_pool)
+        )
         print(f"GYD weighted price: {gyd_weighted_price}")
         timestamp = datetime_now_utc()
         # coinGeckoService = CoinGeckoSpotPriceSource(asset="gyd", currency="usd")
@@ -146,19 +159,20 @@ class gydSpotPriceService(WebPriceService):
         # print(f"All Prices returned: [{gyd_from_sdai_pool}, {gyd_from_usdc_pool}, {gyd_from_usdt_pool}, {gyd_price_api}]")
 
         # gydSpotPrice = statistics.median([gyd_weighted_price, gyd_price_api])
-        # if gydSpotPrice is None: 
+        # if gydSpotPrice is None:
         #     logger.error("Unable to get price for gyd")
         #     return None, None
         return float(gyd_weighted_price), timestamp
-    
+
+
 @dataclass
 class gydCustomSpotPriceSource(PriceSource):
-    """"Gets data from Balancer pools and coingecko and aggregates the data to return a spot price"""
+    """ "Gets data from Balancer pools and coingecko and aggregates the data to return a spot price"""
 
     asset: str = "gyd"
     currency: str = "usd"
     service: gydSpotPriceService = field(default_factory=gydSpotPriceService, init=False)
-        
+
 
 if __name__ == "__main__":
     import asyncio
@@ -170,7 +184,5 @@ if __name__ == "__main__":
 
         # res = await source.service.get_total_liquidity_of_pools()
         # print(res)
-
-
 
     asyncio.run(main())
