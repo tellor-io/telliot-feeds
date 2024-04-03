@@ -1,4 +1,3 @@
-import statistics
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
@@ -7,7 +6,6 @@ from typing import Optional
 import requests
 from telliot_core.apps.telliot_config import TelliotConfig
 
-from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.feeds.sdai_usd_feed import sdai_usd_median_feed
@@ -45,7 +43,7 @@ class gydSpotPriceService(WebPriceService):
             return None
         w3 = ep.web3
 
-        ## calls the getPrice() read function from a balancer pool to get the price of gyd priced in the other asset in the pool
+        # calls the getPrice() read function from a balancer pool to get the price of gyd priced in the other asset in the pool
         gyd_priced_in_currency = w3.eth.call(
             {
                 "to": contractAddress,
