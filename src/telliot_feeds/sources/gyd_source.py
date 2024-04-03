@@ -34,15 +34,15 @@ class gydSpotPriceService(WebPriceService):
         super().__init__(**kwargs)
         self.cfg = TelliotConfig()
 
-    async def get_spot_from_pool(self, contractAddress: str) -> float:
+    async def get_spot_from_pool(self, contractAddress: str) -> Optional[float]:
         endpoint = self.cfg.endpoints.find(chain_id=1)
         if not endpoint:
             logger.error("Endpoint not found for mainnet to get wsteth_eth_ratio")
-            return 0.0
+            return None
         ep = endpoint[0]
         if not ep.connect():
             logger.error("Unable to connect endpoint for mainnet to get wsteth_eth_ratio")
-            return 0.0
+            return None
         w3 = ep.web3
 
         ## calls the getPrice() read function from a balancer pool to get the price of gyd priced in the other asset in the pool
@@ -57,7 +57,7 @@ class gydSpotPriceService(WebPriceService):
         gyd_priced_in_currency = w3.fromWei(gyd_currency_price_decoded, "ether")
         gyd_priced_in_currency_float = float(gyd_priced_in_currency)
 
-        currency_spot_price = 0.0
+        currency_spot_price: Optional[float]
         if contractAddress == GYD_SDAI_POOL_ADDRESS.lower():
             currency_spot_price, timestamp = await sdai_usd_median_feed.source.fetch_new_datapoint()
         elif contractAddress == GYD_USDC_POOL_ADDRESS.lower():
@@ -65,14 +65,13 @@ class gydSpotPriceService(WebPriceService):
         elif contractAddress == GYD_USDT_POOL_ADDRESS.lower():
             currency_spot_price, timestamp = await usdt_usd_median_feed.source.fetch_new_datapoint()
         else:
-            return 0.0
+            return None
         
-        if currency_spot_price == 0.0:
-            return 0.0
+        currency_float = float(currency_spot_price)
         print(f"GYD Priced in currency: {gyd_priced_in_currency}, coingecko price for currency: {currency_spot_price}, at {timestamp}")
-        return (gyd_priced_in_currency_float / currency_spot_price)
+        return (gyd_priced_in_currency_float / currency_float)
 
-    async def get_total_liquidity_of_pools(self) -> list[float]:
+    async def get_total_liquidity_of_pools(self) -> list[Optional[float]]:
         baseURL = "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2"
         gyd_token_contract_address = "0xe07F9D810a48ab5c3c914BA3cA53AF14E4491e8A"
         headers = {
@@ -151,12 +150,6 @@ class gydSpotPriceService(WebPriceService):
         gyd_from_usdc_pool = await self.get_spot_from_pool(GYD_USDC_POOL_ADDRESS)
         gyd_from_usdt_pool = await self.get_spot_from_pool(GYD_USDT_POOL_ADDRESS)
         gyd_from_sdai_pool = await self.get_spot_from_pool(GYD_SDAI_POOL_ADDRESS)
-        if gyd_from_usdc_pool == 0.0:
-            return None, None
-        elif gyd_from_usdt_pool == 0.0:
-            return None, None
-        elif gyd_from_sdai_pool == 0.0:
-            return None, None
 
 
         liquidity_data = await self.get_total_liquidity_of_pools()
