@@ -1,8 +1,8 @@
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.price.spot_price import SpotPrice
-from telliot_feeds.sources.gyd_source import gydCustomSpotPriceSource
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
+from telliot_feeds.sources.gyd_source import gydCustomSpotPriceSource
 
 
 gyd_usd_median_feed = DataFeed(
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        feed = gyd_usd_median_feed(asset="gyd", currency="usd")
+        feed = gyd_usd_median_feed
         v, _ = await feed.source.fetch_new_datapoint()
         print(v)
 

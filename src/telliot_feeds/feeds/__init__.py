@@ -47,7 +47,7 @@ from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed_example
 from telliot_feeds.feeds.gno_usd_feed import gno_usd_median_feed
 from telliot_feeds.feeds.grt_usd_feed import grt_usd_median_feed
-from telliot_feeds.feeds.gyd_usd_feed import gyd_usd_median_feed
+#from telliot_feeds.feeds.gyd_usd_feed import gyd_usd_median_feed
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
 from telliot_feeds.feeds.landx_feed import corn
 from telliot_feeds.feeds.landx_feed import rice
@@ -207,7 +207,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "sdai-usd-spot": sdai_usd_median_feed,
     "sfrax-usd-spot": sfrax_usd_feed,
     "frax-usd-spot": frax_usd_median_feed,
-    "gyd-usd-spot": gyd_usd_median_feed,
+    #"gyd-usd-spot": gyd_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
