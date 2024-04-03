@@ -1,10 +1,22 @@
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.sources.gyd_source import GYDCustomSpotPriceSource
+from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
+from telliot_feeds.sources.price_aggregator import PriceAggregator
+
 
 gyd_usd_median_feed = DataFeed(
     query=SpotPrice(asset="GYD", currency="USD"),
-    source=GYDCustomSpotPriceSource(asset="gyd", currency="usd")
+    source=PriceAggregator(
+        asset="gyd",
+        currency="usd",
+        algorithm="median",
+        sources=[
+            CoinGeckoSpotPriceSource(asset="gyd", currency="usd"),
+            GYDCustomSpotPriceSource(asset="gyd", currency="usd"),
+        ],
+    ),
+    
 )
 
 

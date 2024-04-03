@@ -12,7 +12,7 @@ from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.pricing.price_source import PriceSource
-from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
+#from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.utils.log import get_logger
 
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
