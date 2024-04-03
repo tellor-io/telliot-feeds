@@ -579,7 +579,7 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
-    tag="gyd-usd-spot", 
-    title="GYD/USD spot price", 
+    tag="gyd-usd-spot",
+    title="GYD/USD spot price",
     q=SpotPrice(asset="gyd", currency="usd"),
 )
