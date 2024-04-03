@@ -47,6 +47,7 @@ from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed_example
 from telliot_feeds.feeds.gno_usd_feed import gno_usd_median_feed
 from telliot_feeds.feeds.grt_usd_feed import grt_usd_median_feed
+from telliot_feeds.feeds.gyd_usd_feed import gyd_usd_median_feed
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
 from telliot_feeds.feeds.landx_feed import corn
 from telliot_feeds.feeds.landx_feed import rice
@@ -112,7 +113,6 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
-from telliot_feeds.feeds.gyd_usd_feed import gyd_usd_median_feed
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "ampleforth-custom": ampl_usd_vwap_feed,
