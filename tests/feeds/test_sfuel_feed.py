@@ -14,5 +14,3 @@ async def test_sfuel_usd_feed(caplog):
     assert v == 0
 
     print(f"sFUEL/USD Price: {v}")
-
-    
