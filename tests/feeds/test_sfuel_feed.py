@@ -1,5 +1,3 @@
-import statistics
-
 import pytest
 
 from telliot_feeds.feeds.sfuel_usd_feed import sfuel_usd_feed

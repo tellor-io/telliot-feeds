@@ -4,8 +4,7 @@ from telliot_feeds.sources.sfuel_source import sFuelCustomSpotPriceSource
 
 
 sfuel_usd_feed = DataFeed(
-    query=SpotPrice(asset="sFUEL", currency="USD"),
-    source=sFuelCustomSpotPriceSource(asset="sfuel", currency="usd")
+    query=SpotPrice(asset="sFUEL", currency="USD"), source=sFuelCustomSpotPriceSource(asset="sfuel", currency="usd")
 )
 
 if __name__ == "__main__":

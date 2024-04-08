@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 
-import requests
 from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
@@ -32,7 +31,7 @@ class sFuelSpotPriceService(WebPriceService):
         if currency != "usd":
             logger.error("sfuel price service only works for usd")
             return None, None
-        
+
         if asset != "sfuel":
             logger.error("this feed can only be used with an asset name of sfuel")
             return None, None
