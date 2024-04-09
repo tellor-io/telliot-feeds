@@ -258,6 +258,8 @@ class Tellor360Reporter(Stake):
         _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
         price_native_token = native_token_feed.source.latest[0]
         price_trb_usd = trb_usd_median_feed.source.latest[0]
+        if self.chain_id == 1444673419 or self.chain_id == 2046399126:
+            price_native_token = 0.00
 
         print(f'Price native token: {price_native_token}, price-trb: {price_trb_usd}')
         if price_native_token is None or price_trb_usd is None:
