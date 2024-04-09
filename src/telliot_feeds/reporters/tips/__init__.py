@@ -141,6 +141,20 @@ add_multicall_support(
     multicall3_address="0x0D474E0905F99ED1E06F727938B6cF851340c865",
 )
 
+add_multicall_support(
+    network="Skale Europa Testnet",
+    network_id=1444673419,
+    state_override=False,
+    multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
+)
+
+add_multicall_support(
+    network="Skale Europa Mainnet",
+    network_id=2046399126,
+    state_override=False,
+    multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
+)
+
 CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
 CATALOG_QUERY_DATA = {query_catalog._entries[tag].query.query_data: tag for tag in query_catalog._entries}
 # A list of query types that have a generic source that can take any properly formatted inputs and return a price
