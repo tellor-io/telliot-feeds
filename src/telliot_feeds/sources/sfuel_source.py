@@ -36,7 +36,7 @@ class sFuelSpotPriceService(WebPriceService):
             logger.error("this feed can only be used with an asset name of sfuel")
             return None, None
 
-        return 0.00, None
+        return 0.1, None
 
 
 @dataclass

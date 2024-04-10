@@ -164,6 +164,7 @@ class GasFees:
         try:
             gas = pre_built_transaction.estimateGas({"from": self.acct_address})
             self.set_gas_info({"gas": gas})
+            print(f"Gas calculated in estimate gas amount: {gas}")
             return gas, ResponseStatus()
         except Exception as e:
             return None, error_status("Error estimating gas amount:", e, logger.error)
@@ -180,6 +181,7 @@ class GasFees:
         try:
             gas_price = self.web3.eth.gas_price
             if gas_price is None:
+                print("Error fetching legacy gas price, rpc returned None")
                 return None, error_status("Error fetching legacy gas price, rpc returned None", log=logger.error)
             multiplier = 1.0 + (self.gas_multiplier / 100.0)  # 1 percent default extra
             legacy_gas_price = int(gas_price * multiplier)
