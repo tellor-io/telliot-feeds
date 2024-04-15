@@ -261,7 +261,7 @@ class Tellor360Reporter(Stake):
         # if self.chain_id == 1444673419 or self.chain_id == 2046399126:
         #     price_native_token = 0.011
 
-        print(f'Price native token: {price_native_token}, price-trb: {price_trb_usd}')
+        print(f"Price native token: {price_native_token}, price-trb: {price_trb_usd}")
         if price_native_token is None or price_trb_usd is None:
             return error_status("Unable to fetch token price", log=logger.warning)
 

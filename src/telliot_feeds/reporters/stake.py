@@ -109,7 +109,7 @@ class Stake(GasFees):
             return False, error_status("unable to calculate fees for deposit txn", e=status.error, log=logger.error)
 
         fees = self.get_gas_info_core()
-        print(f'Fees passed into tx: {fees}')
+        print(f"Fees passed into tx: {fees}")
         deposit_receipt, deposit_status = await self.oracle.write(
             func_name="depositStake",
             _amount=amount,
