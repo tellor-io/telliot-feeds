@@ -577,3 +577,9 @@ query_catalog.add_entry(
     title="FRAX/USD spot price",
     q=SpotPrice(asset="frax", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="leth-usd-spot",
+    title="LETH/USD spot price",
+    q=SpotPrice(asset="leth", currency="usd"),
+)
