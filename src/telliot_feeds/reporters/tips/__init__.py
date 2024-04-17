@@ -135,6 +135,13 @@ add_multicall_support(
 )
 
 add_multicall_support(
+    network="Linea Sepolia",
+    network_id=59141,
+    state_override=False,
+    multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
+)
+
+add_multicall_support(
     network="Kyoto Testnet",
     network_id=1998,
     state_override=False,
@@ -153,6 +160,20 @@ add_multicall_support(
     network_id=2046399126,
     state_override=False,
     multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
+)
+
+add_multicall_support(
+    network="zkSync Era Mainnet",
+    network_id=324,
+    state_override=False,
+    multicall3_address="0xF9cda624FBC7e059355ce98a31693d299FACd963",
+)
+
+add_multicall_support(
+    network="zkSync Era Sepolia Testnet",
+    network_id=300,
+    state_override=False,
+    multicall3_address="0xF9cda624FBC7e059355ce98a31693d299FACd963",
 )
 
 CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
