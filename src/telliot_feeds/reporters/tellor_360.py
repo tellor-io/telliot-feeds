@@ -259,7 +259,6 @@ class Tellor360Reporter(Stake):
         price_native_token = native_token_feed.source.latest[0]
         price_trb_usd = trb_usd_median_feed.source.latest[0]
 
-        print(f"Price native token: {price_native_token}, price-trb: {price_trb_usd}")
         if price_native_token is None or price_trb_usd is None:
             return error_status("Unable to fetch token price", log=logger.warning)
 
