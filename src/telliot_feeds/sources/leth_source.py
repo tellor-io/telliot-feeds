@@ -42,7 +42,7 @@ class LETHSpotPriceService(WebPriceService):
         leth_eth_ratio_bytes = w3.eth.call(
             {
                 "to": "0xE7895ed01a1a6AAcF1c2E955aF14E7cf612E7F9d",
-                "data": "",
+                "data": "0x4b5a24650000000000000000000000000000000000000000000000000de0b6b3a7640000",
             }
         )
         leth_usd_ratio_decoded = w3.toInt(leth_eth_ratio_bytes)
