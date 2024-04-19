@@ -577,3 +577,11 @@ query_catalog.add_entry(
     title="FRAX/USD spot price",
     q=SpotPrice(asset="frax", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="gyd-usd-spot",
+    title="GYD/USD spot price",
+    q=SpotPrice(asset="gyd", currency="usd"),
+)
+
+query_catalog.add_entry(tag="sfuel-usd-spot", title="sFUEL/USD spot price", q=SpotPrice(asset="sfuel", currency="usd"))
