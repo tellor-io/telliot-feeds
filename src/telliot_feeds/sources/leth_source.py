@@ -27,28 +27,43 @@ class LETHSpotPriceService(WebPriceService):
         super().__init__(**kwargs)
         self.cfg = TelliotConfig()
 
-    def get_leth_usd_ratio(self) -> Optional[float]:
+    def get_leth_eth_ratio(self) -> Optional[float]:
         # get endpoint
-        endpoint = self.cfg.endpoints.find(chain_id=1)
+        endpoint = self.cfg.endpoints.find(chain_id=324)
         if not endpoint:
-            logger.error("Endpoint not found for mainnet to get leth_eth_ratio")
+            logger.error("Endpoint not found for network 324 to get total pooled tokens")
             return None
         ep = endpoint[0]
         if not ep.connect():
             logger.error("Unable to connect endpoint for mainnet to get leth_eth_ratio")
             return None
         w3 = ep.web3
-        # get ratio
-        leth_eth_ratio_bytes = w3.eth.call(
+
+        # get total pooled tokens from LETH contract
+        total_pooled_tokens_bytes = w3.eth.call(
             {
                 "to": "0xE7895ed01a1a6AAcF1c2E955aF14E7cf612E7F9d",
-                "data": "0x4b5a24650000000000000000000000000000000000000000000000000de0b6b3a7640000",
+                "data": "0xb6f81c85",
             }
         )
-        leth_usd_ratio_decoded = w3.toInt(leth_eth_ratio_bytes)
-        leth_usd_ratio = w3.fromWei(leth_usd_ratio_decoded, "ether")
-        print(f"Ratio from LETH contract: {leth_usd_ratio}")
-        return float(leth_usd_ratio)
+        total_pooled_tokens_decoded = w3.toInt(total_pooled_tokens_bytes)
+        total_pooled_tokens = w3.fromWei(total_pooled_tokens_decoded, "ether")
+        print(f"Total pooled tokens (LETH contract 0xE78...): {total_pooled_tokens}")
+
+        # get total Supply from LETH contract
+        total_supply_bytes = w3.eth.call(
+            {
+                "to": "0xE7895ed01a1a6AAcF1c2E955aF14E7cf612E7F9d",
+                "data": "0x18160ddd",
+            }
+        )
+        total_supply_decoded = w3.toInt(total_supply_bytes)
+        total_supply = w3.fromWei(total_supply_decoded, "ether")
+        print(f"Total supply (LETH contract 0xE78...): {total_pooled_tokens}")
+
+        leth_eth_ratio = total_pooled_tokens / total_supply
+        print(f"LETH / ETH ratio = {leth_eth_ratio}")
+        return float(leth_eth_ratio)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """This implementation gets the price of ETH from multiple sources and
@@ -57,7 +72,7 @@ class LETHSpotPriceService(WebPriceService):
         asset = asset.lower()
         currency = currency.lower()
 
-        leth_ratio = self.get_leth_usd_ratio()
+        leth_ratio = self.get_leth_eth_ratio()
         if leth_ratio is None:
             logger.error("Unable to get leth_eth_ratio")
             return None, None
