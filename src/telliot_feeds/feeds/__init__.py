@@ -53,6 +53,7 @@ from telliot_feeds.feeds.landx_feed import corn
 from telliot_feeds.feeds.landx_feed import rice
 from telliot_feeds.feeds.landx_feed import soy
 from telliot_feeds.feeds.landx_feed import wheat
+from telliot_feeds.feeds.leth_usd_feed import leth_usd_feed
 from telliot_feeds.feeds.link_usd_feed import link_usd_median_feed
 from telliot_feeds.feeds.ltc_usd_feed import ltc_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
@@ -211,6 +212,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "frax-usd-spot": frax_usd_median_feed,
     "gyd-usd-spot": gyd_usd_median_feed,
     "sfuel-usd-spot": sfuel_usd_feed,
+    "leth-usd-spot": leth_usd_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
