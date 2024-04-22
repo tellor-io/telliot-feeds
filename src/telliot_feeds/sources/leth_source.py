@@ -31,38 +31,56 @@ class LETHSpotPriceService(WebPriceService):
         # get endpoint
         endpoint = self.cfg.endpoints.find(chain_id=324)
         if not endpoint:
-            logger.error("Endpoint not found for network 324 to get total pooled tokens")
+            logger.error("Endpoint not found for network 324 (for LETH feed?)")
             return None
         ep = endpoint[0]
         if not ep.connect():
-            logger.error("Unable to connect endpoint for mainnet to get leth_eth_ratio")
+            logger.error("Unable to connect endpoint to get leth_eth_ratio")
             return None
         w3 = ep.web3
 
         # get total pooled tokens from LETH contract
-        total_pooled_tokens_bytes = w3.eth.call(
-            {
-                "to": "0xE7895ed01a1a6AAcF1c2E955aF14E7cf612E7F9d",
-                "data": "0xb6f81c85",
-            }
-        )
-        total_pooled_tokens_decoded = w3.toInt(total_pooled_tokens_bytes)
-        total_pooled_tokens = w3.fromWei(total_pooled_tokens_decoded, "ether")
-        print(f"Total pooled tokens (LETH contract 0xE78...): {total_pooled_tokens}")
+        try:
+            total_pooled_tokens_bytes = w3.eth.call(
+                {
+                    "to": "0xE7895ed01a1a6AAcF1c2E955aF14E7cf612E7F9d",
+                    "data": "0xb6f81c85",
+                }
+            )
+            total_pooled_tokens_decoded = w3.toInt(total_pooled_tokens_bytes)
+            total_pooled_tokens = w3.fromWei(total_pooled_tokens_decoded, "ether")
+            if total_pooled_tokens == 0:
+                logger.error("LETH contract response is 0!")
+                return None
+            else:
+                logger.info(f"total pooled tokens (leth contract 0xE78...): {total_pooled_tokens}")
+
+        except Exception as e:
+            logger.error(f"Could not read total pooled LETH from contract!: {e}")
+            return None
 
         # get total Supply from LETH contract
-        total_supply_bytes = w3.eth.call(
-            {
-                "to": "0xE7895ed01a1a6AAcF1c2E955aF14E7cf612E7F9d",
-                "data": "0x18160ddd",
-            }
-        )
-        total_supply_decoded = w3.toInt(total_supply_bytes)
-        total_supply = w3.fromWei(total_supply_decoded, "ether")
-        print(f"Total supply (LETH contract 0xE78...): {total_pooled_tokens}")
+        try:
+            total_supply_bytes = w3.eth.call(
+                {
+                    "to": "0xE7895ed01a1a6AAcF1c2E955aF14E7cf612E7F9d",
+                    "data": "0x18160ddd",
+                }
+            )
+            total_supply_decoded = w3.toInt(total_supply_bytes)
+            total_supply = w3.fromWei(total_supply_decoded, "ether")
+            if total_supply == 0:
+                logger.error("leth contract response is 0 for supply!")
+                return None
+            else:
+                logger.info(f"total supply (leth contract 0xE78...): {total_pooled_tokens}")
 
-        leth_eth_ratio = total_pooled_tokens / total_supply
-        print(f"LETH / ETH ratio = {leth_eth_ratio}")
+        except Exception as e:
+            logger.error(f"Could not read supply of leth from contract!: {e}")
+            return None
+
+        leth_eth_ratio = format((total_pooled_tokens / total_supply), ".18f")
+        logger.info(f"leth / eth ratio = {leth_eth_ratio}")
         return float(leth_eth_ratio)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
