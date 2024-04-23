@@ -22,7 +22,6 @@ from web3.types import Wei
 
 from telliot_feeds.constants import ETHEREUM_CHAINS
 from telliot_feeds.constants import FILECOIN_CHAINS
-from telliot_feeds.constants import FRAX_CHAINS
 from telliot_feeds.constants import GNOSIS_CHAINS
 from telliot_feeds.constants import KYOTO_CHAINS
 from telliot_feeds.constants import MANTLE_CHAINS
@@ -186,8 +185,6 @@ def get_native_token_feed(chain_id: int) -> DataFeed[float]:
         return pls_usd_median_feed
     elif chain_id in MANTLE_CHAINS:
         return mnt_usd_median_feed
-    elif chain_id in FRAX_CHAINS:
-        return eth_usd_median_feed
     elif chain_id in KYOTO_CHAINS:
         return eth_usd_median_feed
     elif chain_id in SKALE_CHAINS:
