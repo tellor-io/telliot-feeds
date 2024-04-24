@@ -75,6 +75,7 @@ coingecko_coin_id = {
     "sfrax": "staked-frax",
     "frax": "frax",
     "gyd": "gyroscope-gyd",
+    "frxeth": "frax-ether",
 }
 
 
