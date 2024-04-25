@@ -13,17 +13,17 @@ logger = get_logger(__name__)
 
 
 class sFuelSpotPriceService(WebPriceService):
-    """Custom GYD Price Service"""
+    """Custom sFUEL Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
-        kwargs["name"] = "Custom sFUEL Price Service"
+        kwargs["name"] = "sFUEL $1 Price Service"
         kwargs["url"] = ""
         kwargs["timeout"] = 10.0
         super().__init__(**kwargs)
         self.cfg = TelliotConfig()
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
-        """This implemenation gets the price from 3 balancer pools and coingecko"""
+        """Get $1 price for sFUEL (which is free)"""
 
         asset = asset.lower()
         currency = currency.lower()
@@ -36,12 +36,12 @@ class sFuelSpotPriceService(WebPriceService):
             logger.error("this feed can only be used with an asset name of sfuel")
             return None, None
 
-        return 0.1, None
+        return 1, None
 
 
 @dataclass
-class sFuelCustomSpotPriceSource(PriceSource):
-    """ "Gets data from Balancer pools and coingecko and aggregates the data to return a spot price"""
+class sFuelSpotPriceSource(PriceSource):
+    """ "Get $1 price for sFUEL (which is free)"""
 
     asset: str = "sfuel"
     currency: str = "usd"
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        source = sFuelCustomSpotPriceSource(asset="sfuel", currency="usd")
+        source = sFuelSpotPriceSource(asset="sfuel", currency="usd")
         v, _ = await source.fetch_new_datapoint()
         print(v)
 

@@ -8,7 +8,6 @@ async def test_sfuel_usd_feed(caplog):
     """Retrieve median sFUEL/USD price."""
     v, _ = await sfuel_usd_feed.source.fetch_new_datapoint()
 
-    assert v is not None
-    assert v == 0
+    assert v == 1
 
     print(f"sFUEL/USD Price: {v}")
