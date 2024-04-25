@@ -4,6 +4,7 @@ from typing import Any
 
 from telliot_core.apps.telliot_config import TelliotConfig
 
+from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService
 from telliot_feeds.pricing.price_source import PriceSource
@@ -36,7 +37,7 @@ class sFuelSpotPriceService(WebPriceService):
             logger.error("this feed can only be used with an asset name of sfuel")
             return None, None
 
-        return 1, None
+        return 1.00, datetime_now_utc()
 
 
 @dataclass
@@ -55,8 +56,5 @@ if __name__ == "__main__":
         source = sFuelSpotPriceSource(asset="sfuel", currency="usd")
         v, _ = await source.fetch_new_datapoint()
         print(v)
-
-        # res = await source.service.get_total_liquidity_of_pools()
-        # print(res)
 
     asyncio.run(main())
