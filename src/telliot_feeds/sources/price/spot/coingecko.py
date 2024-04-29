@@ -101,7 +101,7 @@ class CoinGeckoSpotPriceService(WebPriceService):
 
         coin_id = coingecko_coin_id.get(asset, None)
         if not coin_id:
-            raise Exception("Asset not supported: {}".format(asset))
+            raise Exception("Coingecko Asset ID not found: {}".format(asset))
 
         url_params = urlencode({"ids": coin_id, "vs_currencies": currency})
         request_url = "/api/v3/simple/price?{}".format(url_params)
