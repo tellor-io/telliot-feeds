@@ -37,6 +37,7 @@ from telliot_feeds.feeds.frxeth_usd_feed import frxeth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.mnt_usd_feed import mnt_usd_median_feed
 from telliot_feeds.feeds.pls_usd_feed import pls_usd_median_feed
+from telliot_feeds.feeds.sfuel_usd_feed import sfuel_usd_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.utils.log import get_logger
@@ -190,6 +191,8 @@ def get_native_token_feed(chain_id: int) -> DataFeed[float]:
         return frxeth_usd_median_feed
     elif chain_id in KYOTO_CHAINS:
         return eth_usd_median_feed
+    elif chain_id in SKALE_CHAINS:
+        return sfuel_usd_feed
     else:
         raise ValueError(f"Cannot fetch native token feed. Invalid chain ID: {chain_id}")
 

@@ -19,7 +19,6 @@ from web3.types import TxParams
 from web3.types import TxReceipt
 
 from telliot_feeds.constants import CHAINS_WITH_TBR
-from telliot_feeds.constants import SKALE_CHAINS
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
@@ -253,16 +252,11 @@ class Tellor360Reporter(Stake):
             return status
 
         tip = self.to_ether(self.autopaytip)
-        # Fetch token prices in USD (unless it's sFUEL for Skale chains)
-        if self.chain_id in SKALE_CHAINS:
-            price_native_token = 1
-            price_feeds = [trb_usd_median_feed]
-        else:
-            native_token_feed = get_native_token_feed(self.chain_id)
-            price_feeds = [native_token_feed, trb_usd_median_feed]
-            price_native_token = native_token_feed.source.latest[0]
-
+        # Fetch token prices in USD
+        native_token_feed = get_native_token_feed(self.chain_id)
+        price_feeds = [native_token_feed, trb_usd_median_feed]
         _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
+        price_native_token = native_token_feed.source.latest[0]
         price_trb_usd = trb_usd_median_feed.source.latest[0]
 
         if price_native_token is None or price_trb_usd is None:

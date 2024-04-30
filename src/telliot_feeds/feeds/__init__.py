@@ -85,6 +85,7 @@ from telliot_feeds.feeds.reth_usd_feed import reth_usd_median_feed
 from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
 from telliot_feeds.feeds.sdai_usd_feed import sdai_usd_median_feed
 from telliot_feeds.feeds.sfrax_usd_feed import sfrax_usd_feed
+from telliot_feeds.feeds.sfuel_usd_feed import sfuel_usd_feed
 from telliot_feeds.feeds.shib_usd_feed import shib_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_feed_example
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
@@ -210,6 +211,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "sfrax-usd-spot": sfrax_usd_feed,
     "frax-usd-spot": frax_usd_median_feed,
     "gyd-usd-spot": gyd_usd_median_feed,
+    "sfuel-usd-spot": sfuel_usd_feed,
     "leth-usd-spot": leth_usd_feed,
     "frxeth-usd-spot": frxeth_usd_median_feed,
 }

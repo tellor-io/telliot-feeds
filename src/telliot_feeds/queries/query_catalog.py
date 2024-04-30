@@ -585,6 +585,12 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
+    tag="sfuel-usd-spot",
+    title="sFUEL/USD spot price",
+    q=SpotPrice(asset="sfuel", currency="usd"),
+)
+
+query_catalog.add_entry(
     tag="leth-usd-spot",
     title="LETH/USD spot price",
     q=SpotPrice(asset="leth", currency="usd"),
