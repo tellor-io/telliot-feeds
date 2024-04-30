@@ -22,7 +22,7 @@ from web3.types import Wei
 
 from telliot_feeds.constants import ETHEREUM_CHAINS
 from telliot_feeds.constants import FILECOIN_CHAINS
-from telliot_feeds.constants import FRAX_CHAINS
+from telliot_feeds.constants import FRXETH_CHAINS
 from telliot_feeds.constants import GNOSIS_CHAINS
 from telliot_feeds.constants import KYOTO_CHAINS
 from telliot_feeds.constants import MANTLE_CHAINS
@@ -33,10 +33,11 @@ from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.fil_usd_feed import fil_usd_median_feed
+from telliot_feeds.feeds.frxeth_usd_feed import frxeth_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.mnt_usd_feed import mnt_usd_median_feed
 from telliot_feeds.feeds.pls_usd_feed import pls_usd_median_feed
-from telliot_feeds.feeds.sfuel_usd_feed import sfuel_usd_feed
+from telliot_feeds.feeds.sfuel_helper_feed import sfuel_helper_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.utils.log import get_logger
@@ -186,12 +187,12 @@ def get_native_token_feed(chain_id: int) -> DataFeed[float]:
         return pls_usd_median_feed
     elif chain_id in MANTLE_CHAINS:
         return mnt_usd_median_feed
-    elif chain_id in FRAX_CHAINS:
-        return eth_usd_median_feed
+    elif chain_id in FRXETH_CHAINS:
+        return frxeth_usd_median_feed
     elif chain_id in KYOTO_CHAINS:
         return eth_usd_median_feed
     elif chain_id in SKALE_CHAINS:
-        return sfuel_usd_feed
+        return sfuel_helper_feed
     else:
         raise ValueError(f"Cannot fetch native token feed. Invalid chain ID: {chain_id}")
 
@@ -209,10 +210,10 @@ def tkn_symbol(chain_id: int) -> str:
         return "PLS"
     elif chain_id in MANTLE_CHAINS:
         return "MNT"
-    elif chain_id in FRAX_CHAINS:
-        return "frxETH"
     elif chain_id in KYOTO_CHAINS:
         return "KYOTO"
+    elif chain_id in FRXETH_CHAINS:
+        return "frxETH"
     elif chain_id in SKALE_CHAINS:
         return "sFUEL"
     else:

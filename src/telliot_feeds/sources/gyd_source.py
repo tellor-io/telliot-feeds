@@ -35,11 +35,11 @@ class gydSpotPriceService(WebPriceService):
     async def get_spot_from_pool(self, contractAddress: str) -> Optional[float]:
         endpoint = self.cfg.endpoints.find(chain_id=1)
         if not endpoint:
-            logger.error("Endpoint not found for mainnet to get wsteth_eth_ratio")
+            logger.error("Endpoint not found for mainnet to get balancer prices")
             return None
         ep = endpoint[0]
         if not ep.connect():
-            logger.error("Unable to connect endpoint for mainnet to get wsteth_eth_ratio")
+            logger.error("Unable to connect endpoint for mainnet to balancer prices")
             return None
         w3 = ep.web3
 

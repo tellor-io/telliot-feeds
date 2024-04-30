@@ -20,6 +20,7 @@ ethereum_contract_map = {
     "steth": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
     "btc": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
     "frax": "0x853d955acef822db058eb8505911ed77f175b99e",
+    "frxeth": "0x5e8422345238f34275888049021821e8e08caa1f",
 }
 
 
@@ -86,7 +87,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        source = CurveFiUSDPriceSource(asset="usdm", currency="usd")
+        source = CurveFiUSDPriceSource(asset="frxeth", currency="usd")
         v, _ = await source.fetch_new_datapoint()
         print(v)
 
