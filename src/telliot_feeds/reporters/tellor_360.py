@@ -2,8 +2,6 @@ import asyncio
 import math
 import time
 from datetime import timedelta
-from datetime import datetime
-from datetime import timezone
 from typing import Any
 from typing import Dict
 from typing import Optional
@@ -256,20 +254,16 @@ class Tellor360Reporter(Stake):
 
         tip = self.to_ether(self.autopaytip)
         # Fetch token prices in USD (unless it's sFUEL for Skale chains)
-        try:
+        if self.chain_id in SKALE_CHAINS:
+            price_native_token = 1
+            price_feeds = [trb_usd_median_feed]
+        else:
             native_token_feed = get_native_token_feed(self.chain_id)
             price_feeds = [native_token_feed, trb_usd_median_feed]
-            _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
             price_native_token = native_token_feed.source.latest[0]
-            price_trb_usd = trb_usd_median_feed.source.latest[0]
-        except ValueError as e:
-            message = str(e)
-            if self.chain_id in SKALE_CHAINS:
-                price_native_token = 1.00, datetime.now(timezone.utc)
-                price_trb_usd = await trb_usd_median_feed.source.fetch_new_datapoint()
-                logger.info("Setting free Gas token sFUEL to $1.00 for profit checks")
-            else:
-                return error_status(message, log=logger.warning)
+
+        _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
+        price_trb_usd = trb_usd_median_feed.source.latest[0]
 
         if price_native_token is None or price_trb_usd is None:
             return error_status("Unable to fetch token price", log=logger.warning)
