@@ -212,6 +212,8 @@ def tkn_symbol(chain_id: int) -> str:
         return "MNT"
     elif chain_id in KYOTO_CHAINS:
         return "KYOTO"
+    elif chain_id in FRXETH_CHAINS
+        return "frxETH"
     elif chain_id in SKALE_CHAINS:
         return "sFUEL"
     else:
