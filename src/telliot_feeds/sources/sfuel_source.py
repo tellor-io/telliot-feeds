@@ -13,8 +13,8 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-class sFuelSpotPriceService(WebPriceService):
-    """Custom sFUEL Price Service"""
+class sFuelHelperService(WebPriceService):
+    """Service to set sFUEL to $1 for internal telliot functionality"""
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "sFUEL $1 Price Service"
@@ -41,19 +41,19 @@ class sFuelSpotPriceService(WebPriceService):
 
 
 @dataclass
-class sFuelSpotPriceSource(PriceSource):
+class sFuelMockSource(PriceSource):
     """ "Get $1 price for sFUEL (which is free)"""
 
     asset: str = "sfuel"
     currency: str = "usd"
-    service: sFuelSpotPriceService = field(default_factory=sFuelSpotPriceService, init=False)
+    service: sFuelHelperService = field(default_factory=sFuelHelperService, init=False)
 
 
 if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        source = sFuelSpotPriceSource(asset="sfuel", currency="usd")
+        source = sFuelMockSource(asset="sfuel", currency="usd")
         v, _ = await source.fetch_new_datapoint()
         print(v)
 
