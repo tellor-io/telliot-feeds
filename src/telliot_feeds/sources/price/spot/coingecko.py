@@ -119,7 +119,7 @@ class CoinGeckoSpotPriceService(WebPriceService):
         request_url = self.url + "/api/v3/simple/price?{}".format(url_params)
 
         session = Session()
-        if API_KEY != '':
+        if API_KEY != "":
             headers = {
                 "Accepts": "application/json",
                 "x-cg-pro-api-key": API_KEY,
@@ -132,21 +132,19 @@ class CoinGeckoSpotPriceService(WebPriceService):
             if response.status_code >= 400:
                 logger.warning(f"CoinGecko Error Status {response.status_code}: {response}")
                 return None, None
-            
+
             res = response.json()
 
         except (ConnectionError, Timeout, TooManyRedirects) as e:
             logger.warning(e)
             return None, None
-        
+
         try:
             price = float(res[coin_id][currency])
             return price, datetime_now_utc()
         except KeyError as e:
             logger.error(f"Error parsing coingecko api response: KeyError: {e}")
             return None, None
-
-        
 
 
 @dataclass
