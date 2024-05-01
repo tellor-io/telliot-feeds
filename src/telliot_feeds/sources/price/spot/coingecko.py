@@ -1,6 +1,6 @@
+import json
 from dataclasses import dataclass
 from dataclasses import field
-import json
 from typing import Any
 from urllib.parse import urlencode
 
