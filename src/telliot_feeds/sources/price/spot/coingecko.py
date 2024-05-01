@@ -1,7 +1,14 @@
 from dataclasses import dataclass
 from dataclasses import field
+import json
 from typing import Any
 from urllib.parse import urlencode
+
+from requests import Session
+from requests.exceptions import ConnectionError
+from requests.exceptions import Timeout
+from requests.exceptions import TooManyRedirects
+from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
@@ -78,13 +85,18 @@ coingecko_coin_id = {
     "frxeth": "frax-ether",
 }
 
+API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key
+
 
 class CoinGeckoSpotPriceService(WebPriceService):
     """CoinGecko Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "CoinGecko Price Service"
-        kwargs["url"] = "https://api.coingecko.com"
+        if API_KEY == "":
+            kwargs["url"] = "https://api.coingecko.com"
+        else:
+            kwargs["url"] = "https://pro-api.coingecko.com"
         super().__init__(**kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
@@ -104,31 +116,37 @@ class CoinGeckoSpotPriceService(WebPriceService):
             raise Exception("Asset not supported: {}".format(asset))
 
         url_params = urlencode({"ids": coin_id, "vs_currencies": currency})
-        request_url = "/api/v3/simple/price?{}".format(url_params)
+        request_url = self.url + "/api/v3/simple/price?{}".format(url_params)
 
-        d = self.get_url(request_url)
+        session = Session()
+        if API_KEY != '':
+            headers = {
+                "Accepts": "application/json",
+                "x-cg-pro-api-key": API_KEY,
+            }
+            session.headers.update(headers)
 
-        if "error" in d:
-            if "api.coingecko.com used Cloudflare to restrict access" in str(d["exception"]):
-                logger.warning("CoinGecko API rate limit exceeded")
-            else:
-                logger.error(d)
-            return None, None
-        elif "response" in d:
-            response = d["response"]
+        try:
+            response = session.get(request_url)
 
-            try:
-                price = float(response[coin_id][currency])
-                return price, datetime_now_utc()
-            except KeyError as e:
-                msg = "Error parsing Coingecko API response: KeyError: {}".format(e)
-                logger.error(msg)
+            if response.status_code >= 400:
+                logger.warning(f"CoinGecko Error Status {response.status_code}: {response}")
                 return None, None
+            
+            res = response.json()
 
-        else:
-            msg = "Invalid response from get_url"
-            logger.error(msg)
+        except (ConnectionError, Timeout, TooManyRedirects) as e:
+            logger.warning(e)
             return None, None
+        
+        try:
+            price = float(res[coin_id][currency])
+            return price, datetime_now_utc()
+        except KeyError as e:
+            logger.error(f"Error parsing coingecko api response: KeyError: {e}")
+            return None, None
+
+        
 
 
 @dataclass
