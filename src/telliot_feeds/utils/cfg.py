@@ -14,6 +14,7 @@ from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
+API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key
 
 
 def setup_config(
@@ -67,6 +68,13 @@ def setup_config(
     )
     click.echo(f"Your current settings...\nYour chain id: {cfg.main.chain_id}")
     click.echo(f"Oracle contract address: {check_oracle_address(cfg, account_name)}\n")
+    if API_KEY == "":
+        click.echo(
+            "Coin Gecko API key not found in api_keys.yaml.\n"
+            "Using public API for Coin Gecko prices (rate limits apply)\n"
+        )
+    else:
+        click.echo("Using API key for Coin Gecko prices\n")
 
     if endpoint is not None:
         click.echo(
