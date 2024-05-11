@@ -24,6 +24,7 @@ ETHEREUM_CHAINS = {
     421614,
     84532,
     111,
+    60808,
 }
 
 GNOSIS_CHAINS = {100, 10200}
