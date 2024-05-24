@@ -14,6 +14,7 @@ from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.queries.evm_balance import EVMBalance
 from telliot_feeds.queries.evm_balance_current import EVMBalanceCurrent
 from telliot_feeds.queries.evm_call import EVMCall
+from telliot_feeds.queries.fileCID import FileCID
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
 from telliot_feeds.queries.mimicry.collection_stat import MimicryCollectionStat
 from telliot_feeds.queries.mimicry.macro_market_mash_up import MimicryMacroMarketMashup
@@ -594,4 +595,10 @@ query_catalog.add_entry(
     tag="frxeth-usd-spot",
     title="FRXETH/USD spot price",
     q=SpotPrice(asset="frxeth", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="filecid-query-example",
+    title="FileCID query example",
+    q=FileCID(url="https://raw.githubusercontent.com/tellor-io/dataSpecs/main/README.md"),
 )
