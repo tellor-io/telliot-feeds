@@ -22,6 +22,7 @@ class CIDValueType(ValueType):
         """Decode bytes into a string value."""
         return decode([self.abi_type], bytes_val)  # type: ignore
 
+
 @dataclass
 class FileCIDQuery(AbiQuery):
     """
