@@ -23,7 +23,7 @@ class CIDValueType(ValueType):
         return decode([self.abi_type], bytes_val)  # type: ignore
 
 @dataclass
-class FileCID(AbiQuery):
+class FileCIDQuery(AbiQuery):
     """
     A query type for IPFS content identifier CIDs
     More info: add link to dataspec
@@ -41,4 +41,4 @@ class FileCID(AbiQuery):
     @property
     def value_type(self) -> CIDValueType:
         """Returns a datatype for ipfs CIDs."""
-        return ValueType(abi_type="string", packed=False)
+        return CIDValueType(abi_type="string", packed=False)
