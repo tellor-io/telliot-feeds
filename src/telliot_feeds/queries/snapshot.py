@@ -10,12 +10,16 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Snapshot(AbiQuery):
-    """Returns the proposal result for a given proposal id (an IPFS hash for a certain proposal) coming from Snapshot.
+    """Returns the binary proposal result for a given Snapshot proposal id.
        A boolean value indicating whether a proposal succeeded (True) or failed (False) should be returned.
 
     Attributes:
         proposal_id:
             Specifies the requested data a of a valid proposal on Snapshot.
+        transactionsHash:
+            a hashed array of proposed transactions (decoded from tipped / reported queryData for telliot)
+        moduleAddress:
+            address of the module the proposal is associated with.
 
     See https://snapshot.org/ for proposal results.
     See the data spec for more info about this query type:
@@ -23,15 +27,21 @@ class Snapshot(AbiQuery):
     """
 
     proposalId: Optional[str]
+    transactionsHash: Optional[str]
+    moduleAddress: Optional[str]
 
     #: ABI used for encoding/decoding parameters
-    abi = [{"name": "proposalId", "type": "string"}]
+    abi = [
+        {"type": "uint256", "name": "proposalId"},
+        {"type": "address", "name": "transactionsHash"},
+        {"type": "bytes", "name": "moduleAddress"},
+    ]
 
     @property
     def value_type(self) -> ValueType:
         """Data type returned for a Snapshot query.
 
-        - `bool`: a boolean value true or false equivalent to uint8 restricted to the values 0 and 1
+        - `bool`: a boolean value equivalent to uint8 restricted to the values 0 and 1
         - `packed`: false
         """
 
