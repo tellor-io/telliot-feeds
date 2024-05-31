@@ -40,6 +40,7 @@ from telliot_feeds.feeds.evm_balance_current import evm_balance_current_feed
 from telliot_feeds.feeds.evm_balance_current import evm_balance_current_feed_example
 from telliot_feeds.feeds.evm_call_feed import evm_call_feed
 from telliot_feeds.feeds.evm_call_feed import evm_call_feed_example
+from telliot_feeds.feeds.ezeth_usd_feed import ezeth_usd_median_feed
 from telliot_feeds.feeds.fil_usd_feed import fil_usd_median_feed
 from telliot_feeds.feeds.fileCID_manual_feed import fileCID_manual_feed
 from telliot_feeds.feeds.frax_usd_feed import frax_usd_median_feed
@@ -108,14 +109,15 @@ from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.feeds.vesq import vsq_usd_median_feed
 from telliot_feeds.feeds.wbeth_usd_feed import wbeth_usd_median_feed
 from telliot_feeds.feeds.wbtc_usd_feed import wbtc_usd_median_feed
+from telliot_feeds.feeds.weeth_usd_feed import weeth_usd_median_feed
 from telliot_feeds.feeds.wld_usd_feed import wld_usd_median_feed
 from telliot_feeds.feeds.wmnt_usd_feed import wmnt_usd_median_feed
+from telliot_feeds.feeds.wrseth_usd_feed import wrseth_usd_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
-from telliot_feeds.feeds.ezeth_usd_feed import ezeth_usd_median_feed
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "ampleforth-custom": ampl_usd_vwap_feed,
@@ -214,6 +216,8 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "leth-usd-spot": leth_usd_feed,
     "frxeth-usd-spot": frxeth_usd_median_feed,
     "ezeth-usd-spot": ezeth_usd_median_feed,
+    "weeth-usd-spot": weeth_usd_median_feed,
+    "wrseth-usd-spot": wrseth_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

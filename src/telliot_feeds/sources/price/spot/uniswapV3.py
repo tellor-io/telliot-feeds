@@ -29,6 +29,8 @@ uniswapV3_map = {
     "mnt": "0x3c3a81e81dc49a522a592e7622a7e711c06bf354",
     "frax": "0x853d955acef822db058eb8505911ed77f175b99e",
     "ezeth": "0xbf5495efe5db9ce00f80364c8b423567e58d2110",
+    "weeth": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "wrseth": "0xd2671165570f41bbb3b0097893300b6eb6101e6c",
 }
 
 
