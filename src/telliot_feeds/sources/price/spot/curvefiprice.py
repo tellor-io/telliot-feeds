@@ -21,6 +21,7 @@ ethereum_contract_map = {
     "btc": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
     "frax": "0x853d955acef822db058eb8505911ed77f175b99e",
     "frxeth": "0x5e8422345238f34275888049021821e8e08caa1f",
+    "ezeth": "0xbf5495efe5db9ce00f80364c8b423567e58d2110",
 }
 
 

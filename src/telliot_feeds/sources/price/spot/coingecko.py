@@ -82,6 +82,9 @@ coingecko_coin_id = {
     "frax": "frax",
     "gyd": "gyroscope-gyd",
     "frxeth": "frax-ether",
+    "ezeth": "renzo-restaked-eth",
+    "weETH": "wrapped-eeth",
+    "wrsETH": "wrapped-rseth"
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key

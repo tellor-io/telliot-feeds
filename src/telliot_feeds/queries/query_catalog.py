@@ -602,3 +602,21 @@ query_catalog.add_entry(
     title="FileCID query example",
     q=FileCIDQuery(url="https://raw.githubusercontent.com/tellor-io/dataSpecs/main/README.md"),
 )
+
+query_catalog.add_entry(
+    tag="ezeth-usd-spot",
+    title="EZETH/USD spot price",
+    q=SpotPrice(asset="ezeth", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="weeth-usd-spot",
+    title="WEETH/USD spot price",
+    q=SpotPrice(asset="weeth", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="wrseth-usd-spot",
+    title="WRSETH/USD spot price",
+    q=SpotPrice(asset="wrseth", currency="usd"),
+)

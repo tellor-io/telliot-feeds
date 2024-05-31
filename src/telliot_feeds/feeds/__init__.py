@@ -115,6 +115,7 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
+from telliot_feeds.feeds.ezeth_usd_feed import ezeth_usd_median_feed
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "ampleforth-custom": ampl_usd_vwap_feed,
@@ -212,6 +213,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "gyd-usd-spot": gyd_usd_median_feed,
     "leth-usd-spot": leth_usd_feed,
     "frxeth-usd-spot": frxeth_usd_median_feed,
+    "ezeth-usd-spot": ezeth_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
