@@ -85,6 +85,7 @@ coingecko_coin_id = {
     "ezeth": "renzo-restaked-eth",
     "weeth": "wrapped-eeth",
     "wrseth": "wrapped-rseth",
+    "rseth": "kelp-dao-restaked-eth",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key

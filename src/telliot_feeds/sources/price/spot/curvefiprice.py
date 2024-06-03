@@ -23,6 +23,7 @@ ethereum_contract_map = {
     "frxeth": "0x5e8422345238f34275888049021821e8e08caa1f",
     "ezeth": "0xbf5495efe5db9ce00f80364c8b423567e58d2110",
     "weeth": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "rseth": "0xa1290d69c65a6fe4df752f95823fae25cb99e5a7",
 }
 
 
