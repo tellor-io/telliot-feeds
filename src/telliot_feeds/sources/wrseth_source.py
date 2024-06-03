@@ -41,7 +41,7 @@ class wrsETHSpotPriceService(WebPriceService):
         # get ratio
         wrseth_eth_ratio_bytes = w3.eth.call(
             {
-                "to": "0xF1cccBa5558D31628216489A1435e068b1fd2C8A",
+                "to": "0xbDf612E616432AA8e8D7d8cC1A9c934025371c5C",
                 "data": "0x679aefce",
             }
         )
