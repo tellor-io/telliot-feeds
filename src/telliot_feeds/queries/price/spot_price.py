@@ -93,6 +93,7 @@ SPOT_PRICE_PAIRS = [
     "WEETH/USD",
     "WRSETH/USD",
     "MODE/USD",
+    "RSETH/USD",
 ]
 
 
