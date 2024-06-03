@@ -112,12 +112,13 @@ from telliot_feeds.feeds.wbtc_usd_feed import wbtc_usd_median_feed
 from telliot_feeds.feeds.weeth_usd_feed import weeth_usd_median_feed
 from telliot_feeds.feeds.wld_usd_feed import wld_usd_median_feed
 from telliot_feeds.feeds.wmnt_usd_feed import wmnt_usd_median_feed
-from telliot_feeds.feeds.wrseth_usd_feed import wrseth_usd_median_feed
+from telliot_feeds.feeds.wrseth_usd_feed import wrseth_usd_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
+from telliot_feeds.feeds.mode_usd_feed import mode_usd_median_feed
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "ampleforth-custom": ampl_usd_vwap_feed,
@@ -217,7 +218,8 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "frxeth-usd-spot": frxeth_usd_median_feed,
     "ezeth-usd-spot": ezeth_usd_median_feed,
     "weeth-usd-spot": weeth_usd_median_feed,
-    "wrseth-usd-spot": wrseth_usd_median_feed,
+    "wrseth-usd-spot": wrseth_usd_feed,
+    "mode-usd-spot": mode_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

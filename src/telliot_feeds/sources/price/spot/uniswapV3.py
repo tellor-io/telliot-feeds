@@ -30,7 +30,8 @@ uniswapV3_map = {
     "frax": "0x853d955acef822db058eb8505911ed77f175b99e",
     "ezeth": "0xbf5495efe5db9ce00f80364c8b423567e58d2110",
     "weeth": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-    "rseth": "0xa1290d69c65a6fe4df752f95823fae25cb99e5a7",
+    "wrseth": "0xd2671165570f41bbb3b0097893300b6eb6101e6c",
+    "rseth": "0x4688a8b1f292fdab17e9a90c8bc379dc1dbd8713",
 }
 
 
