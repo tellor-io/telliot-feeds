@@ -22,7 +22,7 @@ from telliot_feeds.queries.mimicry.nft_market_index import MimicryNFTMarketIndex
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.queries.price.twap import TWAP
-from telliot_feeds.queries.snapshot import Snapshot
+from telliot_feeds.queries.snapshot_query import Snapshot
 from telliot_feeds.queries.string_query import StringQuery
 from telliot_feeds.queries.tellor_rng import TellorRNG
 
@@ -109,7 +109,11 @@ query_catalog.add_entry(tag="eur-usd-spot", title="EUR/USD spot price", q=SpotPr
 query_catalog.add_entry(
     tag="snapshot-proposal-example",
     title="Snapshot proposal example",
-    q=Snapshot(proposalId="cce9760adea906176940ae5fd05bc007cc9252b524832065800635484cb5cb57"),
+    q=Snapshot(
+        proposalId="bafybeic4eycnfgz6kstnai27m3cwda5rkrtsktdmzenld6m4vufgzoze3m",
+        transactionsHash="0x6f49a2f0da92ef653ba883aa21b2e3ff4d3350080b5627db6eba68b45eae1fd7",
+        moduleAddress="0xB1bB6479160317a41df61b15aDC2d894D71B63D9",
+    ),
 )
 
 query_catalog.add_entry(

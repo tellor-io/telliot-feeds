@@ -1,9 +1,10 @@
-import requests
 from dataclasses import dataclass
 from typing import Any
 from typing import Optional
 
+import requests
 from telliot_core.apps.telliot_config import TelliotConfig
+
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
@@ -59,7 +60,7 @@ class snapshotVoteResultSource(DataSource[Any]):
                 "state": state,
                 "scores": scores,
                 "choices": choices,
-                "winner": choices[scores.index(max(scores))] if scores else None
+                "winner": choices[scores.index(max(scores))] if scores else None,
             }
 
             # log the outcome
@@ -72,10 +73,10 @@ class snapshotVoteResultSource(DataSource[Any]):
                 logger.info(f"Winner: {outcome['winner']}")
 
             # return the outcome
-            if outcome['winner'] == "For":
+            if outcome["winner"] == "For":
                 logger.info("Vote result: For")
                 return True
-            elif outcome['winner'] == "Against":
+            elif outcome["winner"] == "Against":
                 logger.info("Vote result: Against")
                 return False
             else:
