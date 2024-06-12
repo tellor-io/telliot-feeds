@@ -99,16 +99,22 @@ def alert_placeholder(msg: str) -> None:
 
 def has_native_token_funds(
     account: ChecksumAddress,
-    web3: Web3,
+    endpoint: RPCEndpoint,
     alert: Callable[[str], None] = alert_placeholder,
     min_balance: int = 10**18,
 ) -> bool:
     """Check if an account has native token funds."""
     try:
-        balance = web3.eth.get_balance(account)
+        balance = endpoint.web3.eth.get_balance(account)
     except Exception as e:
-        logger.warning(f"Error fetching native token balance for {account}: {e}")
-        return False
+        if endpoint.using_backup == False and len(endpoint.backup_url) != 0:
+            logger.warning(f"Error fetching native token balance for {account} so we are switching to backup rpc to try again: {e}")
+            print("calling switch to backup rpc inside of has_native_token_funds")
+            endpoint.switchToBackupRPC()
+            return has_native_token_funds(account, endpoint, alert, min_balance)
+        else:
+            logger.warning(f"Error fetching native token balance for {account}: {e}")
+            return False
 
     if balance < min_balance:
         str_bal = f"{balance / 10**18:.2f}"
@@ -118,6 +124,7 @@ def has_native_token_funds(
         alert(msg)
         return False
 
+    logger.info("Returning from get native token successfully")
     return True
 
 

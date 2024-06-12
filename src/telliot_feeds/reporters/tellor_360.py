@@ -81,8 +81,23 @@ class Tellor360Reporter(Stake):
         stake_amount: int
         stake_amount, status = await self.oracle.read("getStakeAmount")
         if not status.ok:
-            msg = f"Unable to read current stake amount: {status.error}"
-            return None, error_status(msg, status.e, log=logger.error)
+            if self.endpoint.using_backup == False and len(self.endpoint.backup_url) != 0:
+                print("calling switch to backup rpc in get_stake_amount")
+                self.endpoint.switchToBackupRPC()
+                self.oracle.node = self.endpoint
+                connected = self.oracle.connect()
+                if connected:
+                    return await self.get_stake_amount()
+                else:
+                    msg = f"Unable to read current stake amount and backup rpc could not connect: {status.error}"
+            else:
+                self.oracle.node = self.endpoint
+                connected = self.oracle.connect()
+                if connected:
+                    return await self.get_stake_amount()
+                else:
+                    msg = f"Unable to read current stake amount: {status.error}"
+                    return None, error_status(msg, status.e, log=logger.error)
         return stake_amount, status
 
     async def get_staker_details(self) -> Tuple[Optional[StakerInfo], ResponseStatus]:
@@ -93,8 +108,18 @@ class Tellor360Reporter(Stake):
         """
         response, status = await self.oracle.read("getStakerInfo", _stakerAddress=self.acct_addr)
         if not status.ok:
-            msg = f"Unable to read account staker info: {status.error}"
-            return None, error_status(msg, status.e, log=logger.error)
+            if self.endpoint.using_backup == False and len(self.endpoint.backup_url) != 0:
+                print("Calling switch to backup rpc inside of get_staker_details")
+                self.endpoint.switchToBackupRPC()
+                self.oracle.node = self.endpoint
+                connected = self.oracle.connect()
+                if connected:
+                    return self.get_stake_amount()
+                else:
+                    msg = f"Unable to read account staker info: {status.error}"
+            else:
+                msg = f"Unable to read account staker info: {status.error}"
+                return None, error_status(msg, status.e, log=logger.error)
         staker_details = StakerInfo(*response)
         return staker_details, status
 
@@ -434,7 +459,7 @@ class Tellor360Reporter(Stake):
     def has_native_token(self) -> bool:
         """Check if account has native token funds for a network for gas fees
         of at least min_native_token_balance that is set in the cli"""
-        return has_native_token_funds(self.acct_addr, self.web3, min_balance=self.min_native_token_balance)
+        return has_native_token_funds(self.acct_addr, self.endpoint, min_balance=self.min_native_token_balance)
 
     async def report_once(
         self,

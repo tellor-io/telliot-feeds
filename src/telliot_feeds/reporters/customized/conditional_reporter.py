@@ -52,8 +52,24 @@ class ConditionalReporter(Tellor360Reporter):
             return None
         data, status = await self.oracle.read("getDataBefore", self.datafeed.query.query_id, current_time())
         if not status.ok:
-            logger.warning(f"error getting tellor data: {status.e}")
-            return None
+            if self.endpoint.using_backup == False and len(self.endpoint.backup_url) != 0:
+                print("caling switch to backup rpc inside of get_tellor_latest_data")
+                self.endpoint.switchToBackupRPC()
+                self.oracle.node = self.endpoint
+                response = self.oracle.connect()
+                if response.ok:
+                    return await self.get_tellor_latest_data()
+                else:
+                    logger.warning(f"error getting tellor data: {status.e}")
+                    return None
+            else:
+                self.oracle.node = self.endpoint
+                response = self.oracle.connect()
+                if response.ok:
+                    return await self.get_tellor_latest_data()
+                else:
+                    logger.warning(f"error getting tellor data: {status.e}")
+                    return None
         return GetDataBefore(*data)
 
     async def get_telliot_feed_data(self, datafeed: DataFeed[Any]) -> Optional[float]:
