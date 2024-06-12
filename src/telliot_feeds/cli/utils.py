@@ -481,7 +481,7 @@ async def call_oracle(
         min_native_token_balance = user_inputs.pop("min_native_token_balance")
         if has_native_token_funds(
             to_checksum_address(account.address),
-            core.endpoint.web3,
+            core.endpoint,
             min_balance=int(min_native_token_balance * 10**18),
         ):
             gas = GasFees(endpoint=core.endpoint, account=account, **user_inputs)

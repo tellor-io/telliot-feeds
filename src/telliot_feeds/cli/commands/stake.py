@@ -74,7 +74,7 @@ async def stake(
 
         if has_native_token_funds(
             to_checksum_address(account.address),
-            core.endpoint.web3,
+            core.endpoint,
             min_balance=int(min_native_token_balance * 10**18),
         ):
             s = Stake(
