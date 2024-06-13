@@ -1,5 +1,5 @@
 """Text Query Example """
-from telliot_feeds.queries.snapshot_query import Snapshot
+from telliot_feeds.queries.snapshot import Snapshot
 
 q = Snapshot(
     proposalId="bafybeic4eycnfgz6kstnai27m3cwda5rkrtsktdmzenld6m4vufgzoze3m",

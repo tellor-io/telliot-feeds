@@ -86,6 +86,8 @@ from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
 from telliot_feeds.feeds.sdai_usd_feed import sdai_usd_median_feed
 from telliot_feeds.feeds.sfrax_usd_feed import sfrax_usd_feed
 from telliot_feeds.feeds.shib_usd_feed import shib_usd_median_feed
+from telliot_feeds.feeds.snapshot_auto_feed import snapshot_auto_feed
+from telliot_feeds.feeds.snapshot_auto_feed import snapshot_auto_feed_example
 from telliot_feeds.feeds.snapshot_feed import snapshot_feed_example
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
 from telliot_feeds.feeds.spot_price_manual_feed import spot_price_manual_feed
@@ -134,6 +136,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "eth-usd-30day_volatility": eth_usd_30day_volatility,
     "eur-usd-spot": eur_usd_median_feed,
     "snapshot-proposal-example": snapshot_feed_example,
+    "snapshot-auto-example": snapshot_auto_feed_example,
     "numeric-api-response-example": numeric_api_response_feed,
     "diva-protocol-example": diva_example_feed,
     "string-query-example": string_query_feed,
@@ -218,6 +221,7 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "SpotPrice": spot_price_manual_feed,
     "DivaProtocol": diva_manual_feed,
     "SnapshotOracle": snapshot_manual_feed,
+    "SnapshotAuto": snapshot_auto_feed,
     "GasPriceOracle": gas_price_oracle_feed,
     "StringQuery": string_query_feed,
     "NumericApiManualResponse": numeric_api_response_manual_feed,

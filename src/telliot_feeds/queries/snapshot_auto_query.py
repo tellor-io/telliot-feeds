@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class Snapshot(AbiQuery):
+class SnapshotAuto(AbiQuery):
     """Returns the binary proposal result for a given Snapshot proposal id.
        A boolean value indicating whether a proposal succeeded (True) or failed (False) should be returned.
 

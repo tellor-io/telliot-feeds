@@ -22,7 +22,8 @@ from telliot_feeds.queries.mimicry.nft_market_index import MimicryNFTMarketIndex
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.queries.price.twap import TWAP
-from telliot_feeds.queries.snapshot_query import Snapshot
+from telliot_feeds.queries.snapshot import Snapshot
+from telliot_feeds.queries.snapshot_auto_query import SnapshotAuto
 from telliot_feeds.queries.string_query import StringQuery
 from telliot_feeds.queries.tellor_rng import TellorRNG
 
@@ -112,6 +113,16 @@ query_catalog.add_entry(
     q=Snapshot(
         proposalId="bafybeic4eycnfgz6kstnai27m3cwda5rkrtsktdmzenld6m4vufgzoze3m",
         transactionsHash="0x6f49a2f0da92ef653ba883aa21b2e3ff4d3350080b5627db6eba68b45eae1fd7",
+        moduleAddress="0xB1bB6479160317a41df61b15aDC2d894D71B63D9",
+    ),
+)
+
+query_catalog.add_entry(
+    tag="snapshot-auto-example",
+    title="Snapshot auto example",
+    q=SnapshotAuto(
+        proposalId="0xe992735684706baf15e447b537acbaaac8ef74d8ce0033205456ceed58bffdf6",
+        transactionsHash="0xfd471b205457d8bac0d29a63292545f9f3189086a31a7794de341d55e9f50188",
         moduleAddress="0xB1bB6479160317a41df61b15aDC2d894D71B63D9",
     ),
 )

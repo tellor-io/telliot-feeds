@@ -3,6 +3,10 @@ from typing import Any
 from typing import Optional
 
 import requests
+from eth_abi import encode_abi
+from eth_abi import encode_single
+from eth_utils import keccak
+from eth_utils import to_hex
 from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.datasource import DataSource
@@ -15,7 +19,7 @@ logger = get_logger(__name__)
 
 
 @dataclass
-class snapshotVoteResultSource(DataSource[Any]):
+class SnapshotVoteResultSource(DataSource[Any]):
     """datasource for snapshot retrieving a vote result"""
 
     proposalId: Optional[str] = None
@@ -32,6 +36,7 @@ class snapshotVoteResultSource(DataSource[Any]):
             state
             scores
             choices
+            plugins 
           }
         }
         """
@@ -44,7 +49,20 @@ class snapshotVoteResultSource(DataSource[Any]):
             return None
 
         proposal = data.get("data", {}).get("proposal")
-
+        real_query_id = self.get_query_id(proposal, proposalId)
+        transactions_hash = self.hex_to_bytes(self.transactionsHash)
+        query_data_args = encode_abi(
+            ["string", "bytes32", "address"],
+            [self.proposalId, transactions_hash, self.moduleAddress]
+        )
+        query_data = encode_abi(
+            ["string", "bytes"],
+            ["Snapshot", query_data_args]
+        )
+        query_id = keccak(query_data)
+        if query_id != real_query_id:
+            logger.error("Query id does not match")
+            return None
         if proposal:
             title = proposal.get("title")
             state = proposal.get("state")
@@ -87,6 +105,83 @@ class snapshotVoteResultSource(DataSource[Any]):
             logger.error("Proposal details not found. Please check proposal id.")
             return None
 
+    def hex_to_bytes(self, hex_str: str) -> bytes:
+        """Convert a hex string to bytes, handling optional '0x' prefix."""
+        if hex_str.startswith("0x"):
+            hex_str = hex_str[2:]
+        return bytes.fromhex(hex_str)
+
+    def get_single_transaction_hash(self, to_address: str, value: int, data: str, operation: int, nonce: int, chain_id: int, module_address: str) -> str:
+        DOMAIN_SEPARATOR_TYPEHASH = keccak(text="EIP712Domain(uint256 chainId,address verifyingContract)")
+        TRANSACTION_TYPEHASH = keccak(text="Transaction(address to,uint256 value,bytes data,uint8 operation,uint256 nonce)")
+        domain_separator_bytes = encode_abi(
+            ["bytes32", "uint256", "address"],
+            [DOMAIN_SEPARATOR_TYPEHASH, int(chain_id), module_address],
+        )
+        domain_separator = keccak(domain_separator_bytes)
+        tx_subhash_bytes = encode_abi(
+            ["bytes32", "address", "uint256", "bytes32", "uint8", "uint256"],
+            [TRANSACTION_TYPEHASH, to_address, int(value), keccak(hexstr=data), int(operation), int(nonce)]
+        )
+        tx_subhash = keccak(tx_subhash_bytes)
+        tx_data = (
+            b"\x19" +
+            b"\x01" +
+            encode_single("bytes32", domain_separator) +
+            encode_single("bytes32", tx_subhash)
+        )
+        tx_hash = keccak(tx_data)
+        return tx_hash
+
+    def get_query_id(self, proposal_data: dict, proposal_id: str) -> str:
+        plugins = proposal_data.get("plugins")
+        if not plugins:
+            return None
+        safe_snap = plugins.get("safeSnap")
+        if not safe_snap:
+            return None
+        safes = safe_snap.get("safes")
+        if not safes:
+            return None
+        first_safe = safes[0]
+        module_address = first_safe.get("tellorAddress")
+        if not module_address:
+            return None
+        chain_id = int(first_safe.get("network"))
+        if not chain_id:
+            return None
+        txs = first_safe.get("txs")
+        if not txs:
+            return None
+        txs0 = txs[0]
+        transactions = txs0.get("transactions")
+        if not transactions:
+            return None
+        tx_hashes = []
+        for tx in transactions:
+            to_address = tx.get("to")
+            value = tx.get("value")
+            data = tx.get("data")
+            operation = tx.get("operation")
+            nonce = tx.get("nonce")
+            tx_hash = self.get_single_transaction_hash(to_address, value, data, operation, nonce, chain_id, module_address)
+            tx_hashes.append(tx_hash)
+        tx_hashes_array_bytes = encode_abi(
+            ["bytes32[]"],
+            [tx_hashes]
+        )
+        tx_superhash = keccak(tx_hashes_array_bytes)
+        query_data_args = encode_abi(
+            ["string", "bytes32", "address"],
+            [proposal_id, tx_superhash, module_address]
+        )
+        query_data = encode_abi(
+            ["string", "bytes"],
+            ["Snapshot", query_data_args]
+        )
+        query_id = keccak(query_data)
+        return query_id
+
     async def fetch_new_datapoint(self) -> OptionalDataPoint[bool]:
         """Prepare Current time-stamped boolean result of vote."""
         try:
@@ -107,8 +202,10 @@ if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        proposalId = "0xe089feff7538a3700e41a8b6a8feae72933ffdb394aa559c5ef544e66f353e4d"
-        source = snapshotVoteResultSource(proposalId=proposalId)
+        proposalId = "0xe992735684706baf15e447b537acbaaac8ef74d8ce0033205456ceed58bffdf6"
+        transactionsHash = "0xfd471b205457d8bac0d29a63292545f9f3189086a31a7794de341d55e9f50188";
+        moduleAddress = "0xB1bB6479160317a41df61b15aDC2d894D71B63D9"
+        source = SnapshotVoteResultSource(proposalId=proposalId, transactionsHash=transactionsHash, moduleAddress=moduleAddress)
         v, _ = await source.fetch_new_datapoint()
         print(v)
 
