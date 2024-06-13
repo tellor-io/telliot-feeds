@@ -36,7 +36,7 @@ class SnapshotVoteResultSource(DataSource[Any]):
             state
             scores
             choices
-            plugins 
+            plugins
           }
         }
         """
@@ -52,15 +52,11 @@ class SnapshotVoteResultSource(DataSource[Any]):
         real_query_id = self.get_query_id(proposal, proposalId)
         transactions_hash = self.hex_to_bytes(self.transactionsHash)
         query_data_args = encode_abi(
-            ["string", "bytes32", "address"],
-            [self.proposalId, transactions_hash, self.moduleAddress]
+            ["string", "bytes32", "address"], [self.proposalId, transactions_hash, self.moduleAddress]
         )
-        query_data = encode_abi(
-            ["string", "bytes"],
-            ["Snapshot", query_data_args]
-        )
+        query_data = encode_abi(["string", "bytes"], ["Snapshot", query_data_args])
         query_id = keccak(query_data)
-        if query_id != real_query_id:
+        if to_hex(query_id) != to_hex(real_query_id):
             logger.error("Query id does not match")
             return None
         if proposal:
@@ -105,15 +101,21 @@ class SnapshotVoteResultSource(DataSource[Any]):
             logger.error("Proposal details not found. Please check proposal id.")
             return None
 
-    def hex_to_bytes(self, hex_str: str) -> bytes:
+    def hex_to_bytes(self, hex_str: Optional[str]) -> Optional[bytes]:
         """Convert a hex string to bytes, handling optional '0x' prefix."""
+        if hex_str is None:
+            return None
         if hex_str.startswith("0x"):
             hex_str = hex_str[2:]
         return bytes.fromhex(hex_str)
 
-    def get_single_transaction_hash(self, to_address: str, value: int, data: str, operation: int, nonce: int, chain_id: int, module_address: str) -> str:
+    def get_single_transaction_hash(
+        self, to_address: str, value: int, data: str, operation: int, nonce: int, chain_id: int, module_address: str
+    ) -> str:
         DOMAIN_SEPARATOR_TYPEHASH = keccak(text="EIP712Domain(uint256 chainId,address verifyingContract)")
-        TRANSACTION_TYPEHASH = keccak(text="Transaction(address to,uint256 value,bytes data,uint8 operation,uint256 nonce)")
+        TRANSACTION_TYPEHASH = keccak(
+            text="Transaction(address to,uint256 value,bytes data,uint8 operation,uint256 nonce)"
+        )
         domain_separator_bytes = encode_abi(
             ["bytes32", "uint256", "address"],
             [DOMAIN_SEPARATOR_TYPEHASH, int(chain_id), module_address],
@@ -121,19 +123,14 @@ class SnapshotVoteResultSource(DataSource[Any]):
         domain_separator = keccak(domain_separator_bytes)
         tx_subhash_bytes = encode_abi(
             ["bytes32", "address", "uint256", "bytes32", "uint8", "uint256"],
-            [TRANSACTION_TYPEHASH, to_address, int(value), keccak(hexstr=data), int(operation), int(nonce)]
+            [TRANSACTION_TYPEHASH, to_address, int(value), keccak(hexstr=data), int(operation), int(nonce)],
         )
         tx_subhash = keccak(tx_subhash_bytes)
-        tx_data = (
-            b"\x19" +
-            b"\x01" +
-            encode_single("bytes32", domain_separator) +
-            encode_single("bytes32", tx_subhash)
-        )
+        tx_data = b"\x19" + b"\x01" + encode_single("bytes32", domain_separator) + encode_single("bytes32", tx_subhash)
         tx_hash = keccak(tx_data)
         return tx_hash
 
-    def get_query_id(self, proposal_data: dict, proposal_id: str) -> str:
+    def get_query_id(self, proposal_data: Optional[dict], proposal_id: Optional[str]) -> Optional[str]:
         plugins = proposal_data.get("plugins")
         if not plugins:
             return None
@@ -164,21 +161,14 @@ class SnapshotVoteResultSource(DataSource[Any]):
             data = tx.get("data")
             operation = tx.get("operation")
             nonce = tx.get("nonce")
-            tx_hash = self.get_single_transaction_hash(to_address, value, data, operation, nonce, chain_id, module_address)
+            tx_hash = self.get_single_transaction_hash(
+                to_address, value, data, operation, nonce, chain_id, module_address
+            )
             tx_hashes.append(tx_hash)
-        tx_hashes_array_bytes = encode_abi(
-            ["bytes32[]"],
-            [tx_hashes]
-        )
+        tx_hashes_array_bytes = encode_abi(["bytes32[]"], [tx_hashes])
         tx_superhash = keccak(tx_hashes_array_bytes)
-        query_data_args = encode_abi(
-            ["string", "bytes32", "address"],
-            [proposal_id, tx_superhash, module_address]
-        )
-        query_data = encode_abi(
-            ["string", "bytes"],
-            ["Snapshot", query_data_args]
-        )
+        query_data_args = encode_abi(["string", "bytes32", "address"], [proposal_id, tx_superhash, module_address])
+        query_data = encode_abi(["string", "bytes"], ["Snapshot", query_data_args])
         query_id = keccak(query_data)
         return query_id
 
@@ -203,9 +193,11 @@ if __name__ == "__main__":
 
     async def main() -> None:
         proposalId = "0xe992735684706baf15e447b537acbaaac8ef74d8ce0033205456ceed58bffdf6"
-        transactionsHash = "0xfd471b205457d8bac0d29a63292545f9f3189086a31a7794de341d55e9f50188";
+        transactionsHash = "0xfd471b205457d8bac0d29a63292545f9f3189086a31a7794de341d55e9f50188"
         moduleAddress = "0xB1bB6479160317a41df61b15aDC2d894D71B63D9"
-        source = SnapshotVoteResultSource(proposalId=proposalId, transactionsHash=transactionsHash, moduleAddress=moduleAddress)
+        source = SnapshotVoteResultSource(
+            proposalId=proposalId, transactionsHash=transactionsHash, moduleAddress=moduleAddress
+        )
         v, _ = await source.fetch_new_datapoint()
         print(v)
 
