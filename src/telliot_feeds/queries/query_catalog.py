@@ -638,3 +638,9 @@ query_catalog.add_entry(
     title="TLOS/USD spot price",
     q=SpotPrice(asset="tlos", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="tara-usd-spot",
+    title="TARA/USD spot price",
+    q=SpotPrice(asset="tara", currency="usd"),
+)
