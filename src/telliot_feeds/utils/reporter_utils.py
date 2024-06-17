@@ -193,6 +193,10 @@ def get_native_token_feed(chain_id: int) -> DataFeed[float]:
         return eth_usd_median_feed
     elif chain_id in SKALE_CHAINS:
         return sfuel_helper_feed
+    elif chain_id in TELOS_CHAINS:
+        return tlos_usd_median_feed
+    elif chain_id in ATLETA_CHAINS:
+        return atla_usd_median_feed
     else:
         raise ValueError(f"Cannot fetch native token feed. Invalid chain ID: {chain_id}")
 
@@ -216,6 +220,10 @@ def tkn_symbol(chain_id: int) -> str:
         return "frxETH"
     elif chain_id in SKALE_CHAINS:
         return "sFUEL"
+    elif chain_id in TELOS_CHAINS:
+        return "TLOS"
+    elif chain_id in ATLETA_CHAINS:
+        return "ATLA"
     else:
         return "Unknown native token"
 

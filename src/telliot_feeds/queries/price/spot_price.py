@@ -95,6 +95,7 @@ SPOT_PRICE_PAIRS = [
     "MODE/USD",
     "RSETH/USD",
     "TLOS/USD",
+    "ATLA/USD",
 ]
 
 

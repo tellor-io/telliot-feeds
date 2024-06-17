@@ -253,6 +253,13 @@ add_multicall_support(
     multicall3_address="0x2aD2e05661Ff30BCF1D58c311eAD5D5f4ECEeFDf",
 )
 
+add_multicall_support(
+    network="Atleta Olympia",
+    network_id=2340,
+    state_override=False,
+    multicall3_address="0x2aD2e05661Ff30BCF1D58c311eAD5D5f4ECEeFDf",
+)
+
 CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
 CATALOG_QUERY_DATA = {query_catalog._entries[tag].query.query_data: tag for tag in query_catalog._entries}
 # A list of query types that have a generic source that can take any properly formatted inputs and return a price
