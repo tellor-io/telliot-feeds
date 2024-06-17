@@ -63,20 +63,20 @@ def mumbai_cfg():
     cfg = TelliotConfig()
 
     # Override configuration for rinkeby testnet
-    cfg.main.chain_id = 80001
+    cfg.main.chain_id = 80002
 
     endpt = cfg.get_endpoint()
     if "INFURA_API_KEY" in endpt.url:
         endpt.url = f'https://polygon-mumbai.infura.io/v3/{os.environ["INFURA_API_KEY"]}'
 
-    mumbai_accounts = find_accounts(chain_id=80001)
+    mumbai_accounts = find_accounts(chain_id=80002)
     if not mumbai_accounts:
         # Create a test account using PRIVATE_KEY defined on github.
         key = os.getenv("PRIVATE_KEY", None)
         if key:
             ChainedAccount.add(
                 "git-mumbai-key",
-                chains=80001,
+                chains=80002,
                 key=os.environ["PRIVATE_KEY"],
                 password="",
             )
@@ -154,7 +154,7 @@ def local_node_cfg(chain_id: int):
 
 @pytest.fixture(scope="function", autouse=True)
 def mumbai_test_cfg():
-    return local_node_cfg(chain_id=80001)
+    return local_node_cfg(chain_id=80002)
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -270,7 +270,7 @@ async def tellor_flex_reporter(mumbai_test_cfg, mock_flex_contract, mock_autopay
             autopay=flex.autopay,
             endpoint=core.endpoint,
             account=account,
-            chain_id=80001,
+            chain_id=80002,
             transaction_type=0,
             min_native_token_balance=0,
         )

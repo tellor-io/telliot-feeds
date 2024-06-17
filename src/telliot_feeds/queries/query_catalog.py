@@ -632,3 +632,9 @@ query_catalog.add_entry(
     title="MODE/USD spot price",
     q=SpotPrice(asset="mode", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="tlos-usd-spot",
+    title="TLOS/USD spot price",
+    q=SpotPrice(asset="tlos", currency="usd"),
+)
