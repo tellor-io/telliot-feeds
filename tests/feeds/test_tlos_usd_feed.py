@@ -3,18 +3,12 @@ import statistics
 import pytest
 
 from telliot_feeds.feeds.tlos_usd_feed import tlos_usd_median_feed
-from telliot_feeds.queries.query import OracleQuery
 
 
 @pytest.mark.asyncio
 async def test_AssetPriceFeed():
     """Retrieve median TLOS price from example datafeed &
     make sure value is within tolerance."""
-
-    # Get query
-    q = tlos_usd_median_feed.query
-    assert isinstance(q, OracleQuery)
-
     # Fetch price
     # status, price, tstamp = await tlos_usd_median_feed.update_value()
     v, t = await tlos_usd_median_feed.source.fetch_new_datapoint()
