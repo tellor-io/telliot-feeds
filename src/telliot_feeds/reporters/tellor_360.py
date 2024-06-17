@@ -70,7 +70,23 @@ class Tellor360Reporter(Stake):
         self.wait_period = wait_period
         self.chain_id = chain_id
         self.acct_addr = to_checksum_address(self.account.address)
+        self.using_backup_rpc = False
         logger.info(f"Reporting with account: {self.acct_addr}")
+
+    def SwitchToBackupRPC(self) -> bool:
+        self.endpoint = self.endpoint.switchToBackupRPC()
+
+        #update the autopay contract to backup rpc
+        self.autopay.node = self.autopay.node.switchToBackupRPC()
+        self.autopay.connect()
+
+        # Update the oracle contract to backup rpc
+        self.oracle.node = self.oracle.node.switchToBackupRPC()
+        self.oracle.connect()
+
+        # Update using_backup to reflect that we have already switched to backup and should not do it again
+        self.using_backup_rpc = True
+
 
     async def get_stake_amount(self) -> Tuple[Optional[int], ResponseStatus]:
         """Reads the current stake amount from the oracle contract
@@ -81,7 +97,7 @@ class Tellor360Reporter(Stake):
         stake_amount: int
         stake_amount, status = await self.oracle.read("getStakeAmount")
         if not status.ok:
-            if self.endpoint.using_backup == False and len(self.endpoint.backup_url) != 0:
+            if self.using_backup_rpc == False and len(self.endpoint.backup_url) != 0:
                 print("calling switch to backup rpc in get_stake_amount")
                 self.endpoint.switchToBackupRPC()
                 self.oracle.node = self.endpoint
