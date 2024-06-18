@@ -115,7 +115,16 @@ class Stake(GasFees):
             **fees,
         )
         if not deposit_status.ok:
-            msg = "Unable to deposit stake!"
-            return False, error_status(msg, e=deposit_status.error, log=logger.error)
+            if not self.endpoint.using_backup and len(self.endpoint.backup_url) != 0:
+                self.endpoint = self.endpoint.switchToBackupRPC()
+                status = self.oracle.connect()
+                if status.ok:
+                    return await self.deposit_stake(amount)
+                else:
+                    msg = "Unable to deposit stake!"
+                    return False, error_status(msg, e=deposit_status.error, log=logger.error)
+            else:
+                msg = "Unable to deposit stake!"
+                return False, error_status(msg, e=deposit_status.error, log=logger.error)
         logger.debug(f"Deposit transaction status: {deposit_receipt.status}, block: {deposit_receipt.blockNumber}")
         return True, deposit_status

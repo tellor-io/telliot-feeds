@@ -489,7 +489,11 @@ async def call_oracle(
             gas_info = gas.get_gas_info_core()
 
             try:
-                _ = await contracts.oracle.write(func, **params, **gas_info)
+                _, status = await contracts.oracle.write(func, **params, **gas_info)
+                if not status.ok:
+                    core.endpoint = core.endpoint.switchToBackupRPC()
+                    contracts = core.get_tellor360_contracts()
+                    _ = await contracts.oracle.write(func, **params, **gas_info)
             except ValueError as e:
                 if "no gas strategy selected" in str(e):
                     click.echo("Can't set gas fees automatically. Please specify gas fees manually.")

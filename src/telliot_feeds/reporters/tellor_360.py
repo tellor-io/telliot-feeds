@@ -99,21 +99,14 @@ class Tellor360Reporter(Stake):
         if not status.ok:
             if self.using_backup_rpc == False and len(self.endpoint.backup_url) != 0:
                 print("calling switch to backup rpc in get_stake_amount")
-                self.endpoint.switchToBackupRPC()
-                self.oracle.node = self.endpoint
-                connected = self.oracle.connect()
+                connected = self.SwitchToBackupRPC()
                 if connected:
                     return await self.get_stake_amount()
                 else:
                     msg = f"Unable to read current stake amount and backup rpc could not connect: {status.error}"
             else:
-                self.oracle.node = self.endpoint
-                connected = self.oracle.connect()
-                if connected:
-                    return await self.get_stake_amount()
-                else:
-                    msg = f"Unable to read current stake amount: {status.error}"
-                    return None, error_status(msg, status.e, log=logger.error)
+                msg = f"Unable to read current stake amount: {status.error}"
+                return None, error_status(msg, status.e, log=logger.error)
         return stake_amount, status
 
     async def get_staker_details(self) -> Tuple[Optional[StakerInfo], ResponseStatus]:
@@ -124,13 +117,11 @@ class Tellor360Reporter(Stake):
         """
         response, status = await self.oracle.read("getStakerInfo", _stakerAddress=self.acct_addr)
         if not status.ok:
-            if self.endpoint.using_backup == False and len(self.endpoint.backup_url) != 0:
+            if self.using_backup_rpc == False and len(self.endpoint.backup_url) != 0:
                 print("Calling switch to backup rpc inside of get_staker_details")
-                self.endpoint.switchToBackupRPC()
-                self.oracle.node = self.endpoint
-                connected = self.oracle.connect()
+                connected = self.SwitchToBackupRPC()
                 if connected:
-                    return self.get_stake_amount()
+                    return await self.get_stake_amount()
                 else:
                     msg = f"Unable to read account staker info: {status.error}"
             else:
@@ -348,6 +339,11 @@ class Tellor360Reporter(Stake):
 
     async def get_num_reports_by_id(self, query_id: bytes) -> Tuple[int, ResponseStatus]:
         count, read_status = await self.oracle.read(func_name="getNewValueCountbyQueryId", _queryId=query_id)
+        if not read_status.ok:
+            if not self.using_backup_rpc and len(self.endpoint.backup_url) != 0:
+                connected = self.SwitchToBackupRPC()
+                if connected:
+                    return await self.get_num_reports_by_id(query_id)
         return count, read_status
 
     async def submission_txn_params(self, datafeed: DataFeed[Any]) -> Tuple[Optional[Dict[str, Any]], ResponseStatus]:

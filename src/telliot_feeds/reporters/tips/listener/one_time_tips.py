@@ -17,8 +17,16 @@ async def get_funded_one_time_tips(autopay: TellorFlexAutopayContract) -> Option
     """
     onetime_tips: Optional[list[tuple[bytes, int]]]
     onetime_tips, status = await autopay.read("getFundedSingleTipsInfo")
+    if not status.ok:
+        if not autopay.node.using_backup and len(autopay.node.backup_url) != 0:
+            autopay.node = autopay.node.switchToBackupRPC()
+            connected = autopay.connect()
+            if connected:
+                return await get_funded_one_time_tips(autopay)
+            else:
+                logger.warning(f'Error reading from autopay contract and backup rpc failed too: {status.error}')
 
-    if not status.ok or not onetime_tips:
+    if not onetime_tips:
         logger.info("No one time tip funded queries available")
         return None
 

@@ -34,8 +34,15 @@ class FundedFeeds(FundedFeedFilter):
         """
         funded_feeds: list[tuple[FeedDetails, bytes]]
         funded_feeds, status = await self.autopay.read("getFundedFeedDetails")
+        if not status.ok and not self.autopay.node.using_backup and len(self.autopay.node.backup_url) != 0:
+            self.autopay.node = self.autopay.node.switchToBackupRPC()
+            connected = self.autopay.connect()
+            if connected:
+                return await self.get_funded_feed_queries()
+            else:
+                return None, error_status(note="Read failed for both primary and backup url")
 
-        if not status.ok or not funded_feeds:
+        if not funded_feeds:
             return None, error_status(note="No funded feeds returned by autopay function call")
 
         # List of feeds with telliot supported query types

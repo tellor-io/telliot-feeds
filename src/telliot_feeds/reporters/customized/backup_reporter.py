@@ -160,8 +160,16 @@ class ChainlinkBackupReporter(Tellor360Reporter):
             return None
         data, status = await self.oracle.read("getDataBefore", self.datafeed.query.query_id, current_time())
         if not status.ok:
-            logger.warning(f"error getting tellor data: {status.e}")
-            return None
+            if not self.using_backup_rpc and len(self.endpoint.backup_url) != 0:
+                connected = self.SwitchToBackupRPC()
+                if connected:
+                    return await self.get_tellor_latest_data()
+                else: 
+                    logger.warning(f"error getting tellor data: {status.e}")
+                    return None
+            else:
+                logger.warning(f"error getting tellor data: {status.e}")
+                return None
         return GetDataBefore(*data)
 
     async def conditions_met(self) -> bool:

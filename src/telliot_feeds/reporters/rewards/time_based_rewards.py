@@ -22,6 +22,9 @@ async def get_time_based_rewards(oracle: Tellor360OracleContract) -> int:
 
     # if any call fails return 0 and a msg that tbr can't calc'd
     if not tbr_status.ok or not last_val_status.ok:
+        if not oracle.node.using_backup:
+            orac
+
         error = tbr_status.error if not tbr_status.ok else last_val_status.error
         logger.warning(f"Unable to calculate time-based rewards for reporter: {error}")
         return 0
