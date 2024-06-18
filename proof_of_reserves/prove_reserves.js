@@ -247,7 +247,7 @@ async function calculateProofOfReserve(nodeURL) {
 
     //const currentProofOfReserve = results.reduce((sum, collateral) => sum + collateral, 0);
 
-    return customShiftValue(sum, 8, true);
+    return sum;
 }
 
 (async () => {
