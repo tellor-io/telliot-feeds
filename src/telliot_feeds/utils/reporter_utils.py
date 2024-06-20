@@ -20,6 +20,7 @@ from web3 import Web3
 from web3.types import FeeHistory
 from web3.types import Wei
 
+from telliot_feeds.constants import ATLETA_CHAINS
 from telliot_feeds.constants import ETHEREUM_CHAINS
 from telliot_feeds.constants import FILECOIN_CHAINS
 from telliot_feeds.constants import FRXETH_CHAINS
@@ -29,8 +30,11 @@ from telliot_feeds.constants import MANTLE_CHAINS
 from telliot_feeds.constants import POLYGON_CHAINS
 from telliot_feeds.constants import PULSECHAIN_CHAINS
 from telliot_feeds.constants import SKALE_CHAINS
+from telliot_feeds.constants import TARAXA_CHAINS
+from telliot_feeds.constants import TELOS_CHAINS
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
+from telliot_feeds.feeds.atla_helper_feed import atla_helper_feed
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.fil_usd_feed import fil_usd_median_feed
 from telliot_feeds.feeds.frxeth_usd_feed import frxeth_usd_median_feed
@@ -38,6 +42,8 @@ from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.mnt_usd_feed import mnt_usd_median_feed
 from telliot_feeds.feeds.pls_usd_feed import pls_usd_median_feed
 from telliot_feeds.feeds.sfuel_helper_feed import sfuel_helper_feed
+from telliot_feeds.feeds.tara_usd_feed import tara_usd_median_feed
+from telliot_feeds.feeds.tlos_usd_feed import tlos_usd_median_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.utils.log import get_logger
@@ -193,6 +199,12 @@ def get_native_token_feed(chain_id: int) -> DataFeed[float]:
         return eth_usd_median_feed
     elif chain_id in SKALE_CHAINS:
         return sfuel_helper_feed
+    elif chain_id in TELOS_CHAINS:
+        return tlos_usd_median_feed
+    elif chain_id in ATLETA_CHAINS:
+        return atla_helper_feed
+    elif chain_id in TARAXA_CHAINS:
+        return tara_usd_median_feed
     else:
         raise ValueError(f"Cannot fetch native token feed. Invalid chain ID: {chain_id}")
 
@@ -216,6 +228,12 @@ def tkn_symbol(chain_id: int) -> str:
         return "frxETH"
     elif chain_id in SKALE_CHAINS:
         return "sFUEL"
+    elif chain_id in TELOS_CHAINS:
+        return "TLOS"
+    elif chain_id in ATLETA_CHAINS:
+        return "ATLA"
+    elif chain_id in TARAXA_CHAINS:
+        return "TARA"
     else:
         return "Unknown native token"
 

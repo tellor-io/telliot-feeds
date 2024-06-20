@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 
 
 # Hardcoded supported assets & currencies
-bitfinex_assets = {"ETH", "ALBT:"}
+bitfinex_assets = {"ETH", "TLOS"}
 bitfinex_currencies = {"JPY", "USD"}
 
 
@@ -38,7 +38,7 @@ class BitfinexSpotPriceService(WebPriceService):
         if currency not in bitfinex_currencies:
             raise Exception(f"Currency not supported: {currency}")
 
-        request_url = f"/v2/ticker/t{asset}{currency}"
+        request_url = f"/v2/ticker/t{asset}:{currency}"
 
         d = self.get_url(request_url)
 

@@ -97,8 +97,10 @@ from telliot_feeds.feeds.steth_usd_feed import steth_usd_median_feed
 from telliot_feeds.feeds.string_query_feed import string_query_feed
 from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
 from telliot_feeds.feeds.sweth_usd_feed import sweth_usd_median_feed
+from telliot_feeds.feeds.tara_usd_feed import tara_usd_median_feed
 from telliot_feeds.feeds.tellor_rng_feed import tellor_rng_feed
 from telliot_feeds.feeds.tellor_rng_manual_feed import tellor_rng_manual_feed
+from telliot_feeds.feeds.tlos_usd_feed import tlos_usd_median_feed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.feeds.twap_manual_feed import twap_30d_example_manual_feed
 from telliot_feeds.feeds.twap_manual_feed import twap_manual_feed
@@ -222,6 +224,8 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "wrseth-usd-spot": wrseth_usd_feed,
     "mode-usd-spot": mode_usd_median_feed,
     "rseth-usd-spot": rseth_usd_median_feed,
+    "tlos-usd-spot": tlos_usd_median_feed,
+    "tara-usd-spot": tara_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
