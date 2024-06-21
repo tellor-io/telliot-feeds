@@ -41,7 +41,7 @@ async def fetch_feed_tip(
     if status.ok:
         tip_amount += one_time_tip
     else:
-        return tip_amount, error_status("error getting current tip from autopay contract", status.e, log=logger)
+        return tip_amount, error_status("error getting current tip from autopay contract", status.e, log=logger.warning)
 
     # make the first batch call of getCurrentFeeds, getDataBefore, getTimestampbyQueryIdandIndex
     results, status = await call.currentfeeds_multiple_values_before(
@@ -49,7 +49,7 @@ async def fetch_feed_tip(
     )
 
     if not status.ok:
-        return tip_amount, error_status("Error reading fro current feeds multiple values before", status.e, log=logger)
+        return tip_amount, error_status("Error reading fro current feeds multiple values before", status.e, log=logger.warning)
     
     if not results:
         status = ResponseStatus()
@@ -59,7 +59,7 @@ async def fetch_feed_tip(
     # get query id timestamps list and feed ids datafeed
     timestamps_list_and_datafeed, status = await call.timestamp_datafeed(results)
     if not status.ok:
-        return tip_amount, error_status("Error getting query timestamps", status.e, log=logger)
+        return tip_amount, error_status("Error getting query timestamps", status.e, log=logger.warning)
 
     if not timestamps_list_and_datafeed:
         return tip_amount, None
@@ -78,7 +78,7 @@ async def fetch_feed_tip(
 
     unclaimed_count, status = await call.rewards_claimed_status_call(feeds_with_timestamps_filtered)
     if not status.ok:
-        return tip_amount, error_status("error checking if reward was already claimed", status.e, log=logger)
+        return tip_amount, error_status("error checking if reward was already claimed", status.e, log=logger.warning)
 
     if not unclaimed_count:
         tip_amount += tip_sum(feeds_with_timestamps_filtered)

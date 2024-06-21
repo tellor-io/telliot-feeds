@@ -45,10 +45,10 @@ async def get_feed_and_tip(
 
     feed_tips, status = await funded_feeds.querydata_and_tip(current_time=current_timestamp)
     if not status.ok:
-        return None, error_status("error getting querydata and tips", status.e, log=logger)
+        return None, error_status("error getting querydata and tips", status.e, log=logger.warning)
     onetime_tips, fundedTipsStatus = await get_funded_one_time_tips(autopay=autopay)
     if not fundedTipsStatus.ok:
-        return None, error_status("error getting funded one time tips", fundedTipsStatus.e, log=logger)
+        return None, error_status("error getting funded one time tips", fundedTipsStatus.e, log=logger.warning)
 
     if not feed_tips and not onetime_tips:
         logger.info("No tips available in autopay")

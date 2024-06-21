@@ -123,7 +123,7 @@ class FundedFeeds(FundedFeedFilter):
         )
         if not status.ok:
             logger.error(f"Error getting eligible funded feeds: {status.error}")
-            return None, error_status("Error getting eligible funded feeds", status.e, log=logger)
+            return None, error_status(note=f"Error getting eligible funded feeds: {status.error}")
         if not eligible_funded_feeds:
             logger.info("No eligible funded feeds found")
             return None, ResponseStatus()

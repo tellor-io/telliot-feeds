@@ -112,7 +112,7 @@ def has_native_token_funds(
         balance = endpoint.web3.eth.get_balance(account)
     except Exception as e:
         logger.warning(f"Error fetching native token balance for {account}: {e}")
-        return False, error_status(f"Error fetching native token balance for {account}", e, log=logger)
+        return False, error_status(f"Error fetching native token balance for {account}", e, log=logger.warning)
 
     if balance < min_balance:
         str_bal = f"{balance / 10**18:.2f}"
