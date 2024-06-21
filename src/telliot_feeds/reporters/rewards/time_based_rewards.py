@@ -33,4 +33,4 @@ async def get_time_based_rewards(oracle: Tellor360OracleContract) -> Tuple[int, 
         (TimeStamp.now().ts - time_of_last_new_value) * 5e17
     ) / 300  # 0.5 tokens (5e17) dispersed every five min (300 sec)
 
-    return reward if reward < tbr else tbr
+    return reward, ResponseStatus() if reward < tbr else tbr
