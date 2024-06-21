@@ -6,6 +6,8 @@ from typing import Callable
 from typing import List
 from typing import Optional
 from typing import Union
+from typing import Tuple
+
 
 import click
 import requests
@@ -19,6 +21,8 @@ from telliot_core.tellor.tellorx.oracle import TellorxOracleContract
 from web3 import Web3
 from web3.types import FeeHistory
 from web3.types import Wei
+from telliot_core.utils.response import ResponseStatus
+from telliot_core.utils.response import error_status
 
 from telliot_feeds.constants import ETHEREUM_CHAINS
 from telliot_feeds.constants import FILECOIN_CHAINS
@@ -102,19 +106,13 @@ def has_native_token_funds(
     endpoint: RPCEndpoint,
     alert: Callable[[str], None] = alert_placeholder,
     min_balance: int = 10**18,
-) -> bool:
+) -> Tuple[bool, ResponseStatus]:
     """Check if an account has native token funds."""
     try:
         balance = endpoint.web3.eth.get_balance(account)
     except Exception as e:
-        if endpoint.using_backup == False and len(endpoint.backup_url) != 0:
-            logger.warning(f"Error fetching native token balance for {account} so we are switching to backup rpc to try again: {e}")
-            print("calling switch to backup rpc inside of has_native_token_funds")
-            endpoint.switchToBackupRPC()
-            return has_native_token_funds(account, endpoint, alert, min_balance)
-        else:
-            logger.warning(f"Error fetching native token balance for {account}: {e}")
-            return False
+        logger.warning(f"Error fetching native token balance for {account}: {e}")
+        return False, error_status(f"Error fetching native token balance for {account}", e, log=logger)
 
     if balance < min_balance:
         str_bal = f"{balance / 10**18:.2f}"
@@ -122,10 +120,10 @@ def has_native_token_funds(
         msg = f"Insufficient native token funds for {account}. Balance: {str_bal} ETH. Expected: {expected} ETH."
         logger.warning(msg)
         alert(msg)
-        return False
+        return False, ResponseStatus()
 
     logger.info("Returning from get native token successfully")
-    return True
+    return True, ResponseStatus()
 
 
 def create_custom_contract(

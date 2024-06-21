@@ -1,13 +1,16 @@
 """Utilities for calculating time-based rewards (TBR)"""
 from telliot_core.tellor.tellor360.oracle import Tellor360OracleContract
 from telliot_core.utils.timestamp import TimeStamp
+from telliot_core.utils.response import ResponseStatus
+from telliot_core.utils.response import error_status
+from typing import Tuple
 
 from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
 
-async def get_time_based_rewards(oracle: Tellor360OracleContract) -> int:
+async def get_time_based_rewards(oracle: Tellor360OracleContract) -> Tuple[int, ResponseStatus]:
     """
     Reward that will be given if a reporter submits now:
     TBR is calculated by factoring in the time of the last value to determine when it
@@ -22,12 +25,9 @@ async def get_time_based_rewards(oracle: Tellor360OracleContract) -> int:
 
     # if any call fails return 0 and a msg that tbr can't calc'd
     if not tbr_status.ok or not last_val_status.ok:
-        if not oracle.node.using_backup:
-            orac
-
         error = tbr_status.error if not tbr_status.ok else last_val_status.error
         logger.warning(f"Unable to calculate time-based rewards for reporter: {error}")
-        return 0
+        return 0, error_status(f"Unable to calculate time-based rewards for reporter:", tbr_status.e, log=logger.error)
 
     reward = (
         (TimeStamp.now().ts - time_of_last_new_value) * 5e17

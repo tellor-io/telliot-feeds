@@ -4,6 +4,9 @@ from typing import Tuple
 
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.utils.timestamp import TimeStamp
+from telliot_core.utils.response import ResponseStatus
+from telliot_core.utils.response import error_status
+
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.reporters.tips.listener.funded_feeds import FundedFeeds
@@ -23,7 +26,7 @@ logger = get_logger(__name__)
 # or check both mappings for type
 async def get_feed_and_tip(
     autopay: TellorFlexAutopayContract, skip_manual_feeds: bool, current_timestamp: Optional[TimeStamp] = None
-) -> Optional[Tuple[Optional[DataFeed[Any]], Optional[int]]]:
+) -> Optional[Tuple[Optional[DataFeed[Any]], Optional[int], ResponseStatus]]:
     """Fetch feeds with their tip and filter to get a feed suggestion with the max tip
 
     Args:
@@ -40,18 +43,22 @@ async def get_feed_and_tip(
 
     funded_feeds = FundedFeeds(autopay=autopay, multi_call=multi_call)
 
-    feed_tips = await funded_feeds.querydata_and_tip(current_time=current_timestamp)
-    onetime_tips = await get_funded_one_time_tips(autopay=autopay)
+    feed_tips, status = await funded_feeds.querydata_and_tip(current_time=current_timestamp)
+    if not status.ok:
+        return None, error_status("error getting querydata and tips", status.e, log=logger)
+    onetime_tips, fundedTipsStatus = await get_funded_one_time_tips(autopay=autopay)
+    if not fundedTipsStatus.ok:
+        return None, error_status("error getting funded one time tips", fundedTipsStatus.e, log=logger)
 
     if not feed_tips and not onetime_tips:
         logger.info("No tips available in autopay")
-        return None, None
+        return None, None, ResponseStatus()
 
     sorted_tips = get_sorted_tips(feed_tips, onetime_tips)
     for suggestion in sorted_tips:
         query_data, tip_amount = suggestion
         if tip_amount == 0:
-            return None, None
+            return None, None, ResponseStatus()
 
         datafeed = feed_from_catalog_feeds(query_data)
 
@@ -68,5 +75,5 @@ async def get_feed_and_tip(
             break
 
     if datafeed is None:
-        return None, None
-    return datafeed, tip_amount
+        return None, None, ResponseStatus()
+    return datafeed, tip_amount, ResponseStatus()

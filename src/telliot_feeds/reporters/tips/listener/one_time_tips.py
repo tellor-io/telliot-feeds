@@ -1,7 +1,10 @@
 """Single tip feed suggeestion"""
 from typing import Optional
+from typing import Tuple
 
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
+from telliot_core.utils.response import ResponseStatus
+from telliot_core.utils.response import error_status
 
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.query_search_utils import qtype_name_in_registry
@@ -9,7 +12,7 @@ from telliot_feeds.utils.query_search_utils import qtype_name_in_registry
 logger = get_logger(__name__)
 
 
-async def get_funded_one_time_tips(autopay: TellorFlexAutopayContract) -> Optional[dict[bytes, int]]:
+async def get_funded_one_time_tips(autopay: TellorFlexAutopayContract) -> Tuple[Optional[dict[bytes, int]], ResponseStatus]:
     """Trigger autopay call and filter response data
 
     Return: list of tuples of only query data and tips
@@ -18,17 +21,12 @@ async def get_funded_one_time_tips(autopay: TellorFlexAutopayContract) -> Option
     onetime_tips: Optional[list[tuple[bytes, int]]]
     onetime_tips, status = await autopay.read("getFundedSingleTipsInfo")
     if not status.ok:
-        if not autopay.node.using_backup and len(autopay.node.backup_url) != 0:
-            autopay.node = autopay.node.switchToBackupRPC()
-            connected = autopay.connect()
-            if connected:
-                return await get_funded_one_time_tips(autopay)
-            else:
-                logger.warning(f'Error reading from autopay contract and backup rpc failed too: {status.error}')
+        logger.warning(f'Error reading from autopay contract and backup rpc failed too: {status.error}')
+        return None, error_status("Error reading from autopay contract", status.e, log=logger)
 
     if not onetime_tips:
         logger.info("No one time tip funded queries available")
-        return None
+        return None, ResponseStatus()
 
     for (query_data, reward) in list(onetime_tips):
         if query_data == b"":
@@ -40,4 +38,4 @@ async def get_funded_one_time_tips(autopay: TellorFlexAutopayContract) -> Option
 
     single_tips = {query_data: reward for (query_data, reward) in onetime_tips}
 
-    return single_tips
+    return single_tips, ResponseStatus()

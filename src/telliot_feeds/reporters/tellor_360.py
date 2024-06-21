@@ -17,6 +17,7 @@ from telliot_core.utils.response import ResponseStatus
 from web3.contract import ContractFunction
 from web3.types import TxParams
 from web3.types import TxReceipt
+from web3 import Web3
 
 from telliot_feeds.constants import CHAINS_WITH_TBR
 from telliot_feeds.feeds import DataFeed
@@ -87,6 +88,14 @@ class Tellor360Reporter(Stake):
         # Update using_backup to reflect that we have already switched to backup and should not do it again
         self.using_backup_rpc = True
 
+        if self.endpoint.url.startswith("ws"):
+            self.web3 = Web3(Web3.WebsocketProvider(self.endpoint.url))
+        elif self.url.startswith("http"):
+            self.web3 = Web3(Web3.HTTPProvider(self.endpoint.url))
+        else:
+            logger.info(f"Invalid endpoint tried primary and backup url: {self.endpoint.url}")
+            return
+
 
     async def get_stake_amount(self) -> Tuple[Optional[int], ResponseStatus]:
         """Reads the current stake amount from the oracle contract
@@ -121,7 +130,7 @@ class Tellor360Reporter(Stake):
                 print("Calling switch to backup rpc inside of get_staker_details")
                 connected = self.SwitchToBackupRPC()
                 if connected:
-                    return await self.get_stake_amount()
+                    return await self.get_staker_details()
                 else:
                     msg = f"Unable to read account staker info: {status.error}"
             else:
@@ -225,7 +234,13 @@ class Tellor360Reporter(Stake):
         if self.datafeed is not None:
             try:
                 datafeed = self.datafeed
-                self.autopaytip += await fetch_feed_tip(self.autopay, datafeed)
+                tip, status = await fetch_feed_tip(self.autopay, datafeed)
+                if not status.ok and not self.using_backup_rpc and len(self.endpoint.backup_url) != 0:
+                    connected = self.SwitchToBackupRPC()
+                    if connected:
+                        return await self.rewards()
+                else:
+                    self.autopaytip += tip
             except EncodingTypeError:
                 logger.warning(f"Unable to generate data/id for query: {self.datafeed.query}")
         if self.ignore_tbr:
@@ -233,7 +248,11 @@ class Tellor360Reporter(Stake):
             return self.autopaytip
         elif self.chain_id in CHAINS_WITH_TBR:
             logger.info("Fetching time based rewards")
-            time_based_rewards = await get_time_based_rewards(self.oracle)
+            time_based_rewards, tbr_status = await get_time_based_rewards(self.oracle)
+            if not tbr_status.ok and not self.using_backup_rpc and len(self.endpoint.backup_url) != 0:
+                connected = self.SwitchToBackupRPC()
+                if connected:
+                    return await self.rewards() 
             logger.info(f"Time based rewards: {self.to_ether(time_based_rewards):.04f}")
             if time_based_rewards is not None:
                 self.autopaytip += time_based_rewards
@@ -265,7 +284,11 @@ class Tellor360Reporter(Stake):
 
         # Fetch datafeed based on whichever is most funded in the AutoPay contract
         if self.datafeed is None:
-            suggested_feed, tip_amount = await get_feed_and_tip(self.autopay, self.skip_manual_feeds)
+            suggested_feed, tip_amount, status = await get_feed_and_tip(self.autopay, self.skip_manual_feeds)
+            if not status.ok and not self.using_backup_rpc and len(self.endpoint.backup_url) != False:
+                connected = self.SwitchToBackupRPC()
+                if connected:
+                    return await self.fetch_datafeed()
 
             if suggested_feed is not None and tip_amount is not None:
                 logger.info(f"Most funded datafeed in Autopay: {suggested_feed.query.type}")
@@ -406,6 +429,10 @@ class Tellor360Reporter(Stake):
 
         _, status = self.estimate_gas_amount(contract_function)
         if not status.ok:
+            if not self.using_backup_rpc and len(self.endpoint.backup_url) != 0:
+                connected = self.SwitchToBackupRPC()
+                if connected:
+                    return self.build_transaction(function_name, **transaction_params)
             return None, error_status(f"Error estimating gas for function: {contract_function}", status.e, logger.error)
 
         params, status = self.tx_params(**self.get_gas_info())
@@ -429,6 +456,10 @@ class Tellor360Reporter(Stake):
         try:
             tx_hash = self.web3.eth.send_raw_transaction(tx_signed.rawTransaction)
         except Exception as e:
+            if not self.using_backup_rpc and len(self.endpoint.backup_url) != 0:
+                connected = self.SwitchToBackupRPC()
+                if connected:
+                    return self.sign_n_send_transaction(built_tx)
             note = "Send transaction failed"
             return None, error_status(note, log=logger.error, e=e)
 
@@ -445,6 +476,10 @@ class Tellor360Reporter(Stake):
             logger.info(f"View reported data: \n{tx_url}")
             return tx_receipt, ResponseStatus()
         except Exception as e:
+            if not self.using_backup_rpc and len(self.enpoint.backup_url):
+                connected = self.SwitchToBackupRPC()
+                if connected:
+                    return self.sign_n_send_transaction(built_tx)
             note = "Failed to confirm transaction"
             return None, error_status(note, log=logger.error, e=e)
 
@@ -453,8 +488,16 @@ class Tellor360Reporter(Stake):
         try:
             return self.web3.eth.get_transaction_count(self.acct_address), ResponseStatus()
         except ValueError as e:
+            if not self.using_backup_rpc and len(self.endpoint.backup_url) != 0:
+                connected = self.SwitchToBackupRPC()
+                if connected:
+                    return self.get_acct_nonce()
             return None, error_status("Account nonce request timed out", e=e, log=logger.warning)
         except Exception as e:
+            if not self.using_backup_rpc and len(self.endpoint.backup_url) != 0:
+                connected = self.SwitchToBackupRPC()
+                if connected:
+                    return self.get_acct_nonce()
             return None, error_status("Unable to retrieve account nonce", e=e, log=logger.error)
 
     def tx_params(self, **gas_fees: GasParams) -> Tuple[Optional[Dict[str, Any]], ResponseStatus]:
@@ -471,7 +514,12 @@ class Tellor360Reporter(Stake):
     def has_native_token(self) -> bool:
         """Check if account has native token funds for a network for gas fees
         of at least min_native_token_balance that is set in the cli"""
-        return has_native_token_funds(self.acct_addr, self.endpoint, min_balance=self.min_native_token_balance)
+        has_token, status = has_native_token_funds(self.acct_addr, self.endpoint, min_balance=self.min_native_token_balance)
+        if not status.ok and not self.using_backup_rpc and len(self.endpoint.backup_url) != 0:
+            connected = self.SwitchToBackupRPC()
+            if connected:
+                return self.has_native_token()
+        return has_token
 
     async def report_once(
         self,
@@ -501,7 +549,12 @@ class Tellor360Reporter(Stake):
             return None, status
 
         build_tx, status = self.build_transaction("submitValue", **params)
-        if not status.ok or build_tx is None:
+        if not status.ok:
+            if not self.using_backup_rpc and len(self.endpoint.backup_url) != 0:
+                connected = self.SwitchToBackupRPC()
+                if connected:
+                    return await self.report_once()
+        if build_tx is None:
             return None, status
 
         # Check if profitable if not YOLO

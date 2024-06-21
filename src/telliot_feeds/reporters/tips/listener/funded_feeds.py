@@ -2,6 +2,7 @@
 Make calls forward and fill in FullFeedQueryDetails
 """
 from typing import Optional
+from typing import Tuple
 
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.utils.response import error_status
@@ -103,7 +104,7 @@ class FundedFeeds(FundedFeedFilter):
 
         return funded_feeds, ResponseStatus()
 
-    async def querydata_and_tip(self, current_time: TimeStamp) -> Optional[dict[bytes, int]]:
+    async def querydata_and_tip(self, current_time: TimeStamp) -> Tuple[Optional[dict[bytes, int]], ResponseStatus]:
         """Main function that triggers all the calls
 
         Args:
@@ -122,10 +123,10 @@ class FundedFeeds(FundedFeedFilter):
         )
         if not status.ok:
             logger.error(f"Error getting eligible funded feeds: {status.error}")
-            return None
+            return None, error_status("Error getting eligible funded feeds", status.e, log=logger)
         if not eligible_funded_feeds:
             logger.info("No eligible funded feeds found")
-            return None
+            return None, ResponseStatus()
         # dictionary of key: queryData with value: tipAmount
         querydata_and_tip = {}
         for funded_feed in eligible_funded_feeds:
@@ -135,4 +136,4 @@ class FundedFeeds(FundedFeedFilter):
             else:
                 querydata_and_tip[query_data] += funded_feed.params.reward
 
-        return querydata_and_tip
+        return querydata_and_tip, ResponseStatus()
