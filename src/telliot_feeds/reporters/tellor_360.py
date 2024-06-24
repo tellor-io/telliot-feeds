@@ -90,7 +90,7 @@ class Tellor360Reporter(Stake):
 
         if self.endpoint.url.startswith("ws"):
             self.web3 = Web3(Web3.WebsocketProvider(self.endpoint.url))
-        elif self.url.startswith("http"):
+        elif self.endpoint.url.startswith("http"):
             self.web3 = Web3(Web3.HTTPProvider(self.endpoint.url))
         else:
             logger.info(f"Invalid endpoint tried primary and backup url: {self.endpoint.url}")
