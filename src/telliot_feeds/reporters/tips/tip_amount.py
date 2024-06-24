@@ -49,12 +49,10 @@ async def fetch_feed_tip(
     )
 
     if not status.ok:
-        return tip_amount, error_status("Error reading fro current feeds multiple values before", status.e, log=logger.warning)
+        return tip_amount, error_status("Error reading from current feeds multiple values before", status.e, log=logger.warning)
     
     if not results:
-        status = ResponseStatus()
-        status.ok = True
-        return tip_amount, status
+        return tip_amount, ResponseStatus()
 
     # get query id timestamps list and feed ids datafeed
     timestamps_list_and_datafeed, status = await call.timestamp_datafeed(results)
@@ -62,16 +60,14 @@ async def fetch_feed_tip(
         return tip_amount, error_status("Error getting query timestamps", status.e, log=logger.warning)
 
     if not timestamps_list_and_datafeed:
-        return tip_amount, None
+        return tip_amount, ResponseStatus()
 
     # filter out uneligible feeds
     eligible_feeds = await filtr.window_and_priceThreshold_unmet_filter(timestamps_list_and_datafeed, timestamp)
 
     if not eligible_feeds:
         logger.info("All feeds filtered out current timestamp not eligible for feed tip")
-        status = ResponseStatus()
-        status.ok = True
-        return tip_amount, status
+        return tip_amount, ResponseStatus()
 
     # filter out query id timestamps not eligible for tip
     feeds_with_timestamps_filtered = filtr.filter_historical_submissions(eligible_feeds)
@@ -82,9 +78,7 @@ async def fetch_feed_tip(
 
     if not unclaimed_count:
         tip_amount += tip_sum(feeds_with_timestamps_filtered)
-        status = ResponseStatus()
-        status.ok = True
-        return tip_amount, status
+        return tip_amount, ResponseStatus()
 
     feeds_with_tips = filtr.calculate_true_feed_balance(feeds_with_timestamps_filtered, unclaimed_count)
 
