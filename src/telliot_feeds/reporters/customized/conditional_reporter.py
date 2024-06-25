@@ -103,8 +103,6 @@ class ConditionalReporter(Tellor360Reporter):
         """check if a daily feed was reported
         params:
         - tellor_latest_data: latest data from tellor oracle
-        - telliot_feed_data: latest data from API sources
-
         Returns:
         - bool: True if the feed was not reported after daily_report_by_time before stale_timeout.
         False if value was reported in this "window".
