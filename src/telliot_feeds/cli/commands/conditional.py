@@ -42,6 +42,13 @@ def conditional_reporter() -> None:
     type=int,
     default=85500,
 )
+@click.option(
+    "-drt",
+    "--daily_report_by_time",
+    help="Set the time for a daily report. (Seconds after midnight)",
+    type=int,
+    default=None,
+)
 @click.pass_context
 @async_run
 async def conditional(
@@ -64,6 +71,7 @@ async def conditional(
     max_priority_fee_range: int,
     percent_change: float,
     stale_timeout: int,
+    daily_report_by_time: Optional[int],
     query_tag: str,
     unsafe: bool,
     skip_manual_feeds: bool,
@@ -103,6 +111,10 @@ async def conditional(
         click.echo("Reporter settings:")
         click.echo(f"Max tolerated price change: {percent_change * 100}%")
         click.echo(f"Value considered stale after: {stale_timeout} seconds")
+        if daily_report_by_time:
+            click.echo(f"Reporting daily if no report {daily_report_by_time} seconds after midnight")
+        else:
+            click.echo("No daily report specified.")
         click.echo(f"Transaction type: {tx_type}")
         click.echo(f"Transaction type: {tx_type}")
         click.echo(f"Gas Limit: {gas_limit}")
@@ -144,6 +156,7 @@ async def conditional(
         reporter = ConditionalReporter(
             stale_timeout=stale_timeout,
             max_price_change=percent_change,
+            daily_report_by_time=daily_report_by_time,
             **common_reporter_kwargs,
         )
 
