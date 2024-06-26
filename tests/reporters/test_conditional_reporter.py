@@ -28,6 +28,7 @@ async def reporter(tellor_360, guaranteed_price_source):
         check_rewards=False,
         stale_timeout=100,
         max_price_change=0.5,
+        daily_report_by_time=60,
         wait_period=0,
     )
 
@@ -46,6 +47,7 @@ async def test_tellor_data_none(reporter, caplog):
     with patch_tellor_data_return(None):
         await r.report(report_count=1)
         assert "tellor data returned None" in caplog.text
+        assert "Sending submitValue transaction" in caplog.text
 
 
 @pytest.mark.asyncio
@@ -59,11 +61,12 @@ async def test_tellor_data_not_retrieved(reporter, caplog):
     with patch_tellor_data_not_retrieved(GetDataBefore(False, b"", 0)):
         await r.report(report_count=1)
         assert "No oracle submissions in tellor for query" in caplog.text
+        assert "Sending submitValue transaction" in caplog.text
 
 
 @pytest.mark.asyncio
 async def test_tellor_data_is_stale(reporter, caplog):
-    """Test when tellor data is None"""
+    """Test when tellor data is stale"""
     r = await reporter
 
     def patch_tellor_data_is_stale(return_value):
@@ -71,11 +74,13 @@ async def test_tellor_data_is_stale(reporter, caplog):
 
     with patch_tellor_data_is_stale(GetDataBefore(True, b"", 0)):
         await r.report(report_count=1)
-        assert "tellor data is stale, time elapsed since last report" in caplog.text
+        assert "tellor data is stale! time elapsed since last report" in caplog.text
+        assert "Sending submitValue transaction" in caplog.text
 
 
 @pytest.mark.asyncio
 async def test_tellor_price_change_above_max(reporter, chain, caplog):
+    """test when asset price changes more than -pc"""
     r = await reporter
 
     tellor_latest_data = GetDataBefore(True, b"", chain_time(chain))
@@ -89,4 +94,53 @@ async def test_tellor_price_change_above_max(reporter, chain, caplog):
         stack.enter_context(patch(f"{module}ConditionalReporter.get_telliot_feed_data", return_value=telliot_feed_data))
         await r.report(report_count=1)
         assert "tellor price change above max" in caplog.text
+        assert "Sending submitValue transaction" in caplog.text
+
+
+@pytest.fixture(scope="function")
+async def daily_reporter(tellor_360, guaranteed_price_source):
+    contracts, account = tellor_360
+    feed = eth_usd_median_feed
+    feed.source = guaranteed_price_source
+
+    return ConditionalReporter(
+        oracle=contracts.oracle,
+        token=contracts.token,
+        autopay=contracts.autopay,
+        endpoint=contracts.oracle.node,
+        account=account,
+        chain_id=80001,
+        transaction_type=0,
+        min_native_token_balance=0,
+        datafeed=feed,
+        check_rewards=False,
+        stale_timeout=None,
+        max_price_change=None,
+        daily_report_by_time=60,
+        wait_period=0,
+    )
+
+
+@pytest.mark.asyncio
+async def test_daily_feed_not_reported(daily_reporter, chain, caplog):
+    r = await daily_reporter
+    # Set up the mock data for tellor and telliot feeds
+    tellor_latest_data = GetDataBefore(True, b"", 1)
+    telliot_feed_data = 0
+
+    # Mine some blocks to make sure the time is advanced enough
+    chain.mine(5, timedelta=1)
+
+    with ExitStack() as stack:
+        stack.enter_context(patch(f"{module}current_time", new=lambda: chain_time(chain)))
+        stack.enter_context(
+            patch(f"{module}ConditionalReporter.get_tellor_latest_data", return_value=tellor_latest_data)
+        )
+        stack.enter_context(patch(f"{module}ConditionalReporter.get_telliot_feed_data", return_value=telliot_feed_data))
+
+        # Call the report method
+        await r.report(report_count=1)
+
+        # Check if the daily feed was not reported
+        assert "daily report by not found after" in caplog.text
         assert "Sending submitValue transaction" in caplog.text

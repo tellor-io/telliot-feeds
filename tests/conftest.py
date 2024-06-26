@@ -55,33 +55,33 @@ def event_loop():
 
 
 @pytest.fixture(scope="module", autouse=True)
-def mumbai_cfg():
-    """Return a test telliot configuration for use on polygon-mumbai
+def amoy_cfg():
+    """Return a test telliot configuration for use on polygon-amoy
 
     If environment variables are defined, they will override the values in config files
     """
     cfg = TelliotConfig()
 
     # Override configuration for rinkeby testnet
-    cfg.main.chain_id = 80001
+    cfg.main.chain_id = 80002
 
     endpt = cfg.get_endpoint()
     if "INFURA_API_KEY" in endpt.url:
-        endpt.url = f'https://polygon-mumbai.infura.io/v3/{os.environ["INFURA_API_KEY"]}'
+        endpt.url = f'https://polygon-amoy.infura.io/v3/{os.environ["INFURA_API_KEY"]}'
 
-    mumbai_accounts = find_accounts(chain_id=80001)
-    if not mumbai_accounts:
+    amoy_accounts = find_accounts(chain_id=80002)
+    if not amoy_accounts:
         # Create a test account using PRIVATE_KEY defined on github.
         key = os.getenv("PRIVATE_KEY", None)
         if key:
             ChainedAccount.add(
-                "git-mumbai-key",
-                chains=80001,
+                "git-amoy-key",
+                chains=80002,
                 key=os.environ["PRIVATE_KEY"],
                 password="",
             )
         else:
-            raise Exception("Need a mumbai account")
+            raise Exception("Need a amoy account")
 
     return cfg
 
@@ -153,8 +153,8 @@ def local_node_cfg(chain_id: int):
 
 
 @pytest.fixture(scope="function", autouse=True)
-def mumbai_test_cfg():
-    return local_node_cfg(chain_id=80001)
+def amoy_test_cfg():
+    return local_node_cfg(chain_id=80002)
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -221,8 +221,8 @@ def multicall_contract():
 
 
 @pytest_asyncio.fixture(scope="function")
-async def tellor_360(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
-    async with TelliotCore(config=mumbai_test_cfg) as core:
+async def tellor_360(amoy_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
+    async with TelliotCore(config=amoy_test_cfg) as core:
         account = core.get_account()
 
         tellor360 = core.get_tellor360_contracts()
@@ -249,8 +249,8 @@ async def tellor_360(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract,
 
 
 @pytest_asyncio.fixture(scope="function")
-async def tellor_flex_reporter(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
-    async with TelliotCore(config=mumbai_test_cfg) as core:
+async def tellor_flex_reporter(amoy_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
+    async with TelliotCore(config=amoy_test_cfg) as core:
 
         account = core.get_account()
 
@@ -270,7 +270,7 @@ async def tellor_flex_reporter(mumbai_test_cfg, mock_flex_contract, mock_autopay
             autopay=flex.autopay,
             endpoint=core.endpoint,
             account=account,
-            chain_id=80001,
+            chain_id=80002,
             transaction_type=0,
             min_native_token_balance=0,
         )

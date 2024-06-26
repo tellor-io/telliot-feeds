@@ -99,7 +99,7 @@ class ConditionalReporter(Tellor360Reporter):
             percent_change = (max_price - min_price) / max_price
             logger.info(f"feed price change = {percent_change}")
             if percent_change > self.max_price_change:
-                logger.info("Feed price change above max")
+                logger.info("tellor price change above max")
                 return True
             else:
                 return False
@@ -121,7 +121,7 @@ class ConditionalReporter(Tellor360Reporter):
                 time - tellor_latest_data.timestampRetrieved if tellor_latest_data else time
             )
             if time_passed_since_tellor_report > self.stale_timeout:
-                logger.debug(f"tellor data is stale! time elapsed since last report: {time_passed_since_tellor_report}")
+                logger.info(f"tellor data is stale! time elapsed since last report: {time_passed_since_tellor_report}")
                 return True
             else:
                 return False
@@ -146,6 +146,8 @@ class ConditionalReporter(Tellor360Reporter):
             tellor_timestamp = tellor_latest_data.timestampRetrieved
 
             if check_timestamp > tellor_timestamp:
+                logger.info(f"Looking for report today after {check_timestamp} ...")
+                logger.info(f"daily report by not found after {check_time}!")
                 return True
             else:
                 return False
