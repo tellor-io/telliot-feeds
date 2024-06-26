@@ -85,6 +85,7 @@ class ConditionalReporter(Tellor360Reporter):
             logger.info("skipping price change check (-pc not used)...")
             return False
         else:
+            logger.debug("checking price change...")
             oracle_price = (Web3.toInt(tellor_latest_data.value)) / 10**18
             feed_price = telliot_feed_data if telliot_feed_data else None
 
@@ -103,6 +104,28 @@ class ConditionalReporter(Tellor360Reporter):
             else:
                 return False
 
+    def feed_is_stale(self, tellor_latest_data: GetDataBefore) -> bool:
+        """check if feed is stale if stale_timeout flag is used
+        params:
+        - tellor_latest_data: latest data from tellor oracle
+        returns:
+        - bool: True if tellor's timestamp is older than stale_timeout, False otherwise
+        """
+        if self.stale_timeout is None:
+            logger.debug("skipping freshness check (-st not used)...")
+            return False
+        else:
+            logger.debug("checking if feed is stale...")
+            time = current_time()
+            time_passed_since_tellor_report = (
+                time - tellor_latest_data.timestampRetrieved if tellor_latest_data else time
+            )
+            if time_passed_since_tellor_report > self.stale_timeout:
+                logger.debug(f"tellor data is stale! time elapsed since last report: {time_passed_since_tellor_report}")
+                return True
+            else:
+                return False
+
     def daily_feed_not_reported(self, tellor_latest_data: GetDataBefore) -> bool:
         """check if a daily feed was reported if -drt flag is used
         params:
@@ -112,9 +135,10 @@ class ConditionalReporter(Tellor360Reporter):
         False if value was reported in this "window".
         """
         if self.daily_report_by_time is None:
-            logger.info("skipping daily report check (-drt not used)...")
+            logger.debug("skipping daily report check (-drt not used)...")
             return False
         else:
+            logger.debug("checking daily feed status...")
             now_utc = datetime.now(timezone("UTC"))
             midnight_utc = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
             check_time = midnight_utc + timedelta(seconds=self.daily_report_by_time)
@@ -122,27 +146,6 @@ class ConditionalReporter(Tellor360Reporter):
             tellor_timestamp = tellor_latest_data.timestampRetrieved
 
             if check_timestamp > tellor_timestamp:
-                return True
-            else:
-                return False
-
-    def feed_is_stale(self, tellor_latest_data: GetDataBefore) -> bool:
-        """check if feed is stale if stale_timeout flag is used
-        params:
-        - tellor_latest_data: latest data from tellor oracle
-        returns:
-        - bool: True if tellor's timestamp is older than stale_timeout, False otherwise
-        """
-        if self.stale_timeout is None:
-            logger.info("skipping freshness check (-st not used)...")
-            return False
-        else:
-            time = current_time()
-            time_passed_since_tellor_report = (
-                time - tellor_latest_data.timestampRetrieved if tellor_latest_data else time
-            )
-            if time_passed_since_tellor_report > self.stale_timeout:
-                logger.debug(f"tellor data is stale! time elapsed since last report: {time_passed_since_tellor_report}")
                 return True
             else:
                 return False
@@ -158,7 +161,7 @@ class ConditionalReporter(Tellor360Reporter):
         if self.datafeed is None:
             logger.info(f"no datafeed was setß: {self.datafeed}. Please provide a spot-price query type (see --help)")
             return False
-        if not self.stale_timeout or self.max_price_change or self.daily_report_by_time:
+        if not self.stale_timeout and not self.max_price_change and not self.daily_report_by_time:
             logger.error("No condition flags used! \U0001F62E (try telliot conditional --help)")
             return False
         tellor_latest_data = await self.get_tellor_latest_data()
@@ -170,6 +173,7 @@ class ConditionalReporter(Tellor360Reporter):
         elif not tellor_latest_data.retrieved:
             logger.debug(f"No oracle submissions in tellor for query: {self.datafeed.query.descriptor}")
             return True
+        # check conditions
         elif self.feed_is_stale(tellor_latest_data):
             logger.debug("reporting because feed is stale...")
             return True
@@ -180,7 +184,7 @@ class ConditionalReporter(Tellor360Reporter):
             logger.debug("reporting because specified daily report was not found...")
             return True
         else:
-            logger.debug(f"no conditions met for reporting tellor data \U0001F44C: {self.datafeed.query.descriptor}")
+            logger.debug(f"\U0001F44C no conditions met for reporting {self.datafeed.query.descriptor}")
             return False
 
     async def report(self, report_count: Optional[int] = None) -> None:

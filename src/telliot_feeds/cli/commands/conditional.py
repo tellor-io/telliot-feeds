@@ -116,11 +116,11 @@ async def conditional(
         else:
             click.echo("- No price change threshold specified.")
         if stale_timeout:
-            click.echo(f"- If previously reported Tellor value was {stale_timeout} seconds ago...")
+            click.echo(f"- If previously reported Tellor value was >{stale_timeout} seconds ago...")
         else:
             click.echo("- No timeout specified for checking freshness.")
         if daily_report_by_time:
-            click.echo(f"- Reporting daily if no report {daily_report_by_time} seconds after midnight")
+            click.echo(f"- Reporting daily if no report {daily_report_by_time} seconds after midnight UTC")
         else:
             click.echo("- No daily report specified.")
         click.echo("\n")
