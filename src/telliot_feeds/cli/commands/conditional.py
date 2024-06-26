@@ -31,21 +31,21 @@ def conditional_reporter() -> None:
 @click.option(
     "-pc",
     "--percent-change",
-    help="Price change percentage for triggering a report. Default=0.01 (1%)",
+    help="Price change percentage for triggering a report. (use 0.01 for 1%)",
     type=float,
-    default=0.01,
+    default=None,
 )
 @click.option(
     "-st",
     "--stale-timeout",
-    help="Triggers a report when the oracle value is stale. Default=85500 (23.75 hours)",
+    help="Triggers a report when the oracle value is stale (seconds).",
     type=int,
-    default=85500,
+    default=None,
 )
 @click.option(
     "-drt",
     "--daily_report_by_time",
-    help="Set the time for a daily report. (Seconds after midnight)",
+    help="Set the time for a daily report. (seconds after midnight)",
     type=int,
     default=None,
 )
@@ -69,8 +69,8 @@ async def conditional(
     check_rewards: bool,
     gas_multiplier: int,
     max_priority_fee_range: int,
-    percent_change: float,
-    stale_timeout: int,
+    percent_change: Optional[float],
+    stale_timeout: Optional[int],
     daily_report_by_time: Optional[int],
     query_tag: str,
     unsafe: bool,
@@ -108,13 +108,23 @@ async def conditional(
         if not account.is_unlocked:
             account.unlock(password)
 
-        click.echo("Reporter settings:")
-        click.echo(f"Max tolerated price change: {percent_change * 100}%")
-        click.echo(f"Value considered stale after: {stale_timeout} seconds")
-        if daily_report_by_time:
-            click.echo(f"Reporting daily if no report {daily_report_by_time} seconds after midnight")
+        click.echo("\n")
+        click.echo("REPORTING UNDER THE FOLLOWING CONDITIONS:")
+        click.echo("Please check these carefully:")
+        if percent_change:
+            click.echo(f"- If price change greater than {percent_change * 100}%...")
         else:
-            click.echo("No daily report specified.")
+            click.echo("- No price change threshold specified.")
+        if stale_timeout:
+            click.echo(f"- If previously reported Tellor value was {stale_timeout} seconds ago...")
+        else:
+            click.echo("- No timeout specified for checking freshness.")
+        if daily_report_by_time:
+            click.echo(f"- Reporting daily if no report {daily_report_by_time} seconds after midnight")
+        else:
+            click.echo("- No daily report specified.")
+        click.echo("\n")
+        click.echo("Reporter settings:")
         click.echo(f"Transaction type: {tx_type}")
         click.echo(f"Transaction type: {tx_type}")
         click.echo(f"Gas Limit: {gas_limit}")
