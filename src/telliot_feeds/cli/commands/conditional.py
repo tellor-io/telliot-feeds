@@ -43,11 +43,11 @@ def conditional_reporter() -> None:
     default=None,
 )
 @click.option(
-    "-drt",
-    "--daily_report_by_time",
-    help="Set the time for a daily report. (seconds after midnight)",
+    "-bup",
+    "--ampleforth_backup",
+    help="check if the daily ampleforth-custom feed was reported at 00:18:00 UTC",
     type=int,
-    default=None,
+    default=None
 )
 @click.pass_context
 @async_run
@@ -71,7 +71,7 @@ async def conditional(
     max_priority_fee_range: int,
     percent_change: Optional[float],
     stale_timeout: Optional[int],
-    daily_report_by_time: Optional[int],
+    ampleforth_backup: Optional[int],
     query_tag: str,
     unsafe: bool,
     skip_manual_feeds: bool,
@@ -119,10 +119,10 @@ async def conditional(
             click.echo(f"- If previously reported Tellor value was >{stale_timeout} seconds ago...")
         else:
             click.echo("- No timeout specified for checking freshness.")
-        if daily_report_by_time:
-            click.echo(f"- Reporting daily if no report {daily_report_by_time} seconds after midnight UTC")
+        if ampleforth_backup:
+            click.echo("- Backing up Ampleforth!")
         else:
-            click.echo("- No daily report specified.")
+            click.echo("not backing up ampleforth")
         click.echo("\n")
         click.echo("Reporter settings:")
         click.echo(f"Transaction type: {tx_type}")
@@ -166,7 +166,7 @@ async def conditional(
         reporter = ConditionalReporter(
             stale_timeout=stale_timeout,
             max_price_change=percent_change,
-            daily_report_by_time=daily_report_by_time,
+            ampleforth_backup=ampleforth_backup,
             **common_reporter_kwargs,
         )
 

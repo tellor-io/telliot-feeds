@@ -28,7 +28,7 @@ async def reporter(tellor_360, guaranteed_price_source):
         check_rewards=False,
         stale_timeout=100,
         max_price_change=0.5,
-        daily_report_by_time=60,
+        ampleforth_backup=1080,
         wait_period=0,
     )
 
@@ -116,13 +116,13 @@ async def daily_reporter(tellor_360, guaranteed_price_source):
         check_rewards=False,
         stale_timeout=None,
         max_price_change=None,
-        daily_report_by_time=60,
+        ampleforth_backup=60,
         wait_period=0,
     )
 
 
 @pytest.mark.asyncio
-async def test_daily_feed_not_reported(daily_reporter, chain, caplog):
+async def test_ampleforth_backup(daily_reporter, chain, caplog):
     r = await daily_reporter
     # Set up the mock data for tellor and telliot feeds
     tellor_latest_data = GetDataBefore(True, b"", 1)
