@@ -75,7 +75,7 @@ class gydSpotPriceService(WebPriceService):
             return None
 
     async def get_total_liquidity_of_pools(self) -> list[float]:
-        baseURL = "https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-v2"
+        baseURL = "https://api.studio.thegraph.com/proxy/75376/balancer-v2/version/latest"
         gyd_token_contract_address = "0xe07F9D810a48ab5c3c914BA3cA53AF14E4491e8A"
         headers = {
             "Content-Type": "application/json",
