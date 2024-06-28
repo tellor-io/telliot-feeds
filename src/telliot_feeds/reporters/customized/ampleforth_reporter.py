@@ -9,9 +9,9 @@ from typing import TypeVar
 from pytz import timezone
 
 from telliot_feeds.feeds import DataFeed
-from telliot_feeds.reporters.customized import get_tellor_latest_data
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.reporter_utils import current_time
 
 logger = get_logger(__name__)
 T = TypeVar("T")
@@ -40,6 +40,21 @@ class AmpleforthReporter(Tellor360Reporter):
         self.backup_time = backup_time
         self.datafeed = datafeed
         self.qtag_selected = True
+
+    async def get_tellor_latest_data(self) -> Optional[GetDataBefore]:
+        """Get latest data from tellor oracle (getDataBefore with current time)
+
+        Returns:
+        - Optional[GetDataBefore]: latest data from tellor oracle
+        """
+        if self.datafeed is None:
+            logger.debug(f"no datafeed set: {self.datafeed}")
+            return None
+        data, status = await self.oracle.read("getDataBefore", self.datafeed.query.query_id, current_time())
+        if not status.ok:
+            logger.warning(f"error getting tellor data: {status.e}")
+            return None
+        return GetDataBefore(*data)
 
     def check_ampleforth_custom(self, tellor_latest_data: GetDataBefore) -> bool:
         """check if ampleforth-custom was reported soon after 00:00:00 UTC
@@ -75,9 +90,6 @@ class AmpleforthReporter(Tellor360Reporter):
         """
         logger.info("Checking conditions and reporting if necessary! \U0001F44D")
         # Get latest report from Tellor
-        if self.datafeed is None:
-            logger.info(f"no datafeed was setß: {self.datafeed}. Please provide a spot-price query type (see --help)")
-            return False
         tellor_latest_data = await self.get_tellor_latest_data()
         if tellor_latest_data is None:
             logger.debug("tellor data returned None")
@@ -87,7 +99,6 @@ class AmpleforthReporter(Tellor360Reporter):
             return True
         elif self.check_ampleforth(tellor_latest_data):
             logger.debug("reporting because specified daily report was not found...")
-            telliot_feed_data = await self.get_telliot_feed_data(datafeed=self.datafeed)
             return True
         else:
             logger.debug("\U0001F44C ampleforth check has failed")

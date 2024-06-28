@@ -9,8 +9,7 @@ from telliot_feeds.cli.utils import common_options
 from telliot_feeds.cli.utils import common_reporter_options
 from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
-from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.reporters.customized.ampleforth_backup import AmpleforthReporter
+from telliot_feeds.reporters.customized.ampleforth_reporter import AmpleforthReporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
@@ -64,7 +63,7 @@ async def conditional(
     click.echo("Starting Conditional Reporter...")
     ctx.obj["ACCOUNT_NAME"] = account_str
     ctx.obj["SIGNATURE_ACCOUNT_NAME"] = None
-    if query_tag is not "ampleforth-custom":
+    if query_tag != "ampleforth-custom":
         raise click.UsageError("Ampleforth backup can only be used for reporting amplorth-custom! (see --help)")
     datafeed = query_tag
     accounts = get_accounts_from_name(account_str)
