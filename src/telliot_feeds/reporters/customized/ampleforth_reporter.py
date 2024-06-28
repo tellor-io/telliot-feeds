@@ -31,7 +31,7 @@ class AmpleforthReporter(Tellor360Reporter):
 
     def __init__(
         self,
-        backup_time: Optional[int] = 1080,
+        backup_time: float = 1080,
         datafeed: Optional[DataFeed[Any]] = None,
         *args: Any,
         **kwargs: Any,
@@ -91,6 +91,8 @@ class AmpleforthReporter(Tellor360Reporter):
         logger.info("Checking conditions and reporting if necessary! \U0001F44D")
         # Get latest report from Tellor
         tellor_latest_data = await self.get_tellor_latest_data()
+        if datafeed is None:
+            return False
         if tellor_latest_data is None:
             logger.debug("tellor data returned None")
             return True

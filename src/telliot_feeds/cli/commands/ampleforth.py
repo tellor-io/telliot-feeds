@@ -9,6 +9,7 @@ from telliot_feeds.cli.utils import common_options
 from telliot_feeds.cli.utils import common_reporter_options
 from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
+from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.reporters.customized.ampleforth_reporter import AmpleforthReporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
@@ -28,7 +29,7 @@ def ampleforth_reporter() -> None:
 @common_options
 @common_reporter_options
 @click.option(
-    "-bup",
+    "-time",
     "--backup_time",
     help="check if the daily ampleforth-custom feed was reported at 00:18:00 UTC",
     type=int,
@@ -36,7 +37,7 @@ def ampleforth_reporter() -> None:
 )
 @click.pass_context
 @async_run
-async def conditional(
+async def ampleforth(
     ctx: Context,
     tx_type: int,
     gas_limit: int,
@@ -65,7 +66,10 @@ async def conditional(
     ctx.obj["SIGNATURE_ACCOUNT_NAME"] = None
     if query_tag != "ampleforth-custom":
         raise click.UsageError("Ampleforth backup can only be used for reporting amplorth-custom! (see --help)")
-    datafeed = query_tag
+    datafeed = CATALOG_FEEDS.get("ampleforth-custom")
+    if datafeed is None:
+        raise click.UsageError(f"Invalid query tag: {query_tag}, enter a valid query tag with API support, use --help")
+
     accounts = get_accounts_from_name(account_str)
     if not accounts:
         return
