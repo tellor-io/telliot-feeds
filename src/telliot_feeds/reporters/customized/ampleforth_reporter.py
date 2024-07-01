@@ -32,7 +32,7 @@ class AmpleforthReporter(Tellor360Reporter):
     def __init__(
         self,
         ampleforth_backup: bool,
-        datafeed: Optional[DataFeed[Any]] = None,
+        datafeed: Optional[DataFeed[Any]] = "ampleforth-custom",
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -47,9 +47,6 @@ class AmpleforthReporter(Tellor360Reporter):
         Returns:
         - Optional[GetDataBefore]: latest data from tellor oracle
         """
-        if self.datafeed is None:
-            logger.debug(f"no datafeed set: {self.datafeed}")
-            return None
         data, status = await self.oracle.read("getDataBefore", self.datafeed.query.query_id, current_time())
         if not status.ok:
             logger.warning(f"error getting tellor data: {status.e}")
@@ -71,7 +68,7 @@ class AmpleforthReporter(Tellor360Reporter):
         now_utc = datetime.now(timezone("UTC"))
         midnight_utc = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
         open_window = midnight_utc + timedelta(seconds=60)
-        close_window = midnight_utc + timedelta(seconds=self.ampleforth_backup)
+        close_window = midnight_utc + timedelta(seconds=1080)
         ampl_report = tellor_latest_data.timestampRetrieved
         if now_utc >= close_window:
             logger.debug("checking if ampleforth-custom was reported...")
@@ -94,7 +91,7 @@ class AmpleforthReporter(Tellor360Reporter):
         logger.info("Checking conditions and reporting if necessary! \U0001F44D")
         # Get latest report from Tellor
         if self.datafeed is None:
-            logger.info(f"no datafeed was setß: {self.datafeed}. Please provide a spot-price query type (see --help)")
+            logger.error("Not ampleforth-custom?")
             return False
         tellor_latest_data = await self.get_tellor_latest_data()
         # Report feed if never reported before:

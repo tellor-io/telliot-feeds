@@ -55,12 +55,12 @@ async def ampleforth(
     max_priority_fee_range: int,
     unsafe: bool,
     skip_manual_feeds: bool,
-    query_tag: str = "ampleforth-custom",
+    query_tag: str,
     check_rewards: bool = False,
     ampleforth_backup: bool = True,
 ) -> None:
-    """Report values to Tellor oracle if certain conditions are met."""
-    click.echo("Starting Conditional Reporter...")
+    """Backing up Ampleforth"""
+    click.echo("Starting Ampleforth Reporter...")
     ctx.obj["ACCOUNT_NAME"] = account_str
     ctx.obj["SIGNATURE_ACCOUNT_NAME"] = None
     if query_tag != "ampleforth-custom":
@@ -68,7 +68,6 @@ async def ampleforth(
     datafeed = CATALOG_FEEDS.get("ampleforth-custom")
     if datafeed is None:
         raise click.UsageError(f"Invalid query tag: {query_tag}, enter a valid query tag with API support, use --help")
-
     accounts = get_accounts_from_name(account_str)
     if not accounts:
         return
