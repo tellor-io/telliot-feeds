@@ -32,7 +32,7 @@ class AmpleforthReporter(Tellor360Reporter):
     def __init__(
         self,
         ampleforth_backup: bool,
-        datafeed: Optional[DataFeed[Any]] = "ampleforth-custom",
+        datafeed: Optional[DataFeed[Any]] = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
@@ -47,6 +47,9 @@ class AmpleforthReporter(Tellor360Reporter):
         Returns:
         - Optional[GetDataBefore]: latest data from tellor oracle
         """
+        if self.datafeed is None:
+            logger.debug(f"no datafeed set: {self.datafeed}")
+            return None
         data, status = await self.oracle.read("getDataBefore", self.datafeed.query.query_id, current_time())
         if not status.ok:
             logger.warning(f"error getting tellor data: {status.e}")

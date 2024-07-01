@@ -1,12 +1,9 @@
 import asyncio
 from dataclasses import dataclass
-from datetime import datetime
-from datetime import timedelta
 from typing import Any
 from typing import Optional
 from typing import TypeVar
 
-from pytz import timezone
 from web3 import Web3
 
 from telliot_feeds.feeds import DataFeed
@@ -133,7 +130,7 @@ class ConditionalReporter(Tellor360Reporter):
         if self.datafeed is None:
             logger.info(f"no datafeed was setß: {self.datafeed}. Please provide a spot-price query type (see --help)")
             return False
-        if not self.stale_timeout and not self.max_price_change and not self.ampleforth_backup:
+        if not self.stale_timeout and not self.max_price_change:
             logger.error("No condition flags used! \U0001F62E (try telliot conditional --help)")
             return False
         tellor_latest_data = await self.get_tellor_latest_data()
@@ -151,9 +148,6 @@ class ConditionalReporter(Tellor360Reporter):
             return True
         elif self.tellor_price_change_above_max(tellor_latest_data, telliot_feed_data):
             logger.debug("reporting because asset price changed...")
-            return True
-        elif self.check_ampleforth(tellor_latest_data):
-            logger.debug("reporting because specified daily report was not found...")
             return True
         else:
             logger.debug(f"\U0001F44C no conditions met for reporting {self.datafeed.query.descriptor}")
