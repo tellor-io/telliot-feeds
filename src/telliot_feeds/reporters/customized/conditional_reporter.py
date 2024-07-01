@@ -34,7 +34,6 @@ class ConditionalReporter(Tellor360Reporter):
         self,
         stale_timeout: Optional[int],
         max_price_change: Optional[float],
-        ampleforth_backup: Optional[int],
         datafeed: Optional[DataFeed[Any]] = None,
         *args: Any,
         **kwargs: Any,
@@ -42,7 +41,6 @@ class ConditionalReporter(Tellor360Reporter):
         super().__init__(*args, **kwargs)
         self.stale_timeout = stale_timeout
         self.max_price_change = max_price_change
-        self.ampleforth_backup = ampleforth_backup
         self.datafeed = datafeed
         self.qtag_selected = True
 
@@ -121,35 +119,6 @@ class ConditionalReporter(Tellor360Reporter):
         if time_passed_since_tellor_report > self.stale_timeout:
             logger.info(f"tellor data is stale! time elapsed since last report: {time_passed_since_tellor_report}")
             return True
-        else:
-            return False
-
-    def check_ampleforth(self, tellor_latest_data: GetDataBefore) -> bool:
-        """check if ampleforth-custom was reported soon after 00:00:00 UTC
-        params:
-        - tellor_latest_data: latest data from tellor oracle
-        Returns:
-        - bool: True if ampleforth-custom was not reported
-                between UTC 00:08:00 and 00:18:00
-        False if there was a report in that window.
-        """
-        if self.ampleforth_backup is None:
-            return False
-
-        now_utc = datetime.now(timezone("UTC"))
-        midnight_utc = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
-        open_window = midnight_utc + timedelta(seconds=60)
-        close_window = midnight_utc + timedelta(seconds=self.ampleforth_backup)
-        ampl_report = tellor_latest_data.timestampRetrieved
-        if now_utc >= close_window:
-            logger.debug("checking if ampleforth-custom was reported...")
-            if ampl_report < (open_window).timestamp():
-                logger.info("no ampleforth report found!")
-                return True
-            else:
-                logger.info("ampleforth-custom was reported.")
-                logger.info("Checking again tomorrow at 00:18:00 UTC.")
-                return False
         else:
             return False
 

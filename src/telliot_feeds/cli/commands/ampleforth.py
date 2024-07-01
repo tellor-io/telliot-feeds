@@ -10,7 +10,7 @@ from telliot_feeds.cli.utils import common_reporter_options
 from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.reporters.customized.conditional_reporter import ConditionalReporter
+from telliot_feeds.reporters.customized.ampleforth_reporter import AmpleforthReporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
@@ -20,38 +20,23 @@ T = TypeVar("T")
 
 
 @click.group()
-def conditional_reporter() -> None:
+def ampleforth_reporter() -> None:
     """Report data on-chain."""
     pass
 
 
-@conditional_reporter.command()
+@ampleforth_reporter.command()
 @common_options
 @common_reporter_options
 @click.option(
-    "-pc",
-    "--percent-change",
-    help="Price change percentage for triggering a report. (use 0.01 for 1%)",
-    type=float,
-    default=None,
-)
-@click.option(
-    "-st",
-    "--stale-timeout",
-    help="Triggers a report when the oracle value is stale (seconds).",
-    type=int,
-    default=None,
-)
-@click.option(
-    "-bup",
     "--ampleforth_backup",
     help="check if the daily ampleforth-custom feed was reported at 00:18:00 UTC",
-    type=int,
-    default=None,
+    type=bool,
+    default=True,
 )
 @click.pass_context
 @async_run
-async def conditional(
+async def ampleforth(
     ctx: Context,
     tx_type: int,
     gas_limit: int,
@@ -66,23 +51,21 @@ async def conditional(
     min_native_token_balance: float,
     stake: float,
     account_str: str,
-    check_rewards: bool,
     gas_multiplier: int,
     max_priority_fee_range: int,
-    percent_change: Optional[float],
-    stale_timeout: Optional[int],
-    ampleforth_backup: Optional[int],
-    query_tag: str,
     unsafe: bool,
     skip_manual_feeds: bool,
+    query_tag: str = "ampleforth-custom",
+    check_rewards: bool = False,
+    ampleforth_backup: bool = True,
 ) -> None:
     """Report values to Tellor oracle if certain conditions are met."""
     click.echo("Starting Conditional Reporter...")
     ctx.obj["ACCOUNT_NAME"] = account_str
     ctx.obj["SIGNATURE_ACCOUNT_NAME"] = None
-    if query_tag is None:
-        raise click.UsageError("--query-tag (-qt) is required. Use --help for a list of feeds with API support.")
-    datafeed = CATALOG_FEEDS.get(query_tag)
+    if query_tag != "ampleforth-custom":
+        raise click.UsageError("Ampleforth backup can only be used for reporting amplorth-custom! (see --help)")
+    datafeed = CATALOG_FEEDS.get("ampleforth-custom")
     if datafeed is None:
         raise click.UsageError(f"Invalid query tag: {query_tag}, enter a valid query tag with API support, use --help")
 
@@ -108,21 +91,7 @@ async def conditional(
         if not account.is_unlocked:
             account.unlock(password)
 
-        click.echo("\n")
-        click.echo("REPORTING UNDER THE FOLLOWING CONDITIONS:")
-        click.echo("Please check these carefully:")
-        if percent_change:
-            click.echo(f"- If price change greater than {percent_change * 100}%...")
-        else:
-            click.echo("- No price change threshold specified.")
-        if stale_timeout:
-            click.echo(f"- If previously reported Tellor value was >{stale_timeout} seconds ago...")
-        else:
-            click.echo("- No timeout specified for checking freshness.")
-        if ampleforth_backup:
-            click.echo("- Backing up Ampleforth!")
-        else:
-            click.echo("not backing up ampleforth")
+        click.echo("\U0001F4AA BACKING UP AMPLEFORTH-CUSTOM \U0001F4AA")
         click.echo("\n")
         click.echo("Reporter settings:")
         click.echo(f"Transaction type: {tx_type}")
@@ -163,9 +132,7 @@ async def conditional(
             "skip_manual_feeds": skip_manual_feeds,
         }
 
-        reporter = ConditionalReporter(
-            stale_timeout=stale_timeout,
-            max_price_change=percent_change,
+        reporter = AmpleforthReporter(
             ampleforth_backup=ampleforth_backup,
             **common_reporter_kwargs,
         )
