@@ -30,10 +30,10 @@ def ampleforth_reporter() -> None:
 @common_reporter_options
 @click.option(
     "-time",
-    "--backup_time",
-    help="check if the daily ampleforth-custom feed was reported at 00:18:00 UTC",
+    "--backup_check_time",
+    help="time to check for ampleforth-custom (seconds after midnight UTC)",
     type=int,
-    default=None,
+    default=1080,
 )
 @click.pass_context
 @async_run
@@ -54,7 +54,7 @@ async def ampleforth(
     account_str: str,
     gas_multiplier: int,
     max_priority_fee_range: int,
-    backup_time: Optional[int],
+    backup_check_time: int,
     unsafe: bool,
     skip_manual_feeds: bool,
     query_tag: str = "ampleforth-custom",
@@ -65,7 +65,7 @@ async def ampleforth(
     ctx.obj["ACCOUNT_NAME"] = account_str
     ctx.obj["SIGNATURE_ACCOUNT_NAME"] = None
     if query_tag != "ampleforth-custom":
-        raise click.UsageError("Ampleforth backup can only be used for reporting amplorth-custom! (see --help)")
+        raise click.UsageError("Ampleforth backup requires -qt ampleforth-custom flag")
     datafeed = CATALOG_FEEDS.get("ampleforth-custom")
     if datafeed is None:
         raise click.UsageError(f"Invalid query tag: {query_tag}, enter a valid query tag with API support, use --help")
@@ -86,13 +86,14 @@ async def ampleforth(
             click.echo("Accounts and/or endpoint unset.")
             click.echo(f"Account: {account}")
             click.echo(f"Endpoint: {core._config.get_endpoint()}")
+            click.echo("\n")
             return
 
         # Make sure current account is unlocked
         if not account.is_unlocked:
             account.unlock(password)
 
-        click.echo("\n")("\U0001F4AA BACKING UP AMPLEFORTH-CUSTOM \U0001F4AA")
+        click.echo("\U0001F4AA BACKING UP AMPLEFORTH-CUSTOM \U0001F4AA")
         click.echo("\n")
         click.echo("Reporter settings:")
         click.echo(f"Transaction type: {tx_type}")
@@ -134,7 +135,7 @@ async def ampleforth(
         }
 
         reporter = AmpleforthReporter(
-            backup_time=backup_time,
+            backup_check_time=backup_check_time,
             **common_reporter_kwargs,
         )
 

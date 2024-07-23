@@ -31,13 +31,13 @@ class AmpleforthReporter(Tellor360Reporter):
 
     def __init__(
         self,
-        backup_time: float = 1080,
+        backup_check_time: int = 1080,
         datafeed: Optional[DataFeed[Any]] = None,
         *args: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.backup_time = backup_time
+        self.backup_check_time = backup_check_time
         self.datafeed = datafeed
         self.qtag_selected = True
 
@@ -68,16 +68,15 @@ class AmpleforthReporter(Tellor360Reporter):
         now_utc = datetime.now(timezone("UTC"))
         midnight_utc = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
         open_window = midnight_utc + timedelta(seconds=10)
-        close_window = midnight_utc + timedelta(seconds=self.backup_time)
+        close_window = midnight_utc + timedelta(seconds=self.backup_check_time)
         ampl_report = tellor_latest_data.timestampRetrieved
         if now_utc >= close_window:
-            logger.debug("checking if ampleforth-custom was reported...")
+            logger.info(f"checking if ampleforth-custom was reported by {close_window}")
             if ampl_report < (open_window).timestamp():
                 logger.info("no ampleforth report found!")
                 return True
             else:
                 logger.info("ampleforth-custom was reported.")
-                logger.info("Checking again tomorrow at 00:18:00 UTC.")
                 return False
         else:
             return False
@@ -91,19 +90,17 @@ class AmpleforthReporter(Tellor360Reporter):
         logger.info("Checking conditions and reporting if necessary! \U0001F44D")
         # Get latest report from Tellor
         tellor_latest_data = await self.get_tellor_latest_data()
-        if datafeed is None:
-            return False
         if tellor_latest_data is None:
             logger.debug("tellor data returned None")
             return True
         elif not tellor_latest_data.retrieved:
-            logger.debug(f"No oracle submissions in tellor for query: {self.datafeed.query.descriptor}")
+            logger.debug("No oracle submission found for ampleforth-custom...")
             return True
-        elif self.check_ampleforth(tellor_latest_data):
-            logger.debug("reporting because specified daily report was not found...")
+        elif self.check_ampleforth_custom(tellor_latest_data):
+            logger.debug("ampleforth-custom report was not found in the window...")
             return True
         else:
-            logger.debug("\U0001F44C ampleforth check has failed")
+            logger.debug("\U0001F44C no need to report ampleforth-custom")
             return False
 
     async def report(self, report_count: Optional[int] = None) -> None:
