@@ -8,6 +8,7 @@ import click
 from click.core import Context
 
 from telliot_feeds.cli.commands.account import account
+from telliot_feeds.cli.commands.ampleforth import ampleforth
 from telliot_feeds.cli.commands.catalog import catalog
 from telliot_feeds.cli.commands.conditional import conditional
 from telliot_feeds.cli.commands.config import config
@@ -53,6 +54,7 @@ main.add_command(liquity)
 main.add_command(request_withdraw)
 main.add_command(withdraw)
 main.add_command(conditional)
+main.add_command(ampleforth)
 
 if __name__ == "__main__":
     main()
