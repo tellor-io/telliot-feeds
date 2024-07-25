@@ -10,8 +10,6 @@ from telliot_feeds.pricing.price_service import WebPriceService
 from telliot_feeds.pricing.price_source import PriceSource
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.coinpaprika import CoinpaprikaSpotPriceSource
-from telliot_feeds.sources.price.spot.curvefiprice import CurveFiUSDPriceSource
-from telliot_feeds.sources.price.spot.uniswapV3Pool import UniswapV3PoolPriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 from telliot_feeds.utils.log import get_logger
 
@@ -66,9 +64,7 @@ class wUSDMSpotPriceService(WebPriceService):
             algorithm="median",
             sources=[
                 CoinGeckoSpotPriceSource(asset="usdm", currency="usd"),
-                CurveFiUSDPriceSource(asset="usdm", currency="usd"),
                 CoinpaprikaSpotPriceSource(asset="usdm-mountain-protocol-usd", currency=currency),
-                UniswapV3PoolPriceSource(asset="usdm", currency=currency),
             ],
         )
 
