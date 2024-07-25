@@ -13,7 +13,6 @@ logger = get_logger(__name__)
 
 
 ethereum_contract_map = {
-    "usdm": "0x59D9356E565Ab3A36dD77763Fc0d87fEaf85508C",
     "sdai": "0x83F20F44975D03b1b09e64809B757c47f942BEeA",
     "sfrax": "0xA663B02CF0a4b149d2aD41910CB81e23e1c41c32",
     "eth": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",

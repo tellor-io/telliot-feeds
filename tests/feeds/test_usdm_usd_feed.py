@@ -12,7 +12,7 @@ async def test_usdm_usd_median_feed(caplog):
 
     assert v is not None
     assert v > 0
-    assert "sources used in aggregate: 4" in caplog.text.lower()
+    assert "sources used in aggregate: 2" in caplog.text.lower()
     print(f"USDM/ETH Price: {v}")
     # Get list of data sources from sources dict
     source_prices = usdm_usd_median_feed.source.latest[0]

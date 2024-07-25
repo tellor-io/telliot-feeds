@@ -11,7 +11,7 @@ async def test_wusdm_usd_feed(caplog):
 
     assert v is not None
     assert v > 0
-    assert "sources used in aggregate: 4" in caplog.text.lower()
+    assert "sources used in aggregate: 2" in caplog.text.lower()
     print(f"wusdm/usd Price: {v}")
 
     # Get list of data sources from sources dict
