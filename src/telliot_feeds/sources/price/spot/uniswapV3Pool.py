@@ -3,6 +3,8 @@ from dataclasses import field
 from typing import Any
 
 import requests
+from requests import Session
+from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
@@ -23,13 +25,15 @@ uniswapV3token1__pool_map = {
     "ogv": "0xa0b30e46f6aeb8f5a849241d703254bb4a719d92",
 }
 
+API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
+
 
 class UniswapV3PoolPriceService(WebPriceService):
     """UniswapV3 Price Service for Pool Ratios"""
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "UniswapV3 Price Service"
-        kwargs["url"] = "https://api.thegraph.com"
+        kwargs["url"] = "https://gateway-arbitrum.network.thegraph.com"
         kwargs["timeout"] = 10.0
         super().__init__(**kwargs)
 
@@ -48,6 +52,7 @@ class UniswapV3PoolPriceService(WebPriceService):
 
         headers = {
             "Content-Type": "application/json",
+            'Authorization': f'Bearer {API_KEY}'
         }
         if pool0:
             query = "{pool" + f'(id: "{pool0}")' + "{ token0Price } }"
@@ -59,7 +64,15 @@ class UniswapV3PoolPriceService(WebPriceService):
 
         json_data = {"query": query}
 
-        request_url = self.url + "/subgraphs/name/uniswap/uniswap-v3"
+        request_url = f"{self.url}/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV"
+
+        session = Session()
+        if API_KEY != "":
+            headers = {
+                "Accepts": "application/json",
+                'Authorization': f'Bearer {API_KEY}'
+            }
+            session.headers.update(headers)
 
         with requests.Session() as s:
             try:
