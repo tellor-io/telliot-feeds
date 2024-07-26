@@ -50,10 +50,7 @@ class UniswapV3PoolPriceService(WebPriceService):
         if not pool0 and not pool1:
             raise Exception("Asset not supported: {}".format(asset))
 
-        headers = {
-            "Content-Type": "application/json",
-            'Authorization': f'Bearer {API_KEY}'
-        }
+        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {API_KEY}"}
         if pool0:
             query = "{pool" + f'(id: "{pool0}")' + "{ token0Price } }"
             key = "token0Price"
@@ -68,10 +65,7 @@ class UniswapV3PoolPriceService(WebPriceService):
 
         session = Session()
         if API_KEY != "":
-            headers = {
-                "Accepts": "application/json",
-                'Authorization': f'Bearer {API_KEY}'
-            }
+            headers = {"Accepts": "application/json", "Authorization": f"Bearer {API_KEY}"}
             session.headers.update(headers)
 
         with requests.Session() as s:

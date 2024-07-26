@@ -20,6 +20,7 @@ maverickV2_map = {
 
 API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
 
+
 class MaverickV2PriceService(WebPriceService):
     """maverickV2 Price Service in ETH"""
 
@@ -59,10 +60,7 @@ class MaverickV2PriceService(WebPriceService):
 
         session = Session()
         if API_KEY != "":
-            headers = {
-                "Accepts": "application/json",
-                'Authorization': f'Bearer {API_KEY}'
-            }
+            headers = {"Accepts": "application/json", "Authorization": f"Bearer {API_KEY}"}
             session.headers.update(headers)
 
         with requests.Session() as s:

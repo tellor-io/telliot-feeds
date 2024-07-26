@@ -37,6 +37,7 @@ uniswapV3_map = {
 
 API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
 
+
 class UniswapV3PriceService(WebPriceService):
     """UniswapV3 Price Service in USD and ETH"""
 
@@ -71,10 +72,7 @@ class UniswapV3PriceService(WebPriceService):
 
         session = Session()
         if API_KEY != "":
-            headers = {
-                "Accepts": "application/json",
-                'Authorization': f'Bearer {API_KEY}'
-            }
+            headers = {"Accepts": "application/json", "Authorization": f"Bearer {API_KEY}"}
             session.headers.update(headers)
 
         with requests.Session() as s:
