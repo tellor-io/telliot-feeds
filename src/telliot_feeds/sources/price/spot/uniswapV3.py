@@ -43,10 +43,7 @@ class UniswapV3PriceService(WebPriceService):
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "UniswapV3 Price Service"
-        if API_KEY == "":
-            raise Exception("add uniswap key to api_keys.yaml for subgraph")
-        else:
-            kwargs["url"] = "https://gateway-arbitrum.network.thegraph.com"
+        kwargs["url"] = "https://gateway-arbitrum.network.thegraph.com"
         kwargs["timeout"] = 10.0
         super().__init__(**kwargs)
 
@@ -74,6 +71,8 @@ class UniswapV3PriceService(WebPriceService):
         if API_KEY != "":
             headers = {"Accepts": "application/json", "Authorization": f"Bearer {API_KEY}"}
             session.headers.update(headers)
+        if API_KEY == "":
+            logger.warning("No Graph API key found for Uniswap prices!")
 
         with requests.Session() as s:
             try:
@@ -82,7 +81,7 @@ class UniswapV3PriceService(WebPriceService):
                 data = {"response": res}
 
             except requests.exceptions.ConnectTimeout:
-                logger.warning("Timeout Error, No prices retrieved from Uniswap")
+                logger.warning("Timeout Error, No Uniswap prices retrieved (check thegraph api key)")
                 return None, None
 
             except Exception as e:
