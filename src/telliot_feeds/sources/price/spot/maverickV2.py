@@ -3,8 +3,6 @@ from dataclasses import field
 from typing import Any
 
 import requests
-from requests import Session
-from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
@@ -18,15 +16,13 @@ maverickV2_map = {
     "oeth": "0x856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3",
 }
 
-API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
-
 
 class MaverickV2PriceService(WebPriceService):
     """maverickV2 Price Service in ETH"""
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "maverickV2 Price Service"
-        kwargs["url"] = "https://gateway-arbitrum.network.thegraph.com"
+        kwargs["url"] = "https://api.thegraph.com"
         kwargs["timeout"] = 10.0
         super().__init__(**kwargs)
 
@@ -56,12 +52,7 @@ class MaverickV2PriceService(WebPriceService):
 
         json_data = {"query": query}
 
-        request_url = f"{self.url}/api/subgraphs/id/H4KMc3uRaRqKrM8dq8GKCt9gwmMQsRRiQRThZCM16KtB"
-
-        session = Session()
-        if API_KEY != "":
-            headers = {"Accepts": "application/json", "Authorization": f"Bearer {API_KEY}"}
-            session.headers.update(headers)
+        request_url = self.url + "/subgraphs/name/maverickprotocol/maverick-mainnet-app"
 
         with requests.Session() as s:
             try:
