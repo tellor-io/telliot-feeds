@@ -3,6 +3,8 @@ from dataclasses import field
 from typing import Any
 
 import requests
+from requests import Session
+from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
@@ -21,7 +23,6 @@ uniswapV3_map = {
     "steth": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "reth": "0xae78736cd615f374d3085123a210448e74fc6393",
     "pls": "0xa882606494d86804b5514e07e6bd2d6a6ee6d68a",
-    "ousd": "0x2a8e1e676ec238d8a992307b495b45b3feaa5e86",
     "sweth": "0xf951e335afb289353dc249e82926178eac7ded78",
     "cbeth": "0xbe9895146f7af43049ca1c1ae358b0541ea49704",
     "oeth": "0x856c4efb76c1d1ae02e20ceb03a2a6a08b0b8dc3",
@@ -34,13 +35,15 @@ uniswapV3_map = {
     "rseth": "0xa1290d69c65a6fe4df752f95823fae25cb99e5a7",
 }
 
+API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
+
 
 class UniswapV3PriceService(WebPriceService):
     """UniswapV3 Price Service in USD and ETH"""
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "UniswapV3 Price Service"
-        kwargs["url"] = "https://api.thegraph.com"
+        kwargs["url"] = "https://gateway-arbitrum.network.thegraph.com"
         kwargs["timeout"] = 10.0
         super().__init__(**kwargs)
 
@@ -58,15 +61,18 @@ class UniswapV3PriceService(WebPriceService):
         if not token:
             raise Exception("Asset not supported: {}".format(asset))
 
-        headers = {
-            "Content-Type": "application/json",
-        }
-
         query = "{bundles{id ethPriceUSD}token" + f'(id: "{token}")' + "{ derivedETH } }"
 
         json_data = {"query": query}
 
-        request_url = self.url + "/subgraphs/name/uniswap/uniswap-v3"
+        request_url = f"{self.url}/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV"
+
+        session = Session()
+        if API_KEY != "":
+            headers = {"Accepts": "application/json", "Authorization": f"Bearer {API_KEY}"}
+            session.headers.update(headers)
+        if API_KEY == "":
+            logger.warning("No Graph API key found for Uniswap prices!")
 
         with requests.Session() as s:
             try:
@@ -75,11 +81,11 @@ class UniswapV3PriceService(WebPriceService):
                 data = {"response": res}
 
             except requests.exceptions.ConnectTimeout:
-                logger.warning("Timeout Error, No prices retrieved from Uniswap")
+                logger.warning("Timeout Error, No Uniswap prices retrieved (check thegraph api key)")
                 return None, None
 
-            except Exception:
-                logger.warning("No prices retrieved from Uniswap")
+            except Exception as e:
+                logger.warning(f"No prices retrieved from Uniswap: {e}")
                 return None, None
 
         if "error" in data:
@@ -125,7 +131,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        price_source = UniswapV3PriceSource(asset="cbeth", currency="eth")
+        price_source = UniswapV3PriceSource(asset="reth", currency="eth")
         price, timestamp = await price_source.fetch_new_datapoint()
         print(price, timestamp)
 
