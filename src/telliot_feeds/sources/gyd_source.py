@@ -4,6 +4,7 @@ from typing import Any
 from typing import Optional
 
 import requests
+from requests import Session
 from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
@@ -20,6 +21,8 @@ logger = get_logger(__name__)
 GYD_USDC_POOL_ADDRESS = "0xC2AA60465BfFa1A88f5bA471a59cA0435c3ec5c1"
 GYD_USDT_POOL_ADDRESS = "0xfbfaD5fa9E99081da6461F36f229B5cC88A64c63"
 GYD_SDAI_POOL_ADDRESS = "0x2191Df821C198600499aA1f0031b1a7514D7A7D9"
+
+API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
 
 
 class gydSpotPriceService(WebPriceService):
@@ -74,12 +77,10 @@ class gydSpotPriceService(WebPriceService):
         else:
             return None
 
+    # https://gateway-arbitrum.network.thegraph.com/api/%5BAPI-KEY%5D/subgraphs/id/C4ayEZP2yTXRAB8vSaTrgN4m9anTe9Mdm2ViyiAuV9TV
     async def get_total_liquidity_of_pools(self) -> list[float]:
-        baseURL = "https://api.studio.thegraph.com/proxy/75376/balancer-v2/version/latest"
+        baseURL = "https://gateway-arbitrum.network.thegraph.com"
         gyd_token_contract_address = "0xe07F9D810a48ab5c3c914BA3cA53AF14E4491e8A"
-        headers = {
-            "Content-Type": "application/json",
-        }
 
         query = (
             "{pools(where: {tokensList_contains: ["
@@ -90,17 +91,26 @@ class gydSpotPriceService(WebPriceService):
 
         json_data = {"query": query}
 
+        request_url = f"{baseURL}/api/subgraphs/id/C4ayEZP2yTXRAB8vSaTrgN4m9anTe9Mdm2ViyiAuV9TV"
+
+        session = Session()
+        if API_KEY != "":
+            headers = {"Accepts": "application/json", "Authorization": f"Bearer {API_KEY}"}
+            session.headers.update(headers)
+        if API_KEY == "":
+            logger.warning("No Graph API key found for Balancer data!")
+
         with requests.Session() as s:
             try:
-                r = s.post(baseURL, headers=headers, json=json_data, timeout=self.timeout)
+                r = s.post(request_url, headers=headers, json=json_data, timeout=self.timeout)
                 res = r.json()
                 data = {"response": res}
             except requests.exceptions.ConnectTimeout:
                 logger.warning("Timeout Error, No data retrieved from Balancer Pools")
                 return []
 
-            except Exception:
-                logger.warning("No data retrieved from Balancer Pools")
+            except Exception as e:
+                logger.warning(f"No data retrieved from Balancer Pools {e}")
                 return []
 
         if "error" in data:
