@@ -109,10 +109,7 @@ class gydSpotPriceService(WebPriceService):
             except requests.exceptions.ConnectTimeout:
                 logger.warning("Timeout Error, No data retrieved from Balancer subgraph")
                 return []
-            except IndexError:
-                logger.warning("Possible Balancer rate limit. Sleeping for 60 seconds.")
-                time.sleep(60)
-                return []
+
             except Exception as e:
                 logger.warning(f"No data retrieved from Balancer subgraph {e}")
                 return []
@@ -160,17 +157,23 @@ class gydSpotPriceService(WebPriceService):
         if currency != "usd":
             logger.error("GYD price service only works for usd")
             return None, None
+        try:
+            logger.info("Gathering prices from Balancer pools...")
+            gyd_from_usdc_pool = await self.get_spot_from_pool(GYD_USDC_POOL_ADDRESS)
+            gyd_from_usdt_pool = await self.get_spot_from_pool(GYD_USDT_POOL_ADDRESS)
+            gyd_from_sdai_pool = await self.get_spot_from_pool(GYD_SDAI_POOL_ADDRESS)
 
-        gyd_from_usdc_pool = await self.get_spot_from_pool(GYD_USDC_POOL_ADDRESS)
-        gyd_from_usdt_pool = await self.get_spot_from_pool(GYD_USDT_POOL_ADDRESS)
-        gyd_from_sdai_pool = await self.get_spot_from_pool(GYD_SDAI_POOL_ADDRESS)
+            logger.info("Gathering liquidity data from Balancer pools...")
+            liquidity_data = await self.get_total_liquidity_of_pools()
+            gyd_usdc_weight = liquidity_data[0] / liquidity_data[3]
+            gyd_usdt_weight = liquidity_data[1] / liquidity_data[3]
+            gyd_sdai_weight = liquidity_data[2] / liquidity_data[3]
+        except IndexError:
+            logger.warning("Rate limit or theGraph API key not found. Sleeping for 60 seconds...")
+            time.sleep(60)
+        except Exception as e:
+            logger.warning(f"Problem retrieving Balancer pool data: {e}")
 
-        liquidity_data = await self.get_total_liquidity_of_pools()
-        gyd_usdc_weight = liquidity_data[0] / liquidity_data[3]
-        gyd_usdt_weight = liquidity_data[1] / liquidity_data[3]
-        gyd_sdai_weight = liquidity_data[2] / liquidity_data[3]
-
-        # print(f"GYD/USDC: {gyd_from_usdc_pool}, GYD/UDST: {gyd_from_usdt_pool}, GYD/sDAI: {gyd_from_sdai_pool}")
         if gyd_from_usdc_pool is not None and gyd_from_usdt_pool is not None and gyd_from_sdai_pool is not None:
             gyd_weighted_price = (
                 (gyd_usdc_weight) * (gyd_from_usdc_pool)
