@@ -1,3 +1,4 @@
+import time
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
@@ -106,11 +107,14 @@ class gydSpotPriceService(WebPriceService):
                 res = r.json()
                 data = {"response": res}
             except requests.exceptions.ConnectTimeout:
-                logger.warning("Timeout Error, No data retrieved from Balancer Pools")
+                logger.warning("Timeout Error, No data retrieved from Balancer subgraph")
                 return []
-
+            except IndexError:
+                logger.warning("Possible Balancer rate limit. Sleeping for 60 seconds.")
+                time.sleep(60)
+                return []
             except Exception as e:
-                logger.warning(f"No data retrieved from Balancer Pools {e}")
+                logger.warning(f"No data retrieved from Balancer subgraph {e}")
                 return []
 
         if "error" in data:
