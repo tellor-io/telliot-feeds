@@ -169,8 +169,10 @@ class gydSpotPriceService(WebPriceService):
             gyd_usdt_weight = liquidity_data[1] / liquidity_data[3]
             gyd_sdai_weight = liquidity_data[2] / liquidity_data[3]
         except IndexError:
-            logger.warning("Rate limit or theGraph API key not found. Sleeping for 60 seconds...")
-            time.sleep(60)
+            logger.warning("Rate limit or theGraph API key not found. Sleeping for 10 seconds...")
+            time.sleep(10)
+            return None, None
+
         except Exception as e:
             logger.warning(f"Problem retrieving Balancer pool data: {e}")
 
