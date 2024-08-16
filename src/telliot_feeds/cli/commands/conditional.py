@@ -113,7 +113,8 @@ async def conditional(
         click.echo(f"Minimum native token balance (e.g. ETH if on Ethereum mainnet): {min_native_token_balance}")
         click.echo("\n")
 
-        _ = input("Press [ENTER] to confirm settings.")
+        if not unsafe:
+            _ = input("Press [ENTER] to confirm settings.")
 
         contracts = core.get_tellor360_contracts()
 
