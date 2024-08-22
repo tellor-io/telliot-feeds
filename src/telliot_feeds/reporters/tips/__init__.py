@@ -274,6 +274,13 @@ add_multicall_support(
     multicall3_address="0xFEf60Df67Ac10Ebee1cd70Ef9e7AF6AF6c449bf4",
 )
 
+add_multicall_support(
+    network="BOB Sepolia",
+    network_id=808813,
+    state_override=False,
+    multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
+)
+
 CATALOG_QUERY_IDS = {query_catalog._entries[tag].query.query_id: tag for tag in query_catalog._entries}
 CATALOG_QUERY_DATA = {query_catalog._entries[tag].query.query_data: tag for tag in query_catalog._entries}
 # A list of query types that have a generic source that can take any properly formatted inputs and return a price
