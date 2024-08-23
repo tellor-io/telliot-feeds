@@ -109,7 +109,9 @@ class gydSpotPriceService(WebPriceService):
             except requests.exceptions.ConnectTimeout:
                 logger.warning("Timeout Error, No data retrieved from Balancer subgraph")
                 return []
-
+            except UnboundLocalError:
+                logger.warning("UnboundLocalError, No data retrieved from Balancer subgraph")
+                return []
             except Exception as e:
                 logger.warning(f"No data retrieved from Balancer subgraph {e}")
                 return []
