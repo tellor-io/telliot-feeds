@@ -109,9 +109,7 @@ class gydSpotPriceService(WebPriceService):
             except requests.exceptions.ConnectTimeout:
                 logger.warning("Timeout Error, No data retrieved from Balancer subgraph")
                 return []
-            except UnboundLocalError:
-                logger.warning("UnboundLocalError, No data retrieved from Balancer subgraph")
-                return []
+
             except Exception as e:
                 logger.warning(f"No data retrieved from Balancer subgraph {e}")
                 return []
@@ -159,6 +157,11 @@ class gydSpotPriceService(WebPriceService):
         if currency != "usd":
             logger.error("GYD price service only works for usd")
             return None, None
+
+        gyd_from_usdc_pool = None
+        gyd_from_usdt_pool = None
+        gyd_from_sdai_pool = None
+
         try:
             logger.info("Gathering prices from Balancer pools...")
             gyd_from_usdc_pool = await self.get_spot_from_pool(GYD_USDC_POOL_ADDRESS)
