@@ -33,6 +33,7 @@ uniswapV3_map = {
     "weeth": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
     "wrseth": "0xd2671165570f41bbb3b0097893300b6eb6101e6c",
     "rseth": "0xa1290d69c65a6fe4df752f95823fae25cb99e5a7",
+    "pufeth": "0xd9a442856c234a39a81a089c06451ebaa4306a72",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
