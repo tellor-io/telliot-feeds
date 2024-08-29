@@ -89,6 +89,8 @@ coingecko_coin_id = {
     "mode": "mode",
     "tlos": "telos",
     "tara": "taraxa",
+    "pufeth": "pufeth",
+    "stone": "stakestone-ether",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key

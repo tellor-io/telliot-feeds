@@ -24,6 +24,7 @@ ethereum_contract_map = {
     "weeth": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
     "rseth": "0xa1290d69c65a6fe4df752f95823fae25cb99e5a7",
     "ousd": "0x2a8e1e676ec238d8a992307b495b45b3feaa5e86",
+    "pufeth": "0xd9a442856c234a39a81a089c06451ebaa4306a72",
 }
 
 

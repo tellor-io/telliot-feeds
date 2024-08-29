@@ -644,3 +644,9 @@ query_catalog.add_entry(
     title="TARA/USD spot price",
     q=SpotPrice(asset="tara", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="pufeth-usd-spot",
+    title="PUFETH/USD spot price",
+    q=SpotPrice(asset="pufeth", currency="usd"),
+)
