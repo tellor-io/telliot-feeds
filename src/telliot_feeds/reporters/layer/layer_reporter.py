@@ -77,7 +77,7 @@ class LayerReporter:
                     raise e
         return None
 
-    async def direct_submit_txn(self, datafeed: DataFeed[Any]) -> Optional[dict]:
+    async def direct_submit_txn(self, datafeed: DataFeed[Any]) -> Tuple[Optional[dict], ResponseStatus]:
         await datafeed.source.fetch_new_datapoint()
         latest_data = datafeed.source.latest
         if latest_data[0] is None:
@@ -100,10 +100,13 @@ class LayerReporter:
             salt="",
         )
         options = CreateTxOptions(msgs=[msg], gas=self.gas)
-
-        tx = wallet.create_and_sign_tx(options)
-        response = self.client.tx.broadcast_sync(tx)
-        return await self.fetch_tx_info(response)
+        try: 
+            tx = wallet.create_and_sign_tx(options)
+            response = self.client.tx.broadcast_sync(tx)
+            return await self.fetch_tx_info(response), ResponseStatus()
+        except Exception as e:
+            msg = "Error submitting transaction"
+            return None, error_status(msg, e=e, log=logger.error)
 
     async def report_once(
         self,
@@ -113,8 +116,8 @@ class LayerReporter:
         if not datafeed:
             msg = "Unable to suggest datafeed"
             return None, error_status(note=msg, log=logger.info)
-        txn_info = await self.direct_submit_txn(datafeed)
-        if txn_info is None:
+        txn_info, status = await self.direct_submit_txn(datafeed)
+        if txn_info is None or not status.ok:
             return None, error_status("Failed to submit transaction", log=logger.error)
         txn_response = txn_info.get("tx_response")
         if txn_response is None:
@@ -125,7 +128,7 @@ class LayerReporter:
             txn_hash = txn_response.get("txhash")
             print(f"Transaction hash: {txn_hash}")
         else:
-            print("Transaction failed with status code", txn_info.code)
+            print("Transaction failed with status code", code)
         return txn_info, ResponseStatus()
 
     async def is_online(self) -> bool:
