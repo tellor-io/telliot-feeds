@@ -44,10 +44,12 @@ class LayerReporter:
         return querydata, ResponseStatus()
 
     async def fetch_tipped_query(self) -> Tuple[Optional[str], Optional[str]]:
-        query_res = await self.client._get("/tellor-io/layer/oracle/get_all_tipped_queries")
-        querydata = query_res.get("query_data")
-        tip = query_res.get("tip")
-        return querydata, tip
+        # TODO: Implement this method
+        # query_res = await self.client._get("/tellor-io/layer/oracle/get_all_tipped_queries")
+        # querydata = query_res.get("query_data")
+        # tip = query_res.get("tip")
+        # return querydata, tip
+        return None, None
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         query, tip = await self.fetch_tipped_query()
