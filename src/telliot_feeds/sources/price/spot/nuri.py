@@ -17,12 +17,12 @@ logger = get_logger(__name__)
 
 # use the pool address here if token0
 nuri_token0__pool_map = {
-    "weth": "0x5300000000000000000000000000000000000004",
+    "stone": "0x97a90e651b0a5cf76484513469249d9bffe4c73b",
 }
 
 # use the pool address here if token1
 nuri_token1__pool_map = {
-    "stone": "0x97a90e651b0a5cf76484513469249d9bffe4c73b",
+    "weth": "0x5300000000000000000000000000000000000004",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
@@ -40,7 +40,6 @@ class nuriPriceService(WebPriceService):
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
         This implementation gets the price from the Nuri subgraph using the pool query
-
         """
         asset = asset.lower()
         currency = currency.lower()
@@ -98,11 +97,15 @@ class nuriPriceService(WebPriceService):
             try:
                 eth_usd_price = float(response["data"]["bundles"][0]["ethPriceUSD"])
                 logger.info(f"eth price: {eth_usd_price}")
-                token_price = (float(response["data"]["pool"][key])) * eth_usd_price
+                if currency == "usd":
+                    token_price = (float(response["data"]["pool"][key])) * eth_usd_price
+                elif currency == "eth":
+                    vs_eth_usd_price = (float(response["data"]["pool"][key])) * eth_usd_price
+                    token_price = vs_eth_usd_price / eth_usd_price
                 return token_price, datetime_now_utc()
 
                 if not token_price:
-                    logger.error("Could not query Nori Subgraph for pool! (check source)")
+                    logger.error("Nuri was reached, but query failed! (check source)")
                     return None, None
 
             except KeyError as e:
