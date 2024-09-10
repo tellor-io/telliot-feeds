@@ -118,7 +118,7 @@ class nuriPriceService(WebPriceService):
 
 
 @dataclass
-class nuriPriceSource(PriceSource):
+class nuriSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
     service: nuriPriceService = field(default_factory=nuriPriceService, init=False)
@@ -128,7 +128,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        price_source = nuriPriceSource(asset="stone", currency="usd")
+        price_source = nuriSpotPriceSource(asset="stone", currency="usd")
         price, timestamp = await price_source.fetch_new_datapoint()
         print(price, timestamp)
 
