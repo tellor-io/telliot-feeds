@@ -650,3 +650,9 @@ query_catalog.add_entry(
     title="PUFETH/USD spot price",
     q=SpotPrice(asset="pufeth", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="stone-usd-spot",
+    title="STONE/USD spot price",
+    q=SpotPrice(asset="stone", currency="usd"),
+)
