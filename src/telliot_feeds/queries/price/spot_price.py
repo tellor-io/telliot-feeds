@@ -97,8 +97,9 @@ SPOT_PRICE_PAIRS = [
     "TLOS/USD",
     "ATLA/USD",
     "TARA/USD",
-    "PUFETH/USD",
+    "FETCH/USD",
     "STONE/USD",
+    "PUFETH/USD",
 ]
 
 
