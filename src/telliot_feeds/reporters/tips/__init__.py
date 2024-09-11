@@ -65,17 +65,17 @@ add_multicall_support(
 )
 
 add_multicall_support(
-    network="Pulsechain",
+    network="PulsechainMainnet",
     network_id=369,
     state_override=False,
-    multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
+    multicall3_address="0xca11bde05977b3631167028862be2a173976ca11",
 )
 
 add_multicall_support(
-    network="Pulsechain Testnet",
+    network="PulsechainTestnet v4",
     network_id=943,
     state_override=False,
-    multicall3_address="0xcA11bde05977b3631167028862bE2a173976CA11",
+    multicall3_address="0x207cc7e2141Db4244BE07093CAf5df9a089128F2",
 )
 
 add_multicall_support(

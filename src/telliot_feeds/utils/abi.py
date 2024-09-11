@@ -291,6 +291,23 @@ gorli_playground_abi = [
         "type": "function",
     },
     {
+        "inputs": [],
+        "name": "timeOfLastDistribution",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function",
+    },
+    {
+        "inputs": [
+            {"internalType": "bytes32", "name": "", "type": "bytes32"},
+            {"internalType": "uint256", "name": "", "type": "uint256"},
+        ],
+        "name": "timestamps",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function",
+    },
+    {
         "inputs": [
             {"internalType": "bytes32", "name": "", "type": "bytes32"},
             {"internalType": "uint256", "name": "", "type": "uint256"},

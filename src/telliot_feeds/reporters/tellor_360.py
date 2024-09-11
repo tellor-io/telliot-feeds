@@ -21,6 +21,7 @@ from web3.types import TxReceipt
 from telliot_feeds.constants import CHAINS_WITH_TBR
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
+from telliot_feeds.feeds.fetch_usd_feed import fetch_usd_median_feed
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.stake import Stake
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
@@ -254,12 +255,12 @@ class Tellor360Reporter(Stake):
         tip = self.to_ether(self.autopaytip)
         # Fetch token prices in USD
         native_token_feed = get_native_token_feed(self.chain_id)
-        price_feeds = [native_token_feed, trb_usd_median_feed]
+        price_feeds = [native_token_feed, fetch_usd_median_feed]
         _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
         price_native_token = native_token_feed.source.latest[0]
-        price_trb_usd = trb_usd_median_feed.source.latest[0]
+        price_fetch_usd = fetch_usd_median_feed.source.latest[0]
 
-        if price_native_token is None or price_trb_usd is None:
+        if price_native_token is None or price_fetch_usd is None:
             return error_status("Unable to fetch token price", log=logger.warning)
 
         gas_info = self.get_gas_info_core()
@@ -285,7 +286,7 @@ class Tellor360Reporter(Stake):
         )
 
         # Calculate profit
-        rev_usd = tip * price_trb_usd
+        rev_usd = tip * price_fetch_usd
         costs_usd = txn_fee * price_native_token  # convert gwei costs to eth, then to usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
