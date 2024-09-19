@@ -13,7 +13,7 @@ from telliot_feeds.queries.abi_query import AbiQuery
 
 logger = logging.getLogger(__name__)
 
-CURRENCIES = ["usd", "jpy", "eth", "btc", "usdc"]
+CURRENCIES = ["usd", "jpy", "eth", "btc"]
 SPOT_PRICE_PAIRS = [
     "ETH/USD",
     "BTC/USD",
