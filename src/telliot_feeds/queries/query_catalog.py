@@ -656,3 +656,9 @@ query_catalog.add_entry(
     title="STONE/USD spot price",
     q=SpotPrice(asset="stone", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="superoethb-eth-spot",
+    title="superOETHb/ETH spot price",
+    q=SpotPrice(asset="superoethb", currency="eth"),
+)
