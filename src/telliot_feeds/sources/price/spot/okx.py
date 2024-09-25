@@ -12,26 +12,26 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 
-class CryptodotcomSpotPriceService(WebPriceService):
-    """Crypto.com Price Service"""
+class OKXSpotPriceService(WebPriceService):
+    """OKX Price Service"""
 
     def __init__(self, **kwargs: Any) -> None:
-        kwargs["name"] = "Crypto.com Price Service"
-        kwargs["url"] = "https://api.crypto.com"
+        kwargs["name"] = "OKX Price Service"
+        kwargs["url"] = "https://www.okx.com/api"
         super().__init__(**kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
         This implementation gets the price from the Cryto.com api.
-        e.g. request https://api.crypto.com/v2/public/get-ticker?instrument_name=TRB_USDT
-        https://github.com/IgorJakovljevic/crypto-exchange?tab=readme-ov-file#endpoint
+        e.g. request https://www.okx.com/api/v5/market/ticker?instId=TRB-USDT
         """
 
-        market_symbol = f"{format(asset.upper())}_{format(currency.upper())}"
-        request_url = f"/v2/public/get-ticker?instrument_name={market_symbol}"
+        market_symbol = f"{format(asset.upper())}-{format(currency.upper())}"
+        request_url = f"/v5/market/ticker?instId={market_symbol}"
 
         d = self.get_url(request_url)
+        logger.info(f"d={d}")
 
         if "error" in d:
             logger.error(d)
@@ -47,22 +47,22 @@ class CryptodotcomSpotPriceService(WebPriceService):
         else:
             raise Exception("Invalid response from get_url")
 
-        price = float(response['result']['data'][0]['a'])
+        price = float(response['data'][0]['last'])
         return price, datetime_now_utc()
 
 
 @dataclass
-class CryptodotcomSpotPriceSource(PriceSource):
+class OKXSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: CryptodotcomSpotPriceService = field(default_factory=CryptodotcomSpotPriceService, init=False)
+    service: OKXSpotPriceService = field(default_factory=OKXSpotPriceService, init=False)
 
 
 if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        source = CryptodotcomSpotPriceSource(asset="eth", currency="usd")
+        source = OKXSpotPriceSource(asset="trb", currency="usdt")
         v, _ = await source.fetch_new_datapoint()
         print(v)
 
