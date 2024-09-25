@@ -38,7 +38,7 @@ coingecko_coin_id = {
     "albt": "allianceblock",
     "rai": "rai",
     "xdai": "xdai",
-    "avax": "avalanche",
+    "avax": "avalanche-2",
     "aave": "aave",
     "badger": "badger-dao",
     "bch": "bitcoin-cash",

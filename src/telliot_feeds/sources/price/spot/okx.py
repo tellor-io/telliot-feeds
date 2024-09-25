@@ -23,7 +23,7 @@ class OKXSpotPriceService(WebPriceService):
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
-        This implementation gets the price from the Cryto.com api.
+        This implementation gets the price from the OKX api.
         e.g. request https://www.okx.com/api/v5/market/ticker?instId=TRB-USDT
         """
 
@@ -31,7 +31,6 @@ class OKXSpotPriceService(WebPriceService):
         request_url = f"/v5/market/ticker?instId={market_symbol}"
 
         d = self.get_url(request_url)
-        logger.info(f"d={d}")
 
         if "error" in d:
             logger.error(d)
@@ -47,7 +46,7 @@ class OKXSpotPriceService(WebPriceService):
         else:
             raise Exception("Invalid response from get_url")
 
-        price = float(response['data'][0]['last'])
+        price = float(response["data"][0]["last"])
         return price, datetime_now_utc()
 
 

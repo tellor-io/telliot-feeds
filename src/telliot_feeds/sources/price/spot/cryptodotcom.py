@@ -47,7 +47,7 @@ class CryptodotcomSpotPriceService(WebPriceService):
         else:
             raise Exception("Invalid response from get_url")
 
-        price = float(response['result']['data'][0]['a'])
+        price = float(response["result"]["data"][0]["a"])
         return price, datetime_now_utc()
 
 
