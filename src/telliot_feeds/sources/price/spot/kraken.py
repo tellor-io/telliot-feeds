@@ -15,7 +15,24 @@ logger = get_logger(__name__)
 
 # Hardcoded supported assets & currencies
 # Search for supported assets here: https://api.kraken.com/0/public/Assets
-KRAKEN_ASSETS = {"ETH", "MATIC", "MKR", "SUSHI", "USDC", "XBT", "WBTC", "BADGER", "AVAX", "AAVE", "BCH", "CRV", "EUL", "FIL"}
+KRAKEN_ASSETS = {
+    "ETH",
+    "MATIC",
+    "MKR",
+    "SUSHI",
+    "USDC",
+    "XBT",
+    "WBTC",
+    "BADGER",
+    "AVAX",
+    "AAVE",
+    "BCH",
+    "CRV",
+    "EUL",
+    "FIL",
+    "LINK",
+    "PYTH",
+}
 KRAKEN_CURRENCIES = {"USD"}
 
 
