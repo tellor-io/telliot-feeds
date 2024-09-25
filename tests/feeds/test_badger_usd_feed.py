@@ -6,7 +6,7 @@ from telliot_feeds.feeds.badger_usd_feed import badger_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_badger_usd_median_feed():
+async def test_badger_usd_median_feed(caplog):
     """Retrieve median badger/USD price."""
     v, _ = await badger_usd_median_feed.source.fetch_new_datapoint()
 

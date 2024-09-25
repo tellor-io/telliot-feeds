@@ -5,6 +5,8 @@ from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceSource
 from telliot_feeds.sources.price.spot.okx import OKXSpotPriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 
+# from telliot_feeds.sources.price.spot.binance import BinanceSpotPriceSource
+
 comp_usd_median_feed = DataFeed(
     query=SpotPrice(asset="COMP", currency="USD"),
     source=PriceAggregator(
@@ -12,6 +14,7 @@ comp_usd_median_feed = DataFeed(
         currency="usd",
         algorithm="median",
         sources=[
+            # BinanceSpotPriceSource(asset="bch", currency="usd"),
             CoinGeckoSpotPriceSource(asset="comp", currency="usd"),
             GeminiSpotPriceSource(asset="comp", currency="usd"),
             OKXSpotPriceSource(asset="comp", currency="usdt"),
