@@ -14,7 +14,7 @@ crv_usd_median_feed = DataFeed(
         currency="usd",
         algorithm="median",
         sources=[
-            # BinanceSpotPriceSource(asset="bch", currency="usd"),
+            # BinanceSpotPriceSource(asset="crv", currency="usd"),
             CoinGeckoSpotPriceSource(asset="crv", currency="usd"),
             KrakenSpotPriceSource(asset="crv", currency="usd"),
             OKXSpotPriceSource(asset="crv", currency="usdt"),

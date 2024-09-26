@@ -14,7 +14,7 @@ comp_usd_median_feed = DataFeed(
         currency="usd",
         algorithm="median",
         sources=[
-            # BinanceSpotPriceSource(asset="bch", currency="usd"),
+            # BinanceSpotPriceSource(asset="comp", currency="usd"),
             CoinGeckoSpotPriceSource(asset="comp", currency="usd"),
             GeminiSpotPriceSource(asset="comp", currency="usd"),
             OKXSpotPriceSource(asset="comp", currency="usdt"),
