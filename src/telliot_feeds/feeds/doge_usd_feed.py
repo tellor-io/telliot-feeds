@@ -2,6 +2,7 @@ from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceSource
+from telliot_feeds.sources.price.spot.okx import OKXSpotPriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 
 doge_usd_median_feed = DataFeed(
@@ -13,6 +14,7 @@ doge_usd_median_feed = DataFeed(
         sources=[
             CoinGeckoSpotPriceSource(asset="doge", currency="usd"),
             GeminiSpotPriceSource(asset="doge", currency="usd"),
+            OKXSpotPriceSource(asset="doge", currency="usdt"),
         ],
     ),
 )

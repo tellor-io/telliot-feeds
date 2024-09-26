@@ -6,12 +6,13 @@ from telliot_feeds.feeds.brl_usd_feed import brl_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_brl_usd_median_feed():
+async def test_brl_usd_median_feed(caplog):
     """Retrieve median BRL/USD price."""
     v, _ = await brl_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None
     assert v > 0
+    assert "sources used in aggregate: 2" in caplog.text.lower()
     print(f"BRL/USD Price: {v}")
 
     # Get list of data sources from sources dict
