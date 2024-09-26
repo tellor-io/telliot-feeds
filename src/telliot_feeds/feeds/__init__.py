@@ -125,27 +125,33 @@ from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
 from telliot_feeds.feeds.fetch_usd_feed import fetch_usd_median_feed
+from telliot_feeds.feeds.hex_usd_feed import hex_usd_median_feed
+from telliot_feeds.feeds.inc_usd_feed import inc_usd_median_feed
+from telliot_feeds.feeds.plsx_usd_feed import plsx_usd_median_feed
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
-    "dai-usd-spot": dai_usd_median_feed,
-    "sushi-usd-spot": sushi_usd_median_feed,
-    "matic-usd-spot": matic_usd_median_feed,
-    "usdc-usd-spot": usdc_usd_median_feed,
-    "eur-usd-spot": eur_usd_median_feed,
-    "pls-usd-spot": pls_usd_median_feed,
-    "eth-usd-spot": eth_usd_median_feed,
-    "btc-usd-spot": btc_usd_median_feed,
-    "trb-usd-spot": trb_usd_median_feed,
-    "xdai-usd-spot": xdai_usd_median_feed,
-    "eth-btc-spot": eth_btc_median_feed,
-    "aave-usd-spot": aave_usd_median_feed,
-    "doge-usd-spot": doge_usd_median_feed,
-    "link-usd-spot": link_usd_median_feed,
-    "shib-usd-spot": shib_usd_median_feed,
-    "uni-usd-spot": uni_usd_median_feed,
-    "usdt-usd-spot": usdt_usd_median_feed,
+#    "dai-usd-spot": dai_usd_median_feed,
+#    "sushi-usd-spot": sushi_usd_median_feed,
+#    "matic-usd-spot": matic_usd_median_feed,
+#    "usdc-usd-spot": usdc_usd_median_feed,
+#    "eur-usd-spot": eur_usd_median_feed,
+#    "pls-usd-spot": pls_usd_median_feed,
+#    "eth-usd-spot": eth_usd_median_feed,
+#    "btc-usd-spot": btc_usd_median_feed,
+#    "trb-usd-spot": trb_usd_median_feed,
+#    "xdai-usd-spot": xdai_usd_median_feed,
+#    "eth-btc-spot": eth_btc_median_feed,
+#    "aave-usd-spot": aave_usd_median_feed,
+#    "doge-usd-spot": doge_usd_median_feed,
+#    "link-usd-spot": link_usd_median_feed,
+#    "shib-usd-spot": shib_usd_median_feed,
+#    "uni-usd-spot": uni_usd_median_feed,
+#    "usdt-usd-spot": usdt_usd_median_feed,
     "fetch-usd-spot": fetch_usd_median_feed,
-    "brl-usd-spot": brl_usd_median_feed,
+#    "brl-usd-spot": brl_usd_median_feed,
+    "hex-usd-spot": hex_usd_median_feed,
+    "inc-usd-spot": inc_usd_median_feed,
+    "plsx-usd-spot": plsx_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
