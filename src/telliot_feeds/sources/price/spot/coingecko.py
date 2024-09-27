@@ -38,7 +38,7 @@ coingecko_coin_id = {
     "albt": "allianceblock",
     "rai": "rai",
     "xdai": "xdai",
-    "avax": "avalanche",
+    "avax": "avalanche-2",
     "aave": "aave",
     "badger": "badger-dao",
     "bch": "bitcoin-cash",
@@ -91,6 +91,7 @@ coingecko_coin_id = {
     "tara": "taraxa",
     "pufeth": "pufeth",
     "stone": "stakestone-ether",
+    "superoethb": "super-oeth",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key
