@@ -661,6 +661,23 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
+    tag="hex-usd-spot",
+    title="HEX/USD spot price",
+    q=SpotPrice(asset="hex", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="inc-usd-spot",
+    title="INC/USD spot price",
+    q=SpotPrice(asset="inc", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="plsx-usd-spot",
+    title="PLSX/USD spot price",
+    q=SpotPrice(asset="plsx", currency="usd"),
+  
+query_catalog.add_entry(
     tag="superoethb-eth-spot",
     title="superOETHb/ETH spot price",
     q=SpotPrice(asset="superoethb", currency="eth"),
