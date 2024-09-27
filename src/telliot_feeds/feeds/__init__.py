@@ -234,6 +234,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "pufeth-usd-spot": pufeth_usd_median_feed,
     "stone-usd-spot": stone_usd_median_feed,
     "superoethb-eth-spot": superoethb_eth_median_feed,
+    "fetch-usd-spot": fetch_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

@@ -5,7 +5,7 @@ from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.pulsex_subgraph import PulseXSubgraphSource
 from telliot_feeds.sources.price.spot.fetch_usd_mock import FetchUsdMockSpotPriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
-from telliot_feeds.sources.price.spot.pulsex_fetch_dai import PulseXFETCHDAISource
+#from telliot_feeds.sources.price.spot.pulsex_fetch_dai import PulseXFETCHDAISource
 from dotenv import load_dotenv
 import os
 
