@@ -36,13 +36,13 @@ jobs:
         .
     - name: Publish telliot-feeds to Test PyPI
       if: "github.event.release.prerelease"
-      uses: pypa/gh-action-pypi-publish@master
+      uses: pypa/gh-action-pypi-publish@unstable/v1
       with:
         password: ${{ secrets.TELLIOT_FEEDS_TEST_PYPI_API_TOKEN }}
-        repository_url: https://test.pypi.org/legacy/
+        repository-url: https://test.pypi.org/legacy/
 
     - name: Publish telliot-feeds to PyPI
       if: "!github.event.release.prerelease"
-      uses: pypa/gh-action-pypi-publish@master
+      uses: pypa/gh-action-pypi-publish@unstable/v1
       with:
         password: ${{ secrets.TELLIOT_FEEDS_PYPI_API_TOKEN }}

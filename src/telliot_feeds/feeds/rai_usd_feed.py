@@ -2,8 +2,9 @@ import asyncio
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.price.spot_price import SpotPrice
-from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceSource
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
+from telliot_feeds.sources.price.spot.coinpaprika import CoinpaprikaSpotPriceSource
+from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 
 
@@ -15,7 +16,8 @@ rai_usd_median_feed = DataFeed(
         algorithm="median",
         sources=[
             CoinGeckoSpotPriceSource(asset="rai", currency="usd"),
-            CoinbaseSpotPriceSource(asset="rai", currency="usd"),
+            CoinpaprikaSpotPriceSource(asset="rai-rai-reflex-index", currency="usd"),
+            UniswapV3PriceSource(asset="rai", currency="usd"),
         ],
     ),
 )
