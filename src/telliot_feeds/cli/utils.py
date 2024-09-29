@@ -71,6 +71,7 @@ def print_reporter_settings(
         click.echo("🍜🍜🍜 Reporter not enforcing profit threshold! 🍜🍜🍜")
     else:
         click.echo(f"Expected percent profit: {expected_profit}%")
+        click.echo(f"Expected usd profit: {expected_profit}%")
 
     click.echo(f"Transaction type: {transaction_type}")
     click.echo(f"Gas Limit: {gas_limit}")
@@ -82,16 +83,25 @@ def print_reporter_settings(
     click.echo("\n")
 
 
-def parse_profit_input(ctx: click.Context, param: Any, value: str) -> Optional[Union[str, float]]:
-    """Parses user input expected profit and ensures
-    the input is either a float or the string 'YOLO'."""
-    if value == "YOLO":
-        return value
+def parse_profit_input(ctx: click.Context, param: Any, value: tuple) -> Optional[Union[str, tuple[float, float]]]:
+     """
+    Parses user input for expected profit.
+    Ensures the input is either:
+    - A tuple of two floats (percentage, USD profit)
+    - The string 'YOLO'.
+    """
+    percentage_input, usd_input = value  # Extract the two arguments (percentage and USD profit)
+    # Check if the percentage is 'YOLO'
+    if percentage_input == "YOLO":
+        return "YOLO"
     else:
         try:
-            return float(value)
-        except ValueError:
-            raise click.BadParameter("Not a valid profit input. Enter float or the string, 'YOLO'")
+        # Convert both inputs to floats
+        percentage_threshold = float(percentage_input)
+        usd_threshold = float(usd_input)
+        return percentage_threshold, usd_threshold
+    except ValueError:
+        raise click.BadParameter("Not a valid profit input. Enter two floats (percentage, USD profit) or 'YOLO'")
 
 
 def reporter_cli_core(ctx: click.Context) -> TelliotCore:
@@ -327,13 +337,13 @@ def common_reporter_options(f: Callable[..., Any]) -> Callable[..., Any]:
         "--profit",
         "-p",
         "expected_profit",
-        help="lower threshold (inclusive) for expected percent profit",
-        nargs=1,
+        help="lower threshold (inclusive) for expected percent profit and optional USD profit",
+        nargs=2,  # Allow 2 arguments: one for percentage, one for USD profit
         # User can omit profitability checks by specifying "YOLO"
         type=click.UNPROCESSED,
         required=False,
         callback=parse_profit_input,
-        default="100.0",
+        default=("100.0", "0.0"),  # Default to 100% profit and 0 USD
     )
     @click.option(
         "--skip-manual-feeds",
