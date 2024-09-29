@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 import click
 from click.core import Context
@@ -45,7 +45,7 @@ async def liquity(
     priority_fee_per_gas: Optional[float],
     base_fee_per_gas: Optional[float],
     legacy_gas_price: Optional[int],
-    expected_profit: str,
+    expected_profit: Tuple[float, float],
     submit_once: bool,
     wait_period: int,
     password: str,

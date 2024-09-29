@@ -84,7 +84,7 @@ def print_reporter_settings(
     click.echo("\n")
 
 
-def parse_profit_input(ctx: click.Context, param: Any, value: tuple) -> Optional[Union[str, tuple[float, float]]]:
+def parse_profit_input(ctx: click.Context, param: Any, value: tuple) -> Optional[Union[str, float, tuple[float, float]]]:
      """
     Parses user input for expected profit.
     Ensures the input is either:
