@@ -9,6 +9,7 @@ from typing import get_type_hints
 from typing import Optional
 from typing import Type
 from typing import Union
+from typing import Tuple
 
 import click
 from chained_accounts import ChainedAccount
@@ -43,7 +44,7 @@ def print_reporter_settings(
     base_fee: Optional[float],
     priority_fee: Optional[float],
     max_fee: Optional[float],
-    expected_profit: str,
+    expected_profit: Tuple[float, float],
     chain_id: int,
     transaction_type: int,
     legacy_gas_price: Optional[int],
@@ -70,8 +71,8 @@ def print_reporter_settings(
     if expected_profit == "YOLO":
         click.echo("🍜🍜🍜 Reporter not enforcing profit threshold! 🍜🍜🍜")
     else:
-        click.echo(f"Expected percent profit: {expected_profit}%")
-        click.echo(f"Expected usd profit: {expected_profit}%")
+        click.echo(f"Expected percent profit: {expected_profit[0]}%")
+        click.echo(f"Expected usd profit: {expected_profit[1]}%")
 
     click.echo(f"Transaction type: {transaction_type}")
     click.echo(f"Gas Limit: {gas_limit}")

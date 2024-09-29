@@ -45,8 +45,8 @@ Options:
   -mf, --max-fee INTEGER          use custom maxFeePerGas (gwei)
   -pf, --priority-fee INTEGER     use custom maxPriorityFeePerGas (gwei)
   -gp, --gas-price INTEGER        use custom legacy gasPrice (gwei)
-  -p, --profit TEXT               lower threshold (inclusive) for expected
-                                  percent profit
+  -p, --profit float float        lower threshold (inclusive) for expected
+                                  percent profit and usd profit
   -tx, --tx-type TEXT             choose transaction type (0 for legacy txs, 2
                                   for EIP-1559)
   -gps, --gas-price-speed [safeLow|average|fast|fastest]
@@ -148,7 +148,7 @@ telliot report -a staker1 --build-feed --submit-once -p YOLO
 
 **Reporting for profit is extremely competitive and profit estimates aren't guarantees that you won't lose money!**
 
-Use this flag (`--profit/-p`) to set an expected profit. The default is 100%, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use the `"YOLO"` string:
+Use this flag (`--profit/-p`) to set an expected profit in % and $ values, example: -p 10 5 would take 10% or $5. The default is 100% and 0 usd, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use the `"YOLO"` string:
 
 ```
 telliot report -a acct1 -p YOLO
