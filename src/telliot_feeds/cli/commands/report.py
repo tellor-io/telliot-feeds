@@ -1,6 +1,6 @@
 from typing import Any
 from typing import Optional
-from typing import Union
+from typing import Union, Tuple
 
 import click
 from chained_accounts import find_accounts
@@ -157,7 +157,7 @@ async def report(
     priority_fee_per_gas: Optional[float],
     max_fee_per_gas: Optional[float],
     legacy_gas_price: Optional[int],
-    expected_profit: str,
+    expected_profit: Tuple[float, float],
     submit_once: bool,
     wait_period: int,
     reporting_diva_protocol: bool,

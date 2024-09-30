@@ -7,6 +7,8 @@ from typing import Dict
 from typing import Optional
 from typing import Tuple
 from typing import Union
+from typing import Tuple
+
 
 from eth_abi.exceptions import EncodingTypeError
 from eth_utils import to_checksum_address
@@ -47,7 +49,7 @@ class Tellor360Reporter(Stake):
         autopay: Contract,
         chain_id: int,
         datafeed: Optional[DataFeed[Any]] = None,
-        expected_profit: Union[str, float] = "YOLO",
+        expected_profit: Union[str, float, Tuple[float, float]] = "YOLO",
         wait_period: int = 7,
         check_rewards: bool = True,
         ignore_tbr: bool = False,  # relevant only for eth-mainnet and eth-testnets
@@ -291,17 +293,40 @@ class Tellor360Reporter(Stake):
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
         logger.info(f"tip price: {round(rev_usd, 2)}, gas costs: {costs_usd}")
-
+        
+        # Calculate percentage profit
         percent_profit = ((profit_usd) / costs_usd) * 100
         logger.info(f"Estimated percent profit: {round(percent_profit, 2)}%")
-        if (self.expected_profit != "YOLO") and (
-            isinstance(self.expected_profit, float) and percent_profit < self.expected_profit
-        ):
-            status.ok = False
-            status.error = "Estimated profitability below threshold."
-            logger.info(status.error)
-            return status
-        # reset autopay tip to check for tips again
+        
+        # Check expected profit based on type
+        if self.expected_profit != "YOLO":
+            if isinstance(self.expected_profit, tuple):
+                # Unpack expected profit tuple
+                expected_percent_profit, expected_usd_profit = self.expected_profit
+        
+                # Check if either condition is met
+                if percent_profit < expected_percent_profit and profit_usd < expected_usd_profit:
+                    status.ok = False
+                    status.error = "Estimated profitability below both thresholds."
+                    logger.info(status.error)
+                    return status
+
+            elif isinstance(self.expected_profit, float):
+                # Single float case (percentage check)
+                if percent_profit < self.expected_profit:
+                    status.ok = False
+                    status.error = "Estimated profitability below percentage threshold."
+                    logger.info(status.error)
+                    return status
+    
+                # If we want to allow a default USD profit check
+            elif profit_usd < 0:  # or a specific USD profit threshold if needed
+                status.ok = False
+                status.error = "Estimated profitability below USD profit threshold."
+                logger.info(status.error)
+                return status
+
+            # reset autopay tip to check for tips again
         self.autopaytip = 0
 
         return status
