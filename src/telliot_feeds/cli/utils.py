@@ -72,7 +72,7 @@ def print_reporter_settings(
         click.echo("🍜🍜🍜 Reporter not enforcing profit threshold! 🍜🍜🍜")
     else:
         click.echo(f"Expected percent profit: {expected_profit[0]}%")
-        click.echo(f"Expected usd profit: {expected_profit[1]}%")
+        click.echo(f"Expected usd profit: {expected_profit[1]} usd")
 
     click.echo(f"Transaction type: {transaction_type}")
     click.echo(f"Gas Limit: {gas_limit}")
@@ -85,24 +85,25 @@ def print_reporter_settings(
 
 
 def parse_profit_input(ctx: click.Context, param: Any, value: tuple) -> Optional[Union[str, float, tuple[float, float]]]:
-     """
+    """
     Parses user input for expected profit.
     Ensures the input is either:
     - A tuple of two floats (percentage, USD profit)
-    - The string 'YOLO'.
+    - The string 'YOLO 0'.
     """
     percentage_input, usd_input = value  # Extract the two arguments (percentage and USD profit)
+    
     # Check if the percentage is 'YOLO'
     if percentage_input == "YOLO":
         return "YOLO"
     else:
         try:
-        # Convert both inputs to floats
-        percentage_threshold = float(percentage_input)
-        usd_threshold = float(usd_input)
-        return percentage_threshold, usd_threshold
-    except ValueError:
-        raise click.BadParameter("Not a valid profit input. Enter two floats (percentage, USD profit) or 'YOLO'")
+            # Convert both inputs to floats
+            percentage_threshold = float(percentage_input)
+            usd_threshold = float(usd_input)
+            return percentage_threshold, usd_threshold
+        except ValueError:
+            raise click.BadParameter("Not a valid profit input. Enter two floats (percentage, USD profit) or 'YOLO'")
 
 
 def reporter_cli_core(ctx: click.Context) -> TelliotCore:

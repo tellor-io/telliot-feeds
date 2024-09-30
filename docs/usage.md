@@ -45,8 +45,11 @@ Options:
   -mf, --max-fee INTEGER          use custom maxFeePerGas (gwei)
   -pf, --priority-fee INTEGER     use custom maxPriorityFeePerGas (gwei)
   -gp, --gas-price INTEGER        use custom legacy gasPrice (gwei)
-  -p, --profit float float        lower threshold (inclusive) for expected
-                                  percent profit and usd profit
+  -p, --profit float float        lower threshold to report for percentage or usd profit
+                                  -p 0 0 will report to any profit.
+                                  -p 200 5 would report for a 200% or 5 usd profit
+                                  -p YOLO 0 skip the checks and just report
+                                  Default is 100 0
   -tx, --tx-type TEXT             choose transaction type (0 for legacy txs, 2
                                   for EIP-1559)
   -gps, --gas-price-speed [safeLow|average|fast|fastest]
@@ -141,17 +144,17 @@ telliot report -a staker1 --submit-once
 Use the build-a-feed flag (`--build-feed`) to build a DataFeed of a QueryType with one or more QueryParameters. When reporting, the CLI will list the QueryTypes this flag supports. To select a QueryType, enter a type from the list provided. Then, enter in the corresponding QueryParameters for the QueryType you have selected, and telliot will build the Query and select the appropriate source.
 
 ```
-telliot report -a staker1 --build-feed --submit-once -p YOLO
+telliot report -a staker1 --build-feed --submit-once -p YOLO 0
 ```
 
 ## Profit Flag
 
 **Reporting for profit is extremely competitive and profit estimates aren't guarantees that you won't lose money!**
 
-Use this flag (`--profit/-p`) to set an expected profit in % and $ values, example: -p 10 5 would take 10% or $5. The default is 100% and 0 usd, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use the `"YOLO"` string:
+Use this flag (`--profit/-p`) to set an expected profit in % and $ values, example: -p 10 5 would take 10% or $5. The default is 100% and 0 usd, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use the -p 0 0 or `"YOLO 0"` string:
 
 ```
-telliot report -a acct1 -p YOLO
+telliot report -a acct1 -p YOLO 0
 ```
 
 Normal profit flag usage:

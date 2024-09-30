@@ -314,10 +314,10 @@ class Tellor360Reporter(Stake):
             elif isinstance(self.expected_profit, float):
                 # Single float case (percentage check)
                 if percent_profit < self.expected_profit:
-                status.ok = False
-                status.error = "Estimated profitability below percentage threshold."
-                logger.info(status.error)
-                return status
+                    status.ok = False
+                    status.error = "Estimated profitability below percentage threshold."
+                    logger.info(status.error)
+                    return status
     
                 # If we want to allow a default USD profit check
             elif profit_usd < 0:  # or a specific USD profit threshold if needed
