@@ -339,7 +339,7 @@ def common_reporter_options(f: Callable[..., Any]) -> Callable[..., Any]:
         "--profit",
         "-p",
         "expected_profit",
-        help="lower threshold (inclusive) for expected percent profit and optional USD profit",
+        help="Lower thresholds to report for percentage or USD profit: '-p 0 0' will report to any profit. '-p 200 5' would report for a 200% or 5 USD profit. '-p YOLO 0' skip the checks and just report.",
         nargs=2,  # Allow 2 arguments: one for percentage, one for USD profit
         # User can omit profitability checks by specifying "YOLO"
         type=click.UNPROCESSED,
