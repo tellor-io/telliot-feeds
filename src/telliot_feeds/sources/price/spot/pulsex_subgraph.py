@@ -17,7 +17,8 @@ pulsex_subgraph_supporten_tokens = {
     "dai": "0x826e4e896cc2f5b371cd7bb0bd929db3e3db67c0",
     "usdc": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
     "plsx": "0x8a810ea8b121d08342e9e7696f4a9915cbe494b7",
-    "fetch": "0xC0573e2Fc47B26fb05097a553BBfcf0166bada0A" #pool address, not token address in this example
+    "fetch": "0xC0573e2Fc47B26fb05097a553BBfcf0166bada0A", #pool address, not token address in this example
+    "wpls": "0x70499adebb11efd915e3b69e700c331778628707"
 }
 
 
