@@ -89,7 +89,7 @@ Options:
                                   the random feeds flag.
   -rf, --random-feeds / -nrf, --no-random-feeds
                                   Reporter will use a random datafeed from the
-                                  catalog.
+                                  RANDOM_FEEDS catalog.
   --rng-auto / --rng-auto-off
   --submit-once / --submit-continuous
   -pwd, --password TEXT

@@ -136,7 +136,7 @@ def reporter() -> None:
     "-rf/-nrf",
     "use_random_feeds",
     default=False,
-    help="Reporter will use a random datafeed from the catalog.",
+    help="Reporter will use a random datafeed from the RANDOM_FEEDS catalog.",
 )
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("-spwd", "--signature-password", type=str)

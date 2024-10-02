@@ -127,7 +127,8 @@ from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
 from telliot_feeds.feeds.fetch_usd_feed import fetch_usd_median_feed
 
-# you can comment out the feeds you don't want to include in -rf random feeds(update this if RANDOM_FEEDS is included)
+# Feeds under RANDOM_FEEDS will be reported, randomly, when using -rf option. Comment out or remove the ones you don't want to report to.
+# You can copy feeds from CATALOG_FEEDS and add them here to use them. Make sure to test them before using it!
 RANDOM_FEEDS: Dict[str, DataFeed[Any]] = {
     "eth-jpy-spot": eth_jpy_median_feed,
     "dai-usd-spot": dai_usd_median_feed,
