@@ -171,7 +171,6 @@ RANDOM_FEEDS: Dict[str, DataFeed[Any]] = {
     "soy-usd-custom": soy,
     "pyth-usd-spot": pyth_usd_median_feed,
     "sdai-usd-spot": sdai_usd_median_feed,
-    "sfrax-usd-spot": sfrax_usd_feed,
     "frax-usd-spot": frax_usd_median_feed,
     "gyd-usd-spot": gyd_usd_median_feed,
     "leth-usd-spot": leth_usd_feed,
