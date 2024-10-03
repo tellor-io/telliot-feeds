@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
-from typing import Optional
 from typing import List
+from typing import Optional
 
 from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
-from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.pricing.price_service import WebPriceService
 from telliot_feeds.pricing.price_source import PriceSource
 from telliot_feeds.utils.log import get_logger
@@ -19,34 +19,20 @@ AERODROME_CONTRACT = "0xee717411f6E44F9feE011835C8E6FAaC5dEfF166"
 CONTRACT_ABI = [
     {
         "inputs": [
-            {
-                "internalType": "uint8",
-                "name": "src_len",
-                "type": "uint8"
-            },
-            {
-                "internalType": "contract IERC20Metadata[]",
-                "name": "connectors",
-                "type": "address[]"
-            }
+            {"internalType": "uint8", "name": "src_len", "type": "uint8"},
+            {"internalType": "contract IERC20Metadata[]", "name": "connectors", "type": "address[]"},
         ],
         "name": "getManyRatesWithConnectors",
-        "outputs": [
-            {
-                "internalType": "uint256[]",
-                "name": "rates",
-                "type": "uint256[]"
-            }
-        ],
+        "outputs": [{"internalType": "uint256[]", "name": "rates", "type": "uint256[]"}],
         "stateMutability": "view",
-        "type": "function"
+        "type": "function",
     }
 ]
 SRC_LEN = 1
 CONNECTORS = [
     "0xDBFeFD2e8460a6Ee4955A68582F85708BAEA60A3",
     "0x4200000000000000000000000000000000000006",
-    "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
 ]
 
 
@@ -85,13 +71,9 @@ class superOETHbSpotPriceService(WebPriceService):
 
             contract_function = contract.functions.getManyRatesWithConnectors(src_len, connectors)
             aerodrome_response = contract_function.call()
-            logger.info(f"Result: {aerodrome_response}")
             response_int = aerodrome_response[0]
-            logger.info(f"Result: {response_int}")
             response_usd_price = w3.fromWei(response_int, "ether")
-            logger.info(f"Result: {response_usd_price}")
             response_price_float = float(response_usd_price)
-            logger.info(f"Result: {response_price_float}")
         except Exception as e:
             print(f"Error querying Aerodrome: {e}")
 
