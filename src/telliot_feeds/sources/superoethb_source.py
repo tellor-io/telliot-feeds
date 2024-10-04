@@ -30,9 +30,10 @@ CONTRACT_ABI = [
 ]
 SRC_LEN = 1
 CONNECTORS = [
-    "0xDBFeFD2e8460a6Ee4955A68582F85708BAEA60A3",
-    "0x4200000000000000000000000000000000000006",
-    "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "0xDBFeFD2e8460a6Ee4955A68582F85708BAEA60A3",  # superOETHb
+    "0x7002458B1DF59EccB57387bC79fFc7C29E22e6f7",  # OGNb
+    "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",  # USDCb
+    "0x4200000000000000000000000000000000000006",  # wETHb
 ]
 
 
@@ -49,7 +50,7 @@ class superOETHbSpotPriceService(WebPriceService):
         self.src_len: Optional[int] = None
         self.connectors: Optional[List[Any]] = None
 
-    def get_aerodrome_usd_price(self) -> Optional[float]:
+    def get_aerodrome_eth_ratio(self) -> Optional[float]:
         # get endpoint
         endpoint = self.cfg.endpoints.find(chain_id=8453)
         if not endpoint:
@@ -63,7 +64,7 @@ class superOETHbSpotPriceService(WebPriceService):
         if w3 is None:
             logger.error("Unable to get web3 for mainnet to get superoethb_eth_ratio")
             return None
-        # get usd price of superOETHb
+        # get superOETHb/eth ratio
         try:
             src_len = SRC_LEN
             connectors = CONNECTORS
@@ -72,12 +73,14 @@ class superOETHbSpotPriceService(WebPriceService):
             contract_function = contract.functions.getManyRatesWithConnectors(src_len, connectors)
             aerodrome_response = contract_function.call()
             response_int = aerodrome_response[0]
-            response_usd_price = w3.fromWei(response_int, "ether")
-            response_price_float = float(response_usd_price)
-        except Exception as e:
-            print(f"Error querying Aerodrome: {e}")
+            response_eth_ratio = w3.fromWei(response_int, "ether")
+            eth_ratio = float(response_eth_ratio)
+            logger.info(f"Aerodrome Response (superOETHb): {eth_ratio}")
 
-        return response_price_float
+        except Exception as e:
+            logger.error(f"Error querying Aerodrome: {e}")
+
+        return eth_ratio
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """This implementation gets the superOETHb/ETH ratio by checking the oracle
@@ -92,18 +95,13 @@ class superOETHbSpotPriceService(WebPriceService):
             logger.error("Unable to get eth/usd price for superOETHb conversion")
             return None, None
 
-        usd_price = self.get_aerodrome_usd_price()
-        logger.info(f"superoethb usd_price: {usd_price}")
-        if usd_price is None:
-            logger.error("usd_price is None for superOETHb (check source)")
+        eth_ratio = self.get_aerodrome_eth_ratio()
+        logger.info(f"superoethb usd_price: {eth_ratio}")
+        if eth_ratio is None:
+            logger.error("eth_ratio is None for superOETHb (check source)")
             return None, None
 
-        superoethb_eth_ratio = float(usd_price / eth_price)
-        if superoethb_eth_ratio is None:
-            logger.error("Unable to get superoethb_eth_ratio")
-            return None, None
-
-        return superoethb_eth_ratio, datetime_now_utc()
+        return eth_ratio, datetime_now_utc()
 
 
 @dataclass
