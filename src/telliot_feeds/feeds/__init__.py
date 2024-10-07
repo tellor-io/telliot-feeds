@@ -127,7 +127,56 @@ from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
 from telliot_feeds.feeds.fetch_usd_feed import fetch_usd_median_feed
 
-# you can comment out the feeds you don't want to include in -rf random feeds
+# Feeds under RANDOM_FEEDS will be reported, randomly, when using -rf option. Comment out or remove the ones you don't want to report to.
+# You can copy feeds from CATALOG_FEEDS and add them here to use them. Make sure to test them before using it!
+RANDOM_FEEDS: Dict[str, DataFeed[Any]] = {
+    "eth-jpy-spot": eth_jpy_median_feed,
+    "dai-usd-spot": dai_usd_median_feed,
+    "mkr-usd-spot": mkr_usd_median_feed,
+    "sushi-usd-spot": sushi_usd_median_feed,
+    "matic-usd-spot": matic_usd_median_feed,
+    "usdc-usd-spot": usdc_usd_median_feed,
+    "eur-usd-spot": eur_usd_median_feed,
+    "pls-usd-spot": pls_usd_median_feed,
+    "eth-usd-spot": eth_usd_median_feed,
+    "btc-usd-spot": btc_usd_median_feed,
+    "trb-usd-spot": trb_usd_median_feed,
+    "albt-usd-spot": albt_usd_median_feed,
+    "rai-usd-spot": rai_usd_median_feed,
+    "xdai-usd-spot": xdai_usd_median_feed,
+    "eth-btc-spot": eth_btc_median_feed,
+    "aave-usd-spot": aave_usd_median_feed,
+    "avax-usd-spot": avax_usd_median_feed,
+    "badger-usd-spot": badger_usd_median_feed,
+    "bch-usd-spot": bch_usd_median_feed,
+    "comp-usd-spot": comp_usd_median_feed,
+    "crv-usd-spot": crv_usd_median_feed,
+    "doge-usd-spot": doge_usd_median_feed,
+    "dot-usd-spot": dot_usd_median_feed,
+    "eul-usd-spot": eul_usd_median_feed,
+    "fil-usd-spot": fil_usd_median_feed,
+    "gno-usd-spot": gno_usd_median_feed,
+    "link-usd-spot": link_usd_median_feed,
+    "ltc-usd-spot": ltc_usd_median_feed,
+    "shib-usd-spot": shib_usd_median_feed,
+    "uni-usd-spot": uni_usd_median_feed,
+    "usdt-usd-spot": usdt_usd_median_feed,
+    "yfi-usd-spot": yfi_usd_median_feed,
+    "grt-usd-spot": grt_usd_median_feed,
+    "cny-usd-spot": cny_usd_median_feed,
+    "brl-usd-spot": brl_usd_median_feed,
+    "pyth-usd-spot": pyth_usd_median_feed,
+    "sdai-usd-spot": sdai_usd_median_feed,
+    "frax-usd-spot": frax_usd_median_feed,
+    "gyd-usd-spot": gyd_usd_median_feed,
+    "mode-usd-spot": mode_usd_median_feed,
+    "tlos-usd-spot": tlos_usd_median_feed,
+    "tara-usd-spot": tara_usd_median_feed,
+    "pufeth-usd-spot": pufeth_usd_median_feed,
+    "stone-usd-spot": stone_usd_median_feed,
+    "superoethb-eth-spot": superoethb_eth_median_feed,
+}
+
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "ampleforth-custom": ampl_usd_vwap_feed,
     "ampleforth-uspce": uspce_feed,
