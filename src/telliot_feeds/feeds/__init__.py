@@ -293,6 +293,10 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "stone-usd-spot": stone_usd_median_feed,
     "superoethb-eth-spot": superoethb_eth_median_feed,
     "fetch-usd-spot": fetch_usd_median_feed,
+    "hex-usd-spot": hex_usd_median_feed,
+    "inc-usd-spot": inc_usd_median_feed,
+    "loan-usd-spot": loan_usd_median_feed,
+    "plsx-usd-spot": plsx_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
