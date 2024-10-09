@@ -126,6 +126,11 @@ from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
 from telliot_feeds.feeds.fetch_usd_feed import fetch_usd_median_feed
+from telliot_feeds.feeds.plsx_usd_feed import plsx_usd_median_feed
+from telliot_feeds.feeds.hex_usd_feed import hex_usd_median_feed
+from telliot_feeds.feeds.inc_usd_feed import inc_usd_median_feed
+from telliot_feeds.feeds.loan_usd_feed import loan_usd_median_feed
+
 
 # Feeds under RANDOM_FEEDS will be reported, randomly, when using -rf option. Comment out or remove the ones you don't want to report to.
 # You can copy feeds from CATALOG_FEEDS and add them here to use them. Make sure to test them before using it!
@@ -175,6 +180,10 @@ RANDOM_FEEDS: Dict[str, DataFeed[Any]] = {
     "pufeth-usd-spot": pufeth_usd_median_feed,
     "stone-usd-spot": stone_usd_median_feed,
     "superoethb-eth-spot": superoethb_eth_median_feed,
+    "hex-usd-spot": hex_usd_median_feed,
+    "inc-usd-spot": inc_usd_median_feed,
+    "loan-usd-spot": loan_usd_median_feed,
+    "plsx-usd-spot": plsx_usd_median_feed,
 }
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {

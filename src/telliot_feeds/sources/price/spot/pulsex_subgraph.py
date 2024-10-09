@@ -16,9 +16,12 @@ logger = get_logger(__name__)
 pulsex_subgraph_supporten_tokens = {
     "dai": "0x826e4e896cc2f5b371cd7bb0bd929db3e3db67c0",
     "usdc": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-    "plsx": "0x8a810ea8b121d08342e9e7696f4a9915cbe494b7",
-    "fetch": "0xC0573e2Fc47B26fb05097a553BBfcf0166bada0A", #pool address, not token address in this example
-    "wpls": "0x70499adebb11efd915e3b69e700c331778628707"
+    "plsx": "0x8a810ea8b121d08342e9e7696f4a9915cbe494b7", #testnet
+    "fetch": "0xC0573e2Fc47B26fb05097a553BBfcf0166bada0A", #testnet FETCH address
+    "wpls": "0x70499adebb11efd915e3b69e700c331778628707", #testnet
+    "hex": "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39", #testnet
+    "inc": "0x6eFAfcb715F385c71d8AF763E8478FeEA6faDF63", #testnet
+    "loan": "0x2720F69787cE6ba408fB6e2282d7640E805DF367", #testnet
 }
 
 

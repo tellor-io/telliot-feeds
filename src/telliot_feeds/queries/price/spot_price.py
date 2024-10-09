@@ -102,6 +102,10 @@ SPOT_PRICE_PAIRS = [
     "STONE/USD",
     "SUPEROETHB/ETH",
     "FETCH/USD",
+    "HEX/USD",
+    "INC/USD",
+    "LOAN/USD",
+    "PLSX/USD",
 ]
 
 
