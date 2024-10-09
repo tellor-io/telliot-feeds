@@ -1,6 +1,6 @@
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.price.spot_price import SpotPrice
-from telliot_feeds.sources.price.spot.pulsex_subgraph import PulseXSupgraphSource
+from telliot_feeds.sources.price.spot.pulsex_subgraph import PulseXSubgraphSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 
 inc_usd_median_feed = DataFeed(
@@ -10,7 +10,7 @@ inc_usd_median_feed = DataFeed(
         currency="usd",
         algorithm="median",
         sources=[
-            PulseXSupgraphSource(asset="inc", currency="usd"),
+            PulseXSubgraphSource(asset="inc", currency="usd"),
         ],
     ),
 )
