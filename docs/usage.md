@@ -46,10 +46,10 @@ Options:
   -pf, --priority-fee INTEGER     use custom maxPriorityFeePerGas (gwei)
   -gp, --gas-price INTEGER        use custom legacy gasPrice (gwei)
   -p, --profit float float        lower threshold to report for percentage or usd profit
-                                  -p 0 0 will report to any profit.
+                                  -p 0 0 will report to any profit that is not negative.
                                   -p 200 5 would report for a 200% or 5 usd profit
                                   -p YOLO 0 skip the checks and just report
-                                  Default is 100 0
+                                  Default values are 100 0
   -tx, --tx-type TEXT             choose transaction type (0 for legacy txs, 2
                                   for EIP-1559)
   -gps, --gas-price-speed [safeLow|average|fast|fastest]
@@ -151,7 +151,7 @@ telliot report -a staker1 --build-feed --submit-once -p YOLO 0
 
 **Reporting for profit is extremely competitive and profit estimates aren't guarantees that you won't lose money!**
 
-Use this flag (`--profit/-p`) to set an expected profit in % and $ values, example: -p 10 5 would take 10% or $5. The default is 100% and 0 usd, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use the -p 0 0 or `"YOLO 0"` string:
+Use this flag (`--profit/-p`) to set an expected profit in % and $ values, example: -p 10 5 would take 10% or $5. The default is 100% and 0 usd, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use `"YOLO 0"` string:
 
 ```
 telliot report -a acct1 -p YOLO 0
@@ -160,7 +160,7 @@ telliot report -a acct1 -p YOLO 0
 Normal profit flag usage:
 
 ```
-telliot report -a acct4 -p 2
+telliot report -a acct4 -p 10 5 (10% or 5 dollars)
 ```
 
 **Note: Skipping profit checks does not skip checks for tips on the [AutoPay contract](https://github.com/tellor-io/autoPay). If you'd like to skip these checks as well, use the `--no-check-rewards/-ncr` flag.**
