@@ -36,6 +36,8 @@ class LayerReporter:
         self.wait_period = wait_period
         self.client = LCDClient(url=endpoint.url, chain_id=endpoint.network)
         self.previously_reported_id: Optional[int] = None
+        # needed for queries that have a long reporting window
+        self.previously_reported_tipped_query: Dict[str,bool] = {"init": True}
 
     async def fetch_cycle_list_query(self) -> Tuple[Optional[str], ResponseStatus]:
         query_res = await self.client._get("/tellor-io/layer/oracle/current_cyclelist_query")
@@ -60,6 +62,10 @@ class LayerReporter:
         if len(querymeta) == 0:
             return None, None
         querydata = querymeta[0].get("query_data")
+        if querydata in self.previously_reported_tipped_query:
+            print("Already reported this query, skipping...")
+            return None, None
+        self.previously_reported_tipped_query[querydata] = True
         tip = querymeta[0].get("amount")
         return querydata, tip
 
