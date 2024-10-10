@@ -40,7 +40,6 @@ class LayerReporter:
     async def fetch_cycle_list_query(self) -> Tuple[Optional[str], ResponseStatus]:
         query_res = await self.client._get("/tellor-io/layer/oracle/current_cyclelist_query")
         querymeta = query_res.get("query_meta")
-        print(query_res)
         if querymeta is None:
             return None, error_status("failed to get cycle list query", log=logger.error)
         current_id = querymeta["id"]
@@ -66,7 +65,7 @@ class LayerReporter:
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         query, tip = await self.fetch_tipped_query()
-        print(f"Query: {query}, Tip: {tip}")
+        print(f"\nTippedQuery: {query}\nTip: {tip}\n")
         if query is None:
             query, status = await self.fetch_cycle_list_query()
             if not status.ok:
