@@ -2,6 +2,7 @@
 import asyncio
 import base64
 from typing import Any
+from typing import Dict
 from typing import Optional
 from typing import Tuple
 
@@ -37,7 +38,7 @@ class LayerReporter:
         self.client = LCDClient(url=endpoint.url, chain_id=endpoint.network)
         self.previously_reported_id: Optional[int] = None
         # needed for queries that have a long reporting window
-        self.previously_reported_tipped_query: Dict[str,bool] = {"init": True}
+        self.previously_reported_tipped_query: Dict[str, bool] = {"init": True}
 
     async def fetch_cycle_list_query(self) -> Tuple[Optional[str], ResponseStatus]:
         query_res = await self.client._get("/tellor-io/layer/oracle/current_cyclelist_query")
