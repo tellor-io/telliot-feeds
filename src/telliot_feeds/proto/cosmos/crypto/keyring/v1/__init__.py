@@ -2,7 +2,6 @@
 # sources: cosmos/crypto/keyring/v1/record.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
 
 import betterproto

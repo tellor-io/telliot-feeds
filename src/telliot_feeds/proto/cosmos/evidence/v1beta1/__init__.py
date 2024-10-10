@@ -5,12 +5,10 @@
 import warnings
 from dataclasses import dataclass
 from datetime import datetime
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
@@ -92,9 +90,7 @@ class QueryEvidenceRequest(betterproto.Message):
     def __post_init__(self) -> None:
         super().__post_init__()
         if self.is_set("evidence_hash"):
-            warnings.warn(
-                "QueryEvidenceRequest.evidence_hash is deprecated", DeprecationWarning
-            )
+            warnings.warn("QueryEvidenceRequest.evidence_hash is deprecated", DeprecationWarning)
 
 
 @dataclass(eq=False, repr=False)
@@ -196,10 +192,7 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class MsgBase(ServiceBase):
-
-    async def submit_evidence(
-        self, msg_submit_evidence: "MsgSubmitEvidence"
-    ) -> "MsgSubmitEvidenceResponse":
+    async def submit_evidence(self, msg_submit_evidence: "MsgSubmitEvidence") -> "MsgSubmitEvidenceResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_submit_evidence(
@@ -222,15 +215,10 @@ class MsgBase(ServiceBase):
 
 
 class QueryBase(ServiceBase):
-
-    async def evidence(
-        self, query_evidence_request: "QueryEvidenceRequest"
-    ) -> "QueryEvidenceResponse":
+    async def evidence(self, query_evidence_request: "QueryEvidenceRequest") -> "QueryEvidenceResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def all_evidence(
-        self, query_all_evidence_request: "QueryAllEvidenceRequest"
-    ) -> "QueryAllEvidenceResponse":
+    async def all_evidence(self, query_all_evidence_request: "QueryAllEvidenceRequest") -> "QueryAllEvidenceResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_evidence(

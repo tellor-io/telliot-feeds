@@ -4,12 +4,10 @@
 # This file has been @generated
 import warnings
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import grpclib
@@ -909,35 +907,24 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class MsgBase(ServiceBase):
-
     async def send(self, msg_send: "MsgSend") -> "MsgSendResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def multi_send(
-        self, msg_multi_send: "MsgMultiSend"
-    ) -> "MsgMultiSendResponse":
+    async def multi_send(self, msg_multi_send: "MsgMultiSend") -> "MsgMultiSendResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def update_params(
-        self, msg_update_params: "MsgUpdateParams"
-    ) -> "MsgUpdateParamsResponse":
+    async def update_params(self, msg_update_params: "MsgUpdateParams") -> "MsgUpdateParamsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def set_send_enabled(
-        self, msg_set_send_enabled: "MsgSetSendEnabled"
-    ) -> "MsgSetSendEnabledResponse":
+    async def set_send_enabled(self, msg_set_send_enabled: "MsgSetSendEnabled") -> "MsgSetSendEnabledResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_send(
-        self, stream: "grpclib.server.Stream[MsgSend, MsgSendResponse]"
-    ) -> None:
+    async def __rpc_send(self, stream: "grpclib.server.Stream[MsgSend, MsgSendResponse]") -> None:
         request = await stream.recv_message()
         response = await self.send(request)
         await stream.send_message(response)
 
-    async def __rpc_multi_send(
-        self, stream: "grpclib.server.Stream[MsgMultiSend, MsgMultiSendResponse]"
-    ) -> None:
+    async def __rpc_multi_send(self, stream: "grpclib.server.Stream[MsgMultiSend, MsgMultiSendResponse]") -> None:
         request = await stream.recv_message()
         response = await self.multi_send(request)
         await stream.send_message(response)
@@ -987,15 +974,10 @@ class MsgBase(ServiceBase):
 
 
 class QueryBase(ServiceBase):
-
-    async def balance(
-        self, query_balance_request: "QueryBalanceRequest"
-    ) -> "QueryBalanceResponse":
+    async def balance(self, query_balance_request: "QueryBalanceRequest") -> "QueryBalanceResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def all_balances(
-        self, query_all_balances_request: "QueryAllBalancesRequest"
-    ) -> "QueryAllBalancesResponse":
+    async def all_balances(self, query_all_balances_request: "QueryAllBalancesRequest") -> "QueryAllBalancesResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def spendable_balances(
@@ -1009,19 +991,13 @@ class QueryBase(ServiceBase):
     ) -> "QuerySpendableBalanceByDenomResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def total_supply(
-        self, query_total_supply_request: "QueryTotalSupplyRequest"
-    ) -> "QueryTotalSupplyResponse":
+    async def total_supply(self, query_total_supply_request: "QueryTotalSupplyRequest") -> "QueryTotalSupplyResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def supply_of(
-        self, query_supply_of_request: "QuerySupplyOfRequest"
-    ) -> "QuerySupplyOfResponse":
+    async def supply_of(self, query_supply_of_request: "QuerySupplyOfRequest") -> "QuerySupplyOfResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def params(
-        self, query_params_request: "QueryParamsRequest"
-    ) -> "QueryParamsResponse":
+    async def params(self, query_params_request: "QueryParamsRequest") -> "QueryParamsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def denom_metadata(
@@ -1034,19 +1010,13 @@ class QueryBase(ServiceBase):
     ) -> "QueryDenomsMetadataResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def denom_owners(
-        self, query_denom_owners_request: "QueryDenomOwnersRequest"
-    ) -> "QueryDenomOwnersResponse":
+    async def denom_owners(self, query_denom_owners_request: "QueryDenomOwnersRequest") -> "QueryDenomOwnersResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def send_enabled(
-        self, query_send_enabled_request: "QuerySendEnabledRequest"
-    ) -> "QuerySendEnabledResponse":
+    async def send_enabled(self, query_send_enabled_request: "QuerySendEnabledRequest") -> "QuerySendEnabledResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_balance(
-        self, stream: "grpclib.server.Stream[QueryBalanceRequest, QueryBalanceResponse]"
-    ) -> None:
+    async def __rpc_balance(self, stream: "grpclib.server.Stream[QueryBalanceRequest, QueryBalanceResponse]") -> None:
         request = await stream.recv_message()
         response = await self.balance(request)
         await stream.send_message(response)
@@ -1091,9 +1061,7 @@ class QueryBase(ServiceBase):
         response = await self.supply_of(request)
         await stream.send_message(response)
 
-    async def __rpc_params(
-        self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]"
-    ) -> None:
+    async def __rpc_params(self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]") -> None:
         request = await stream.recv_message()
         response = await self.params(request)
         await stream.send_message(response)

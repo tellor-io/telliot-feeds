@@ -1,39 +1,34 @@
 # type: ignore
-
 from __future__ import annotations
 
 import abc
 import copy
+import hashlib
 from typing import Optional
 
 import attr
-
-from terra_sdk.core import (
-    AccAddress,
-    AccPubKey,
-    ModeInfo,
-    ModeInfoSingle,
-    SignatureV2,
-    SignDoc,
-    ValAddress,
-    ValPubKey,
-)
+from ecdsa import SECP256k1
+from ecdsa import SigningKey
+from ecdsa.util import sigencode_string_canonize
+from terra_sdk.core import AccAddress
+from terra_sdk.core import AccPubKey
+from terra_sdk.core import ModeInfo
+from terra_sdk.core import ModeInfoSingle
+from terra_sdk.core import PublicKey
+from terra_sdk.core import SignatureV2
+from terra_sdk.core import SignDoc
+from terra_sdk.core import SimplePublicKey
+from terra_sdk.core import ValAddress
+from terra_sdk.core import ValPubKey
 from terra_sdk.core.bech32 import get_bech
-from terra_sdk.core.public_key import (
-    address_from_public_key,
-    amino_pubkey_from_public_key,
-)
+from terra_sdk.core.public_key import address_from_public_key
+from terra_sdk.core.public_key import amino_pubkey_from_public_key
 from terra_sdk.core.signature_v2 import Descriptor
 from terra_sdk.core.signature_v2 import Single as SingleDescriptor
-from terra_sdk.core.tx import AuthInfo, SignerInfo, SignMode, Tx
-
-import hashlib
-
-from ecdsa import SECP256k1, SigningKey
-from ecdsa.util import sigencode_string_canonize
-
-
-from terra_sdk.core import PublicKey, SimplePublicKey
+from terra_sdk.core.tx import AuthInfo
+from terra_sdk.core.tx import SignerInfo
+from terra_sdk.core.tx import SignMode
+from terra_sdk.core.tx import Tx
 
 
 __all__ = ["Key", "SignOptions", "RawKey"]
@@ -146,9 +141,7 @@ class Key:
 
     def create_signature_amino(self, sign_doc: SignDoc) -> SignatureV2:
         if self.public_key is None:
-            raise ValueError(
-                "signature could not be created: Key instance missing public_key"
-            )
+            raise ValueError("signature could not be created: Key instance missing public_key")
 
         return SignatureV2(
             public_key=self.public_key,
@@ -177,9 +170,7 @@ class Key:
             SignatureV2: signature object
         """
         if self.public_key is None:
-            raise ValueError(
-                "signature could not be created: Key instance missing public_key"
-            )
+            raise ValueError("signature could not be created: Key instance missing public_key")
 
         # make backup
         si_backup = copy.deepcopy(sign_doc.auth_info.signer_infos)
@@ -187,9 +178,7 @@ class Key:
             SignerInfo(
                 public_key=self.public_key,
                 sequence=sign_doc.sequence,
-                mode_info=ModeInfo(
-                    single=ModeInfoSingle(mode=SignMode.SIGN_MODE_DIRECT)
-                ),
+                mode_info=ModeInfo(single=ModeInfoSingle(mode=SignMode.SIGN_MODE_DIRECT)),
             )
         ]
         signature = self.sign(sign_doc.to_bytes())
@@ -199,11 +188,7 @@ class Key:
 
         return SignatureV2(
             public_key=self.public_key,
-            data=Descriptor(
-                single=SingleDescriptor(
-                    mode=SignMode.SIGN_MODE_DIRECT, signature=signature
-                )
-            ),
+            data=Descriptor(single=SingleDescriptor(mode=SignMode.SIGN_MODE_DIRECT, signature=signature)),
             sequence=sign_doc.sequence,
         )
 
@@ -254,9 +239,7 @@ class Key:
 
 def compute_public_key(private_key: bytes) -> PublicKey:
     return SimplePublicKey(
-        key=SigningKey.from_string(private_key, curve=SECP256k1)
-        .get_verifying_key()
-        .to_string("compressed")
+        key=SigningKey.from_string(private_key, curve=SECP256k1).get_verifying_key().to_string("compressed")
     )
 
 

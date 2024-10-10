@@ -1,6 +1,7 @@
 # type: ignore
-from telliot_feeds.proto.layer.oracle import MsgSubmitValue as MsgSubmitValue_pb
 from terra_sdk.core.msg import Msg
+
+from telliot_feeds.proto.layer.oracle import MsgSubmitValue as MsgSubmitValue_pb
 
 
 __all__ = ["MsgSubmitValue"]
@@ -16,7 +17,6 @@ class MsgSubmitValue(Msg):
         creator (str): msg_sender
         query_data (str: query_data
         value (str): hex_value
-        salt (str): salt
     """
 
     type_amino = "layer/MsgSubmitValue"
@@ -31,7 +31,6 @@ class MsgSubmitValue(Msg):
     creator: str = attr.ib()
     query_data: bytes = attr.ib()
     value: str = attr.ib()
-    salt: str = attr.ib()
 
     def to_amino(self) -> dict:
         return {
@@ -40,7 +39,6 @@ class MsgSubmitValue(Msg):
                 "creator": self.creator,
                 "query_data": self.query_data,
                 "value": self.value,
-                "salt": self.salt
             },
         }
 
@@ -66,7 +64,6 @@ class MsgSubmitValue(Msg):
             creator=proto.creator,
             query_data=proto.query_data,
             value=proto.value,
-            salt=proto.salt,
         )
 
     def to_proto(self) -> MsgSubmitValue_pb:
@@ -74,5 +71,4 @@ class MsgSubmitValue(Msg):
         proto.creator = self.creator
         proto.query_data = self.query_data
         proto.value = self.value
-        proto.salt = self.salt
         return proto

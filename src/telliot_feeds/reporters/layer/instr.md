@@ -8,7 +8,7 @@ NETWORKS = {
 }
 ```
 
-- Add network to `<pathto>/telliot_core/apps/core.py`  
+- Add network to `<pathto>/telliot_core/apps/core.py`
 
 - Add chain info the endpoints.yaml:
 

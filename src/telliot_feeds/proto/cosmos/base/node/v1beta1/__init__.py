@@ -2,13 +2,10 @@
 # sources: cosmos/base/node/v1beta1/query.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    Optional,
-)
+from typing import Dict
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import grpclib
@@ -59,13 +56,10 @@ class ServiceStub(betterproto.ServiceStub):
 
 
 class ServiceBase(ServiceBase):
-
     async def config(self, config_request: "ConfigRequest") -> "ConfigResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_config(
-        self, stream: "grpclib.server.Stream[ConfigRequest, ConfigResponse]"
-    ) -> None:
+    async def __rpc_config(self, stream: "grpclib.server.Stream[ConfigRequest, ConfigResponse]") -> None:
         request = await stream.recv_message()
         response = await self.config(request)
         await stream.send_message(response)

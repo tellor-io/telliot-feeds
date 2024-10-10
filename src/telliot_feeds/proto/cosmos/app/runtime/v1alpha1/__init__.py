@@ -2,7 +2,6 @@
 # sources: cosmos/app/runtime/v1alpha1/module.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
 from typing import List
 

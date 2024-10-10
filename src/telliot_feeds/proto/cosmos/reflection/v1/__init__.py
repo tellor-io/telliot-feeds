@@ -2,14 +2,11 @@
 # sources: cosmos/reflection/v1/reflection.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
@@ -34,9 +31,7 @@ class FileDescriptorsRequest(betterproto.Message):
 class FileDescriptorsResponse(betterproto.Message):
     """FileDescriptorsResponse is the Query/FileDescriptors response type."""
 
-    files: List["betterproto_lib_google_protobuf.FileDescriptorProto"] = (
-        betterproto.message_field(1)
-    )
+    files: List["betterproto_lib_google_protobuf.FileDescriptorProto"] = betterproto.message_field(1)
     """files is the file descriptors."""
 
 
@@ -60,10 +55,7 @@ class ReflectionServiceStub(betterproto.ServiceStub):
 
 
 class ReflectionServiceBase(ServiceBase):
-
-    async def file_descriptors(
-        self, file_descriptors_request: "FileDescriptorsRequest"
-    ) -> "FileDescriptorsResponse":
+    async def file_descriptors(self, file_descriptors_request: "FileDescriptorsRequest") -> "FileDescriptorsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_file_descriptors(

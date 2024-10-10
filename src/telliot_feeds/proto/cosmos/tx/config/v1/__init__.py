@@ -2,7 +2,6 @@
 # sources: cosmos/tx/config/v1/config.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
 
 import betterproto

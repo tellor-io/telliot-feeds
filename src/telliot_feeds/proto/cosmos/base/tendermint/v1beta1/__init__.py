@@ -2,26 +2,21 @@
 # sources: cosmos/base/tendermint/v1beta1/query.proto, cosmos/base/tendermint/v1beta1/types.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
 from datetime import datetime
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
 import grpclib
 from betterproto.grpc.grpclib_server import ServiceBase
 
-from .....tendermint import (
-    p2p as ____tendermint_p2_p__,
-    types as ____tendermint_types__,
-    version as ____tendermint_version__,
-)
+from .....tendermint import p2p as ____tendermint_p2_p__
+from .....tendermint import types as ____tendermint_types__
+from .....tendermint import version as ____tendermint_version__
 from ...query import v1beta1 as __query_v1_beta1__
 
 
@@ -213,9 +208,7 @@ class GetNodeInfoResponse(betterproto.Message):
     GetNodeInfoResponse is the response type for the Query/GetNodeInfo RPC method.
     """
 
-    default_node_info: "____tendermint_p2_p__.DefaultNodeInfo" = (
-        betterproto.message_field(1)
-    )
+    default_node_info: "____tendermint_p2_p__.DefaultNodeInfo" = betterproto.message_field(1)
     application_version: "VersionInfo" = betterproto.message_field(2)
 
 
@@ -428,20 +421,13 @@ class ServiceStub(betterproto.ServiceStub):
 
 
 class ServiceBase(ServiceBase):
-
-    async def get_node_info(
-        self, get_node_info_request: "GetNodeInfoRequest"
-    ) -> "GetNodeInfoResponse":
+    async def get_node_info(self, get_node_info_request: "GetNodeInfoRequest") -> "GetNodeInfoResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_syncing(
-        self, get_syncing_request: "GetSyncingRequest"
-    ) -> "GetSyncingResponse":
+    async def get_syncing(self, get_syncing_request: "GetSyncingRequest") -> "GetSyncingResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_latest_block(
-        self, get_latest_block_request: "GetLatestBlockRequest"
-    ) -> "GetLatestBlockResponse":
+    async def get_latest_block(self, get_latest_block_request: "GetLatestBlockRequest") -> "GetLatestBlockResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def get_block_by_height(
@@ -459,9 +445,7 @@ class ServiceBase(ServiceBase):
     ) -> "GetValidatorSetByHeightResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def abci_query(
-        self, abci_query_request: "AbciQueryRequest"
-    ) -> "AbciQueryResponse":
+    async def abci_query(self, abci_query_request: "AbciQueryRequest") -> "AbciQueryResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_get_node_info(
@@ -471,9 +455,7 @@ class ServiceBase(ServiceBase):
         response = await self.get_node_info(request)
         await stream.send_message(response)
 
-    async def __rpc_get_syncing(
-        self, stream: "grpclib.server.Stream[GetSyncingRequest, GetSyncingResponse]"
-    ) -> None:
+    async def __rpc_get_syncing(self, stream: "grpclib.server.Stream[GetSyncingRequest, GetSyncingResponse]") -> None:
         request = await stream.recv_message()
         response = await self.get_syncing(request)
         await stream.send_message(response)
@@ -510,9 +492,7 @@ class ServiceBase(ServiceBase):
         response = await self.get_validator_set_by_height(request)
         await stream.send_message(response)
 
-    async def __rpc_abci_query(
-        self, stream: "grpclib.server.Stream[AbciQueryRequest, AbciQueryResponse]"
-    ) -> None:
+    async def __rpc_abci_query(self, stream: "grpclib.server.Stream[AbciQueryRequest, AbciQueryResponse]") -> None:
         request = await stream.recv_message()
         response = await self.abci_query(request)
         await stream.send_message(response)

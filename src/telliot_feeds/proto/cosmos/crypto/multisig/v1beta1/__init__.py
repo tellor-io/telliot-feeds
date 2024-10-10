@@ -2,7 +2,6 @@
 # sources: cosmos/crypto/multisig/v1beta1/multisig.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
 from typing import List
 

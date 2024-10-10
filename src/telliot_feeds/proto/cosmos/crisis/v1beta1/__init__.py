@@ -2,13 +2,10 @@
 # sources: cosmos/crisis/v1beta1/genesis.proto, cosmos/crisis/v1beta1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    Optional,
-)
+from typing import Dict
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import grpclib
@@ -127,15 +124,10 @@ class MsgStub(betterproto.ServiceStub):
 
 
 class MsgBase(ServiceBase):
-
-    async def verify_invariant(
-        self, msg_verify_invariant: "MsgVerifyInvariant"
-    ) -> "MsgVerifyInvariantResponse":
+    async def verify_invariant(self, msg_verify_invariant: "MsgVerifyInvariant") -> "MsgVerifyInvariantResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def update_params(
-        self, msg_update_params: "MsgUpdateParams"
-    ) -> "MsgUpdateParamsResponse":
+    async def update_params(self, msg_update_params: "MsgUpdateParams") -> "MsgUpdateParamsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_verify_invariant(

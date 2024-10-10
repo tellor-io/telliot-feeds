@@ -4,12 +4,10 @@
 # This file has been @generated
 import warnings
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import grpclib
@@ -47,13 +45,9 @@ class Params(betterproto.Message):
     def __post_init__(self) -> None:
         super().__post_init__()
         if self.is_set("base_proposer_reward"):
-            warnings.warn(
-                "Params.base_proposer_reward is deprecated", DeprecationWarning
-            )
+            warnings.warn("Params.base_proposer_reward is deprecated", DeprecationWarning)
         if self.is_set("bonus_proposer_reward"):
-            warnings.warn(
-                "Params.bonus_proposer_reward is deprecated", DeprecationWarning
-            )
+            warnings.warn("Params.bonus_proposer_reward is deprecated", DeprecationWarning)
 
 
 @dataclass(eq=False, repr=False)
@@ -73,9 +67,7 @@ class ValidatorHistoricalRewards(betterproto.Message):
       + one per validator for the zeroeth period, set on initialization
     """
 
-    cumulative_reward_ratio: List["__base_v1_beta1__.DecCoin"] = (
-        betterproto.message_field(1)
-    )
+    cumulative_reward_ratio: List["__base_v1_beta1__.DecCoin"] = betterproto.message_field(1)
     reference_count: int = betterproto.uint32_field(2)
 
 
@@ -619,9 +611,7 @@ class ValidatorOutstandingRewardsRecord(betterproto.Message):
     validator_address: str = betterproto.string_field(1)
     """validator_address is the address of the validator."""
 
-    outstanding_rewards: List["__base_v1_beta1__.DecCoin"] = betterproto.message_field(
-        2
-    )
+    outstanding_rewards: List["__base_v1_beta1__.DecCoin"] = betterproto.message_field(2)
     """
     outstanding_rewards represents the outstanding rewards of a validator.
     """
@@ -716,48 +706,34 @@ class GenesisState(betterproto.Message):
     fee_pool: "FeePool" = betterproto.message_field(2)
     """fee_pool defines the fee pool at genesis."""
 
-    delegator_withdraw_infos: List["DelegatorWithdrawInfo"] = betterproto.message_field(
-        3
-    )
+    delegator_withdraw_infos: List["DelegatorWithdrawInfo"] = betterproto.message_field(3)
     """fee_pool defines the delegator withdraw infos at genesis."""
 
     previous_proposer: str = betterproto.string_field(4)
     """fee_pool defines the previous proposer at genesis."""
 
-    outstanding_rewards: List["ValidatorOutstandingRewardsRecord"] = (
-        betterproto.message_field(5)
-    )
+    outstanding_rewards: List["ValidatorOutstandingRewardsRecord"] = betterproto.message_field(5)
     """
     fee_pool defines the outstanding rewards of all validators at genesis.
     """
 
-    validator_accumulated_commissions: List["ValidatorAccumulatedCommissionRecord"] = (
-        betterproto.message_field(6)
-    )
+    validator_accumulated_commissions: List["ValidatorAccumulatedCommissionRecord"] = betterproto.message_field(6)
     """
     fee_pool defines the accumulated commissions of all validators at genesis.
     """
 
-    validator_historical_rewards: List["ValidatorHistoricalRewardsRecord"] = (
-        betterproto.message_field(7)
-    )
+    validator_historical_rewards: List["ValidatorHistoricalRewardsRecord"] = betterproto.message_field(7)
     """
     fee_pool defines the historical rewards of all validators at genesis.
     """
 
-    validator_current_rewards: List["ValidatorCurrentRewardsRecord"] = (
-        betterproto.message_field(8)
-    )
+    validator_current_rewards: List["ValidatorCurrentRewardsRecord"] = betterproto.message_field(8)
     """fee_pool defines the current rewards of all validators at genesis."""
 
-    delegator_starting_infos: List["DelegatorStartingInfoRecord"] = (
-        betterproto.message_field(9)
-    )
+    delegator_starting_infos: List["DelegatorStartingInfoRecord"] = betterproto.message_field(9)
     """fee_pool defines the delegator starting infos at genesis."""
 
-    validator_slash_events: List["ValidatorSlashEventRecord"] = (
-        betterproto.message_field(10)
-    )
+    validator_slash_events: List["ValidatorSlashEventRecord"] = betterproto.message_field(10)
     """fee_pool defines the validator slash events at genesis."""
 
 
@@ -1038,7 +1014,6 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class MsgBase(ServiceBase):
-
     async def set_withdraw_address(
         self, msg_set_withdraw_address: "MsgSetWithdrawAddress"
     ) -> "MsgSetWithdrawAddressResponse":
@@ -1059,9 +1034,7 @@ class MsgBase(ServiceBase):
     ) -> "MsgFundCommunityPoolResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def update_params(
-        self, msg_update_params: "MsgUpdateParams"
-    ) -> "MsgUpdateParamsResponse":
+    async def update_params(self, msg_update_params: "MsgUpdateParams") -> "MsgUpdateParamsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def community_pool_spend(
@@ -1158,10 +1131,7 @@ class MsgBase(ServiceBase):
 
 
 class QueryBase(ServiceBase):
-
-    async def params(
-        self, query_params_request: "QueryParamsRequest"
-    ) -> "QueryParamsResponse":
+    async def params(self, query_params_request: "QueryParamsRequest") -> "QueryParamsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def validator_distribution_info(
@@ -1213,9 +1183,7 @@ class QueryBase(ServiceBase):
     ) -> "QueryCommunityPoolResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_params(
-        self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]"
-    ) -> None:
+    async def __rpc_params(self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]") -> None:
         request = await stream.recv_message()
         response = await self.params(request)
         await stream.send_message(response)

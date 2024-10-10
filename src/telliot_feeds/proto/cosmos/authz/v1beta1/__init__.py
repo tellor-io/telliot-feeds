@@ -2,15 +2,12 @@
 # sources: cosmos/authz/v1beta1/authz.proto, cosmos/authz/v1beta1/event.proto, cosmos/authz/v1beta1/genesis.proto, cosmos/authz/v1beta1/query.proto, cosmos/authz/v1beta1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
 from datetime import datetime
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
@@ -358,7 +355,6 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class MsgBase(ServiceBase):
-
     async def grant(self, msg_grant: "MsgGrant") -> "MsgGrantResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
@@ -368,23 +364,17 @@ class MsgBase(ServiceBase):
     async def revoke(self, msg_revoke: "MsgRevoke") -> "MsgRevokeResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_grant(
-        self, stream: "grpclib.server.Stream[MsgGrant, MsgGrantResponse]"
-    ) -> None:
+    async def __rpc_grant(self, stream: "grpclib.server.Stream[MsgGrant, MsgGrantResponse]") -> None:
         request = await stream.recv_message()
         response = await self.grant(request)
         await stream.send_message(response)
 
-    async def __rpc_exec(
-        self, stream: "grpclib.server.Stream[MsgExec, MsgExecResponse]"
-    ) -> None:
+    async def __rpc_exec(self, stream: "grpclib.server.Stream[MsgExec, MsgExecResponse]") -> None:
         request = await stream.recv_message()
         response = await self.exec(request)
         await stream.send_message(response)
 
-    async def __rpc_revoke(
-        self, stream: "grpclib.server.Stream[MsgRevoke, MsgRevokeResponse]"
-    ) -> None:
+    async def __rpc_revoke(self, stream: "grpclib.server.Stream[MsgRevoke, MsgRevokeResponse]") -> None:
         request = await stream.recv_message()
         response = await self.revoke(request)
         await stream.send_message(response)
@@ -413,10 +403,7 @@ class MsgBase(ServiceBase):
 
 
 class QueryBase(ServiceBase):
-
-    async def grants(
-        self, query_grants_request: "QueryGrantsRequest"
-    ) -> "QueryGrantsResponse":
+    async def grants(self, query_grants_request: "QueryGrantsRequest") -> "QueryGrantsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def granter_grants(
@@ -429,9 +416,7 @@ class QueryBase(ServiceBase):
     ) -> "QueryGranteeGrantsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_grants(
-        self, stream: "grpclib.server.Stream[QueryGrantsRequest, QueryGrantsResponse]"
-    ) -> None:
+    async def __rpc_grants(self, stream: "grpclib.server.Stream[QueryGrantsRequest, QueryGrantsResponse]") -> None:
         request = await stream.recv_message()
         response = await self.grants(request)
         await stream.send_message(response)

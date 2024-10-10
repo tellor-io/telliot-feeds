@@ -38,9 +38,7 @@ class SnapshotItem(betterproto.Message):
     store: "SnapshotStoreItem" = betterproto.message_field(1, group="item")
     iavl: "SnapshotIavlItem" = betterproto.message_field(2, group="item")
     extension: "SnapshotExtensionMeta" = betterproto.message_field(3, group="item")
-    extension_payload: "SnapshotExtensionPayload" = betterproto.message_field(
-        4, group="item"
-    )
+    extension_payload: "SnapshotExtensionPayload" = betterproto.message_field(4, group="item")
     kv: "SnapshotKvItem" = betterproto.message_field(5, group="item")
     schema: "SnapshotSchema" = betterproto.message_field(6, group="item")
 

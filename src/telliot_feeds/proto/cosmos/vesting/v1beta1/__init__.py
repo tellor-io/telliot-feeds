@@ -2,14 +2,11 @@
 # sources: cosmos/vesting/v1beta1/tx.proto, cosmos/vesting/v1beta1/vesting.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import grpclib
@@ -268,7 +265,6 @@ class MsgStub(betterproto.ServiceStub):
 
 
 class MsgBase(ServiceBase):
-
     async def create_vesting_account(
         self, msg_create_vesting_account: "MsgCreateVestingAccount"
     ) -> "MsgCreateVestingAccountResponse":

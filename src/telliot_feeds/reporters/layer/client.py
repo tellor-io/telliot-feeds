@@ -1,36 +1,54 @@
 # type: ignore
 from __future__ import annotations
 
-from asyncio import AbstractEventLoop, get_event_loop
+from asyncio import AbstractEventLoop
+from asyncio import get_event_loop
 from json import JSONDecodeError
-from typing import List, Optional, Union
+from typing import List
+from typing import Optional
+from typing import Union
 
 import nest_asyncio
 from aiohttp import ClientSession
 from multidict import CIMultiDict
-
-from terra_sdk.core import Coins, Dec, Numeric
+from terra_sdk.client.lcd.api.auth import AsyncAuthAPI
+from terra_sdk.client.lcd.api.auth import AuthAPI
+from terra_sdk.client.lcd.api.authz import AsyncAuthzAPI
+from terra_sdk.client.lcd.api.authz import AuthzAPI
+from terra_sdk.client.lcd.api.bank import AsyncBankAPI
+from terra_sdk.client.lcd.api.bank import BankAPI
+from terra_sdk.client.lcd.api.distribution import AsyncDistributionAPI
+from terra_sdk.client.lcd.api.distribution import DistributionAPI
+from terra_sdk.client.lcd.api.feegrant import AsyncFeeGrantAPI
+from terra_sdk.client.lcd.api.feegrant import FeeGrantAPI
+from terra_sdk.client.lcd.api.gov import AsyncGovAPI
+from terra_sdk.client.lcd.api.gov import GovAPI
+from terra_sdk.client.lcd.api.ibc import AsyncIbcAPI
+from terra_sdk.client.lcd.api.ibc import IbcAPI
+from terra_sdk.client.lcd.api.ibc_transfer import AsyncIbcTransferAPI
+from terra_sdk.client.lcd.api.ibc_transfer import IbcTransferAPI
+from terra_sdk.client.lcd.api.mint import AsyncMintAPI
+from terra_sdk.client.lcd.api.mint import MintAPI
+from terra_sdk.client.lcd.api.slashing import AsyncSlashingAPI
+from terra_sdk.client.lcd.api.slashing import SlashingAPI
+from terra_sdk.client.lcd.api.staking import AsyncStakingAPI
+from terra_sdk.client.lcd.api.staking import StakingAPI
+from terra_sdk.client.lcd.api.tendermint import AsyncTendermintAPI
+from terra_sdk.client.lcd.api.tendermint import TendermintAPI
+from terra_sdk.client.lcd.api.tx import AsyncTxAPI
+from terra_sdk.client.lcd.api.tx import TxAPI
+from terra_sdk.client.lcd.lcdutils import AsyncLCDUtils
+from terra_sdk.client.lcd.lcdutils import LCDUtils
+from terra_sdk.client.lcd.params import APIParams
+from terra_sdk.client.lcd.wallet import AsyncWallet
+from terra_sdk.client.lcd.wallet import Wallet
+from terra_sdk.core import Coins
+from terra_sdk.core import Dec
+from terra_sdk.core import Numeric
 from terra_sdk.exceptions import LCDResponseError
 from terra_sdk.key.key import Key
 from terra_sdk.util.json import dict_to_data
 from terra_sdk.util.url import urljoin
-
-from terra_sdk.client.lcd.api.auth import AsyncAuthAPI, AuthAPI
-from terra_sdk.client.lcd.api.authz import AsyncAuthzAPI, AuthzAPI
-from terra_sdk.client.lcd.api.bank import AsyncBankAPI, BankAPI
-from terra_sdk.client.lcd.api.distribution import AsyncDistributionAPI, DistributionAPI
-from terra_sdk.client.lcd.api.feegrant import AsyncFeeGrantAPI, FeeGrantAPI
-from terra_sdk.client.lcd.api.gov import AsyncGovAPI, GovAPI
-from terra_sdk.client.lcd.api.ibc import AsyncIbcAPI, IbcAPI
-from terra_sdk.client.lcd.api.ibc_transfer import AsyncIbcTransferAPI, IbcTransferAPI
-from terra_sdk.client.lcd.api.mint import AsyncMintAPI, MintAPI
-from terra_sdk.client.lcd.api.slashing import AsyncSlashingAPI, SlashingAPI
-from terra_sdk.client.lcd.api.staking import AsyncStakingAPI, StakingAPI
-from terra_sdk.client.lcd.api.tendermint import AsyncTendermintAPI, TendermintAPI
-from terra_sdk.client.lcd.api.tx import AsyncTxAPI, TxAPI
-from terra_sdk.client.lcd.lcdutils import AsyncLCDUtils, LCDUtils
-from terra_sdk.client.lcd.params import APIParams
-from terra_sdk.client.lcd.wallet import AsyncWallet, Wallet
 
 
 class AsyncLCDClient:
@@ -47,15 +65,13 @@ class AsyncLCDClient:
             loop = get_event_loop()
         self.loop = loop
         if _create_session:
-            self.session = ClientSession(
-                headers={"Accept": "application/json"}, loop=self.loop
-            )
+            self.session = ClientSession(headers={"Accept": "application/json"}, loop=self.loop)
 
         self.chain_id = chain_id
         self.url = url
         self.last_request_height = None
 
-        self.gas_prices = Coins(gas_prices) if gas_prices else Coins.from_str("0.15loya")
+        self.gas_prices = Coins(gas_prices) if gas_prices else Coins.from_str("0.000025loya")
         self.gas_adjustment = gas_adjustment if gas_adjustment else Numeric.parse(1.75)
 
         self.auth = AsyncAuthAPI(self)
@@ -87,42 +103,28 @@ class AsyncLCDClient:
         params: Optional[Union[APIParams, CIMultiDict, list, dict]] = None,
         # raw: bool = False
     ):
-        if (
-            params
-            and hasattr(params, "to_dict")
-            and callable(getattr(params, "to_dict"))  # noqa
-        ):
+        if params and hasattr(params, "to_dict") and callable(getattr(params, "to_dict")):  # noqa
             params = params.to_dict()
 
-        async with self.session.get(
-            urljoin(self.url, endpoint), params=params
-        ) as response:
+        async with self.session.get(urljoin(self.url, endpoint), params=params) as response:
             try:
                 result = await response.json(content_type=None)
             except JSONDecodeError:
                 raise LCDResponseError(message=str(response.reason), response=response)
             if not 200 <= response.status < 299:
                 raise LCDResponseError(message=str(result), response=response)
-        self.last_request_height = (
-            result.get("height") if result else self.last_request_height
-        )
+        self.last_request_height = result.get("height") if result else self.last_request_height
         return result  # if raw else result["result"]
 
-    async def _post(
-        self, endpoint: str, data: Optional[dict] = None  # , raw: bool = False
-    ):
-        async with self.session.post(
-            urljoin(self.url, endpoint), json=data and dict_to_data(data)
-        ) as response:
+    async def _post(self, endpoint: str, data: Optional[dict] = None):  # , raw: bool = False
+        async with self.session.post(urljoin(self.url, endpoint), json=data and dict_to_data(data)) as response:
             try:
                 result = await response.json(content_type=None)
             except JSONDecodeError:
                 raise LCDResponseError(message=str(response.reason), response=response)
             if not 200 <= response.status < 299:
                 raise LCDResponseError(message=result.get("message"), response=response)
-        self.last_request_height = (
-            result.get("height") if result else self.last_request_height
-        )
+        self.last_request_height = result.get("height") if result else self.last_request_height
         return result  # if raw else result["result"]
 
     async def _search(
@@ -143,18 +145,14 @@ class AsyncLCDClient:
             for p in params:
                 actual_params.add(p, params[p])
 
-        async with self.session.get(
-            urljoin(self.url, "/cosmos/tx/v1beta1/txs"), params=actual_params
-        ) as response:
+        async with self.session.get(urljoin(self.url, "/cosmos/tx/v1beta1/txs"), params=actual_params) as response:
             try:
                 result = await response.json(content_type=None)
             except JSONDecodeError:
                 raise LCDResponseError(message=str(response.reason), response=response)
             if not 200 <= response.status < 299:
                 raise LCDResponseError(message=str(result), response=response)
-        self.last_request_height = (
-            result.get("height") if result else self.last_request_height
-        )
+        self.last_request_height = result.get("height") if result else self.last_request_height
         return result  # if raw else result["result"]
 
     async def __aenter__(self):
@@ -253,14 +251,10 @@ class LCDClient(AsyncLCDClient):
         self.utils = LCDUtils(self)
 
     async def __aenter__(self):
-        raise NotImplementedError(
-            "async context manager not implemented - you probably want AsyncLCDClient"
-        )
+        raise NotImplementedError("async context manager not implemented - you probably want AsyncLCDClient")
 
     async def __aexit__(self, exc_type, exc, tb):
-        raise NotImplementedError(
-            "async context manager not implemented - you probably want AsyncLCDClient"
-        )
+        raise NotImplementedError("async context manager not implemented - you probably want AsyncLCDClient")
 
     def wallet(self, key: Key) -> Wallet:  # type: ignore
         """Creates a :class:`Wallet` object from a key for easy transaction creating and
@@ -274,9 +268,7 @@ class LCDClient(AsyncLCDClient):
     async def _get(self, *args, **kwargs):
         # session has to be manually created and torn down for each HTTP request in a
         # synchronous client
-        self.session = ClientSession(
-            headers={"Accept": "application/json"}, loop=self.loop
-        )
+        self.session = ClientSession(headers={"Accept": "application/json"}, loop=self.loop)
         try:
             result = await super()._get(*args, **kwargs)
         finally:
@@ -286,9 +278,7 @@ class LCDClient(AsyncLCDClient):
     async def _post(self, *args, **kwargs):
         # session has to be manually created and torn down for each HTTP request in a
         # synchronous client
-        self.session = ClientSession(
-            headers={"Accept": "application/json"}, loop=self.loop
-        )
+        self.session = ClientSession(headers={"Accept": "application/json"}, loop=self.loop)
         try:
             result = await super()._post(*args, **kwargs)
         finally:
@@ -298,9 +288,7 @@ class LCDClient(AsyncLCDClient):
     async def _search(self, *args, **kwargs):
         # session has to be manually created and torn down for each HTTP request in a
         # synchronous client
-        self.session = ClientSession(
-            headers={"Accept": "application/json"}, loop=self.loop
-        )
+        self.session = ClientSession(headers={"Accept": "application/json"}, loop=self.loop)
         try:
             result = await super()._search(*args, **kwargs)
         finally:

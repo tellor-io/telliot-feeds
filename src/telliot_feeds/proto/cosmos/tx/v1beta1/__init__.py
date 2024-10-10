@@ -4,12 +4,10 @@
 # This file has been @generated
 import warnings
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
@@ -222,18 +220,14 @@ class TxBody(betterproto.Message):
      be processed by the chain
     """
 
-    extension_options: List["betterproto_lib_google_protobuf.Any"] = (
-        betterproto.message_field(1023)
-    )
+    extension_options: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(1023)
     """
     extension_options are arbitrary options that can be added by chains
      when the default options are not sufficient. If any of these are present
      and can't be handled, the transaction will be rejected
     """
 
-    non_critical_extension_options: List["betterproto_lib_google_protobuf.Any"] = (
-        betterproto.message_field(2047)
-    )
+    non_critical_extension_options: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(2047)
     """
     extension_options are arbitrary options that can be added by chains
      when the default options are not sufficient. If any of these are present
@@ -332,9 +326,7 @@ class ModeInfoSingle(betterproto.Message):
 class ModeInfoMulti(betterproto.Message):
     """Multi is the mode info for a multisig public key"""
 
-    bitarray: "__crypto_multisig_v1_beta1__.CompactBitArray" = (
-        betterproto.message_field(1)
-    )
+    bitarray: "__crypto_multisig_v1_beta1__.CompactBitArray" = betterproto.message_field(1)
     """bitarray specifies which keys within the multisig are signing"""
 
     mode_infos: List["ModeInfo"] = betterproto.message_field(2)
@@ -454,9 +446,7 @@ class GetTxsEventRequest(betterproto.Message):
     def __post_init__(self) -> None:
         super().__post_init__()
         if self.is_set("pagination"):
-            warnings.warn(
-                "GetTxsEventRequest.pagination is deprecated", DeprecationWarning
-            )
+            warnings.warn("GetTxsEventRequest.pagination is deprecated", DeprecationWarning)
 
 
 @dataclass(eq=False, repr=False)
@@ -469,9 +459,7 @@ class GetTxsEventResponse(betterproto.Message):
     txs: List["Tx"] = betterproto.message_field(1)
     """txs is the list of queried transactions."""
 
-    tx_responses: List["__base_abci_v1_beta1__.TxResponse"] = betterproto.message_field(
-        2
-    )
+    tx_responses: List["__base_abci_v1_beta1__.TxResponse"] = betterproto.message_field(2)
     """tx_responses is the list of queried TxResponses."""
 
     pagination: "__base_query_v1_beta1__.PageResponse" = betterproto.message_field(3)
@@ -486,9 +474,7 @@ class GetTxsEventResponse(betterproto.Message):
     def __post_init__(self) -> None:
         super().__post_init__()
         if self.is_set("pagination"):
-            warnings.warn(
-                "GetTxsEventResponse.pagination is deprecated", DeprecationWarning
-            )
+            warnings.warn("GetTxsEventResponse.pagination is deprecated", DeprecationWarning)
 
 
 @dataclass(eq=False, repr=False)
@@ -866,21 +852,16 @@ class ServiceStub(betterproto.ServiceStub):
 
 
 class ServiceBase(ServiceBase):
-
     async def simulate(self, simulate_request: "SimulateRequest") -> "SimulateResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def get_tx(self, get_tx_request: "GetTxRequest") -> "GetTxResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def broadcast_tx(
-        self, broadcast_tx_request: "BroadcastTxRequest"
-    ) -> "BroadcastTxResponse":
+    async def broadcast_tx(self, broadcast_tx_request: "BroadcastTxRequest") -> "BroadcastTxResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_txs_event(
-        self, get_txs_event_request: "GetTxsEventRequest"
-    ) -> "GetTxsEventResponse":
+    async def get_txs_event(self, get_txs_event_request: "GetTxsEventRequest") -> "GetTxsEventResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def get_block_with_txs(
@@ -888,36 +869,24 @@ class ServiceBase(ServiceBase):
     ) -> "GetBlockWithTxsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def tx_decode(
-        self, tx_decode_request: "TxDecodeRequest"
-    ) -> "TxDecodeResponse":
+    async def tx_decode(self, tx_decode_request: "TxDecodeRequest") -> "TxDecodeResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def tx_encode(
-        self, tx_encode_request: "TxEncodeRequest"
-    ) -> "TxEncodeResponse":
+    async def tx_encode(self, tx_encode_request: "TxEncodeRequest") -> "TxEncodeResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def tx_encode_amino(
-        self, tx_encode_amino_request: "TxEncodeAminoRequest"
-    ) -> "TxEncodeAminoResponse":
+    async def tx_encode_amino(self, tx_encode_amino_request: "TxEncodeAminoRequest") -> "TxEncodeAminoResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def tx_decode_amino(
-        self, tx_decode_amino_request: "TxDecodeAminoRequest"
-    ) -> "TxDecodeAminoResponse":
+    async def tx_decode_amino(self, tx_decode_amino_request: "TxDecodeAminoRequest") -> "TxDecodeAminoResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_simulate(
-        self, stream: "grpclib.server.Stream[SimulateRequest, SimulateResponse]"
-    ) -> None:
+    async def __rpc_simulate(self, stream: "grpclib.server.Stream[SimulateRequest, SimulateResponse]") -> None:
         request = await stream.recv_message()
         response = await self.simulate(request)
         await stream.send_message(response)
 
-    async def __rpc_get_tx(
-        self, stream: "grpclib.server.Stream[GetTxRequest, GetTxResponse]"
-    ) -> None:
+    async def __rpc_get_tx(self, stream: "grpclib.server.Stream[GetTxRequest, GetTxResponse]") -> None:
         request = await stream.recv_message()
         response = await self.get_tx(request)
         await stream.send_message(response)
@@ -944,16 +913,12 @@ class ServiceBase(ServiceBase):
         response = await self.get_block_with_txs(request)
         await stream.send_message(response)
 
-    async def __rpc_tx_decode(
-        self, stream: "grpclib.server.Stream[TxDecodeRequest, TxDecodeResponse]"
-    ) -> None:
+    async def __rpc_tx_decode(self, stream: "grpclib.server.Stream[TxDecodeRequest, TxDecodeResponse]") -> None:
         request = await stream.recv_message()
         response = await self.tx_decode(request)
         await stream.send_message(response)
 
-    async def __rpc_tx_encode(
-        self, stream: "grpclib.server.Stream[TxEncodeRequest, TxEncodeResponse]"
-    ) -> None:
+    async def __rpc_tx_encode(self, stream: "grpclib.server.Stream[TxEncodeRequest, TxEncodeResponse]") -> None:
         request = await stream.recv_message()
         response = await self.tx_encode(request)
         await stream.send_message(response)

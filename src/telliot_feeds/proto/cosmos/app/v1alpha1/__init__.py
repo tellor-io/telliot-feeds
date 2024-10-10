@@ -2,14 +2,11 @@
 # sources: cosmos/app/v1alpha1/config.proto, cosmos/app/v1alpha1/module.proto, cosmos/app/v1alpha1/query.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
@@ -224,15 +221,10 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class QueryBase(ServiceBase):
-
-    async def config(
-        self, query_config_request: "QueryConfigRequest"
-    ) -> "QueryConfigResponse":
+    async def config(self, query_config_request: "QueryConfigRequest") -> "QueryConfigResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_config(
-        self, stream: "grpclib.server.Stream[QueryConfigRequest, QueryConfigResponse]"
-    ) -> None:
+    async def __rpc_config(self, stream: "grpclib.server.Stream[QueryConfigRequest, QueryConfigResponse]") -> None:
         request = await stream.recv_message()
         response = await self.config(request)
         await stream.send_message(response)

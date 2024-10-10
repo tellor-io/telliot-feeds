@@ -2,7 +2,6 @@
 # sources: cosmos/msg/v1/msg.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
 
 import betterproto

@@ -2,18 +2,13 @@
 # sources: cosmos/feegrant/v1beta1/feegrant.proto, cosmos/feegrant/v1beta1/genesis.proto, cosmos/feegrant/v1beta1/query.proto, cosmos/feegrant/v1beta1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
-from datetime import (
-    datetime,
-    timedelta,
-)
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from datetime import datetime
+from datetime import timedelta
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
@@ -350,15 +345,10 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class MsgBase(ServiceBase):
-
-    async def grant_allowance(
-        self, msg_grant_allowance: "MsgGrantAllowance"
-    ) -> "MsgGrantAllowanceResponse":
+    async def grant_allowance(self, msg_grant_allowance: "MsgGrantAllowance") -> "MsgGrantAllowanceResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def revoke_allowance(
-        self, msg_revoke_allowance: "MsgRevokeAllowance"
-    ) -> "MsgRevokeAllowanceResponse":
+    async def revoke_allowance(self, msg_revoke_allowance: "MsgRevokeAllowance") -> "MsgRevokeAllowanceResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_grant_allowance(
@@ -395,15 +385,10 @@ class MsgBase(ServiceBase):
 
 
 class QueryBase(ServiceBase):
-
-    async def allowance(
-        self, query_allowance_request: "QueryAllowanceRequest"
-    ) -> "QueryAllowanceResponse":
+    async def allowance(self, query_allowance_request: "QueryAllowanceRequest") -> "QueryAllowanceResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def allowances(
-        self, query_allowances_request: "QueryAllowancesRequest"
-    ) -> "QueryAllowancesResponse":
+    async def allowances(self, query_allowances_request: "QueryAllowancesRequest") -> "QueryAllowancesResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def allowances_by_granter(

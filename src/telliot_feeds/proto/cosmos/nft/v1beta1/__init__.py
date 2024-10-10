@@ -2,14 +2,11 @@
 # sources: cosmos/nft/v1beta1/event.proto, cosmos/nft/v1beta1/genesis.proto, cosmos/nft/v1beta1/nft.proto, cosmos/nft/v1beta1/query.proto, cosmos/nft/v1beta1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
@@ -466,13 +463,10 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class MsgBase(ServiceBase):
-
     async def send(self, msg_send: "MsgSend") -> "MsgSendResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_send(
-        self, stream: "grpclib.server.Stream[MsgSend, MsgSendResponse]"
-    ) -> None:
+    async def __rpc_send(self, stream: "grpclib.server.Stream[MsgSend, MsgSendResponse]") -> None:
         request = await stream.recv_message()
         response = await self.send(request)
         await stream.send_message(response)
@@ -489,85 +483,58 @@ class MsgBase(ServiceBase):
 
 
 class QueryBase(ServiceBase):
-
-    async def balance(
-        self, query_balance_request: "QueryBalanceRequest"
-    ) -> "QueryBalanceResponse":
+    async def balance(self, query_balance_request: "QueryBalanceRequest") -> "QueryBalanceResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def owner(
-        self, query_owner_request: "QueryOwnerRequest"
-    ) -> "QueryOwnerResponse":
+    async def owner(self, query_owner_request: "QueryOwnerRequest") -> "QueryOwnerResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def supply(
-        self, query_supply_request: "QuerySupplyRequest"
-    ) -> "QuerySupplyResponse":
+    async def supply(self, query_supply_request: "QuerySupplyRequest") -> "QuerySupplyResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def nf_ts(
-        self, query_nf_ts_request: "QueryNfTsRequest"
-    ) -> "QueryNfTsResponse":
+    async def nf_ts(self, query_nf_ts_request: "QueryNfTsRequest") -> "QueryNfTsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def nft(self, query_nft_request: "QueryNftRequest") -> "QueryNftResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def class_(
-        self, query_class_request: "QueryClassRequest"
-    ) -> "QueryClassResponse":
+    async def class_(self, query_class_request: "QueryClassRequest") -> "QueryClassResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def classes(
-        self, query_classes_request: "QueryClassesRequest"
-    ) -> "QueryClassesResponse":
+    async def classes(self, query_classes_request: "QueryClassesRequest") -> "QueryClassesResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_balance(
-        self, stream: "grpclib.server.Stream[QueryBalanceRequest, QueryBalanceResponse]"
-    ) -> None:
+    async def __rpc_balance(self, stream: "grpclib.server.Stream[QueryBalanceRequest, QueryBalanceResponse]") -> None:
         request = await stream.recv_message()
         response = await self.balance(request)
         await stream.send_message(response)
 
-    async def __rpc_owner(
-        self, stream: "grpclib.server.Stream[QueryOwnerRequest, QueryOwnerResponse]"
-    ) -> None:
+    async def __rpc_owner(self, stream: "grpclib.server.Stream[QueryOwnerRequest, QueryOwnerResponse]") -> None:
         request = await stream.recv_message()
         response = await self.owner(request)
         await stream.send_message(response)
 
-    async def __rpc_supply(
-        self, stream: "grpclib.server.Stream[QuerySupplyRequest, QuerySupplyResponse]"
-    ) -> None:
+    async def __rpc_supply(self, stream: "grpclib.server.Stream[QuerySupplyRequest, QuerySupplyResponse]") -> None:
         request = await stream.recv_message()
         response = await self.supply(request)
         await stream.send_message(response)
 
-    async def __rpc_nf_ts(
-        self, stream: "grpclib.server.Stream[QueryNfTsRequest, QueryNfTsResponse]"
-    ) -> None:
+    async def __rpc_nf_ts(self, stream: "grpclib.server.Stream[QueryNfTsRequest, QueryNfTsResponse]") -> None:
         request = await stream.recv_message()
         response = await self.nf_ts(request)
         await stream.send_message(response)
 
-    async def __rpc_nft(
-        self, stream: "grpclib.server.Stream[QueryNftRequest, QueryNftResponse]"
-    ) -> None:
+    async def __rpc_nft(self, stream: "grpclib.server.Stream[QueryNftRequest, QueryNftResponse]") -> None:
         request = await stream.recv_message()
         response = await self.nft(request)
         await stream.send_message(response)
 
-    async def __rpc_class_(
-        self, stream: "grpclib.server.Stream[QueryClassRequest, QueryClassResponse]"
-    ) -> None:
+    async def __rpc_class_(self, stream: "grpclib.server.Stream[QueryClassRequest, QueryClassResponse]") -> None:
         request = await stream.recv_message()
         response = await self.class_(request)
         await stream.send_message(response)
 
-    async def __rpc_classes(
-        self, stream: "grpclib.server.Stream[QueryClassesRequest, QueryClassesResponse]"
-    ) -> None:
+    async def __rpc_classes(self, stream: "grpclib.server.Stream[QueryClassesRequest, QueryClassesResponse]") -> None:
         request = await stream.recv_message()
         response = await self.classes(request)
         await stream.send_message(response)

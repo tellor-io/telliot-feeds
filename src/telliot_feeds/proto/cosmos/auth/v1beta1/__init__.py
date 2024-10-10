@@ -4,12 +4,10 @@
 # This file has been @generated
 import warnings
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
@@ -313,9 +311,7 @@ class QueryAccountAddressByIdRequest(betterproto.Message):
     def __post_init__(self) -> None:
         super().__post_init__()
         if self.is_set("id"):
-            warnings.warn(
-                "QueryAccountAddressByIdRequest.id is deprecated", DeprecationWarning
-            )
+            warnings.warn("QueryAccountAddressByIdRequest.id is deprecated", DeprecationWarning)
 
 
 @dataclass(eq=False, repr=False)
@@ -556,10 +552,7 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class MsgBase(ServiceBase):
-
-    async def update_params(
-        self, msg_update_params: "MsgUpdateParams"
-    ) -> "MsgUpdateParamsResponse":
+    async def update_params(self, msg_update_params: "MsgUpdateParams") -> "MsgUpdateParamsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_update_params(
@@ -581,15 +574,10 @@ class MsgBase(ServiceBase):
 
 
 class QueryBase(ServiceBase):
-
-    async def accounts(
-        self, query_accounts_request: "QueryAccountsRequest"
-    ) -> "QueryAccountsResponse":
+    async def accounts(self, query_accounts_request: "QueryAccountsRequest") -> "QueryAccountsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def account(
-        self, query_account_request: "QueryAccountRequest"
-    ) -> "QueryAccountResponse":
+    async def account(self, query_account_request: "QueryAccountRequest") -> "QueryAccountResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def account_address_by_id(
@@ -597,9 +585,7 @@ class QueryBase(ServiceBase):
     ) -> "QueryAccountAddressByIdResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def params(
-        self, query_params_request: "QueryParamsRequest"
-    ) -> "QueryParamsResponse":
+    async def params(self, query_params_request: "QueryParamsRequest") -> "QueryParamsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def module_accounts(
@@ -612,9 +598,7 @@ class QueryBase(ServiceBase):
     ) -> "QueryModuleAccountByNameResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def bech32_prefix(
-        self, bech32_prefix_request: "Bech32PrefixRequest"
-    ) -> "Bech32PrefixResponse":
+    async def bech32_prefix(self, bech32_prefix_request: "Bech32PrefixRequest") -> "Bech32PrefixResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def address_bytes_to_string(
@@ -627,9 +611,7 @@ class QueryBase(ServiceBase):
     ) -> "AddressStringToBytesResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def account_info(
-        self, query_account_info_request: "QueryAccountInfoRequest"
-    ) -> "QueryAccountInfoResponse":
+    async def account_info(self, query_account_info_request: "QueryAccountInfoRequest") -> "QueryAccountInfoResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_accounts(
@@ -640,9 +622,7 @@ class QueryBase(ServiceBase):
         response = await self.accounts(request)
         await stream.send_message(response)
 
-    async def __rpc_account(
-        self, stream: "grpclib.server.Stream[QueryAccountRequest, QueryAccountResponse]"
-    ) -> None:
+    async def __rpc_account(self, stream: "grpclib.server.Stream[QueryAccountRequest, QueryAccountResponse]") -> None:
         request = await stream.recv_message()
         response = await self.account(request)
         await stream.send_message(response)
@@ -655,9 +635,7 @@ class QueryBase(ServiceBase):
         response = await self.account_address_by_id(request)
         await stream.send_message(response)
 
-    async def __rpc_params(
-        self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]"
-    ) -> None:
+    async def __rpc_params(self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]") -> None:
         request = await stream.recv_message()
         response = await self.params(request)
         await stream.send_message(response)

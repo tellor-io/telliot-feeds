@@ -1,23 +1,23 @@
 # type: ignore
 import asyncio
+import base64
 from typing import Any
-from typing import Tuple
 from typing import Optional
+from typing import Tuple
 
 from chained_accounts import ChainedAccount
-
+from telliot_core.apps.core import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
+from terra_sdk.client.lcd.api.tx import CreateTxOptions
 
 from telliot_feeds.feeds import DataFeed
-from telliot_feeds.utils.log import get_logger
-from telliot_feeds.utils.reporter_utils import is_online
-from telliot_feeds.utils.query_search_utils import feed_from_catalog_feeds
-from telliot_core.apps.core import RPCEndpoint
 from telliot_feeds.reporters.layer.client import LCDClient
-from terra_sdk.client.lcd.api.tx import CreateTxOptions
 from telliot_feeds.reporters.layer.msg_submit_value import MsgSubmitValue
 from telliot_feeds.reporters.layer.raw_key import RawKey
+from telliot_feeds.utils.log import get_logger
+from telliot_feeds.utils.query_search_utils import feed_from_catalog_feeds
+from telliot_feeds.utils.reporter_utils import is_online
 
 
 logger = get_logger(__name__)
@@ -25,40 +25,54 @@ logger = get_logger(__name__)
 
 class LayerReporter:
     def __init__(
-            self,
-            endpoint: RPCEndpoint,
-            account: ChainedAccount,
-            wait_period: int,
-            gas: str = "auto",
+        self,
+        endpoint: RPCEndpoint,
+        account: ChainedAccount,
+        wait_period: int,
+        gas: str = "auto",
     ) -> None:
         self.account = account
         self.gas = gas
         self.wait_period = wait_period
         self.client = LCDClient(url=endpoint.url, chain_id=endpoint.network)
+        self.previously_reported_id: Optional[int] = None
 
     async def fetch_cycle_list_query(self) -> Tuple[Optional[str], ResponseStatus]:
         query_res = await self.client._get("/tellor-io/layer/oracle/current_cyclelist_query")
-        querydata = query_res.get("query_data")
-        if querydata is None:
+        querymeta = query_res.get("query_meta")
+        print(query_res)
+        if querymeta is None:
             return None, error_status("failed to get cycle list query", log=logger.error)
-        return querydata, ResponseStatus()
+        current_id = querymeta["id"]
+        # if already reported id, keep trying until you get a new id
+        while current_id == self.previously_reported_id:
+            query_res = await self.client._get("/tellor-io/layer/oracle/current_cyclelist_query")
+            querymeta = query_res.get("query_meta")
+            if querymeta is None:
+                return None, error_status("failed to get cycle list query", log=logger.error)
+            current_id = querymeta["id"]
+        print("Query response:", query_res)
+        self.previously_reported_id = current_id
+        return querymeta["query_data"], ResponseStatus()
 
     async def fetch_tipped_query(self) -> Tuple[Optional[str], Optional[str]]:
-        # TODO: Implement this method
-        # query_res = await self.client._get("/tellor-io/layer/oracle/get_all_tipped_queries")
-        # querydata = query_res.get("query_data")
-        # tip = query_res.get("tip")
-        # return querydata, tip
-        return None, None
+        query_res = await self.client._get("/tellor-io/layer/oracle/tipped_queries")
+        querymeta = query_res.get("queries")
+        if len(querymeta) == 0:
+            return None, None
+        querydata = querymeta[0].get("query_data")
+        tip = querymeta[0].get("amount")
+        return querydata, tip
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
         query, tip = await self.fetch_tipped_query()
+        print(f"Query: {query}, Tip: {tip}")
         if query is None:
             query, status = await self.fetch_cycle_list_query()
             if not status.ok:
                 return None
 
-        datafeed = feed_from_catalog_feeds(bytes.fromhex(query))
+        datafeed = feed_from_catalog_feeds(base64.b64decode(query))
 
         return datafeed
 
@@ -97,15 +111,15 @@ class LayerReporter:
             creator=wallet.key.acc_address,
             query_data=datafeed.query.query_data,
             value=value.hex(),
-            salt="",
         )
         options = CreateTxOptions(msgs=[msg], gas=self.gas)
-        try: 
+        try:
             tx = wallet.create_and_sign_tx(options)
-            response = self.client.tx.broadcast_sync(tx)
+            response = self.client.tx.broadcast_async(tx)
             return await self.fetch_tx_info(response), ResponseStatus()
         except Exception as e:
             msg = "Error submitting transaction"
+            print(msg, e.__str__())
             return None, error_status(msg, e=e, log=logger.error)
 
     async def report_once(
@@ -114,21 +128,20 @@ class LayerReporter:
         """Report query value once"""
         datafeed = await self.fetch_datafeed()
         if not datafeed:
-            msg = "Unable to suggest datafeed"
-            return None, error_status(note=msg, log=logger.info)
+            return None, error_status(note="Unable to suggest datafeed", log=logger.info)
         txn_info, status = await self.direct_submit_txn(datafeed)
         if txn_info is None or not status.ok:
-            return None, error_status("Failed to submit transaction", log=logger.error)
+            return None, error_status("Failed to submit transaction", e=status.e, log=logger.error)
         txn_response = txn_info.get("tx_response")
         if txn_response is None:
             return None, error_status("Failed to get transaction response", log=logger.error)
         code = txn_response.get("code")
         if code == 0:
-            print("Transaction successful with status code 0")
             txn_hash = txn_response.get("txhash")
-            print(f"Transaction hash: {txn_hash}")
+            print(f"Txn hash: {txn_hash}; Transaction successful with status code {code}")
         else:
-            print("Transaction failed with status code", code)
+            print(f"Transaction failed with status code {code}")
+            self.previously_reported_id = None
         return txn_info, ResponseStatus()
 
     async def is_online(self) -> bool:

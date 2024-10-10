@@ -2,14 +2,11 @@
 # sources: cosmos/base/reflection/v1beta1/reflection.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import grpclib
@@ -101,7 +98,6 @@ class ReflectionServiceStub(betterproto.ServiceStub):
 
 
 class ReflectionServiceBase(ServiceBase):
-
     async def list_all_interfaces(
         self, list_all_interfaces_request: "ListAllInterfacesRequest"
     ) -> "ListAllInterfacesResponse":

@@ -2,7 +2,6 @@
 # sources: cosmos/base/store/v1beta1/commit_info.proto, cosmos/base/store/v1beta1/listening.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List
@@ -69,22 +68,12 @@ class BlockMetadata(betterproto.Message):
      the file streamer dump them into files together with the state changes.
     """
 
-    request_begin_block: "____tendermint_abci__.RequestBeginBlock" = (
-        betterproto.message_field(1)
-    )
-    response_begin_block: "____tendermint_abci__.ResponseBeginBlock" = (
-        betterproto.message_field(2)
-    )
+    request_begin_block: "____tendermint_abci__.RequestBeginBlock" = betterproto.message_field(1)
+    response_begin_block: "____tendermint_abci__.ResponseBeginBlock" = betterproto.message_field(2)
     deliver_txs: List["BlockMetadataDeliverTx"] = betterproto.message_field(3)
-    request_end_block: "____tendermint_abci__.RequestEndBlock" = (
-        betterproto.message_field(4)
-    )
-    response_end_block: "____tendermint_abci__.ResponseEndBlock" = (
-        betterproto.message_field(5)
-    )
-    response_commit: "____tendermint_abci__.ResponseCommit" = betterproto.message_field(
-        6
-    )
+    request_end_block: "____tendermint_abci__.RequestEndBlock" = betterproto.message_field(4)
+    response_end_block: "____tendermint_abci__.ResponseEndBlock" = betterproto.message_field(5)
+    response_commit: "____tendermint_abci__.ResponseCommit" = betterproto.message_field(6)
 
 
 @dataclass(eq=False, repr=False)

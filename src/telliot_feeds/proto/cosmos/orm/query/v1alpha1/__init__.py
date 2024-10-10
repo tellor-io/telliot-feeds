@@ -4,16 +4,12 @@
 # This file has been @generated
 import builtins
 from dataclasses import dataclass
-from datetime import (
-    datetime,
-    timedelta,
-)
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from datetime import datetime
+from datetime import timedelta
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
@@ -205,23 +201,18 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class QueryBase(ServiceBase):
-
     async def get(self, get_request: "GetRequest") -> "GetResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def list(self, list_request: "ListRequest") -> "ListResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_get(
-        self, stream: "grpclib.server.Stream[GetRequest, GetResponse]"
-    ) -> None:
+    async def __rpc_get(self, stream: "grpclib.server.Stream[GetRequest, GetResponse]") -> None:
         request = await stream.recv_message()
         response = await self.get(request)
         await stream.send_message(response)
 
-    async def __rpc_list(
-        self, stream: "grpclib.server.Stream[ListRequest, ListResponse]"
-    ) -> None:
+    async def __rpc_list(self, stream: "grpclib.server.Stream[ListRequest, ListResponse]") -> None:
         request = await stream.recv_message()
         response = await self.list(request)
         await stream.send_message(response)

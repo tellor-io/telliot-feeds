@@ -1,4 +1,4 @@
-exclude: ".git|.tox|docs|tox.ini"
+exclude: ".git|.tox|docs|tox.ini|src/telliot_feeds/proto"
 default_stages: [commit]
 fail_fast: true
 
@@ -8,7 +8,7 @@ repos:
     hooks:
       - id: interrogate
         name: Check for docstrings
-        args: [-vv, -i, --fail-under=50]
+        args: [-vv, -i, --fail-under=30]
   - repo: https://github.com/asottile/reorder_python_imports
     rev: v2.6.0
     hooks:

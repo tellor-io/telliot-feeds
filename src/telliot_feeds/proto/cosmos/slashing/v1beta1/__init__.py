@@ -2,18 +2,13 @@
 # sources: cosmos/slashing/v1beta1/genesis.proto, cosmos/slashing/v1beta1/query.proto, cosmos/slashing/v1beta1/slashing.proto, cosmos/slashing/v1beta1/tx.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
-from datetime import (
-    datetime,
-    timedelta,
-)
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from datetime import datetime
+from datetime import timedelta
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import grpclib
@@ -333,18 +328,13 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class MsgBase(ServiceBase):
-
     async def unjail(self, msg_unjail: "MsgUnjail") -> "MsgUnjailResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def update_params(
-        self, msg_update_params: "MsgUpdateParams"
-    ) -> "MsgUpdateParamsResponse":
+    async def update_params(self, msg_update_params: "MsgUpdateParams") -> "MsgUpdateParamsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_unjail(
-        self, stream: "grpclib.server.Stream[MsgUnjail, MsgUnjailResponse]"
-    ) -> None:
+    async def __rpc_unjail(self, stream: "grpclib.server.Stream[MsgUnjail, MsgUnjailResponse]") -> None:
         request = await stream.recv_message()
         response = await self.unjail(request)
         await stream.send_message(response)
@@ -374,15 +364,10 @@ class MsgBase(ServiceBase):
 
 
 class QueryBase(ServiceBase):
-
-    async def params(
-        self, query_params_request: "QueryParamsRequest"
-    ) -> "QueryParamsResponse":
+    async def params(self, query_params_request: "QueryParamsRequest") -> "QueryParamsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def signing_info(
-        self, query_signing_info_request: "QuerySigningInfoRequest"
-    ) -> "QuerySigningInfoResponse":
+    async def signing_info(self, query_signing_info_request: "QuerySigningInfoRequest") -> "QuerySigningInfoResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def signing_infos(
@@ -390,9 +375,7 @@ class QueryBase(ServiceBase):
     ) -> "QuerySigningInfosResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_params(
-        self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]"
-    ) -> None:
+    async def __rpc_params(self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]") -> None:
         request = await stream.recv_message()
         response = await self.params(request)
         await stream.send_message(response)

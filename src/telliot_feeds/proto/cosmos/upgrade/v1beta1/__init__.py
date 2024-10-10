@@ -5,12 +5,10 @@
 import warnings
 from dataclasses import dataclass
 from datetime import datetime
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
@@ -57,9 +55,7 @@ class Plan(betterproto.Message):
      such as a git commit that validators could automatically upgrade to
     """
 
-    upgraded_client_state: "betterproto_lib_google_protobuf.Any" = (
-        betterproto.message_field(5)
-    )
+    upgraded_client_state: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(5)
     """
     Deprecated: UpgradedClientState field has been deprecated. IBC upgrade logic has been
      moved to the IBC module in the sub module 02-client.
@@ -71,9 +67,7 @@ class Plan(betterproto.Message):
         if self.is_set("time"):
             warnings.warn("Plan.time is deprecated", DeprecationWarning)
         if self.is_set("upgraded_client_state"):
-            warnings.warn(
-                "Plan.upgraded_client_state is deprecated", DeprecationWarning
-            )
+            warnings.warn("Plan.upgraded_client_state is deprecated", DeprecationWarning)
 
 
 @dataclass(eq=False, repr=False)
@@ -244,9 +238,7 @@ class QueryUpgradedConsensusStateRequest(betterproto.Message):
     """
 
     def __post_init__(self) -> None:
-        warnings.warn(
-            "QueryUpgradedConsensusStateRequest is deprecated", DeprecationWarning
-        )
+        warnings.warn("QueryUpgradedConsensusStateRequest is deprecated", DeprecationWarning)
         super().__post_init__()
 
 
@@ -261,9 +253,7 @@ class QueryUpgradedConsensusStateResponse(betterproto.Message):
     """Since: cosmos-sdk 0.43"""
 
     def __post_init__(self) -> None:
-        warnings.warn(
-            "QueryUpgradedConsensusStateResponse is deprecated", DeprecationWarning
-        )
+        warnings.warn("QueryUpgradedConsensusStateResponse is deprecated", DeprecationWarning)
         super().__post_init__()
 
 
@@ -400,9 +390,7 @@ class QueryStub(betterproto.ServiceStub):
         deadline: Optional["Deadline"] = None,
         metadata: Optional["MetadataLike"] = None
     ) -> "QueryUpgradedConsensusStateResponse":
-        warnings.warn(
-            "Query.upgraded_consensus_state is deprecated", DeprecationWarning
-        )
+        warnings.warn("Query.upgraded_consensus_state is deprecated", DeprecationWarning)
 
         return await self._unary_unary(
             "/cosmos.upgrade.v1beta1.Query/UpgradedConsensusState",
@@ -449,15 +437,10 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class MsgBase(ServiceBase):
-
-    async def software_upgrade(
-        self, msg_software_upgrade: "MsgSoftwareUpgrade"
-    ) -> "MsgSoftwareUpgradeResponse":
+    async def software_upgrade(self, msg_software_upgrade: "MsgSoftwareUpgrade") -> "MsgSoftwareUpgradeResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def cancel_upgrade(
-        self, msg_cancel_upgrade: "MsgCancelUpgrade"
-    ) -> "MsgCancelUpgradeResponse":
+    async def cancel_upgrade(self, msg_cancel_upgrade: "MsgCancelUpgrade") -> "MsgCancelUpgradeResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_software_upgrade(
@@ -494,15 +477,10 @@ class MsgBase(ServiceBase):
 
 
 class QueryBase(ServiceBase):
-
-    async def current_plan(
-        self, query_current_plan_request: "QueryCurrentPlanRequest"
-    ) -> "QueryCurrentPlanResponse":
+    async def current_plan(self, query_current_plan_request: "QueryCurrentPlanRequest") -> "QueryCurrentPlanResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def applied_plan(
-        self, query_applied_plan_request: "QueryAppliedPlanRequest"
-    ) -> "QueryAppliedPlanResponse":
+    async def applied_plan(self, query_applied_plan_request: "QueryAppliedPlanRequest") -> "QueryAppliedPlanResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def upgraded_consensus_state(
@@ -516,9 +494,7 @@ class QueryBase(ServiceBase):
     ) -> "QueryModuleVersionsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def authority(
-        self, query_authority_request: "QueryAuthorityRequest"
-    ) -> "QueryAuthorityResponse":
+    async def authority(self, query_authority_request: "QueryAuthorityRequest") -> "QueryAuthorityResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_current_plan(

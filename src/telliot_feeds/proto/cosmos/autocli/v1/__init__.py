@@ -2,14 +2,11 @@
 # sources: cosmos/autocli/v1/options.proto, cosmos/autocli/v1/query.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import grpclib
@@ -231,15 +228,10 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class QueryBase(ServiceBase):
-
-    async def app_options(
-        self, app_options_request: "AppOptionsRequest"
-    ) -> "AppOptionsResponse":
+    async def app_options(self, app_options_request: "AppOptionsRequest") -> "AppOptionsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_app_options(
-        self, stream: "grpclib.server.Stream[AppOptionsRequest, AppOptionsResponse]"
-    ) -> None:
+    async def __rpc_app_options(self, stream: "grpclib.server.Stream[AppOptionsRequest, AppOptionsResponse]") -> None:
         request = await stream.recv_message()
         response = await self.app_options(request)
         await stream.send_message(response)

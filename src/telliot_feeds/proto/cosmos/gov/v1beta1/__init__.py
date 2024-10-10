@@ -4,16 +4,12 @@
 # This file has been @generated
 import warnings
 from dataclasses import dataclass
-from datetime import (
-    datetime,
-    timedelta,
-)
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from datetime import datetime
+from datetime import timedelta
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
@@ -804,18 +800,13 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class MsgBase(ServiceBase):
-
-    async def submit_proposal(
-        self, msg_submit_proposal: "MsgSubmitProposal"
-    ) -> "MsgSubmitProposalResponse":
+    async def submit_proposal(self, msg_submit_proposal: "MsgSubmitProposal") -> "MsgSubmitProposalResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def vote(self, msg_vote: "MsgVote") -> "MsgVoteResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def vote_weighted(
-        self, msg_vote_weighted: "MsgVoteWeighted"
-    ) -> "MsgVoteWeightedResponse":
+    async def vote_weighted(self, msg_vote_weighted: "MsgVoteWeighted") -> "MsgVoteWeightedResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def deposit(self, msg_deposit: "MsgDeposit") -> "MsgDepositResponse":
@@ -829,9 +820,7 @@ class MsgBase(ServiceBase):
         response = await self.submit_proposal(request)
         await stream.send_message(response)
 
-    async def __rpc_vote(
-        self, stream: "grpclib.server.Stream[MsgVote, MsgVoteResponse]"
-    ) -> None:
+    async def __rpc_vote(self, stream: "grpclib.server.Stream[MsgVote, MsgVoteResponse]") -> None:
         request = await stream.recv_message()
         response = await self.vote(request)
         await stream.send_message(response)
@@ -843,9 +832,7 @@ class MsgBase(ServiceBase):
         response = await self.vote_weighted(request)
         await stream.send_message(response)
 
-    async def __rpc_deposit(
-        self, stream: "grpclib.server.Stream[MsgDeposit, MsgDepositResponse]"
-    ) -> None:
+    async def __rpc_deposit(self, stream: "grpclib.server.Stream[MsgDeposit, MsgDepositResponse]") -> None:
         request = await stream.recv_message()
         response = await self.deposit(request)
         await stream.send_message(response)
@@ -880,43 +867,28 @@ class MsgBase(ServiceBase):
 
 
 class QueryBase(ServiceBase):
-
-    async def proposal(
-        self, query_proposal_request: "QueryProposalRequest"
-    ) -> "QueryProposalResponse":
+    async def proposal(self, query_proposal_request: "QueryProposalRequest") -> "QueryProposalResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def proposals(
-        self, query_proposals_request: "QueryProposalsRequest"
-    ) -> "QueryProposalsResponse":
+    async def proposals(self, query_proposals_request: "QueryProposalsRequest") -> "QueryProposalsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def vote(self, query_vote_request: "QueryVoteRequest") -> "QueryVoteResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def votes(
-        self, query_votes_request: "QueryVotesRequest"
-    ) -> "QueryVotesResponse":
+    async def votes(self, query_votes_request: "QueryVotesRequest") -> "QueryVotesResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def params(
-        self, query_params_request: "QueryParamsRequest"
-    ) -> "QueryParamsResponse":
+    async def params(self, query_params_request: "QueryParamsRequest") -> "QueryParamsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def deposit(
-        self, query_deposit_request: "QueryDepositRequest"
-    ) -> "QueryDepositResponse":
+    async def deposit(self, query_deposit_request: "QueryDepositRequest") -> "QueryDepositResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def deposits(
-        self, query_deposits_request: "QueryDepositsRequest"
-    ) -> "QueryDepositsResponse":
+    async def deposits(self, query_deposits_request: "QueryDepositsRequest") -> "QueryDepositsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def tally_result(
-        self, query_tally_result_request: "QueryTallyResultRequest"
-    ) -> "QueryTallyResultResponse":
+    async def tally_result(self, query_tally_result_request: "QueryTallyResultRequest") -> "QueryTallyResultResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_proposal(
@@ -935,30 +907,22 @@ class QueryBase(ServiceBase):
         response = await self.proposals(request)
         await stream.send_message(response)
 
-    async def __rpc_vote(
-        self, stream: "grpclib.server.Stream[QueryVoteRequest, QueryVoteResponse]"
-    ) -> None:
+    async def __rpc_vote(self, stream: "grpclib.server.Stream[QueryVoteRequest, QueryVoteResponse]") -> None:
         request = await stream.recv_message()
         response = await self.vote(request)
         await stream.send_message(response)
 
-    async def __rpc_votes(
-        self, stream: "grpclib.server.Stream[QueryVotesRequest, QueryVotesResponse]"
-    ) -> None:
+    async def __rpc_votes(self, stream: "grpclib.server.Stream[QueryVotesRequest, QueryVotesResponse]") -> None:
         request = await stream.recv_message()
         response = await self.votes(request)
         await stream.send_message(response)
 
-    async def __rpc_params(
-        self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]"
-    ) -> None:
+    async def __rpc_params(self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]") -> None:
         request = await stream.recv_message()
         response = await self.params(request)
         await stream.send_message(response)
 
-    async def __rpc_deposit(
-        self, stream: "grpclib.server.Stream[QueryDepositRequest, QueryDepositResponse]"
-    ) -> None:
+    async def __rpc_deposit(self, stream: "grpclib.server.Stream[QueryDepositRequest, QueryDepositResponse]") -> None:
         request = await stream.recv_message()
         response = await self.deposit(request)
         await stream.send_message(response)

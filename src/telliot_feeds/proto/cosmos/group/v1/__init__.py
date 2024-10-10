@@ -2,18 +2,13 @@
 # sources: cosmos/group/v1/events.proto, cosmos/group/v1/genesis.proto, cosmos/group/v1/query.proto, cosmos/group/v1/tx.proto, cosmos/group/v1/types.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
-from datetime import (
-    datetime,
-    timedelta,
-)
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from datetime import datetime
+from datetime import timedelta
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import betterproto.lib.google.protobuf as betterproto_lib_google_protobuf
@@ -302,9 +297,7 @@ class GroupPolicyInfo(betterproto.Message):
      would create a different result on a running proposal.
     """
 
-    decision_policy: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(
-        6
-    )
+    decision_policy: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(6)
     """decision_policy specifies the group policy's decision policy."""
 
     created_at: datetime = betterproto.message_field(7)
@@ -382,9 +375,7 @@ class Proposal(betterproto.Message):
     executor_result is the final result of the proposal execution. Initial value is NotRun.
     """
 
-    messages: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(
-        12
-    )
+    messages: List["betterproto_lib_google_protobuf.Any"] = betterproto.message_field(12)
     """
     messages is a list of `sdk.Msg`s that will be executed if the proposal passes.
     """
@@ -550,9 +541,7 @@ class MsgCreateGroupPolicy(betterproto.Message):
     metadata: str = betterproto.string_field(3)
     """metadata is any arbitrary metadata attached to the group policy."""
 
-    decision_policy: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(
-        4
-    )
+    decision_policy: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(4)
     """decision_policy specifies the group policy's decision policy."""
 
 
@@ -617,9 +606,7 @@ class MsgCreateGroupWithPolicy(betterproto.Message):
      and group policy admin.
     """
 
-    decision_policy: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(
-        6
-    )
+    decision_policy: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(6)
     """decision_policy specifies the group policy's decision policy."""
 
 
@@ -650,9 +637,7 @@ class MsgUpdateGroupPolicyDecisionPolicy(betterproto.Message):
     group_policy_address: str = betterproto.string_field(2)
     """group_policy_address is the account address of group policy."""
 
-    decision_policy: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(
-        3
-    )
+    decision_policy: "betterproto_lib_google_protobuf.Any" = betterproto.message_field(3)
     """decision_policy is the updated group policy's decision policy."""
 
 
@@ -1774,10 +1759,7 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class MsgBase(ServiceBase):
-
-    async def create_group(
-        self, msg_create_group: "MsgCreateGroup"
-    ) -> "MsgCreateGroupResponse":
+    async def create_group(self, msg_create_group: "MsgCreateGroup") -> "MsgCreateGroupResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def update_group_members(
@@ -1785,9 +1767,7 @@ class MsgBase(ServiceBase):
     ) -> "MsgUpdateGroupMembersResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def update_group_admin(
-        self, msg_update_group_admin: "MsgUpdateGroupAdmin"
-    ) -> "MsgUpdateGroupAdminResponse":
+    async def update_group_admin(self, msg_update_group_admin: "MsgUpdateGroupAdmin") -> "MsgUpdateGroupAdminResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def update_group_metadata(
@@ -1821,14 +1801,10 @@ class MsgBase(ServiceBase):
     ) -> "MsgUpdateGroupPolicyMetadataResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def submit_proposal(
-        self, msg_submit_proposal: "MsgSubmitProposal"
-    ) -> "MsgSubmitProposalResponse":
+    async def submit_proposal(self, msg_submit_proposal: "MsgSubmitProposal") -> "MsgSubmitProposalResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def withdraw_proposal(
-        self, msg_withdraw_proposal: "MsgWithdrawProposal"
-    ) -> "MsgWithdrawProposalResponse":
+    async def withdraw_proposal(self, msg_withdraw_proposal: "MsgWithdrawProposal") -> "MsgWithdrawProposalResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def vote(self, msg_vote: "MsgVote") -> "MsgVoteResponse":
@@ -1837,14 +1813,10 @@ class MsgBase(ServiceBase):
     async def exec(self, msg_exec: "MsgExec") -> "MsgExecResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def leave_group(
-        self, msg_leave_group: "MsgLeaveGroup"
-    ) -> "MsgLeaveGroupResponse":
+    async def leave_group(self, msg_leave_group: "MsgLeaveGroup") -> "MsgLeaveGroupResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_create_group(
-        self, stream: "grpclib.server.Stream[MsgCreateGroup, MsgCreateGroupResponse]"
-    ) -> None:
+    async def __rpc_create_group(self, stream: "grpclib.server.Stream[MsgCreateGroup, MsgCreateGroupResponse]") -> None:
         request = await stream.recv_message()
         response = await self.create_group(request)
         await stream.send_message(response)
@@ -1929,23 +1901,17 @@ class MsgBase(ServiceBase):
         response = await self.withdraw_proposal(request)
         await stream.send_message(response)
 
-    async def __rpc_vote(
-        self, stream: "grpclib.server.Stream[MsgVote, MsgVoteResponse]"
-    ) -> None:
+    async def __rpc_vote(self, stream: "grpclib.server.Stream[MsgVote, MsgVoteResponse]") -> None:
         request = await stream.recv_message()
         response = await self.vote(request)
         await stream.send_message(response)
 
-    async def __rpc_exec(
-        self, stream: "grpclib.server.Stream[MsgExec, MsgExecResponse]"
-    ) -> None:
+    async def __rpc_exec(self, stream: "grpclib.server.Stream[MsgExec, MsgExecResponse]") -> None:
         request = await stream.recv_message()
         response = await self.exec(request)
         await stream.send_message(response)
 
-    async def __rpc_leave_group(
-        self, stream: "grpclib.server.Stream[MsgLeaveGroup, MsgLeaveGroupResponse]"
-    ) -> None:
+    async def __rpc_leave_group(self, stream: "grpclib.server.Stream[MsgLeaveGroup, MsgLeaveGroupResponse]") -> None:
         request = await stream.recv_message()
         response = await self.leave_group(request)
         await stream.send_message(response)
@@ -2040,10 +2006,7 @@ class MsgBase(ServiceBase):
 
 
 class QueryBase(ServiceBase):
-
-    async def group_info(
-        self, query_group_info_request: "QueryGroupInfoRequest"
-    ) -> "QueryGroupInfoResponse":
+    async def group_info(self, query_group_info_request: "QueryGroupInfoRequest") -> "QueryGroupInfoResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def group_policy_info(
@@ -2071,9 +2034,7 @@ class QueryBase(ServiceBase):
     ) -> "QueryGroupPoliciesByAdminResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def proposal(
-        self, query_proposal_request: "QueryProposalRequest"
-    ) -> "QueryProposalResponse":
+    async def proposal(self, query_proposal_request: "QueryProposalRequest") -> "QueryProposalResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def proposals_by_group_policy(
@@ -2102,14 +2063,10 @@ class QueryBase(ServiceBase):
     ) -> "QueryGroupsByMemberResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def tally_result(
-        self, query_tally_result_request: "QueryTallyResultRequest"
-    ) -> "QueryTallyResultResponse":
+    async def tally_result(self, query_tally_result_request: "QueryTallyResultRequest") -> "QueryTallyResultResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def groups(
-        self, query_groups_request: "QueryGroupsRequest"
-    ) -> "QueryGroupsResponse":
+    async def groups(self, query_groups_request: "QueryGroupsRequest") -> "QueryGroupsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_group_info(
@@ -2216,9 +2173,7 @@ class QueryBase(ServiceBase):
         response = await self.tally_result(request)
         await stream.send_message(response)
 
-    async def __rpc_groups(
-        self, stream: "grpclib.server.Stream[QueryGroupsRequest, QueryGroupsResponse]"
-    ) -> None:
+    async def __rpc_groups(self, stream: "grpclib.server.Stream[QueryGroupsRequest, QueryGroupsResponse]") -> None:
         request = await stream.recv_message()
         response = await self.groups(request)
         await stream.send_message(response)

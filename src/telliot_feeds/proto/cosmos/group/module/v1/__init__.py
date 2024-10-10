@@ -2,7 +2,6 @@
 # sources: cosmos/group/module/v1/module.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
 from datetime import timedelta
 

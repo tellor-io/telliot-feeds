@@ -2,14 +2,11 @@
 # sources: cosmos/params/v1beta1/params.proto, cosmos/params/v1beta1/query.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import grpclib
@@ -140,20 +137,13 @@ class QueryStub(betterproto.ServiceStub):
 
 
 class QueryBase(ServiceBase):
-
-    async def params(
-        self, query_params_request: "QueryParamsRequest"
-    ) -> "QueryParamsResponse":
+    async def params(self, query_params_request: "QueryParamsRequest") -> "QueryParamsResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def subspaces(
-        self, query_subspaces_request: "QuerySubspacesRequest"
-    ) -> "QuerySubspacesResponse":
+    async def subspaces(self, query_subspaces_request: "QuerySubspacesRequest") -> "QuerySubspacesResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def __rpc_params(
-        self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]"
-    ) -> None:
+    async def __rpc_params(self, stream: "grpclib.server.Stream[QueryParamsRequest, QueryParamsResponse]") -> None:
         request = await stream.recv_message()
         response = await self.params(request)
         await stream.send_message(response)

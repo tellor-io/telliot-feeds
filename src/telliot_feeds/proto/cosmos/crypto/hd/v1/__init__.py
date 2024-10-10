@@ -2,7 +2,6 @@
 # sources: cosmos/crypto/hd/v1/hd.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
 
 import betterproto

@@ -2,7 +2,6 @@
 # sources: cosmos/tx/signing/v1beta1/signing.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
 from typing import List
 
@@ -129,9 +128,7 @@ class SignatureDescriptorDataSingle(betterproto.Message):
 class SignatureDescriptorDataMulti(betterproto.Message):
     """Multi is the signature data for a multisig public key"""
 
-    bitarray: "___crypto_multisig_v1_beta1__.CompactBitArray" = (
-        betterproto.message_field(1)
-    )
+    bitarray: "___crypto_multisig_v1_beta1__.CompactBitArray" = betterproto.message_field(1)
     """bitarray specifies which keys within the multisig are signing"""
 
     signatures: List["SignatureDescriptorData"] = betterproto.message_field(2)

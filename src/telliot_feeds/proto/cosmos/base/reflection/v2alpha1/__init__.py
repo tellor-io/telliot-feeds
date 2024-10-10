@@ -2,14 +2,11 @@
 # sources: cosmos/base/reflection/v2alpha1/reflection.proto
 # plugin: python-betterproto
 # This file has been @generated
-
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 import betterproto
 import grpclib
@@ -127,17 +124,13 @@ class InterfaceDescriptor(betterproto.Message):
     fullname: str = betterproto.string_field(1)
     """fullname is the name of the interface"""
 
-    interface_accepting_messages: List["InterfaceAcceptingMessageDescriptor"] = (
-        betterproto.message_field(2)
-    )
+    interface_accepting_messages: List["InterfaceAcceptingMessageDescriptor"] = betterproto.message_field(2)
     """
     interface_accepting_messages contains information regarding the proto messages which contain the interface as
      google.protobuf.Any field
     """
 
-    interface_implementers: List["InterfaceImplementerDescriptor"] = (
-        betterproto.message_field(3)
-    )
+    interface_implementers: List["InterfaceImplementerDescriptor"] = betterproto.message_field(3)
     """
     interface_implementers is a list of the descriptors of the interface implementers
     """
@@ -469,7 +462,6 @@ class ReflectionServiceStub(betterproto.ServiceStub):
 
 
 class ReflectionServiceBase(ServiceBase):
-
     async def get_authn_descriptor(
         self, get_authn_descriptor_request: "GetAuthnDescriptorRequest"
     ) -> "GetAuthnDescriptorResponse":
@@ -495,9 +487,7 @@ class ReflectionServiceBase(ServiceBase):
     ) -> "GetQueryServicesDescriptorResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
-    async def get_tx_descriptor(
-        self, get_tx_descriptor_request: "GetTxDescriptorRequest"
-    ) -> "GetTxDescriptorResponse":
+    async def get_tx_descriptor(self, get_tx_descriptor_request: "GetTxDescriptorRequest") -> "GetTxDescriptorResponse":
         raise grpclib.GRPCError(grpclib.const.Status.UNIMPLEMENTED)
 
     async def __rpc_get_authn_descriptor(
