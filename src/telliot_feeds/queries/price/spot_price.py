@@ -100,6 +100,7 @@ SPOT_PRICE_PAIRS = [
     "PUFETH/USD",
     "STONE/USD",
     "SUPEROETHB/ETH",
+    "LSK/USD",
 ]
 
 
