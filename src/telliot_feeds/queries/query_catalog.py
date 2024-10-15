@@ -662,3 +662,9 @@ query_catalog.add_entry(
     title="superOETHb/ETH spot price",
     q=SpotPrice(asset="superoethb", currency="eth"),
 )
+
+query_catalog.add_entry(
+    tag="lsk-usd-spot",
+    title="LSK/USD spot price",
+    q=SpotPrice(asset="lsk", currency="usd"),
+)
