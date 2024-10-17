@@ -93,6 +93,8 @@ from telliot_feeds.feeds.sfrax_usd_feed import sfrax_usd_feed
 from telliot_feeds.feeds.shib_usd_feed import shib_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_feed_example
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
+from telliot_feeds.feeds.solvbtc_usd_feed import solvbtc_usd_median_feed
+from telliot_feeds.feeds.solvbtcbbn_usd_feed import solvbtcbbn_usd_median_feed
 from telliot_feeds.feeds.spot_price_manual_feed import spot_price_manual_feed
 from telliot_feeds.feeds.steth_btc_feed import steth_btc_median_feed
 from telliot_feeds.feeds.steth_usd_feed import steth_usd_median_feed
@@ -109,6 +111,7 @@ from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 from telliot_feeds.feeds.twap_manual_feed import twap_30d_example_manual_feed
 from telliot_feeds.feeds.twap_manual_feed import twap_manual_feed
 from telliot_feeds.feeds.uni_usd_feed import uni_usd_median_feed
+from telliot_feeds.feeds.unibtc_usd_feed import unibtc_usd_median_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.usdm_usd_feed import usdm_usd_median_feed
 from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
@@ -234,6 +237,9 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "stone-usd-spot": stone_usd_median_feed,
     "superoethb-eth-spot": superoethb_eth_median_feed,
     "lsk-usd-spot": lsk_usd_median_feed,
+    "unibtc-usd-spot": unibtc_usd_median_feed,
+    "solvbtc-usd-spot": solvbtc_usd_median_feed,
+    "solvbtcbbn-usd-spot": solvbtcbbn_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

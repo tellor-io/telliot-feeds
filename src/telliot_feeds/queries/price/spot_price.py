@@ -101,6 +101,9 @@ SPOT_PRICE_PAIRS = [
     "STONE/USD",
     "SUPEROETHB/ETH",
     "LSK/USD",
+    "UNIBTC/USD",
+    "SOLVBTC/USD",
+    "SOLVBTCBBN/USD",
 ]
 
 

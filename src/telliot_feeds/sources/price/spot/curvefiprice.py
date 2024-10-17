@@ -91,7 +91,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        source = CurveFiUSDPriceSource(asset="frxeth", currency="usd")
+        source = CurveFiUSDPriceSource(asset="solvbtcbbn", currency="usd")
         v, _ = await source.fetch_new_datapoint()
         print(v)
 
