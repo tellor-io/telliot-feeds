@@ -2,6 +2,10 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 
+import requests
+from requests import Session
+from telliot_core.apps.telliot_config import TelliotConfig
+
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService
@@ -12,9 +16,9 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 pancakeswap_map = {
     "wbnb": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
-    "fuse": "0x5857c96dae9cf8511b08cb07f85753c472d36ea3",
-    "solvbtcbbn": "0x1346b618dc92810ec74163e4c27004c921d446a5",
 }
+
+API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
 
 
 class PancakeswapPriceService(WebPriceService):
@@ -22,42 +26,72 @@ class PancakeswapPriceService(WebPriceService):
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "Pancakeswap Price Service"
-        kwargs["url"] = "https://api.pancakeswap.info"
+        kwargs["url"] = "https://gateway-arbitrum.network.thegraph.com"
         super().__init__(**kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
-        This implementation gets the price from the Pancakeswap API
-        Pankcakeswap official Github repo for API:
-        https://github.com/pancakeswap/pancake-info-api
-
+        This implementation gets the price from a decentralized subgraph:
+        https://thegraph.com/explorer/subgraphs/Hv1GncLY5docZoGtXjo4kwbTvxm3MAhVZqBZE4sUT9eZ?view=Query&chain=arbitrum-one
         """
 
         asset = asset.lower()
 
-        token_addr = pancakeswap_map.get(asset, None)
-
-        if not token_addr:
+        token = pancakeswap_map.get(asset, None)
+        if not token:
             raise Exception("Asset not supported: {}".format(asset))
 
-        request_url = f"/api/v2/tokens/{token_addr}"
+        query = "{bundles{id ethPriceUSD}token" + f'(id: "{token}")' + "{ derivedUSD } }"
 
-        d = self.get_url(request_url)
+        json_data = {"query": query}
 
-        if "error" in d:
-            logger.error(d)
+        request_url = f"{self.url}/api/subgraphs/id/Hv1GncLY5docZoGtXjo4kwbTvxm3MAhVZqBZE4sUT9eZ"
+
+        session = Session()
+        if API_KEY != "":
+            headers = {"Accepts": "application/json", "Authorization": f"Bearer {API_KEY}"}
+            session.headers.update(headers)
+        if API_KEY == "":
+            logger.warning("No Graph API key found for Uniswap prices!")
+
+        with requests.Session() as s:
+            try:
+                r = s.post(request_url, headers=headers, json=json_data, timeout=self.timeout)
+                res = r.json()
+                data = {"response": res}
+
+            except requests.exceptions.ConnectTimeout:
+                logger.warning("Timeout Error, No Uniswap prices retrieved (check thegraph api key)")
+                return None, None
+
+            except Exception as e:
+                logger.warning(f"No prices retrieved from Uniswap: {e}")
+                return None, None
+
+        if "error" in data:
+            logger.error(data)
             return None, None
 
-        elif "response" in d:
-            response = d["response"]
-            print(response)
+        if currency.lower() == "eth":
+            logger.info("Pancakeswap source is for usd pairs only")
+            return None, None
 
+        elif "response" in data:
+            response = data["response"]
+            logger.info(f"response: {response}")
             try:
-                price = response["data"]["price"] if currency.lower() == "usd" else response["data"]["price_BNB"]
+                price = response["data"]["token"]["derivedUSD"]
+                if price == 0.0:
+                    msg = "Uniswap API not included, because price response is 0"
+                    logger.warning(msg)
+                    return None, None
+                else:
+                    return price, datetime_now_utc()
             except KeyError as e:
-                msg = "Error parsing Pancakeswap API response: KeyError: {}".format(e)
+                msg = "Error parsing Pancakeswap response: KeyError: {}".format(e)
                 logger.critical(msg)
+                return None, None
 
         else:
             raise Exception("Invalid response from get_url")
@@ -70,3 +104,14 @@ class PancakeswapPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
     service: PancakeswapPriceService = field(default_factory=PancakeswapPriceService, init=False)
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main() -> None:
+        price_source = PancakeswapPriceSource(asset="wbnb", currency="usd")
+        price, timestamp = await price_source.fetch_new_datapoint()
+        print(price, timestamp)
+
+    asyncio.run(main())

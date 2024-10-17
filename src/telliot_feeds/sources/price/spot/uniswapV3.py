@@ -54,9 +54,8 @@ class UniswapV3PriceService(WebPriceService):
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
 
-        This implementation gets the price from the UniswapV3 subgraph
-        https://docs.uniswap.org/sdk/subgraph/subgraph-examples
-
+        This implementation gets the price from a decentralized subgraph:
+        https://thegraph.com/explorer/subgraphs/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV?view=Query&chain=arbitrum-one
         """
 
         asset = asset.lower()
