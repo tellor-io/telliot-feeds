@@ -15,53 +15,39 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
-uniswapV3token0__pool_map = {
-    "oeth": "0x52299416c469843f4e0d54688099966a6c7d720f",
-    "primeeth": "0xb6934f4cf655c93e897514dc7c2af5a143b9ca22",
-}
-
-
-uniswapV3token1__pool_map = {
-    "ogv": "0xa0b30e46f6aeb8f5a849241d703254bb4a719d92",
-}
 
 API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
 
 
-class UniswapV3PoolPriceService(WebPriceService):
-    """UniswapV3 Price Service for Pool Ratios"""
+class pancakePoolPriceService(WebPriceService):
+    """PancakeSwap Price Service for Pool Ratios"""
 
     def __init__(self, **kwargs: Any) -> None:
-        kwargs["name"] = "UniswapV3 Price Service"
+        kwargs["name"] = "PancakeSwap Price Service"
         kwargs["url"] = "https://gateway-arbitrum.network.thegraph.com"
         kwargs["timeout"] = 10.0
         super().__init__(**kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """Implement PriceServiceInterface
-        This implementation gets the price from the UniswapV3 subgraph using the pool query
+        This implementation gets the price from the PancakeSwap subgraph using the pool query
         https://docs.uniswap.org/sdk/subgraph/subgraph-examples
 
         """
-        asset = asset.lower()
-        pool0 = uniswapV3token0__pool_map.get(asset, None)
-        pool1 = uniswapV3token1__pool_map.get(asset, None)
-
-        if not pool0 and not pool1:
-            raise Exception("Asset not supported: {}".format(asset))
-
         headers = {"Content-Type": "application/json", "Authorization": f"Bearer {API_KEY}"}
-        if pool0:
-            query = "{pool" + f'(id: "{pool0}")' + "{ token0Price } }"
-            key = "token0Price"
+        graphql_query = """
+        {
+        pool(id: "0x5a5ca75147550079411f6f543b729a4beab4dfeb") {
+            token0Price
+            token1 {
+            derivedUSD
+            }
+        }
+        }
+        """
 
-        if pool1:
-            query = "{pool" + f'(id: "{pool1}")' + "{ token1Price } }"
-            key = "token1Price"
-
-        json_data = {"query": query}
-
-        request_url = f"{self.url}/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV"
+        json_data = {"query": graphql_query}
+        request_url = f"{self.url}/api/subgraphs/id/Hv1GncLY5docZoGtXjo4kwbTvxm3MAhVZqBZE4sUT9eZ"
 
         session = Session()
         if API_KEY != "":
@@ -87,13 +73,15 @@ class UniswapV3PoolPriceService(WebPriceService):
             return None, None
 
         elif "response" in data:
-            response = data["response"]
-
+            response_data = data["response"]
             try:
-                token_price = float(response["data"]["pool"][key])
+                pool_data = response_data["data"]["pool"]
+                token0_price = pool_data["token0Price"]
+                solvbtc_usd_price = pool_data["token1"]["derivedUSD"]
+                token_price = float(token0_price) * float(solvbtc_usd_price)
                 return token_price, datetime_now_utc()
             except KeyError as e:
-                msg = "Error parsing UniswapV3 pool response: KeyError: {}".format(e)
+                msg = "Error parsing Pancake pool response: KeyError: {}".format(e)
                 logger.critical(msg)
                 return None, None
 
@@ -102,17 +90,17 @@ class UniswapV3PoolPriceService(WebPriceService):
 
 
 @dataclass
-class UniswapV3PoolPriceSource(PriceSource):
+class pancakePoolPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: UniswapV3PoolPriceService = field(default_factory=UniswapV3PoolPriceService, init=False)
+    service: pancakePoolPriceService = field(default_factory=pancakePoolPriceService, init=False)
 
 
 if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        price_source = UniswapV3PoolPriceSource(asset="oeth", currency="eth")
+        price_source = pancakePoolPriceSource(asset="solvbtcbbn", currency="usd")
         price, timestamp = await price_source.fetch_new_datapoint()
         print(price, timestamp)
 
