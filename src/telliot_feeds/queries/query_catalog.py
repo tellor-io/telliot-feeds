@@ -668,3 +668,21 @@ query_catalog.add_entry(
     title="LSK/USD spot price",
     q=SpotPrice(asset="lsk", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="unibtc-usd-spot",
+    title="UNIBTC/USD spot price",
+    q=SpotPrice(asset="unibtc", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="solvbtc-usd-spot",
+    title="SOLVBTC/USD spot price",
+    q=SpotPrice(asset="solvbtc", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="solvbtcbbn-usd-spot",
+    title="SOLVBTCBBN/USD spot price",
+    q=SpotPrice(asset="solvbtcbbn", currency="usd"),
+)

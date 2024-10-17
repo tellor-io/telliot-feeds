@@ -13,6 +13,7 @@ logger = get_logger(__name__)
 pancakeswap_map = {
     "wbnb": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
     "fuse": "0x5857c96dae9cf8511b08cb07f85753c472d36ea3",
+    "solvbtcbbn": "0x1346b618dc92810ec74163e4c27004c921d446a5",
 }
 
 
