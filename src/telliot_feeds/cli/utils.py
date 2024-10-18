@@ -79,7 +79,7 @@ def print_reporter_settings(
     click.echo(f"Legacy gas price (gwei): {legacy_gas_price}")
     click.echo(f"Max fee (gwei): {max_fee}")
     click.echo(f"Priority fee (gwei): {priority_fee}")
-    click.echo(f"Desired stake amount: {stake_amount}")
+    click.echo(f"Desired stake amount(500000 min): {stake_amount}")
     click.echo(f"Minimum native token balance (e.g. ETH if on Ethereum mainnet): {min_native_token_balance}")
     click.echo("\n")
 
@@ -327,7 +327,7 @@ def common_reporter_options(f: Callable[..., Any]) -> Callable[..., Any]:
         "-wp", "--wait-period", help="wait period between feed suggestion calls", nargs=1, type=int, default=7
     )
     @click.option("--submit-once/--submit-continuous", default=False)
-    @click.option("--stake", "-s", "stake", help=STAKE_MESSAGE, nargs=1, type=float, default=10.0)
+    @click.option("--stake", "-s", "stake", help=STAKE_MESSAGE, nargs=1, type=float, default=500000.0)
     @click.option(
         "--check-rewards/--no-check-rewards",
         "-cr/-ncr",
