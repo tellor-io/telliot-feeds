@@ -27,6 +27,7 @@ contract TellorFlex {
     uint256 public timeBasedReward = 5e17; // amount of TB rewards released per 5 minutes
     uint256 public timeOfLastAllocation; // time of last update to accumulatedRewardPerShare
     uint256 public timeOfLastNewValue = block.timestamp; // time of the last new submitted value, originally set to the block timestamp
+    uint256 public timeOfLastDistribution; // time of last dispersion of time-based rewards
     uint256 public totalRewardDebt; // staking reward debt, used to calculate real staking rewards balance
     uint256 public totalStakeAmount; // total amount of tokens locked in contract (via stake)
     uint256 public totalStakers; // total number of stakers with at least stakeAmount staked, not exact
@@ -113,6 +114,9 @@ contract TellorFlex {
         stakingTokenPriceQueryId = _stakingTokenPriceQueryId;
     }
 
+        timeOfLastDistribution = block.timestamp;
+        
+        
     /**
      * @dev Allows the owner to initialize the governance (flex addy needed for governance deployment)
      * @param _governanceAddress address of governance contract (github.com/tellor-io/governance)
@@ -319,7 +323,7 @@ contract TellorFlex {
         _report.valueByTimestamp[block.timestamp] = _value;
         _report.reporterByTimestamp[block.timestamp] = msg.sender;
         // Disperse Time Based Reward
-        uint256 _reward = ((block.timestamp - timeOfLastNewValue) * timeBasedReward) / 300; //.5 TRB per 5 minutes
+        uint256 _reward = ((block.timestamp - timeOfLastDistribution) * timeBasedReward) / 300; //.5 TRB per 5 minutes
         uint256 _totalTimeBasedRewardsBalance =
             token.balanceOf(address(this)) -
             (totalStakeAmount + stakingRewardsBalance + toWithdraw);
@@ -329,7 +333,10 @@ contract TellorFlex {
             } else {
                 token.transfer(msg.sender, _reward);
             }
+        }    
+            timeOfLastDistribution = block.timestamp;    
         }
+        
         // Update last oracle value and number of values submitted by a reporter
         timeOfLastNewValue = block.timestamp;
         _staker.reportsSubmitted++;

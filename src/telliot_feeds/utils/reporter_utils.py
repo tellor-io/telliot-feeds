@@ -34,6 +34,7 @@ from telliot_feeds.constants import TARAXA_CHAINS
 from telliot_feeds.constants import TELOS_CHAINS
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
+from telliot_feeds.feeds import RANDOM_FEEDS
 from telliot_feeds.feeds.atla_helper_feed import atla_helper_feed
 from telliot_feeds.feeds.eth_usd_feed import eth_usd_median_feed
 from telliot_feeds.feeds.fil_usd_feed import fil_usd_median_feed
@@ -85,7 +86,7 @@ async def tellor_suggested_report(
 
 def suggest_random_feed() -> DataFeed[Any]:
     """Suggest a random feed to report against."""
-    return random.choice(list(CATALOG_FEEDS.values()))
+    return random.choice(list(RANDOM_FEEDS.values()))
 
 
 async def is_online() -> bool:

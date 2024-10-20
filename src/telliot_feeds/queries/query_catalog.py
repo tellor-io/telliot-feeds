@@ -35,6 +35,9 @@ query_catalog = Catalog()
 
 query_catalog.add_entry(tag="trb-usd-spot", title="TRB/USD spot price", q=SpotPrice(asset="trb", currency="usd"))
 
+query_catalog.add_entry(tag="fetch-usd-spot", title="FETCH/USD spot price",
+                        q=SpotPrice(asset="fetch", currency="usd"))
+                        
 query_catalog.add_entry(
     tag="ohm-eth-spot",
     title="OHM/ETH spot price",
@@ -661,6 +664,30 @@ query_catalog.add_entry(
     tag="superoethb-eth-spot",
     title="superOETHb/ETH spot price",
     q=SpotPrice(asset="superoethb", currency="eth"),
+)
+
+query_catalog.add_entry(
+    tag="hex-usd-spot",
+    title="HEX/USD spot price",
+    q=SpotPrice(asset="hex", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="inc-usd-spot",
+    title="INC/USD spot price",
+    q=SpotPrice(asset="inc", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="loan-usd-spot",
+    title="LOAN/USD spot price",
+    q=SpotPrice(asset="loan", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="plsx-usd-spot",
+    title="PLSX/USD spot price",
+    q=SpotPrice(asset="plsx", currency="usd"),
 )
 
 query_catalog.add_entry(

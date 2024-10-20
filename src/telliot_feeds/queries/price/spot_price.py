@@ -97,9 +97,15 @@ SPOT_PRICE_PAIRS = [
     "TLOS/USD",
     "ATLA/USD",
     "TARA/USD",
+    "TARA/USD",
     "PUFETH/USD",
     "STONE/USD",
     "SUPEROETHB/ETH",
+    "FETCH/USD",
+    "HEX/USD",
+    "INC/USD",
+    "LOAN/USD",
+    "PLSX/USD",
     "LSK/USD",
 ]
 

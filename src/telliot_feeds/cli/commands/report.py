@@ -1,6 +1,6 @@
 from typing import Any
 from typing import Optional
-from typing import Union
+from typing import Union, Tuple
 
 import click
 from chained_accounts import find_accounts
@@ -136,7 +136,7 @@ def reporter() -> None:
     "-rf/-nrf",
     "use_random_feeds",
     default=False,
-    help="Reporter will use a random datafeed from the catalog.",
+    help="Reporter will use a random datafeed from the RANDOM_FEEDS catalog.",
 )
 @click.option("--rng-auto/--rng-auto-off", default=False)
 @click.option("-spwd", "--signature-password", type=str)
@@ -157,7 +157,7 @@ async def report(
     priority_fee_per_gas: Optional[float],
     max_fee_per_gas: Optional[float],
     legacy_gas_price: Optional[int],
-    expected_profit: str,
+    expected_profit: Tuple[float, float],
     submit_once: bool,
     wait_period: int,
     reporting_diva_protocol: bool,

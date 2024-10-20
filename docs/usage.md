@@ -45,8 +45,11 @@ Options:
   -mf, --max-fee INTEGER          use custom maxFeePerGas (gwei)
   -pf, --priority-fee INTEGER     use custom maxPriorityFeePerGas (gwei)
   -gp, --gas-price INTEGER        use custom legacy gasPrice (gwei)
-  -p, --profit TEXT               lower threshold (inclusive) for expected
-                                  percent profit
+  -p, --profit float float        lower threshold to report for percentage or usd profit
+                                  -p 0 0 will report to any profit that is not negative.
+                                  -p 200 5 would report for a 200% or 5 usd profit
+                                  -p YOLO 0 skip the checks and just report
+                                  Default values are 100 0
   -tx, --tx-type TEXT             choose transaction type (0 for legacy txs, 2
                                   for EIP-1559)
   -gps, --gas-price-speed [safeLow|average|fast|fastest]
@@ -68,7 +71,7 @@ Options:
                                   Address of custom autopay contract
   -360, --tellor-360 / -flex, --tellor-flex
                                   Choose between Tellor 360 or Flex contracts
-  -s, --stake FLOAT               ❗Telliot will automatically stake more TRB
+  -s, --stake FLOAT               ❗Telliot will automatically stake more TRB(PLS in Pulsechain)
                                   if your stake is below or falls below the
                                   stake amount required to report. If you
                                   would like to stake more than required,
@@ -86,7 +89,7 @@ Options:
                                   the random feeds flag.
   -rf, --random-feeds / -nrf, --no-random-feeds
                                   Reporter will use a random datafeed from the
-                                  catalog.
+                                  RANDOM_FEEDS catalog.
   --rng-auto / --rng-auto-off
   --submit-once / --submit-continuous
   -pwd, --password TEXT
@@ -141,23 +144,23 @@ telliot report -a staker1 --submit-once
 Use the build-a-feed flag (`--build-feed`) to build a DataFeed of a QueryType with one or more QueryParameters. When reporting, the CLI will list the QueryTypes this flag supports. To select a QueryType, enter a type from the list provided. Then, enter in the corresponding QueryParameters for the QueryType you have selected, and telliot will build the Query and select the appropriate source.
 
 ```
-telliot report -a staker1 --build-feed --submit-once -p YOLO
+telliot report -a staker1 --build-feed --submit-once -p YOLO 0
 ```
 
 ## Profit Flag
 
 **Reporting for profit is extremely competitive and profit estimates aren't guarantees that you won't lose money!**
 
-Use this flag (`--profit/-p`) to set an expected profit. The default is 100%, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use the `"YOLO"` string:
+Use this flag (`--profit/-p`) to set an expected profit in % and $ values, example: -p 10 5 would take 10% or $5. The default is 100% and 0 usd, which will likely result in your reporter never attempting to report unless you're on a testnet. To bypass profitability checks, use `"YOLO 0"` string:
 
 ```
-telliot report -a acct1 -p YOLO
+telliot report -a acct1 -p YOLO 0
 ```
 
 Normal profit flag usage:
 
 ```
-telliot report -a acct4 -p 2
+telliot report -a acct4 -p 10 5 (10% or 5 dollars)
 ```
 
 **Note: Skipping profit checks does not skip checks for tips on the [AutoPay contract](https://github.com/tellor-io/autoPay). If you'd like to skip these checks as well, use the `--no-check-rewards/-ncr` flag.**
@@ -216,7 +219,7 @@ The reporter will automatically attempt to stake the required amount, but if you
 telliot report -a acct1 -s 2000 -ncr -rf
 ```
 
-If the reporter account's actual stake is reduced after a dispute, the reporter will attempt to stake the difference in TRB to return to the original desired stake amount.
+If the reporter account's actual stake is reduced after a dispute, the reporter will attempt to stake the difference in TRB(PLS in Pulsechain) to return to the original desired stake amount.
 
 ### Withdraw Stake
 

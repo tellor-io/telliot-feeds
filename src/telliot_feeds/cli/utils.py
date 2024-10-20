@@ -9,6 +9,7 @@ from typing import get_type_hints
 from typing import Optional
 from typing import Type
 from typing import Union
+from typing import Tuple
 
 import click
 from chained_accounts import ChainedAccount
@@ -43,7 +44,7 @@ def print_reporter_settings(
     base_fee: Optional[float],
     priority_fee: Optional[float],
     max_fee: Optional[float],
-    expected_profit: str,
+    expected_profit: Tuple[float, float],
     chain_id: int,
     transaction_type: int,
     legacy_gas_price: Optional[int],
@@ -70,28 +71,39 @@ def print_reporter_settings(
     if expected_profit == "YOLO":
         click.echo("🍜🍜🍜 Reporter not enforcing profit threshold! 🍜🍜🍜")
     else:
-        click.echo(f"Expected percent profit: {expected_profit}%")
+        click.echo(f"Expected percent profit: {expected_profit[0]}%")
+        click.echo(f"Expected usd profit: {expected_profit[1]} usd")
 
     click.echo(f"Transaction type: {transaction_type}")
     click.echo(f"Gas Limit: {gas_limit}")
     click.echo(f"Legacy gas price (gwei): {legacy_gas_price}")
     click.echo(f"Max fee (gwei): {max_fee}")
     click.echo(f"Priority fee (gwei): {priority_fee}")
-    click.echo(f"Desired stake amount: {stake_amount}")
+    click.echo(f"Desired stake amount(500000 min): {stake_amount}")
     click.echo(f"Minimum native token balance (e.g. ETH if on Ethereum mainnet): {min_native_token_balance}")
     click.echo("\n")
 
 
-def parse_profit_input(ctx: click.Context, param: Any, value: str) -> Optional[Union[str, float]]:
-    """Parses user input expected profit and ensures
-    the input is either a float or the string 'YOLO'."""
-    if value == "YOLO":
-        return value
+def parse_profit_input(ctx: click.Context, param: Any, value: tuple) -> Optional[Union[str, float, tuple[float, float]]]:
+    """
+    Parses user input for expected profit.
+    Ensures the input is either:
+    - A tuple of two floats (percentage, USD profit)
+    - The string 'YOLO 0'.
+    """
+    percentage_input, usd_input = value  # Extract the two arguments (percentage and USD profit)
+    
+    # Check if the percentage is 'YOLO'
+    if percentage_input == "YOLO":
+        return "YOLO"
     else:
         try:
-            return float(value)
+            # Convert both inputs to floats
+            percentage_threshold = float(percentage_input)
+            usd_threshold = float(usd_input)
+            return percentage_threshold, usd_threshold
         except ValueError:
-            raise click.BadParameter("Not a valid profit input. Enter float or the string, 'YOLO'")
+            raise click.BadParameter("Not a valid profit input. Enter two floats (percentage, USD profit) or 'YOLO'")
 
 
 def reporter_cli_core(ctx: click.Context) -> TelliotCore:
@@ -315,7 +327,7 @@ def common_reporter_options(f: Callable[..., Any]) -> Callable[..., Any]:
         "-wp", "--wait-period", help="wait period between feed suggestion calls", nargs=1, type=int, default=7
     )
     @click.option("--submit-once/--submit-continuous", default=False)
-    @click.option("--stake", "-s", "stake", help=STAKE_MESSAGE, nargs=1, type=float, default=10.0)
+    @click.option("--stake", "-s", "stake", help=STAKE_MESSAGE, nargs=1, type=float, default=500000.0)
     @click.option(
         "--check-rewards/--no-check-rewards",
         "-cr/-ncr",
@@ -327,13 +339,13 @@ def common_reporter_options(f: Callable[..., Any]) -> Callable[..., Any]:
         "--profit",
         "-p",
         "expected_profit",
-        help="lower threshold (inclusive) for expected percent profit",
-        nargs=1,
+        help="Lower thresholds to report for percentage or USD profit: '-p 0 0' will report to any profit that is not negative. '-p 200 5' would report for a 200% or 5 USD profit. '-p YOLO 0' skip the checks and just report. Defaul values are 100 0",
+        nargs=2,  # Allow 2 arguments: one for percentage, one for USD profit
         # User can omit profitability checks by specifying "YOLO"
         type=click.UNPROCESSED,
         required=False,
         callback=parse_profit_input,
-        default="100.0",
+        default=("100.0", "0.0"),  # Default to 100% profit and 0 USD
     )
     @click.option(
         "--skip-manual-feeds",

@@ -7,6 +7,8 @@ from typing import Dict
 from typing import Optional
 from typing import Tuple
 from typing import Union
+from typing import Tuple
+
 
 from eth_abi.exceptions import EncodingTypeError
 from eth_utils import to_checksum_address
@@ -21,6 +23,7 @@ from web3.types import TxReceipt
 from telliot_feeds.constants import CHAINS_WITH_TBR
 from telliot_feeds.feeds import DataFeed
 from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
+from telliot_feeds.feeds.fetch_usd_feed import fetch_usd_median_feed
 from telliot_feeds.reporters.rewards.time_based_rewards import get_time_based_rewards
 from telliot_feeds.reporters.stake import Stake
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
@@ -46,7 +49,7 @@ class Tellor360Reporter(Stake):
         autopay: Contract,
         chain_id: int,
         datafeed: Optional[DataFeed[Any]] = None,
-        expected_profit: Union[str, float] = "YOLO",
+        expected_profit: Union[str, float, Tuple[float, float]] = "YOLO",
         wait_period: int = 7,
         check_rewards: bool = True,
         ignore_tbr: bool = False,  # relevant only for eth-mainnet and eth-testnets
@@ -254,12 +257,12 @@ class Tellor360Reporter(Stake):
         tip = self.to_ether(self.autopaytip)
         # Fetch token prices in USD
         native_token_feed = get_native_token_feed(self.chain_id)
-        price_feeds = [native_token_feed, trb_usd_median_feed]
+        price_feeds = [native_token_feed, fetch_usd_median_feed]
         _ = await asyncio.gather(*[feed.source.fetch_new_datapoint() for feed in price_feeds])
         price_native_token = native_token_feed.source.latest[0]
-        price_trb_usd = trb_usd_median_feed.source.latest[0]
+        price_fetch_usd = fetch_usd_median_feed.source.latest[0]
 
-        if price_native_token is None or price_trb_usd is None:
+        if price_native_token is None or price_fetch_usd is None:
             return error_status("Unable to fetch token price", log=logger.warning)
 
         gas_info = self.get_gas_info_core()
@@ -285,22 +288,45 @@ class Tellor360Reporter(Stake):
         )
 
         # Calculate profit
-        rev_usd = tip * price_trb_usd
+        rev_usd = tip * price_fetch_usd
         costs_usd = txn_fee * price_native_token  # convert gwei costs to eth, then to usd
         profit_usd = rev_usd - costs_usd
         logger.info(f"Estimated profit: ${round(profit_usd, 2)}")
         logger.info(f"tip price: {round(rev_usd, 2)}, gas costs: {costs_usd}")
-
+        
+        # Calculate percentage profit
         percent_profit = ((profit_usd) / costs_usd) * 100
         logger.info(f"Estimated percent profit: {round(percent_profit, 2)}%")
-        if (self.expected_profit != "YOLO") and (
-            isinstance(self.expected_profit, float) and percent_profit < self.expected_profit
-        ):
-            status.ok = False
-            status.error = "Estimated profitability below threshold."
-            logger.info(status.error)
-            return status
-        # reset autopay tip to check for tips again
+        
+        # Check expected profit based on type
+        if self.expected_profit != "YOLO":
+            if isinstance(self.expected_profit, tuple):
+                # Unpack expected profit tuple
+                expected_percent_profit, expected_usd_profit = self.expected_profit
+        
+                # Check if either condition is met
+                if percent_profit < expected_percent_profit and profit_usd < expected_usd_profit:
+                    status.ok = False
+                    status.error = "Estimated profitability below both thresholds."
+                    logger.info(status.error)
+                    return status
+
+            elif isinstance(self.expected_profit, float):
+                # Single float case (percentage check)
+                if percent_profit < self.expected_profit:
+                    status.ok = False
+                    status.error = "Estimated profitability below percentage threshold."
+                    logger.info(status.error)
+                    return status
+    
+                # If we want to allow a default USD profit check
+            elif profit_usd < 0:  # or a specific USD profit threshold if needed
+                status.ok = False
+                status.error = "Estimated profitability below USD profit threshold."
+                logger.info(status.error)
+                return status
+
+            # reset autopay tip to check for tips again
         self.autopaytip = 0
 
         return status
