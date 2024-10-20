@@ -32,6 +32,7 @@ KRAKEN_ASSETS = {
     "FIL",
     "LINK",
     "PYTH",
+    "LSK",
 }
 KRAKEN_CURRENCIES = {"USD"}
 

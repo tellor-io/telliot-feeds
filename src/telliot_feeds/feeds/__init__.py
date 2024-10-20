@@ -57,6 +57,7 @@ from telliot_feeds.feeds.landx_feed import soy
 from telliot_feeds.feeds.landx_feed import wheat
 from telliot_feeds.feeds.leth_usd_feed import leth_usd_feed
 from telliot_feeds.feeds.link_usd_feed import link_usd_median_feed
+from telliot_feeds.feeds.lsk_usd_feed import lsk_usd_median_feed
 from telliot_feeds.feeds.ltc_usd_feed import ltc_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.meth_usd_feed import meth_usd_median_feed
@@ -297,6 +298,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "inc-usd-spot": inc_usd_median_feed,
     "loan-usd-spot": loan_usd_median_feed,
     "plsx-usd-spot": plsx_usd_median_feed,
+    "lsk-usd-spot": lsk_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

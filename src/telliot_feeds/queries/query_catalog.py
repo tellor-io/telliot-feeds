@@ -689,3 +689,9 @@ query_catalog.add_entry(
     title="PLSX/USD spot price",
     q=SpotPrice(asset="plsx", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="lsk-usd-spot",
+    title="LSK/USD spot price",
+    q=SpotPrice(asset="lsk", currency="usd"),
+)

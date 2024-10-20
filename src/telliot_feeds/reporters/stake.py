@@ -35,11 +35,11 @@ class Stake(GasFees):
             msg = f"Unable to read account balance: {status.error}"
             return None, error_status(msg, status.e, log=logger.error)
 
-        logger.info(f"Current wallet TRB balance: {self.to_ether(wallet_balance)!r}")
+        logger.info(f"Current wallet TRB(PLS in Pulsechain) balance: {self.to_ether(wallet_balance)!r}")
         return wallet_balance, status
 
     async def check_allowance(self, amount: int) -> Tuple[Optional[int], ResponseStatus]:
-        """ "Read the spender allowance for the accounts TRB"""
+        """ "Read the spender allowance for the accounts TRB(PLS in Pulsechain)"""
         allowance, allowance_status = await self.token.read(
             "allowance", owner=self.acct_address, spender=self.oracle.address
         )
@@ -51,7 +51,7 @@ class Stake(GasFees):
         return allowance, allowance_status
 
     async def approve_spending(self, amount: int) -> Tuple[bool, ResponseStatus]:
-        """Approve contract to spend TRB tokens"""
+        """Approve contract to spend TRB(PLS in Pulsechain) tokens"""
         logger.info(f"Approving {self.oracle.address} token spending: {amount}...")
         # calculate and set gas params
         status = self.update_gas_fees()
@@ -75,7 +75,7 @@ class Stake(GasFees):
 
     async def deposit_stake(self, amount: int) -> Tuple[bool, ResponseStatus]:
         """Deposits stake into the oracle contract"""
-        # check TRB wallet balance!
+        # check TRB(PLS in Pulsechain) wallet balance!
         wallet_balance, wallet_balance_status = await self.get_current_token_balance()
         if wallet_balance is None or not wallet_balance_status.ok:
             return False, wallet_balance_status
@@ -84,7 +84,7 @@ class Stake(GasFees):
             msg = (
                 f"Amount to stake: {self.to_ether(amount):.04f} "
                 f"is greater than your balance: {self.to_ether(wallet_balance):.04f} so "
-                "not enough TRB to cover the stake"
+                "not enough TRB(PLS in Pulsechain) to cover the stake"
             )
             return False, error_status(msg, log=logger.warning)
 

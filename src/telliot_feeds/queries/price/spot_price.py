@@ -106,6 +106,7 @@ SPOT_PRICE_PAIRS = [
     "INC/USD",
     "LOAN/USD",
     "PLSX/USD",
+    "LSK/USD",
 ]
 
 

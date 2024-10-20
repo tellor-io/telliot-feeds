@@ -12,7 +12,7 @@ async def test_superoethb_eth_median_feed(caplog):
 
     assert v is not None
     assert v > 0
-    assert "sources used in aggregate: 1" in caplog.text.lower()
+    assert "sources used in aggregate: 2" in caplog.text.lower()
     print(f"superOETHb/eth Price: {v}")
 
     # Get list of data sources from sources dict
