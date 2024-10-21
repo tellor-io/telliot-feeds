@@ -92,6 +92,9 @@ coingecko_coin_id = {
     "pufeth": "pufeth",
     "stone": "stakestone-ether",
     "superoethb": "super-oeth",
+    "unibtc": "universal-btc",
+    "solvbtc": "solv-btc",
+    "solvbtcbbn": "solv-protocol-solvbtc-bbn",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key
