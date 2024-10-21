@@ -31,11 +31,11 @@ CONTRACT_ABI = [
                     {"internalType": "uint8[]", "name": "versions", "type": "uint8[]"},  # Enum is uint8
                     {"internalType": "uint128[]", "name": "amounts", "type": "uint128[]"},
                     {"internalType": "uint128[]", "name": "virtualAmountsWithoutSlippage", "type": "uint128[]"},
-                    {"internalType": "uint128[]", "name": "fees", "type": "uint128[]"}
+                    {"internalType": "uint128[]", "name": "fees", "type": "uint128[]"},
                 ],
                 "internalType": "tuple",  # Struct is tuple in ABI
                 "name": "quote",
-                "type": "tuple"
+                "type": "tuple",
             }
         ],
         "stateMutability": "view",
