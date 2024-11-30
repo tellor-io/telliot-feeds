@@ -26,9 +26,9 @@ async def get_time_based_rewards(oracle: Tellor360OracleContract) -> int:
         error = last_val_status.error
         logger.warning(f"Unable to calculate time-based rewards for reporter: {error}")
         return 0
-
+    current_year = await oracle.read("timeBasedReward")
     reward = (
-        (TimeStamp.now().ts - time_of_last_new_value) * 4.753213172e18
-    ) / 1  # 0.5 tokens (5e17) dispersed every five min (300 sec)
+        (TimeStamp.now().ts - time_of_last_new_value) * (await oracle.read("timeBasedReward"))[0]
+    ) / 300  # amount of tokens (5e17) dispersed every five min (300 sec)
 
     return reward #if reward < tbr else tbr
