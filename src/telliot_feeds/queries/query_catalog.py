@@ -686,3 +686,9 @@ query_catalog.add_entry(
     title="SOLVBTCBBN/USD spot price",
     q=SpotPrice(asset="solvbtcbbn", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="cult-usd-spot",
+    title="CULT/USD spot price",
+    q=SpotPrice(asset="cult", currency="usd"),
+)
