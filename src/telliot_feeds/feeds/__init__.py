@@ -18,6 +18,7 @@ from telliot_feeds.feeds.btc_balance_current import btc_balance_current_feed_exa
 from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feeds.feeds.cbeth_usd_feed import cbeth_usd_median_feed
 from telliot_feeds.feeds.cny_usd_feed import cny_usd_median_feed
+from telliot_feeds.feeds.cult_usd_feed import cult_usd_median_feed
 from telliot_feeds.feeds.comp_usd_feed import comp_usd_median_feed
 from telliot_feeds.feeds.crv_usd_feed import crv_usd_median_feed
 from telliot_feeds.feeds.custom_price_manual_feed import custom_price_manual_feed
@@ -129,7 +130,6 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
-from telliot_feeds.feeds.cult_usd_feed import cult_usd_median_feed
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "ampleforth-custom": ampl_usd_vwap_feed,
