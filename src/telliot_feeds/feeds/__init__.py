@@ -18,9 +18,9 @@ from telliot_feeds.feeds.btc_balance_current import btc_balance_current_feed_exa
 from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feeds.feeds.cbeth_usd_feed import cbeth_usd_median_feed
 from telliot_feeds.feeds.cny_usd_feed import cny_usd_median_feed
-from telliot_feeds.feeds.cult_usd_feed import cult_usd_median_feed
 from telliot_feeds.feeds.comp_usd_feed import comp_usd_median_feed
 from telliot_feeds.feeds.crv_usd_feed import crv_usd_median_feed
+from telliot_feeds.feeds.cult_usd_feed import cult_usd_median_feed
 from telliot_feeds.feeds.custom_price_manual_feed import custom_price_manual_feed
 from telliot_feeds.feeds.dai_usd_feed import dai_usd_median_feed
 from telliot_feeds.feeds.daily_volatility_manual_feed import daily_volatility_manual_feed
