@@ -40,7 +40,7 @@ class GripDynoReturnType(ValueType):
                 value[3],  # string
                 value[4],  # string
                 int(value[5]),  # uint256
-            ]
+            ],
         )
 
     def decode(self, bytes_val: bytes) -> tuple[Any, ...]:
@@ -70,6 +70,7 @@ class GripDynoChallenge(AbiQuery):
     def __init__(self, eventDescription: Optional[str], challengeType: Optional[str]):
         self.eventDescription = eventDescription
         self.challengeType = challengeType
+
     #: ABI used for encoding/decoding parameters
     abi = [
         {

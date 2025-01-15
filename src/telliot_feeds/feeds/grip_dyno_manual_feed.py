@@ -7,5 +7,5 @@ challengeType = "grip_strength_dynometer"
 
 grip_dyno_manual_feed = DataFeed(
     query=GripDynoChallenge(eventDescription=eventDescription, challengeType=challengeType),
-    source=gripDynoManualSource()
+    source=gripDynoManualSource(),
 )

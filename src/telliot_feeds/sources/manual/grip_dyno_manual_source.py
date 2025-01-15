@@ -1,11 +1,13 @@
 from dataclasses import dataclass
-from typing import Optional
 from typing import Any
+from typing import Optional
+
 from rich import print
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.queries.grip_dyno_challenge_query import GripDynoReturnType
 from telliot_feeds.utils.input_timeout import input_timeout
 from telliot_feeds.utils.input_timeout import TimeoutOccurred
 from telliot_feeds.utils.log import get_logger
@@ -22,6 +24,7 @@ class gripDynoManualSource(DataSource[Any]):
 
     returns: list of challenge partic
     """
+
     data_set: Optional[int] = None
     right_hand: Optional[float] = None
     left_hand: Optional[float] = None
@@ -31,7 +34,7 @@ class gripDynoManualSource(DataSource[Any]):
 
     # user_vals = [data_set, right_hand, left_hand, x_handle, github_username, hours_of_sleep]
 
-    def parse_user_vals(self) -> Optional[tuple[int, int, int, str, str, int]]:
+    def parse_user_vals(self) -> Optional[Any]:
         """Parse user input and return list of the participant's data."""
         print("[bold]So you've Completed the grip challenge??? [/]")
         print("[bold red]🤜 REPORT YOUR GRIP STRENGTH RESULT TO THE TELLOR ORACLE 🤛[/]\n")
@@ -41,9 +44,9 @@ class gripDynoManualSource(DataSource[Any]):
         print('Press Enter to get started. (enter "w" for womens data set) [M/w]')
         try:
             start_selection = input_timeout().strip().lower()
-            if start_selection in ('w', 'women', 'womens', "women's"):
+            if start_selection in ("w", "women", "womens", "women's"):
                 self.data_set = 1
-            elif start_selection in ('', 'm', 'men', 'mens', "men's"):
+            elif start_selection in ("", "m", "men", "mens", "men's"):
                 self.data_set = 0
             else:
                 print("Invalid input. Defaulting to men's dataset (0)")
@@ -99,13 +102,13 @@ class gripDynoManualSource(DataSource[Any]):
         try:
             self.hours_of_sleep = int(input_timeout())
         except (TimeoutOccurred, ValueError):
-            print('Timeout or invalid input occurred waiting for hours of sleep.')
-            print('Using default (6 hours of glorious slumber)')
+            print("Timeout or invalid input occurred waiting for hours of sleep.")
+            print("Using default (6 hours of glorious slumber)")
             self.hours_of_sleep = 6
 
         print("\n")
         finish_message = "REPORTING THE FOLLOWING DATA TO TELLOR"
-        print('\033[1m' + finish_message + '\033[0m')
+        print("\033[1m" + finish_message + "\033[0m")
         print(f"Right hand: {self.right_hand}")
         print(f"Left hand: {self.left_hand}")
         print(f"X Handle: {self.x_handle}")
@@ -128,7 +131,7 @@ class gripDynoManualSource(DataSource[Any]):
             logger.info("Timeout waiting for user to confirm.!")
             return None
 
-    async def fetch_new_datapoint(self) -> OptionalDataPoint[str]:
+    async def fetch_new_datapoint(self) -> OptionalDataPoint[GripDynoReturnType]:
         """Return the Participant's time stamped data report."""
 
         response = self.parse_user_vals()
@@ -136,10 +139,8 @@ class gripDynoManualSource(DataSource[Any]):
             print("backing out...")
             return None, datetime_now_utc()
 
-        # Convert the response to a string representation
-        response_str = str(response)
         # Create a tuple for the datapoint
-        datapoint = (response_str, datetime_now_utc())
+        datapoint = (response, datetime_now_utc())
         print(f"spud's datapoint: {datapoint}")
         self.store_datapoint(datapoint)
 
