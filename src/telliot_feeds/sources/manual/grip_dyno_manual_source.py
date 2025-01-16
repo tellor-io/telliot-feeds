@@ -25,7 +25,7 @@ class gripDynoManualSource(DataSource[Any]):
     returns: list of challenge partic
     """
 
-    data_set: Optional[int] = None
+    data_set: Optional[bool] = True
     right_hand: Optional[float] = None
     left_hand: Optional[float] = None
     x_handle: Optional[str] = None
@@ -37,23 +37,21 @@ class gripDynoManualSource(DataSource[Any]):
     def parse_user_vals(self) -> Optional[Any]:
         """Parse user input and return list of the participant's data."""
         print("[bold]So you've Completed the grip challenge??? [/]")
-        print("[bold red]🤜 REPORT YOUR GRIP STRENGTH RESULT TO THE TELLOR ORACLE 🤛[/]\n")
-        print("Welcome to the cli.")
-        print("The Grip Dynometer Challenge result list has 6 values")
-        print("[bold blue]They are all optional![/]")
+        print("[bold blue]🤜 REPORT YOUR GRIP STRENGTH RESULT TO THE TELLOR ORACLE 🤛[/]\n")
+        print("[bold blue]Data is written to tellor Oracle on Base Sepolia chain![/]")
         print('Press Enter to get started. (enter "w" for womens data set) [M/w]')
         try:
             start_selection = input_timeout().strip().lower()
             if start_selection in ("w", "women", "womens", "women's"):
-                self.data_set = 1
+                self.data_set = False
             elif start_selection in ("", "m", "men", "mens", "men's"):
-                self.data_set = 0
+                self.data_set = True
             else:
                 print("Invalid input. Defaulting to men's dataset (0)")
-                self.data_set = 0
+                self.data_set = True
         except TimeoutOccurred:
             logger.info("Input timeout. Defaulting to men's dataset (0)")
-            self.data_set = 0
+            self.data_set = True
 
         print("[bold]**RIGHT HAND**[/] (🦅 in pounds 🇺🇸):")
         try:
@@ -107,15 +105,14 @@ class gripDynoManualSource(DataSource[Any]):
             self.hours_of_sleep = 6
 
         print("\n")
-        finish_message = "REPORTING THE FOLLOWING DATA TO TELLOR"
-        print("\033[1m" + finish_message + "\033[0m")
-        print(f"Right hand: {self.right_hand}")
-        print(f"Left hand: {self.left_hand}")
-        print(f"X Handle: {self.x_handle}")
-        print(f"Github username: {self.github_username}")
-        print(f"hours of Sleep: {self.hours_of_sleep}")
-        print("Press [ENTER] to report the data shown above.")
-        print("OR Use ctrl+c to start over.")
+        print("[bold blue]REPORTING THE FOLLOWING DATA TO TELLOR[/]")
+        print(f"[bold blue]Right hand: {self.right_hand}")
+        print(f"[bold blue]Left hand: {self.left_hand}")
+        print(f"[bold blue]X Handle: {self.x_handle}")
+        print(f"[bold blue]Github username: {self.github_username}")
+        print(f"[bold blue]Hours of Sleep: {self.hours_of_sleep}")
+        print("[bold red]Press [ENTER] to report the data shown above.")
+        print("[blue]OR Use ctrl+c to start over...")
         try:
             _ = input_timeout()
             self.user_vals = (

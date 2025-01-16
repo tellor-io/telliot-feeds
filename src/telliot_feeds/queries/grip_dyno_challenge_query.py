@@ -19,22 +19,18 @@ logger = logging.getLogger(__name__)
 @dataclass
 class GripDynoReturnType(ValueType):
 
-    abi_type: str = "(uint256,uint256,uint256,string,string,uint256)"
+    abi_type: str = "(bool,uint256,uint256,string,string,uint256)"
 
     def encode(self, value: list[Any]) -> bytes:
         """encoder for grip dyno challenge response type
 
         Encodes a tuple of 6 values.
         """
-        # Debugging: Print each value before conversion
-        print(f"spud Encoding values: {value}")
-        print(f"spud Value types: {[type(v) for v in value]}")
-
-        # Ensure the values are of the correct type
+        # check types
         return encode_abi(
-            ["uint256", "uint256", "uint256", "string", "string", "uint256"],
+            ["bool", "uint256", "uint256", "string", "string", "uint256"],
             [
-                value[0],  # uint256
+                value[0],  # bool
                 int(value[1]),  # uint256
                 int(value[2]),  # uint256
                 value[3],  # string
@@ -48,7 +44,7 @@ class GripDynoReturnType(ValueType):
 
         Decodes a tuple of 6 values.
         """
-        return decode_abi(["uint256", "uint256", "uint256", "string", "string", "uint256"], bytes_val)
+        return decode_abi(["bool", "uint256", "uint256", "string", "string", "uint256"], bytes_val)
 
 
 @dataclass
