@@ -12,7 +12,7 @@ print(f"QueryData: 0x{q.query_data.hex()}")
 print(f"QueryID: 0x{q.query_id.hex()}")
 
 value = (
-    0,  # data_set
+    True,  # data_set
     123.56,  # right_hand
     34.51,  # left_hand
     "0xSpuddy",  # x_handle
