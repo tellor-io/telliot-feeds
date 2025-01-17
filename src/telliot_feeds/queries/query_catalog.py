@@ -16,7 +16,7 @@ from telliot_feeds.queries.evm_balance_current import EVMBalanceCurrent
 from telliot_feeds.queries.evm_call import EVMCall
 from telliot_feeds.queries.fileCID import FileCIDQuery
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
-from telliot_feeds.queries.grip_dyno_challenge_query import GripDynoChallenge
+from telliot_feeds.queries.grip_dyno_challenge_query import EthDenverChallenge2025
 from telliot_feeds.queries.mimicry.collection_stat import MimicryCollectionStat
 from telliot_feeds.queries.mimicry.macro_market_mash_up import MimicryMacroMarketMashup
 from telliot_feeds.queries.mimicry.nft_market_index import MimicryNFTMarketIndex
@@ -691,8 +691,13 @@ query_catalog.add_entry(
 query_catalog.add_entry(
     tag="grip-dyno-denver-2025",
     title="Grip Strength Challenge at Eth Denver 2025",
-    q=GripDynoChallenge(
-        eventDescription="eth_denver_2025",
+    q=EthDenverChallenge2025(
         challengeType="grip_strength_dynometer",
     ),
+)
+
+query_catalog.add_entry(
+    tag="cult-usd-spot",
+    title="CULT/USD spot price",
+    q=SpotPrice(asset="cult", currency="usd"),
 )
