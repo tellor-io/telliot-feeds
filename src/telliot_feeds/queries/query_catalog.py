@@ -696,3 +696,25 @@ query_catalog.add_entry(
         challengeType="grip_strength_dynometer",
     ),
 )
+
+query_catalog.add_entry(
+    tag="cult-usd-spot",
+    title="CULT/USD spot price",
+    q=SpotPrice(asset="cult", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="grip-dyno-denver-2025",
+    title="Grip Strength Challenge at Eth Denver 2025",
+    q=GripDynoChallenge(
+        eventDescription="eth_denver_2025",
+        challengeType="grip_strength_dynometer",
+    ),
+)
+
+query_catalog.add_entry(
+    tag="cult-usd-spot",
+    title="CULT/USD spot price",
+    q=SpotPrice(asset="cult", currency="usd"
+    ),
+)
