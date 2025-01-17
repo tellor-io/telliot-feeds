@@ -20,6 +20,7 @@ from telliot_feeds.feeds.cbeth_usd_feed import cbeth_usd_median_feed
 from telliot_feeds.feeds.cny_usd_feed import cny_usd_median_feed
 from telliot_feeds.feeds.comp_usd_feed import comp_usd_median_feed
 from telliot_feeds.feeds.crv_usd_feed import crv_usd_median_feed
+from telliot_feeds.feeds.cult_usd_feed import cult_usd_median_feed
 from telliot_feeds.feeds.custom_price_manual_feed import custom_price_manual_feed
 from telliot_feeds.feeds.dai_usd_feed import dai_usd_median_feed
 from telliot_feeds.feeds.daily_volatility_manual_feed import daily_volatility_manual_feed
@@ -240,6 +241,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "unibtc-usd-spot": unibtc_usd_median_feed,
     "solvbtc-usd-spot": solvbtc_usd_median_feed,
     "solvbtcbbn-usd-spot": solvbtcbbn_usd_median_feed,
+    "cult-usd-spot": cult_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
