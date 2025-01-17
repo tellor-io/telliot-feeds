@@ -48,31 +48,22 @@ class GripDynoReturnType(ValueType):
 
 
 @dataclass
-class GripDynoChallenge(AbiQuery):
+class EthDenverChallenge2025(AbiQuery):
     """Returns the self-reported results of an in person grip strength dynometer challenge.
     Attributes:
-        eventDescription:
-            a clear description of the in-person event
-            example: "eth_denver_2025"
-
         challengeType:
             descriptor for the challenge
             Example: "grip_strength_dynometer"
     """
 
-    eventDescription: Optional[str]
     challengeType: Optional[str]
 
-    def __init__(self, eventDescription: Optional[str], challengeType: Optional[str]):
-        self.eventDescription = eventDescription
+    def __init__(self, challengeType: Optional[str]):
+
         self.challengeType = challengeType
 
     #: ABI used for encoding/decoding parameters
     abi = [
-        {
-            "name": "eventDescription",
-            "type": "string",
-        },
         {
             "name": "challengeType",
             "type": "string",
