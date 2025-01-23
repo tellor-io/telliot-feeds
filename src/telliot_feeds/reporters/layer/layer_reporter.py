@@ -12,9 +12,11 @@ from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from terra_sdk.client.lcd.api.tx import CreateTxOptions
 
-from telliot_feeds.feeds import DataFeed
+from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.reporters.layer.client import LCDClient
 from telliot_feeds.reporters.layer.msg_submit_value import MsgSubmitValue
+from telliot_feeds.reporters.layer.msg_tip import MsgTip
 from telliot_feeds.reporters.layer.raw_key import RawKey
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.query_search_utils import feed_from_catalog_feeds
@@ -27,20 +29,31 @@ logger = get_logger(__name__)
 class LayerReporter:
     def __init__(
         self,
+        wait_period: int,
         endpoint: RPCEndpoint,
         account: ChainedAccount,
-        wait_period: int,
+        query_tag: str,
+        datafeed: Optional[DataFeed[Any]] = None,
+        ignore_tbr: bool = False,
         gas: str = "auto",
     ) -> None:
+        """Initialize LayerReporter"""
         self.account = account
+        self.datafeed = datafeed
+        self.query_tag = query_tag
+        # Get the datafeed from catalog if query_tag is provided
+        self.datafeed = CATALOG_FEEDS[query_tag] if query_tag else None
+        self.qtag_selected = query_tag is not None
         self.gas = gas
         self.wait_period = wait_period
+        self.ignore_tbr = ignore_tbr
         self.client = LCDClient(url=endpoint.url, chain_id=endpoint.network)
         self.previously_reported_id: Optional[int] = None
         # needed for queries that have a long reporting window
         self.previously_reported_tipped_query: Dict[str, bool] = {"init": True}
 
     async def fetch_cycle_list_query(self) -> Tuple[Optional[str], ResponseStatus]:
+        print("SPUD STARTING fetch_cycle_list_query")
         query_res = await self.client._get("/tellor-io/layer/oracle/current_cyclelist_query")
         querymeta = query_res.get("query_meta")
         if querymeta is None:
@@ -58,6 +71,7 @@ class LayerReporter:
         return querymeta["query_data"], ResponseStatus()
 
     async def fetch_tipped_query(self) -> Tuple[Optional[str], Optional[str]]:
+        print("SPUD STARTING fetch_tipped_query")
         query_res = await self.client._get("/tellor-io/layer/oracle/tipped_queries")
         querymeta = query_res.get("queries")
         if len(querymeta) == 0:
@@ -71,6 +85,7 @@ class LayerReporter:
         return querydata, tip
 
     async def fetch_datafeed(self) -> Optional[DataFeed[Any]]:
+        print("SPUD STARTING fetch_datafeed")
         query, tip = await self.fetch_tipped_query()
         print(f"\nTippedQuery: {query}\nTip: {tip}\n")
         if query is None:
@@ -98,6 +113,7 @@ class LayerReporter:
         return None
 
     async def direct_submit_txn(self, datafeed: DataFeed[Any]) -> Tuple[Optional[dict], ResponseStatus]:
+        print("SPUD STARTING direct_submit_txn")
         await datafeed.source.fetch_new_datapoint()
         latest_data = datafeed.source.latest
         if latest_data[0] is None:
@@ -128,19 +144,88 @@ class LayerReporter:
             print(msg, e.__str__())
             return None, error_status(msg, e=e, log=logger.error)
 
+    async def tip_query(self, datafeed: DataFeed[Any]) -> Tuple[Optional[dict], ResponseStatus]:
+        """Submit a tip transaction for a query
+        
+        Args:
+            datafeed: The datafeed to tip
+            
+        Returns:
+            Tuple of transaction info and status
+        """
+        print("SPUD STARTING tip_query")
+        try:
+            wallet = self.client.wallet(RawKey(self.account.local_account.key))
+            
+            # Create message with smaller tip amount for testing
+            msg = MsgTip(
+                tipper=wallet.key.acc_address,
+                query_data=datafeed.query.query_data,
+                amount=1000,
+                denom="loya"
+            )
+            
+            # Create transaction with explicit gas limit
+            options = CreateTxOptions(
+                msgs=[msg],
+                gas="auto",  # Explicit gas limit
+                gas_prices="30loya",  # Add gas price"minimum_gas_prices":[{"denom":"loya","amount":"0.000025000000000000"}]}}
+                gas_adjustment="1.4"  # Add adjustment factor
+            )
+
+            try:
+                tx = wallet.create_and_sign_tx(options)
+                response = self.client.tx.broadcast_async(tx)
+                return await self.fetch_tx_info(response), ResponseStatus()
+                
+            except MemoryError as e:
+                msg = "Memory error while creating transaction"
+                logger.error(f"{msg}: {str(e)}")
+                return None, error_status(msg, e=e, log=logger.error)
+                
+            except Exception as e:
+                msg = "Error creating/broadcasting transaction"
+                logger.error(f"{msg}: {str(e)}")
+                return None, error_status(msg, e=e, log=logger.error)
+                
+        except Exception as e:
+            msg = "Error in tip_query"
+            logger.error(f"{msg}: {str(e)}")
+            return None, error_status(msg, e=e, log=logger.error)
+
     async def report_once(
         self,
     ) -> Tuple[Optional[Any], ResponseStatus]:
         """Report query value once"""
-        datafeed = await self.fetch_datafeed()
-        if not datafeed:
-            return None, error_status(note="Unable to suggest datafeed", log=logger.info)
+        print("SPUD STARTING report_once")
+        
+        # Use the specified datafeed if query tag was provided
+        if self.qtag_selected:
+            datafeed = self.datafeed
+            if not datafeed:
+                return None, error_status(note="No datafeed found for specified query tag", log=logger.info)
+        else:
+            # Otherwise fetch from chain
+            datafeed = await self.fetch_datafeed()
+            if not datafeed:
+                return None, error_status(note="Unable to suggest datafeed", log=logger.info)
+            
+        tip_txn_info, status = await self.tip_query(datafeed)
+        if tip_txn_info is None or not status.ok:
+            return None, error_status("Failed to submit transaction", e=status.e, log=logger.error)
+
+        tip_txn_response = txn_info.get("tx_response")
+        if tip_txn_response is None:
+            return None, error_status("Failed to get tip transaction response", log=logger.error)
+
         txn_info, status = await self.direct_submit_txn(datafeed)
         if txn_info is None or not status.ok:
             return None, error_status("Failed to submit transaction", e=status.e, log=logger.error)
+        
         txn_response = txn_info.get("tx_response")
         if txn_response is None:
             return None, error_status("Failed to get transaction response", log=logger.error)
+        
         code = txn_response.get("code")
         if code == 0:
             txn_hash = txn_response.get("txhash")
@@ -148,13 +233,16 @@ class LayerReporter:
         else:
             print(f"Transaction failed with status code {code}")
             self.previously_reported_id = None
+        
         return txn_info, ResponseStatus()
 
     async def is_online(self) -> bool:
         return await is_online()
 
+    # change this to report cycle list if -qt flag is not there
     async def report(self) -> None:
         """Submit values to Tellor oracles on an interval."""
+        print("SPUD STARTING report")
         while True:
             if await self.is_online():
                 _, _ = await self.report_once()

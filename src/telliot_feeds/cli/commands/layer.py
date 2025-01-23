@@ -12,6 +12,7 @@ from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
+from telliot_feeds.queries.query_catalog import query_catalog
 from telliot_feeds.reporters.layer.layer_reporter import LayerReporter  # type: ignore
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
@@ -36,6 +37,15 @@ def reporter() -> None:
     "build_feed",
     help="build a datafeed from a query type and query parameters",
     is_flag=True,
+)
+@click.option(
+    "--query-tag",
+    "-qt",
+    "query_tag",
+    help="select datafeed using query tag",
+    required=False,
+    nargs=1,
+    type=click.Choice([q.tag for q in query_catalog.find()]),
 )
 @click.pass_context
 @async_run
@@ -107,7 +117,7 @@ async def layer(
         if not unsafe:
             _ = input("Press [ENTER] to confirm settings.")
 
-        reporter = LayerReporter(endpoint=endpoint, account=account, wait_period=wait_period)
+        reporter = LayerReporter(endpoint=endpoint, account=account, query_tag=query_tag, wait_period=wait_period)
         if submit_once:
             _, _ = await reporter.report_once()
         else:
