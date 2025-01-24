@@ -11,9 +11,6 @@ from telliot_core.apps.core import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from terra_sdk.client.lcd.api.tx import CreateTxOptions
-from terra_sdk.core.coins import Coin
-from terra_sdk.core.coins import Coins
-from terra_sdk.core.fee import Fee
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
@@ -149,55 +146,48 @@ class LayerReporter:
 
     async def tip_query(self, datafeed: DataFeed[Any]) -> Tuple[Optional[dict], ResponseStatus]:
         """Submit a tip transaction for a query
-
+        
         Args:
             datafeed: The datafeed to tip
-
+            
         Returns:
             Tuple of transaction info and status
         """
         print("SPUD STARTING tip_query")
         try:
             wallet = self.client.wallet(RawKey(self.account.local_account.key))
-            tip_amount = Coin(denom="loya", amount="1000")
+            
+            # Create message with smaller tip amount for testing
             msg = MsgTip(
                 tipper=wallet.key.acc_address,
                 query_data=datafeed.query.query_data,
-                amount=tip_amount.to_data(),
+                amount=1000,
+                denom="loya"
             )
-            print(f"Tip message: {msg}")
-
-            # Create fee with specific gas limit and amount
-            fee = Fee(
-                gas_limit=200000,  # Reduced gas limit
-                amount=Coins.from_str("500loya"),  # Specify fee amount in proper format
+            
+            # Create transaction with explicit gas limit
+            options = CreateTxOptions(
+                msgs=[msg],
+                gas="auto",  # Explicit gas limit
+                gas_prices="30loya",  # Add gas price"minimum_gas_prices":[{"denom":"loya","amount":"0.000025000000000000"}]}}
+                gas_adjustment="1.4"  # Add adjustment factor
             )
-
-            options = CreateTxOptions(msgs=[msg], fee=fee, gas_adjustment=1.4)  # Add some buffer for gas estimation
-            print(f"Transaction options: {options}")
 
             try:
                 tx = wallet.create_and_sign_tx(options)
-                logger.debug(f"Created transaction: {tx}")
-                response = await self.client.tx.broadcast_async(tx)
-                logger.debug(f"Broadcast response: {response}")
+                response = self.client.tx.broadcast_async(tx)
                 return await self.fetch_tx_info(response), ResponseStatus()
-
+                
             except MemoryError as e:
                 msg = "Memory error while creating transaction"
                 logger.error(f"{msg}: {str(e)}")
                 return None, error_status(msg, e=e, log=logger.error)
-
-            except AssertionError as e:
-                msg = "Assertion error while creating/broadcasting transaction"
-                logger.error(f"{msg}: {str(e)}, {e.__traceback__}")  # Added traceback for more detail
-                return None, error_status(msg, e=e, log=logger.error)
-
+                
             except Exception as e:
                 msg = "Error creating/broadcasting transaction"
                 logger.error(f"{msg}: {str(e)}")
                 return None, error_status(msg, e=e, log=logger.error)
-
+                
         except Exception as e:
             msg = "Error in tip_query"
             logger.error(f"{msg}: {str(e)}")
@@ -208,7 +198,7 @@ class LayerReporter:
     ) -> Tuple[Optional[Any], ResponseStatus]:
         """Report query value once"""
         print("SPUD STARTING report_once")
-
+        
         # Use the specified datafeed if query tag was provided
         if self.qtag_selected:
             datafeed = self.datafeed
@@ -219,23 +209,23 @@ class LayerReporter:
             datafeed = await self.fetch_datafeed()
             if not datafeed:
                 return None, error_status(note="Unable to suggest datafeed", log=logger.info)
-
+            
         tip_txn_info, status = await self.tip_query(datafeed)
         if tip_txn_info is None or not status.ok:
             return None, error_status("Failed to submit transaction", e=status.e, log=logger.error)
 
-        tip_txn_response = tip_txn_info.get("tx_response")
+        tip_txn_response = txn_info.get("tx_response")
         if tip_txn_response is None:
             return None, error_status("Failed to get tip transaction response", log=logger.error)
 
         txn_info, status = await self.direct_submit_txn(datafeed)
         if txn_info is None or not status.ok:
             return None, error_status("Failed to submit transaction", e=status.e, log=logger.error)
-
+        
         txn_response = txn_info.get("tx_response")
         if txn_response is None:
             return None, error_status("Failed to get transaction response", log=logger.error)
-
+        
         code = txn_response.get("code")
         if code == 0:
             txn_hash = txn_response.get("txhash")
@@ -243,7 +233,7 @@ class LayerReporter:
         else:
             print(f"Transaction failed with status code {code}")
             self.previously_reported_id = None
-
+        
         return txn_info, ResponseStatus()
 
     async def is_online(self) -> bool:
