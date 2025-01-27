@@ -1,10 +1,10 @@
 from telliot_feeds.datafeed import DataFeed
-from telliot_feeds.queries.grip_dyno_challenge_query import EthDenverChallenge2025
+from telliot_feeds.queries.grip_dyno_challenge_query import EthDenver2025
 from telliot_feeds.sources.manual.grip_dyno_manual_source import gripDynoManualSource
 
-challengeType = "grip_strength_dynometer"
+challengeType = "grip_strength_dynamometer"
 
 grip_dyno_manual_feed = DataFeed(
-    query=EthDenverChallenge2025(challengeType=challengeType),
+    query=EthDenver2025(challengeType=challengeType),
     source=gripDynoManualSource(),
 )
