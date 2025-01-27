@@ -1,11 +1,11 @@
 # type: ignore
 from terra_sdk.core.msg import Msg
-from telliot_feeds.proto.cosmos.base.v1beta1 import Coin
+from terra_sdk.core import Coin
 
 from telliot_feeds.proto.layer.oracle import MsgTip as MsgTip_pb
 
 
-__all__ = ["MsgSubmitValue"]
+__all__ = ["MsgSubmitValue", "MsgTip"]
 
 import attr
 
@@ -31,7 +31,7 @@ class MsgTip(Msg):
 
     tipper: str = attr.ib()
     query_data: bytes = attr.ib()
-    amount: Coin = attr.ib()
+    amount: Coin = attr.ib(converter=Coin.parse)
 
     def to_amino(self) -> dict:
         return {
@@ -39,7 +39,7 @@ class MsgTip(Msg):
             "value": {
                 "tipper": self.tipper,
                 "query_data": self.query_data,
-                "amount": self.amount,
+                "amount": self.amount.to_amino(),
             },
         }
 
@@ -48,7 +48,7 @@ class MsgTip(Msg):
         return cls(
             tipper=data["tipper"],
             query_data=data["query_data"],
-            amount=data["amount"],
+            amount=Coin.from_data(data["amount"]),
         )
 
     def to_data(self) -> dict:
@@ -64,12 +64,12 @@ class MsgTip(Msg):
         return cls(
             tipper=proto.tipper,
             query_data=proto.query_data,
-            amount=proto.amount,
+            amount=Coin.from_proto(proto.amount),
         )
 
     def to_proto(self) -> MsgTip_pb:
         proto = MsgTip_pb()
         proto.tipper = self.tipper
         proto.query_data = self.query_data
-        proto.amount = self.amount
+        proto.amount = self.amount.to_proto()
         return proto
