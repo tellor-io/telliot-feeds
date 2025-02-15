@@ -4,30 +4,25 @@ from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Tuple
-from terra_sdk.core.coins import Coin, Coins
-from terra_sdk.exceptions import LCDResponseError
 
 from chained_accounts import ChainedAccount
 from telliot_core.apps.core import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from terra_sdk.client.lcd.api.tx import CreateTxOptions
+from terra_sdk.core.coins import Coin
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
+from telliot_feeds.queries.grip_dyno_challenge_query import EthDenverTest
 from telliot_feeds.reporters.layer.client import LCDClient
 from telliot_feeds.reporters.layer.msg_submit_value import MsgSubmitValue
 from telliot_feeds.reporters.layer.msg_tip import MsgTip
-# from telliot_feeds.proto.layer.oracle import MsgTip
 from telliot_feeds.reporters.layer.raw_key import RawKey
+from telliot_feeds.sources.manual.grip_dyno_manual_source import gripDynoManualSource
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.query_search_utils import feed_from_catalog_feeds
 from telliot_feeds.utils.reporter_utils import is_online
-
-from telliot_feeds.queries.grip_dyno_challenge_query import EthDenver2025
-from telliot_feeds.sources.manual.grip_dyno_manual_source import gripDynoManualSource
-
-from terra_sdk.core.fee import Fee
 
 logger = get_logger(__name__)
 
@@ -151,76 +146,87 @@ class LayerReporter:
             msg = "Error submitting transaction"
             print(msg, e.__str__())
             return None, error_status(msg, e=e, log=logger.error)
-        
+
     async def direct_tip_txn(self, datafeed: DataFeed[Any]) -> Tuple[Optional[dict], ResponseStatus]:
         """Submit a direct tip transaction for a query"""
         print("SPUD STARTING direct_tip_txn")
         try:
             wallet = self.client.wallet(RawKey(self.account.local_account.key))
-            coins = Coins.from_str("10000loya")
-            serialized_coins = coins.to_data()
+            tip_amount = Coin.from_str("10000loya")
             msg = MsgTip(
                 tipper=wallet.key.acc_address,
                 query_data=datafeed.query.query_data,
-                amount=serialized_coins,
+                amount=tip_amount.to_data(),
             )
 
             print(f"Tip message: {msg}")
-            
+
             # Get account sequence and number
             account_info = self.client.auth.account_info(wallet.key.acc_address)
             sequence = account_info.sequence
             account_number = account_info.account_number
-            
+
             print(f"Account info - sequence: {sequence}, number: {account_number}")
-            
+
             options = CreateTxOptions(
                 msgs=[msg],
                 gas=self.gas,
-                # fee = Fee(400000, "12loya")
             )
-            
+
             print(f"Tip options: {options}")
-            
+
             tx = wallet.create_and_sign_tx(options)
             print(f"tx: {tx}")
             response = self.client.tx.broadcast_async(tx)
             print(f"response: {response}")
             return await self.fetch_tx_info(response), ResponseStatus()
-            
+
         except Exception as e:
             msg = "Error creating/broadcasting transaction"
             logger.error(f"{msg}: {str(e)}")
             return None, error_status(msg, e=e, log=logger.error)
-
 
     async def report_once(
         self,
     ) -> Tuple[Optional[Any], ResponseStatus]:
         """Report query value once"""
         print("SPUD STARTING report_once")
-        
+
         # Use the specified datafeed if query tag was provided
         if self.qtag_selected:
+            print(f"query_tag_selected = {self.qtag_selected}")
             datafeed = self.datafeed
-            tip_txn_info, status = await self.direct_tip_txn(datafeed)
-            if tip_txn_info is None or not status.ok:
-                return None, error_status("Failed to submit transaction", e=status.e, log=logger.error)
+
+            tip_txn_info, tip_status = await self.direct_tip_txn(datafeed)
+            if tip_txn_info is None or not tip_status.ok:
+                return None, error_status("Tip transaction failed", e=tip_status.e, log=logger.error)
+
+            tip_txn_response = tip_txn_info.get("tx_response")
+            if tip_txn_response is None:
+                return None, error_status("Failed to get tip transaction response", log=logger.error)
+
+            tip_code = tip_txn_response.get("code")
+            if tip_code == 0:
+                tip_txn_hash = tip_txn_response.get("txhash")
+                print(f"Txn hash: {tip_txn_hash}; Tip txn successful with status code {tip_code}")
+            else:
+                print(f"Transaction failed with status code {tip_code}")
+                self.previously_reported_id = None
 
         else:
             # Otherwise fetch from chain
             datafeed = await self.fetch_datafeed()
             if not datafeed:
                 return None, error_status(note="Unable to suggest datafeed", log=logger.info)
-            
+
         txn_info, status = await self.direct_submit_txn(datafeed)
         if txn_info is None or not status.ok:
             return None, error_status("Failed to submit transaction", e=status.e, log=logger.error)
-        
+
         txn_response = txn_info.get("tx_response")
         if txn_response is None:
             return None, error_status("Failed to get transaction response", log=logger.error)
-        
+
         code = txn_response.get("code")
         if code == 0:
             txn_hash = txn_response.get("txhash")
@@ -228,7 +234,7 @@ class LayerReporter:
         else:
             print(f"Transaction failed with status code {code}")
             self.previously_reported_id = None
-        
+
         return txn_info, ResponseStatus()
 
     async def is_online(self) -> bool:
@@ -248,7 +254,6 @@ class LayerReporter:
             await asyncio.sleep(self.wait_period)
 
 
-
 async def test_direct_tip_txn():
     # Set up test inputs
     endpoint = RPCEndpoint(url="http://tellorlayer.com:1317", network="layertest-2")
@@ -258,22 +263,18 @@ async def test_direct_tip_txn():
     query_tag = "grip-dyno-denver-2025"
     source = gripDynoManualSource()
     datafeed = DataFeed(
-        query=EthDenver2025(challengeType="grip_strength_dynamometer"),
+        query=EthDenverTest(challengeType="grip_strength_dynamometer"),
         source=source,
     )
     print(f"Datafeed: {datafeed}")
 
-    reporter = LayerReporter(
-        wait_period=10,
-        endpoint=endpoint, 
-        account=account,
-        query_tag=query_tag
-    )
+    reporter = LayerReporter(wait_period=10, endpoint=endpoint, account=account, query_tag=query_tag)
 
     txn_info, status = await reporter.direct_tip_txn(datafeed)
 
     print(f"Transaction info: {txn_info}")
     print(f"Status: {status}")
+
 
 async def test_submit_value():
     # Set up test inputs
@@ -283,20 +284,18 @@ async def test_submit_value():
 
     # Create mock datafeed
     datafeed = DataFeed(
-        query=EthDenver2025(challengeType="grip_strength_dynamometer"),
-        source=gripDynoManualSource(data_set=True, right_hand=99, left_hand=112, x_handle="asdf", github_username="qwer", hours_of_sleep=6),
+        query=EthDenverTest(challengeType="grip_strength_dynamometer"),
+        source=gripDynoManualSource(
+            data_set=True, right_hand=99, left_hand=112, x_handle="asdf", github_username="qwer", hours_of_sleep=6
+        ),
     )
-    reporter = LayerReporter(
-        wait_period=10,
-        endpoint=endpoint, 
-        account=account,
-        query_tag="grip-dyno-denver-2025"
-    )
+    reporter = LayerReporter(wait_period=10, endpoint=endpoint, account=account, query_tag="grip-dyno-denver-2025")
 
     txn_info, status = await reporter.direct_submit_txn(datafeed)
 
     print(f"Transaction info: {txn_info}")
     print(f"Status: {status}")
+
 
 if __name__ == "__main__":
     asyncio.run(test_direct_tip_txn())

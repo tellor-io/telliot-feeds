@@ -1,7 +1,7 @@
 """Text Query Example """
-from telliot_feeds.queries.grip_dyno_challenge_query import EthDenver2025
+from telliot_feeds.queries.grip_dyno_challenge_query import EthDenverTest
 
-q = EthDenver2025(challengeType="grip_strength_dynamometer")
+q = EthDenverTest(challengeType="grip_strength_dynamometer")
 print(f"Challenge Type: {q.challengeType}")
 
 print(f"QueryData: 0x{q.query_data.hex()}")
