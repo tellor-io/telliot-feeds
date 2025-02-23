@@ -13,7 +13,7 @@ from telliot_feeds.cli.utils import reporter_cli_core
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.queries.query_catalog import query_catalog
-from telliot_feeds.reporters.layer.layer_reporter import LayerReporter  # type: ignore
+from telliot_feeds.reporters.layer.layer_reporter import LayerReporter
 from telliot_feeds.utils.cfg import check_endpoint
 from telliot_feeds.utils.cfg import setup_config
 from telliot_feeds.utils.log import get_logger
