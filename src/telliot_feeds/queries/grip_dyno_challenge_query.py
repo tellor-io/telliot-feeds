@@ -48,7 +48,7 @@ class GripDynoReturnType(ValueType):
 
 
 @dataclass
-class EthDenverTest(AbiQuery):
+class EthDenverTester(AbiQuery):
     """Returns the self-reported results of an in person grip strength dynamometer challenge.
     Attributes:
         challengeType:
