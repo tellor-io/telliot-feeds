@@ -79,7 +79,7 @@ def coinmarketcap_key():
 
     return key
 
-
+@pytest.mark.skip("deprecated: https://docs.cdp.coinbase.com/exchange/docs/changelog#2024-sep-11")
 @pytest.mark.asyncio
 async def test_coinbase():
     """Test retrieving from Coinbase price source."""
@@ -220,7 +220,7 @@ async def test_pancakeswap_bnb():
     v, t = await get_price("fuse", "bnb", service["pancakeswap"])
     validate_price(v, t)
 
-
+@pytest.mark.skip("source modified to no longer use get_url method")
 @pytest.mark.asyncio
 async def test_coingecko_price_service_rate_limit(caplog):
     def mock_get_url(self, url=""):

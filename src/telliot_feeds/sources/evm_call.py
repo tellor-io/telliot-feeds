@@ -67,7 +67,7 @@ class EVMCallSource(DataSource[Any]):
             logger.warning(f"Unable to retrieve current block timestamp: {e}")
             return None
 
-        self.contractAddress = self.web3.toChecksumAddress(self.contractAddress)
+        self.contractAddress = self.web3.to_checksum_address(self.contractAddress)
 
         if len(self.calldata) < 4:  # A function selector is 4 bytes long, so calldata must be at least of length 4
             logger.info(f"Invalid calldata: {self.calldata!r}, too short, submitting empty bytes")
@@ -78,7 +78,7 @@ class EVMCallSource(DataSource[Any]):
             )
         # Is there a scenario where a contract call for a view/pure function would revert when the callData is valid?
         except ContractLogicError as e:
-            bytecode = self.web3.eth.getCode(self.contractAddress)
+            bytecode = self.web3.eth.get_code(self.contractAddress)
             if self.calldata[:4] not in bytecode:
                 logger.info(f"function selector: {self.calldata!r}, not found in bytecode, submitting empty bytes")
                 return (empty_bytes, ts)
@@ -100,7 +100,7 @@ class EVMCallSource(DataSource[Any]):
         if result == HexBytes("0x"):
             # A Non-contract address returns zero bytes so we check here to see
             # if thats the reason for the zero bytes result; if so submit empty bytes to oracle
-            bytecode = self.web3.eth.getCode(self.contractAddress)
+            bytecode = self.web3.eth.get_code(self.contractAddress)
             if len(bytecode) <= 0:  # if no code means address isn't a contractAddress
                 logger.info(f"Invalid contract address: {self.contractAddress}, no bytecode, submitting empty bytes")
                 return (empty_bytes, ts)

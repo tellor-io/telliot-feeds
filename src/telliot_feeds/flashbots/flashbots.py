@@ -19,8 +19,8 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_account._utils.legacy_transactions import Transaction
-from eth_account._utils.typed_transactions import AccessListTransaction
-from eth_account._utils.typed_transactions import DynamicFeeTransaction
+from eth_account.typed_transactions import AccessListTransaction
+from eth_account.typed_transactions import DynamicFeeTransaction
 from eth_typing import HexStr
 from hexbytes import HexBytes
 from toolz import dissoc
@@ -71,7 +71,7 @@ class FlashbotsTransactionResponse:
     def receipts(self) -> List[Union[_Hash32, HexBytes, HexStr]]:
         """Returns all the transaction receipts from the submitted bundle"""
         self.wait()
-        return list(map(lambda tx: self.w3.eth.getTransactionReceipt(tx["hash"]), self.bundle))
+        return list(map(lambda tx: self.w3.eth.get_transaction_receipt(tx["hash"]), self.bundle))
 
 
 class Flashbots(Module):
@@ -99,15 +99,15 @@ class Flashbots(Module):
                 if tx.get("nonce") is None:
                     tx["nonce"] = nonces.get(
                         signer.address,
-                        self.web3.eth.get_transaction_count(signer.address),
+                        self.w3.eth.get_transaction_count(signer.address),
                     )
                 nonces[signer.address] = tx["nonce"] + 1
 
                 if "gas" not in tx:
-                    tx["gas"] = self.web3.eth.estimateGas(tx)
+                    tx["gas"] = self.w3.eth.estimate_gas(tx)
 
                 signed_tx = signer.sign_transaction(tx)
-                signed_transactions.append(signed_tx.rawTransaction)
+                signed_transactions.append(signed_tx.raw_transaction)
 
             elif all(key in tx for key in ["v", "r", "s"]):  # FlashbotsBundleDictTx
                 v, r, s = (
@@ -137,7 +137,7 @@ class Flashbots(Module):
 
                 unsigned_tx = serializable_unsigned_transaction_from_dict(tx_dict)
                 raw = encode_transaction(unsigned_tx, vrs=(v, r, s))
-                assert self.web3.keccak(raw) == tx["hash"]
+                assert self.w3.keccak(raw) == tx["hash"]
                 signed_transactions.append(raw)
 
         return signed_transactions
@@ -177,7 +177,7 @@ class Flashbots(Module):
         opts: Optional[FlashbotsOpts] = None,
     ) -> List[Any]:
         signed_txs = self.sign_bundle(bundled_transactions)
-        self.response = FlashbotsTransactionResponse(self.web3, signed_txs, target_block_number)
+        self.response = FlashbotsTransactionResponse(self.w3, signed_txs, target_block_number)
         return self.send_raw_bundle_munger(signed_txs, target_block_number, opts)
 
     def raw_bundle_formatter(self, resp) -> Any:
@@ -199,13 +199,13 @@ class Flashbots(Module):
     ):
         # get block details
         block_details = (
-            self.web3.eth.get_block(block_tag) if block_tag is not None else self.web3.eth.get_block("latest")
+            self.w3.eth.get_block(block_tag) if block_tag is not None else self.w3.eth.get_block("latest")
         )
 
         # sets evm params
-        evm_block_number = self.web3.toHex(block_details.number)
+        evm_block_number = self.w3.to_hex(block_details.number)
         evm_block_state_number = (
-            state_block_tag if state_block_tag is not None else self.web3.toHex(block_details.number - 1)
+            state_block_tag if state_block_tag is not None else self.w3.to_hex(block_details.number - 1)
         )
         evm_timestamp = (
             block_timestamp
@@ -234,7 +234,7 @@ class Flashbots(Module):
         block_delta = block_tag - latest_block_number
         if block_delta < 0:
             raise Exception("block extrapolation negative")
-        return self.web3.eth.get_block(latest_block_number)["timestamp"] + (block_delta * SECONDS_PER_BLOCK)
+        return self.w3.eth.get_block(latest_block_number)["timestamp"] + (block_delta * SECONDS_PER_BLOCK)
 
     def call_bundle_munger(
         self,

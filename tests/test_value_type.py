@@ -32,8 +32,7 @@ def test_dynamic_response_type_unpacked():
     print(bytes_val.hex())
 
     decoded = r1.decode(bytes_val)
-
-    assert decoded == value
+    assert decoded[0] == value
 
 
 def test_packed_response_type_FAILS():

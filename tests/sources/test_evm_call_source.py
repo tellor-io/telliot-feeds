@@ -1,5 +1,5 @@
 import pytest
-from eth_abi import decode_single
+from eth_abi import decode
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
 
@@ -62,7 +62,7 @@ async def test_source():
     assert t is not None
     assert isinstance(v, bytes)
     assert isinstance(t, int)
-    assert decode_single("uint256", v) > 2390472032948139443578988  # an earlier total supply of TRB
+    assert decode(["uint256"], v)[0] > 2390472032948139443578988  # an earlier total supply of TRB
 
     # test fetch_new_datapoint
     v, t = await s2.fetch_new_datapoint()
@@ -74,12 +74,12 @@ async def test_source():
 async def test_non_getter_calldata():
     """Test if calldata is not for a getter function."""
     s = EVMCallSource()
-    s.chainId = 80001
+    s.chainId = 80002
     s.web3 = update_web3(s.chainId, s.cfg)
 
     """Test non getter calldata"""
     s.calldata = b"\x3a\x0c\xe3\x42"  # calldata for updateStakeAmount()
-    s.contractAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"  # Oracle contract
+    s.contractAddress = "0xe331Afe3a8D7836bEdF1F09bC91549f4bc8c60C9"  # Oracle contract
 
     # test get_response
     response = s.get_response()
@@ -97,7 +97,7 @@ async def test_non_getter_calldata():
     assert t is not None
     assert isinstance(v, bytes)
     assert isinstance(t, int)
-    assert decode_single("address", v) == "0x46038969d7dc0b17bc72137d07b4ede43859da45"
+    assert decode(["address"], v)[0] == "0x5446397292854D92872eDf426eEaB8FdC6Bd2bEa".lower()
 
 
 @pytest.mark.asyncio
@@ -155,7 +155,7 @@ def test_evm_call_on_previous_block():
 
     # We will use `getCurrentValue` on the ETH/USD query id
     s.calldata = bytes.fromhex("adf1639d83a7f3d48786ac2667503a61e8c415438ed2922eb86a2906e4ee66d9a2ce4992")
-    s.contractAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
+    s.contractAddress = "0x8cFc184c877154a8F9ffE0fe75649dbe5e2DBEbf"
 
     current_value, current_timestamp = s.get_response()
 

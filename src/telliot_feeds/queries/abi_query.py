@@ -5,8 +5,8 @@ from typing import Optional
 import pkg_resources
 from clamfig import deserialize
 from clamfig.base import Registry
-from eth_abi import decode_abi
-from eth_abi import encode_abi
+from eth_abi import decode
+from eth_abi import encode
 from eth_abi.encoding import TextStringEncoder
 from eth_abi.utils.numeric import ceil32
 from eth_abi.utils.padding import zpad_right
@@ -33,7 +33,7 @@ if pkg_version < 4:
 
         value_as_bytes = codecs.encode(value, "utf8")
         value_length = len(value_as_bytes)
-        encoded_size = encode_abi(["uint256"], [value_length])
+        encoded_size = encode(["uint256"], [value_length])
         padded_value = zpad_right(value_as_bytes, ceil32(value_length))
         return encoded_size + padded_value
 
@@ -67,7 +67,7 @@ class AbiQuery(OracleQuery):
         if self.abi:
             param_values = [getattr(self, p["name"]) for p in self.abi]
             param_types = [p["type"] for p in self.abi]
-            encoded_params = encode_abi(param_types, param_values)
+            encoded_params = encode(param_types, param_values)
 
         # If the query has no real parameters, and only the default "phantom" parameter
         else:
@@ -79,13 +79,13 @@ class AbiQuery(OracleQuery):
             right_side = b"\0".rjust(32, b"\0")
             encoded_params = left_side + right_side
 
-        return encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
+        return encode(["string", "bytes"], [type(self).__name__, encoded_params])
 
     @staticmethod
     def get_query_from_data(query_data: bytes) -> Optional[OracleQuery]:
         """Recreate an oracle query from the `query_data` field"""
         try:
-            query_type, encoded_param_values = decode_abi(["string", "bytes"], query_data)
+            query_type, encoded_param_values = decode(["string", "bytes"], query_data)
         except OverflowError:
             logger.error("OverflowError while decoding query data.")
             return None
@@ -97,7 +97,7 @@ class AbiQuery(OracleQuery):
         params_abi = cls.abi
         param_names = [p["name"] for p in params_abi]
         param_types = [p["type"] for p in params_abi]
-        param_values = decode_abi(param_types, encoded_param_values)
+        param_values = decode(param_types, encoded_param_values)
 
         params = dict(zip(param_names, param_values))
 

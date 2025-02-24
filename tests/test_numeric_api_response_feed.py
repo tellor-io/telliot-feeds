@@ -1,5 +1,5 @@
 import pytest
-from brownie import accounts
+
 from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
@@ -18,9 +18,10 @@ numeric_api_rsp_feed = DataFeed(
 
 @pytest.mark.asyncio
 async def test_api_reporter_submit_once(
-    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract
+    mumbai_test_cfg, deploy_contracts, accounts
 ):
     """Test reporting a quote from T-Swizzle on Polygon Mumbai testnet."""
+    mock_token_contract, mock_flex_contract, _, _, mock_autopay_contract = deploy_contracts
     async with TelliotCore(config=mumbai_test_cfg) as core:
         # get PubKey and PrivKey from config files
         account = core.get_account()
@@ -35,7 +36,7 @@ async def test_api_reporter_submit_once(
         flex.autopay.connect()
 
         # mint token and send to reporter address
-        mock_token_contract.faucet(account.address)
+        mock_token_contract.faucet(account.address, sender=accounts[0])
 
         # send eth from brownie address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")

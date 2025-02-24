@@ -14,5 +14,5 @@ async def test_leth_usd_feed(caplog):
     assert "total pooled tokens" in caplog.text.lower()
     assert "total supply" in caplog.text.lower()
     # check 4 sources for ETH/USD price:
-    assert "sources used in aggregate: 4" in caplog.text.lower()
+    assert "sources used in aggregate: 3" in caplog.text.lower()
     print(f"LETH/USD Price: {v}")

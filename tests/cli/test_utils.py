@@ -27,7 +27,7 @@ def test_build_query():
 
 
 @pytest.mark.asyncio
-async def test_call_oracle(tellor_360, caplog, chain):
+async def test_call_oracle(tellor_360, caplog, chain, mumbai_test_key_name):
     """Test calling the oracle."""
     user_inputs = {
         "min_native_token_balance": 0.0,
@@ -40,7 +40,7 @@ async def test_call_oracle(tellor_360, caplog, chain):
         "gas_multiplier": None,
     }
 
-    contracts, account = tellor_360
+    contracts, account, snapshot = tellor_360
     s = Stake(
         oracle=contracts.oracle,
         token=contracts.token,
@@ -53,7 +53,7 @@ async def test_call_oracle(tellor_360, caplog, chain):
 
     class ctx:
         def __init__(self):
-            self.obj = {"CHAIN_ID": 80001, "ACCOUNT_NAME": "brownie-acct", "TEST_CONFIG": None}
+            self.obj = {"CHAIN_ID": 80001, "ACCOUNT_NAME": mumbai_test_key_name, "TEST_CONFIG": None}
 
     user_inputs["password"] = ""
     with mock.patch("telliot_core.apps.core.TelliotCore.get_tellor360_contracts", return_value=contracts):
@@ -72,8 +72,8 @@ async def test_call_oracle(tellor_360, caplog, chain):
                 func="withdrawStake",
                 user_inputs=user_inputs,
             )
-            assert "revert 7 days didn't pass" in caplog.text
-            chain.sleep(604800)
+            assert "7 days didn't pass" in caplog.text
+            chain.pending_timestamp += 604800
             user_inputs["password"] = ""
             user_inputs["min_native_token_balance"] = 0.0
             await call_oracle(
@@ -82,6 +82,7 @@ async def test_call_oracle(tellor_360, caplog, chain):
                 user_inputs=user_inputs,
             )
             assert "withdrawStake transaction succeeded" in caplog.text
+    chain.restore(snapshot)
 
 
 def test_custom_hexbytes_wrapper():
@@ -89,7 +90,7 @@ def test_custom_hexbytes_wrapper():
     # test when 0x is present and not present
     for value in (CustomHexBytes("0x1234"), CustomHexBytes("1234")):
         value = CustomHexBytes("0x1234")
-        assert value.hex() == "0x1234"
+        assert value.hex() == "1234"
         assert isinstance(value, CustomHexBytes)
         assert isinstance(value, HexBytes)
         assert isinstance(value, bytes)

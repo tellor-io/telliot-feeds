@@ -35,7 +35,7 @@ class CoinMarketCapSpotPriceService(WebPriceService):
 
         # check for api key in config
         if API_KEY == "":
-            logger.warn("To use the CoinMarketCap source, add CoinMarketCap api key to ampl.yaml")
+            logger.warning("To use the CoinMarketCap source, add CoinMarketCap api key to ampl.yaml")
             return None, None
 
         asset = asset.upper()

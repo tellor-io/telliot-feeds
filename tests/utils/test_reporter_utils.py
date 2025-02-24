@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 import requests
-from brownie import accounts
+
 from telliot_core.apps.core import TelliotCore
 from web3 import Web3
 
@@ -26,8 +26,8 @@ logger = get_logger(__name__)
 
 
 @pytest.mark.asyncio
-async def test_suggested_report(tellor_360):
-    contracts, _ = tellor_360
+async def test_suggested_report(tellor_360, chain):
+    contracts, _, snapshot = tellor_360
     qtag = await tellor_suggested_report(contracts.oracle)
 
     assert isinstance(qtag, str)
@@ -36,6 +36,7 @@ async def test_suggested_report(tellor_360):
     catalog_entry = entries[0]
     q = catalog_entry.query
     assert isinstance(q, OracleQuery)
+    chain.restore(snapshot)
 
 
 def test_reporter_sync_schedule_list():
@@ -46,7 +47,7 @@ def test_reporter_sync_schedule_list():
 
 
 @pytest.mark.asyncio
-async def test_has_native_token_funds(mumbai_test_cfg, caplog):
+async def test_has_native_token_funds(mumbai_test_cfg, caplog, accounts):
     """Test has_native_token_funds"""
 
     def fake_alert(msg):
@@ -57,7 +58,7 @@ async def test_has_native_token_funds(mumbai_test_cfg, caplog):
 
     async with TelliotCore(config=mumbai_test_cfg) as core:
         account = core.get_account()
-        addr = Web3.toChecksumAddress(account.address)
+        addr = Web3.to_checksum_address(account.address)
         endpoint = core.get_endpoint()
         endpoint.connect()
 

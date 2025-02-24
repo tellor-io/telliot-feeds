@@ -80,7 +80,7 @@ class EVMBalanceSource(DataSource[Any]):
             raise ValueError("Timestamp not provided")
 
         # convert address to checksum address
-        self.evmAddress = Web3.toChecksumAddress(self.evmAddress)
+        self.evmAddress = Web3.to_checksum_address(self.evmAddress)
 
         if self.timestamp > int(time.time()):
             logger.warning("Timestamp is greater than current timestamp")

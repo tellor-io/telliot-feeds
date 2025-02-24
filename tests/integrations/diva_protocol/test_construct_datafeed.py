@@ -18,7 +18,7 @@ EXAMPLE_POOLS = [dict_to_pool(d) for d in EXAMPLE_POOLS_FROM_SUBGRAPH]
 def test_assemble_diva_datafeed():
     feed1 = assemble_diva_datafeed(EXAMPLE_POOLS[0])
 
-    assert feed1.query.poolId.hex() == "0x0ccf69d6832bcb70d201cd5d4014799d4e5b9944d7644522bfabecfe147ec2a0"
+    assert feed1.query.poolId.hex() == "0ccf69d6832bcb70d201cd5d4014799d4e5b9944d7644522bfabecfe147ec2a0"
     assert feed1.source.reference_asset_source.sources[0].asset == "eth"
     assert feed1.source.reference_asset_source.sources[0].currency == "usd"
     assert feed1.source.reference_asset_source.sources[0].ts == 1659001353

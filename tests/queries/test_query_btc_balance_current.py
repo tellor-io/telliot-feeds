@@ -3,7 +3,7 @@
 Copyright (c) 2024-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
-from eth_abi import decode_abi
+from eth_abi import decode
 
 from telliot_feeds.queries.btc_balance_current import BTCBalanceCurrent
 
@@ -26,10 +26,10 @@ def test_btc_balance_current_query():
     )
     assert q.query_data == exp_abi
 
-    query_type, encoded_param_vals = decode_abi(["string", "bytes"], q.query_data)
+    query_type, encoded_param_vals = decode(["string", "bytes"], q.query_data)
     assert query_type == "BTCBalanceCurrent"
 
-    (btcAddress,) = decode_abi(["string"], encoded_param_vals)
+    (btcAddress,) = decode(["string"], encoded_param_vals)
 
     assert btcAddress == "bc1q06ywseed6sc3x2fafppchefqq8v9cqd0l6vx03"
     assert isinstance(btcAddress, str)

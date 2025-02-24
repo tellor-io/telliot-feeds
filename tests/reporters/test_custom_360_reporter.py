@@ -10,10 +10,6 @@ uses.
 """
 import pytest
 import pytest_asyncio
-from brownie import accounts
-from brownie import SampleFlexReporter
-from telliot_core.apps.core import ChainedAccount
-from telliot_core.apps.core import find_accounts
 from telliot_core.apps.core import TelliotCore
 
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
@@ -22,25 +18,16 @@ from telliot_feeds.utils.reporter_utils import create_custom_contract
 
 
 logger = get_logger(__name__)
-# adding account to brownie accounts
-account_fake = accounts.add("023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9")
-# adding account to telliot accounts
-try:
-    account = find_accounts(name="fake_flex_custom_reporter_address", chain_id=80001)[0]
-except IndexError:
-    account = ChainedAccount.add(
-        name="fake_flex_custom_reporter_address",
-        chains=80001,
-        key="023861e2ceee1ea600e43cbd203e9e01ea2ed059ee3326155453a1ed3b1113a9",
-        password="",
-    )
 
 
 @pytest.fixture(scope="function")
-def mock_reporter_contract(mock_flex_contract, mock_token_contract, mock_autopay_contract):
+def mock_reporter_contract(deploy_contracts, project, custom_reporter_ape_account):
     """mock custom reporter contract"""
-    return account_fake.deploy(
-        SampleFlexReporter,
+    
+    mock_token_contract, mock_flex_contract, _, _, mock_autopay_contract = deploy_contracts
+
+    return custom_reporter_ape_account.deploy(
+        project.SampleFlexReporter,
         mock_flex_contract.address,
         mock_autopay_contract.address,
         mock_token_contract.address,
@@ -51,18 +38,20 @@ def mock_reporter_contract(mock_flex_contract, mock_token_contract, mock_autopay
 @pytest_asyncio.fixture(scope="function")
 async def custom_reporter(
     mumbai_test_cfg,
-    mock_flex_contract,
-    mock_autopay_contract,
-    mock_token_contract,
+    deploy_contracts,
     mock_reporter_contract,
     monkeypatch,
+    accounts,
+    project,
+    custom_reporter_chained_account,
 ):
-    async with TelliotCore(config=mumbai_test_cfg) as core:
+    mock_token_contract, mock_flex_contract, _, _, mock_autopay_contract = deploy_contracts
+    async with TelliotCore(config=mumbai_test_cfg, account_name="fake_flex_custom_reporter_address") as core:
         contracts = core.get_tellor360_contracts()
-        contracts.oracle.abi = mock_flex_contract.abi
+        contracts.oracle.abi = project.TellorFlex.contract_type.model_dump().get("abi", [])
         contracts.oracle.address = mock_flex_contract.address
         contracts.autopay.address = mock_autopay_contract.address
-        contracts.autopay.abi = mock_autopay_contract.abi
+        contracts.autopay.abi =  project.Autopay.contract_type.model_dump().get("abi", [])
         contracts.token.address = mock_token_contract.address
 
         contracts.oracle.connect()
@@ -80,8 +69,8 @@ async def custom_reporter(
                 original_contract=contracts.oracle,
                 custom_contract_addr=mock_reporter_contract.address,
                 endpoint=core.endpoint,
-                account=account,
-                custom_abi=mock_reporter_contract.abi,
+                account=custom_reporter_chained_account,
+                custom_abi=project.SampleFlexReporter.contract_type.model_dump().get("abi", []),
             )
 
             r = Tellor360Reporter(
@@ -90,24 +79,25 @@ async def custom_reporter(
                 token=custom_contract,
                 autopay=contracts.autopay,
                 endpoint=core.endpoint,
-                account=account,
+                account=custom_reporter_chained_account,
                 chain_id=80001,
                 gas_limit=350000,
                 min_native_token_balance=0,
             )
             # mint token and send to reporter address
-            mock_token_contract.faucet(account.address)
-            mock_token_contract.faucet(accounts[0].address)
-            mock_token_contract.faucet(mock_reporter_contract.address)
-            mock_token_contract.approve(mock_autopay_contract.address, 10e18)
+            mock_token_contract.faucet(custom_reporter_chained_account.address, sender=accounts[0])
+            mock_token_contract.faucet(accounts[0].address, sender=accounts[0])
+            mock_token_contract.faucet(mock_reporter_contract.address, sender=accounts[0])
+            mock_token_contract.approve(mock_autopay_contract.address, int(10e18), sender=accounts[0])
 
             mock_autopay_contract.tip(
                 "0xd913406746edf7891a09ffb9b26a12553bbf4d25ecf8e530ec359969fe6a7a9c",
                 int(10e18),
                 "0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000953706f745072696365000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000003646169000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000037573640000000000000000000000000000000000000000000000000000000000",  # noqa: E501
+                sender=accounts[0],
             )
             # send eth from brownie address to reporter address for txn fees
-            accounts[1].transfer(account.address, "10 ether")
+            accounts[1].transfer(custom_reporter_chained_account.address, "10 ether")
             accounts[1].transfer(mock_reporter_contract.address, "10 ether")
 
             return r

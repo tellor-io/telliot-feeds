@@ -3,7 +3,7 @@ from typing import Any
 from typing import Optional
 
 from clamfig.base import Registry
-from eth_abi import decode_single
+from eth_abi import decode
 from eth_abi.exceptions import NonEmptyPaddingBytes
 from web3 import Web3 as w3
 
@@ -28,7 +28,7 @@ def decode_typ_name(qdata: bytes) -> str:
     """
     qtype_name: str
     try:
-        qtype_name, _ = decode_single("(string,bytes)", qdata)
+        qtype_name, _ = decode(["string","bytes"], qdata)
     except OverflowError:
         # string query for some reason encoding isn't the same as the others
         qtype_name = ast.literal_eval(qdata.decode("utf-8"))["type"]

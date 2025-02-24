@@ -1,22 +1,15 @@
 """Pytest Fixtures used for testing Pytelliot"""
-import asyncio
-import os
 
 import pytest
 import pytest_asyncio
-from brownie import accounts
-from brownie import Autopay
-from brownie import chain
-from brownie import Governance
-from brownie import multicall as brownie_multicall
-from brownie import QueryDataStorage
-from brownie import TellorFlex
-from brownie import TellorPlayground
+
+from ape import networks
+
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from hexbytes import HexBytes
 from multicall import multicall
-from multicall.constants import MULTICALL2_ADDRESSES
+from multicall.constants import MULTICALL3_ADDRESSES
 from multicall.constants import Network
 from telliot_core.apps.core import TelliotCore
 from telliot_core.apps.telliot_config import TelliotConfig
@@ -28,63 +21,38 @@ from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 
-@pytest.fixture(scope="module", autouse=True)
-def shared_setup(module_isolation):
-    pass
+NAME = "hardhat"
 
+@pytest.fixture(scope="session")
+def local_network_api():
+    return networks.ethereum.local
 
-@pytest.fixture(scope="module", autouse=True)
-def reset_chain(chain):
-    """Reset the chain to a clean state after each test module"""
-    chain.reset()
-
-
-@pytest.fixture(scope="function", autouse=True)
-def snapshot(chain):
-    """Take a snapshot of the chain before each test function and revert to it after the test completes"""
-    chain.snapshot()
-    yield
-    chain.revert()
+@pytest.fixture(scope="session")
+def name():
+    return NAME
 
 
 @pytest.fixture(scope="session")
-def event_loop():
-    loop = asyncio.get_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest.fixture(scope="module", autouse=True)
-def mumbai_cfg():
-    """Return a test telliot configuration for use on polygon-mumbai
-
-    If environment variables are defined, they will override the values in config files
+def connected_provider(name, local_network_api, chain):
     """
-    cfg = TelliotConfig()
+    The main HH local-network (non-fork) instance.
+    """
+    
+    with local_network_api.use_provider(name) as provider:
 
-    # Override configuration for rinkeby testnet
-    cfg.main.chain_id = 80001
+        yield provider
 
-    endpt = cfg.get_endpoint()
-    if "INFURA_API_KEY" in endpt.url:
-        endpt.url = f'https://polygon-mumbai.infura.io/v3/{os.environ["INFURA_API_KEY"]}'
+@pytest.fixture(scope="session")
+def mumbai_test_key_name():
+    return "mumbai_test_key"
 
-    mumbai_accounts = find_accounts(chain_id=80001)
-    if not mumbai_accounts:
-        # Create a test account using PRIVATE_KEY defined on github.
-        key = os.getenv("PRIVATE_KEY", None)
-        if key:
-            ChainedAccount.add(
-                "git-mumbai-key",
-                chains=80001,
-                key=os.environ["PRIVATE_KEY"],
-                password="",
-            )
-        else:
-            raise Exception("Need a mumbai account")
+@pytest.fixture
+def custom_reporter_name():
+    return "custom_reporter_address"
 
-    return cfg
-
+@pytest.fixture
+def sepolia_test_key_name():
+    return "sepolia_test_key"
 
 class BadDataSource(DataSource[float]):
     """Source that does not return an updated DataPoint."""
@@ -115,6 +83,57 @@ def guaranteed_price_source():
     """Used for testing no updated value for datafeeds."""
     return GoodFakeSource()
 
+@pytest.fixture(autouse=True)
+def sender(accounts, mumbai_test_key_name):
+    accts = find_accounts(chain_id=80001, name=mumbai_test_key_name)
+
+    for acct in accts:
+        if acct.name == mumbai_test_key_name:
+            acct.delete()
+            break
+    acct = ChainedAccount.add(
+        mumbai_test_key_name,
+        chains=80001,
+        key=accounts[0].private_key,
+        password="",
+    )
+
+    return accounts[0]
+
+@pytest.fixture(autouse=True)
+def sepolia_test_key(accounts, sepolia_test_key_name):
+    accts = find_accounts(chain_id=11155111, name=sepolia_test_key_name)
+
+    for acct in accts:
+        if acct.name == sepolia_test_key_name:
+            acct.delete()
+            break
+    acct = ChainedAccount.add(
+        sepolia_test_key_name,
+        chains=11155111,
+        key=accounts[0].private_key,
+        password="",
+    )
+    return accounts[0] 
+
+@pytest.fixture(scope="function")
+def custom_reporter_chained_account(accounts, custom_reporter_name):
+    accts = find_accounts(chain_id=80001, name=custom_reporter_name)
+    for acct in accts:
+        if acct.name == custom_reporter_name:
+            acct.delete()
+            break
+    acct = ChainedAccount.add(
+        custom_reporter_name,
+        chains=80001,
+        key=accounts[2].private_key,
+        password="",
+    )
+    return acct
+
+@pytest.fixture(scope="function")
+def custom_reporter_ape_account(accounts):
+    return accounts[2]
 
 def local_node_cfg(chain_id: int):
     """Return a test telliot configuration for use of tellorFlex contracts. Overrides
@@ -131,127 +150,84 @@ def local_node_cfg(chain_id: int):
     # Configure testing using local Ganache node
     endpt.url = "http://127.0.0.1:8545"
 
-    # Advance block number to avoid assertion error in endpoint.connect():
-    # connected = self._web3.eth.get_block_number() > 1
-    chain.mine(10)
-
-    accounts = find_accounts(chain_id=chain_id)
-    if not accounts:
-        # Create a test account using PRIVATE_KEY defined on github.
-        key = os.getenv("PRIVATE_KEY", None)
-        if key:
-            ChainedAccount.add(
-                "git-tellorflex-test-key",
-                chains=chain_id,
-                key=os.environ["PRIVATE_KEY"],
-                password="",
-            )
-        else:
-            raise Exception(f"Need an account for {chain_id}")
-
     return cfg
 
 
-@pytest.fixture(scope="function", autouse=True)
-def mumbai_test_cfg():
-    return local_node_cfg(chain_id=80001)
-
-
-@pytest.fixture(scope="function", autouse=True)
-def sepolia_test_cfg():
-    return local_node_cfg(chain_id=11155111)
-
-
-@pytest.fixture(scope="function", autouse=True)
-def mock_token_contract():
-    """mock token to use for staking"""
-    return accounts[0].deploy(TellorPlayground)
-
-
-@pytest.fixture(scope="function", autouse=True)
-def mock_flex_contract(mock_token_contract):
-    """mock oracle(TellorFlex) contract to stake in"""
-    return accounts[0].deploy(
-        TellorFlex,
-        mock_token_contract.address,
+@pytest.fixture(scope="session")
+def deploy_contracts(project, accounts):
+    token = accounts[0].deploy(project.TellorPlayground)
+    flex = accounts[0].deploy(
+        project.TellorFlex,
+        token.address,
         43200,  # 12 hours reporting lock
-        Web3.toWei(100, "ether"),  # $100 stake amount dollar target
-        Web3.toWei(15, "ether"),  # $15 staking token current price
-        Web3.toWei(10, "ether"),  # 10 TRB minimum stake amount
+        Web3.to_wei(100, "ether"),  # $100 stake amount dollar target
+        Web3.to_wei(15, "ether"),  # $15 staking token current price
+        Web3.to_wei(10, "ether"),  # 10 TRB minimum stake amount
         HexBytes(
             "0x5c13cd9c97dbb98f2429c101a2a8150e6c7a0ddaff6124ee176a3a411067ded0"
         ),  # TRB/USD staking token price query id
     )
 
-
-@pytest.fixture(scope="function", autouse=True)
-def mock_gov_contract(mock_flex_contract, mock_token_contract):
-    return accounts[0].deploy(Governance, mock_flex_contract.address, mock_token_contract.address)
-
-
-@pytest.fixture(scope="function", autouse=True)
-def init_tellorflex(mock_flex_contract, mock_gov_contract):
-    mock_flex_contract.init(mock_gov_contract.address)
-
-
-@pytest.fixture(scope="function", autouse=True)
-def mock_autopay_contract(mock_flex_contract, query_data_storage_contract):
-    """mock payments(Autopay) contract for tipping and claiming tips"""
-    return accounts[0].deploy(
-        Autopay,
-        mock_flex_contract.address,
+    gov = accounts[0].deploy(project.Governance, flex.address, token.address)
+    flex.init(gov.address, sender=accounts[0])
+    query_data_storage_contract = accounts[0].deploy(project.QueryDataStorage)
+    autopay = accounts[0].deploy(
+        project.Autopay,
+        flex.address,
         query_data_storage_contract.address,
         20,
     )
 
-
-@pytest.fixture(scope="function", autouse=True)
-def query_data_storage_contract():
-    return accounts[0].deploy(QueryDataStorage)
+    return token, flex, gov, query_data_storage_contract, autopay
 
 
-@pytest.fixture(autouse=True)
-def multicall_contract():
-    #  deploy multicall contract to brownie chain and add chain id to multicall module
-    addy = brownie_multicall.deploy({"from": accounts[0]})
-    Network.Brownie = 1337
-    # add multicall contract address to multicall module
-    MULTICALL2_ADDRESSES[Network.Brownie] = addy.address
+@pytest.fixture(scope="session")
+def multicall_contract(project, accounts):
+    mc = accounts[0].deploy(project.Multicall3)
+    MULTICALL3_ADDRESSES[Network.Mumbai] = mc.address
     multicall.state_override_supported = lambda _: False
 
 
+@pytest.fixture(scope="session")
+def mumbai_test_cfg(connected_provider):
+    return local_node_cfg(chain_id=80001)
+
+
 @pytest_asyncio.fixture(scope="function")
-async def tellor_360(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
-    async with TelliotCore(config=mumbai_test_cfg) as core:
+async def tellor_360(project, accounts, mumbai_test_cfg, deploy_contracts, chain, mumbai_test_key_name):
+    token, oracle, _, _, autopay = deploy_contracts
+    flexabi = project.TellorFlex.contract_type.model_dump().get("abi", [])
+    autopayabi = project.Autopay.contract_type.model_dump().get("abi", [])
+    async with TelliotCore(config=mumbai_test_cfg, account_name=mumbai_test_key_name) as core:
         account = core.get_account()
 
         tellor360 = core.get_tellor360_contracts()
-        tellor360.oracle.address = mock_flex_contract.address
-        tellor360.oracle.abi = mock_flex_contract.abi
-        tellor360.autopay.address = mock_autopay_contract.address
-        tellor360.autopay.abi = mock_autopay_contract.abi
-        tellor360.token.address = mock_token_contract.address
+        tellor360.oracle.address = oracle.address
+        tellor360.oracle.abi = flexabi
+        tellor360.autopay.address = autopay.address
+        tellor360.autopay.abi = autopayabi
+        tellor360.token.address = token.address
 
         tellor360.oracle.connect()
         tellor360.token.connect()
         tellor360.autopay.connect()
 
         # mint token and send to reporter address
-        mock_token_contract.faucet(account.address)
-
+        token.faucet(account.address, sender=accounts[0])
+        
         # approve token to be spent by autopay contract
-        mock_token_contract.approve(mock_autopay_contract.address, 100000e18, {"from": account.address})
+        token.approve(autopay.address, 10000000000000, sender=accounts[0])
 
-        # send eth from brownie address to reporter address for txn fees
+        # send eth from ape address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
-
-        return tellor360, account
+        snapshot = chain.snapshot()
+        return tellor360, account, snapshot
 
 
 @pytest_asyncio.fixture(scope="function")
-async def tellor_flex_reporter(mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract):
-    async with TelliotCore(config=mumbai_test_cfg) as core:
-
+async def tellor_flex_reporter(accounts, mumbai_test_cfg, deploy_contracts, mumbai_test_key_name):
+    async with TelliotCore(config=mumbai_test_cfg, account_name=mumbai_test_key_name) as core:
+        mock_token_contract, mock_flex_contract, _, _, mock_autopay_contract = deploy_contracts
         account = core.get_account()
 
         flex = core.get_tellor360_contracts()
@@ -275,9 +251,9 @@ async def tellor_flex_reporter(mumbai_test_cfg, mock_flex_contract, mock_autopay
             min_native_token_balance=0,
         )
         # mint token and send to reporter address
-        mock_token_contract.faucet(account.address)
+        mock_token_contract.faucet(account.address, sender=accounts[0])
 
-        # send eth from brownie address to reporter address for txn fees
+        # send eth from ape address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
 
         return r

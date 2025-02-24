@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from eth_abi import encode_single
+from eth_abi import encode
 from eth_abi.exceptions import ValueOutOfBounds
 
 from telliot_feeds.datasource import DataSource
@@ -35,7 +35,7 @@ class TellorRNGManualInputSource(DataSource[bytes]):
                 user_input = user_input[2:]
             try:
                 val = bytes.fromhex(user_input)
-                encode_single("bytes32", val)
+                encode(["bytes32"], [val])
             except ValueOutOfBounds:
                 print("Invalid input! Exceeds total byte size for bytes32 encoding")
                 continue
