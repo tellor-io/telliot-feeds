@@ -31,8 +31,8 @@ class GripDynoReturnType(ValueType):
             ["bool", "uint256", "uint256", "string", "string", "uint256"],
             [
                 value[0],  # bool
-                int(value[1]),  # uint256
-                int(value[2]),  # uint256
+                int(value[1] * 1000000000000000000),  # uint256
+                int(value[2] * 1000000000000000000),  # uint256
                 value[3],  # string
                 value[4],  # string
                 int(value[5]),  # uint256
