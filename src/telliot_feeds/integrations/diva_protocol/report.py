@@ -222,7 +222,7 @@ class DIVAProtocolReporter(Tellor360Reporter):
         tx_signed = local_account.sign_transaction(built_tx)
         try:
             logger.debug("Sending submitValue transaction")
-            tx_hash = self.web3.eth.send_raw_transaction(tx_signed.raw_transaction)
+            tx_hash = self.web3.eth.send_raw_transaction(tx_signed.rawTransaction)
         except Exception as e:
             note = "Send transaction failed"
             return None, error_status(note, log=logger.error, e=e)

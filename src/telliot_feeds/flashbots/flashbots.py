@@ -107,7 +107,7 @@ class Flashbots(Module):
                     tx["gas"] = self.w3.eth.estimate_gas(tx)
 
                 signed_tx = signer.sign_transaction(tx)
-                signed_transactions.append(signed_tx.raw_transaction)
+                signed_transactions.append(signed_tx.rawTransaction)
 
             elif all(key in tx for key in ["v", "r", "s"]):  # FlashbotsBundleDictTx
                 v, r, s = (

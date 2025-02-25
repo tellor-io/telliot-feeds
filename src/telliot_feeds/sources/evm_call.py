@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from typing import Optional
 from typing import Tuple
@@ -29,7 +29,7 @@ class EVMCallSource(DataSource[Any]):
     contractAddress: Optional[str] = None  # example: '0x1234567890123456789012345678901234567890'
     calldata: Optional[bytes] = None
     web3: Optional[Web3] = None
-    cfg: TelliotConfig = TelliotConfig()
+    cfg: TelliotConfig = field(default_factory=TelliotConfig)
 
     def get_response(self, block_number: BlockIdentifier = "latest") -> Optional[Tuple[HexBytes, int]]:
         """Makes requested EVM call and returns the response from the contract

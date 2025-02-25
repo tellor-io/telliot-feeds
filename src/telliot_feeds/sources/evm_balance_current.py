@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from typing import Optional
 
@@ -34,7 +34,7 @@ class EVMBalanceCurrentSource(DataSource[Any]):
     chainId: Optional[int] = None
     evmAddress: Optional[str] = None
     block_delay: int = 6
-    cfg: TelliotConfig = TelliotConfig()
+    cfg: TelliotConfig = field(default_factory=TelliotConfig)
     web3: Optional[Web3] = None
 
     def get_block(self, w3: Web3, block_number: int, full_transaction: bool = False) -> Optional[BlockData]:
