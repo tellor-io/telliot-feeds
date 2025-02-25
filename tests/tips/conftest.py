@@ -1,4 +1,3 @@
-import pytest
 import pytest_asyncio
 from ape import project
 from telliot_core.apps.core import TelliotCore

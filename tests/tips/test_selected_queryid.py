@@ -2,6 +2,7 @@ import pytest
 from eth_utils import to_bytes
 from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.timestamp import TimeStamp
+
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.reporters.tips.tip_amount import fetch_feed_tip
@@ -43,7 +44,9 @@ async def test_single_feed(autopay_contract_setup, chain, multicall_contract):
         _priceThreshold=price_threshold,
     )
     chain.mine(4)
-    tip_amount = await fetch_feed_tip(autopay=flex.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 4)
+    tip_amount = await fetch_feed_tip(
+        autopay=flex.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 4
+    )
     assert tip_amount == reward
 
 
@@ -73,7 +76,9 @@ async def test_priceThreshold_gt_zero(autopay_contract_setup, chain):
         _nonce=0,
         _queryData=query_data,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2)
+    tip_amount = await fetch_feed_tip(
+        autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2
+    )
     assert tip_amount == 0
 
 
@@ -96,7 +101,9 @@ async def test_ousideof_window_pt0(autopay_contract_setup, chain):
         _amount=int(5 * 10**18),
     )
     chain.mine(1)
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp)
+    tip_amount = await fetch_feed_tip(
+        autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp
+    )
     assert tip_amount == 0
 
 
@@ -119,7 +126,9 @@ async def test_priceThreshold_zero(autopay_contract_setup, chain):
         _value=to_bytes(int(10 * 1e18)).rjust(32, b"\0"),
         _nonce=0,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 1)
+    tip_amount = await fetch_feed_tip(
+        autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 1
+    )
     assert tip_amount == 0
 
 
@@ -149,7 +158,9 @@ async def test_meet_priceThreshold(autopay_contract_setup, chain):
         _nonce=0,
     )
     # tip amount should be > 0 since price threshold is met
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2)
+    tip_amount = await fetch_feed_tip(
+        autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2
+    )
     assert tip_amount == reward
 
 
@@ -170,7 +181,9 @@ async def test_onetimetip_and_feedtip(autopay_contract_setup, chain):
         **txn_kwargs,
         _amount=reward,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2)
+    tip_amount = await fetch_feed_tip(
+        autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2
+    )
     assert tip_amount == reward * 2
 
     # submit value within window
@@ -180,7 +193,9 @@ async def test_onetimetip_and_feedtip(autopay_contract_setup, chain):
         _value=to_bytes(int(2 * 1e18)).rjust(32, b"\0"),
         _nonce=0,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2)
+    tip_amount = await fetch_feed_tip(
+        autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2
+    )
     # tip should be 0 since there is a submission
     assert tip_amount == 0
 
@@ -204,7 +219,9 @@ async def test_onetimetip_and_feedtip_pt_gt0(autopay_contract_setup, chain):
         **txn_kwargs,
         _amount=reward,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2)
+    tip_amount = await fetch_feed_tip(
+        autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2
+    )
     assert tip_amount == reward * 2
 
     # submit value within window
@@ -214,9 +231,12 @@ async def test_onetimetip_and_feedtip_pt_gt0(autopay_contract_setup, chain):
         _value=to_bytes(int(2 * 1e18)).rjust(32, b"\0"),
         _nonce=0,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2)
+    tip_amount = await fetch_feed_tip(
+        autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2
+    )
     # tip should be 10 since price threshold is met and there is an in window submission
     assert tip_amount == reward
+
 
 @pytest.mark.skip(reason="Etherscan API key required")
 @pytest.mark.asyncio

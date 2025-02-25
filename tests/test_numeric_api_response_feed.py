@@ -1,5 +1,4 @@
 import pytest
-
 from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
@@ -17,9 +16,7 @@ numeric_api_rsp_feed = DataFeed(
 
 
 @pytest.mark.asyncio
-async def test_api_reporter_submit_once(
-    mumbai_test_cfg, deploy_contracts, accounts
-):
+async def test_api_reporter_submit_once(mumbai_test_cfg, deploy_contracts, accounts):
     """Test reporting a quote from T-Swizzle on Polygon Mumbai testnet."""
     mock_token_contract, mock_flex_contract, _, _, mock_autopay_contract = deploy_contracts
     async with TelliotCore(config=mumbai_test_cfg) as core:

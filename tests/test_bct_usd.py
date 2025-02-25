@@ -1,5 +1,4 @@
 import pytest
-
 from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
@@ -8,9 +7,7 @@ from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 
 @pytest.mark.asyncio
-async def test_bct_usd_reporter_submit_once(
-    mumbai_test_cfg, deploy_contracts, accounts
-):
+async def test_bct_usd_reporter_submit_once(mumbai_test_cfg, deploy_contracts, accounts):
     """Test reporting bct/usd on mumbai."""
     mock_token_contract, mock_flex_contract, _, _, mock_autopay_contract = deploy_contracts
     async with TelliotCore(config=mumbai_test_cfg) as core:

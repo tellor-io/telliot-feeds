@@ -7,9 +7,7 @@ from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 
 @pytest.mark.asyncio
-async def test_dai_usd_reporter_submit_once(
-    mumbai_test_cfg, deploy_contracts, accounts
-):
+async def test_dai_usd_reporter_submit_once(mumbai_test_cfg, deploy_contracts, accounts):
     """Test reporting dai/usd on mumbai."""
     async with TelliotCore(config=mumbai_test_cfg) as core:
         # get PubKey and PrivKey from config files

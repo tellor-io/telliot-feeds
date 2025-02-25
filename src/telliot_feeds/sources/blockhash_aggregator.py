@@ -177,7 +177,7 @@ class TellorRNGManualSource(DataSource[Any]):
     def set_timestamp(self, timestamp: int) -> None:
         self.timestamp = timestamp
 
-    def parse_user_val(self) -> int:
+    def parse_user_val(self) -> Any:
         """Parse timestamp from user input."""
         print("Enter timestamp for generating a random number: ")
 
@@ -245,7 +245,7 @@ class TellorRNGManualSource(DataSource[Any]):
             logger.warning("Unable to retrieve Ethereum blockhash")
             return None, None
 
-        data = Web3.solidityKeccak(["string", "string"], [eth_hash, btc_hash])
+        data = Web3.solidity_keccak(["string", "string"], [eth_hash, btc_hash])
         dt = datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
         datapoint = (data, dt)
 

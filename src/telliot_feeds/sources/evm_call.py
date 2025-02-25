@@ -1,4 +1,5 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from dataclasses import field
 from typing import Any
 from typing import Optional
 from typing import Tuple
@@ -10,6 +11,7 @@ from web3 import Web3
 from web3.exceptions import ContractLogicError
 from web3.exceptions import ExtraDataLengthError
 from web3.types import BlockIdentifier
+from web3.types import Wei
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
@@ -74,12 +76,12 @@ class EVMCallSource(DataSource[Any]):
             return (empty_bytes, ts)
         try:
             result = self.web3.eth.call(
-                {"gasPrice": 0, "to": self.contractAddress, "data": self.calldata}, block_number
+                {"gasPrice": Wei(0), "to": self.contractAddress, "data": self.calldata}, block_number
             )
         # Is there a scenario where a contract call for a view/pure function would revert when the callData is valid?
         except ContractLogicError as e:
             bytecode = self.web3.eth.get_code(self.contractAddress)
-            if self.calldata[:4] not in bytecode:
+            if self.calldata[:4] not in bytecode:  # type: ignore
                 logger.info(f"function selector: {self.calldata!r}, not found in bytecode, submitting empty bytes")
                 return (empty_bytes, ts)
             else:

@@ -145,6 +145,7 @@ async def test_poloniex_get_trades():
     assert isfloat(trades[0]["rate"])
     # print("# trades in six hour window:", len(trades))
 
+
 @pytest.mark.skip(reason="cryptowatch sunset")
 @pytest.mark.asyncio
 async def test_cryptowatch_get_price():

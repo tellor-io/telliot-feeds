@@ -43,6 +43,7 @@ from telliot_feeds.feeds.evm_call_feed import evm_call_feed
 from telliot_feeds.feeds.evm_call_feed import evm_call_feed_example
 from telliot_feeds.feeds.ezeth_usd_feed import ezeth_usd_median_feed
 from telliot_feeds.feeds.fil_usd_feed import fil_usd_median_feed
+from telliot_feeds.feeds.fileCID_manual_feed import filecid_example_feed
 from telliot_feeds.feeds.fileCID_manual_feed import fileCID_manual_feed
 from telliot_feeds.feeds.frax_usd_feed import frax_usd_median_feed
 from telliot_feeds.feeds.frxeth_usd_feed import frxeth_usd_median_feed
@@ -130,7 +131,6 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
-from telliot_feeds.feeds.fileCID_manual_feed import filecid_example_feed
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "ampleforth-custom": ampl_usd_vwap_feed,

@@ -198,9 +198,7 @@ class Flashbots(Module):
         block_timestamp: int = None,
     ):
         # get block details
-        block_details = (
-            self.w3.eth.get_block(block_tag) if block_tag is not None else self.w3.eth.get_block("latest")
-        )
+        block_details = self.w3.eth.get_block(block_tag) if block_tag is not None else self.w3.eth.get_block("latest")
 
         # sets evm params
         evm_block_number = self.w3.to_hex(block_details.number)

@@ -127,7 +127,7 @@ class KrakenHistoricalPriceService(WebPriceService):
             if not trades:
                 continue
             price = float(trades[-1][0])
-            logger.info(f"Price found up to {i+1} min before expiry: {price}")
+            logger.info(f"Price found up to {i + 1} min before expiry: {price}")
             return price, dt
 
         logger.info("No trades found up to 15 minutes before expiry.")

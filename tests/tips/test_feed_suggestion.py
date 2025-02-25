@@ -2,7 +2,6 @@ from unittest.mock import AsyncMock
 from unittest.mock import patch
 
 import pytest
-
 from hexbytes import HexBytes
 from web3 import Web3
 
@@ -57,7 +56,7 @@ async def test_fetching_tips(tip_feeds_and_one_time_tips, chain):
     assert isinstance(datafeed, DataFeed)
     assert isinstance(tip, int)
     # feed has a tip from one time tips and setup datafeed tips
-    assert tip == (len(query_catalog._entries)+1) * int(1e18)
+    assert tip == (len(query_catalog._entries) + 1) * int(1e18)
 
 
 @pytest.mark.asyncio
@@ -126,14 +125,18 @@ async def test_error_calculating_priceThreshold(autopay_contract_setup, chain, c
         legacy_gas_price=1,
     )
     # there should be a tip since the price threshold is met and we're able to calculate the deviation
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2)
+    tip_amount = await fetch_feed_tip(
+        autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2
+    )
     assert tip_amount == int(1e18)
     with patch(
         "telliot_feeds.feeds.matic_usd_median_feed.source.fetch_new_datapoint",
         AsyncMock(side_effect=lambda: (None, None)),
     ):
         # tip amount should be 0 because the price threshold can't be calculated
-        tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2)
+        tip_amount = await fetch_feed_tip(
+            autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp + 2
+        )
         assert tip_amount == 0
         assert (
             'Unable to fetch data from API for {"type":"SpotPrice","asset":"matic","currency":"usd"}, to check if price'
@@ -164,7 +167,9 @@ async def test_feed_with_manual_source(autopay_contract_setup, chain, caplog):
     )
     assert status.ok
 
-    datafeed, tip = await get_feed_and_tip(r.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp)
+    datafeed, tip = await get_feed_and_tip(
+        r.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp
+    )
     assert datafeed.query.asset == "fake"
     assert datafeed.query.currency == "usd"
     assert datafeed.query.type == "SpotPrice"
@@ -182,7 +187,9 @@ async def test_feed_with_manual_source(autopay_contract_setup, chain, caplog):
         legacy_gas_price=1,
     )
     chain.mine(1)
-    datafeed, tip = await get_feed_and_tip(r.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp)
+    datafeed, tip = await get_feed_and_tip(
+        r.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp
+    )
     assert datafeed is None
     assert tip is None
     assert "No auto source for feed with query type SpotPrice to check threshold" in caplog.text
@@ -243,12 +250,16 @@ async def test_low_gas_limit_error(autopay_contract_setup, chain, caplog):
 
     # imitate a low gas limit caused error
     with patch.object(AssembleCall, "gas_limit", 5000):
-        suggestion = await get_feed_and_tip(r.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp)
+        suggestion = await get_feed_and_tip(
+            r.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp
+        )
         assert suggestion == (None, None)
         assert "Error getting eligible funded feeds: multicall failed to fetch data: ContractLogicError" in caplog.text
 
     # should be no error when using default gas limit
-    feed, tip_amount = await get_feed_and_tip(r.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp)
+    feed, tip_amount = await get_feed_and_tip(
+        r.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp
+    )
     assert feed is not None
     assert tip_amount is not None
 
@@ -275,7 +286,9 @@ async def test_skip_manual_feed(autopay_contract_setup, chain, caplog):
         _amount=int(1 * 10**18),
     )
     assert status.ok
-    datafeed, tip = await get_feed_and_tip(flex.autopay, skip_manual_feeds=True, current_timestamp=chain.pending_timestamp)
+    datafeed, tip = await get_feed_and_tip(
+        flex.autopay, skip_manual_feeds=True, current_timestamp=chain.pending_timestamp
+    )
     assert datafeed is None
     assert tip is None
     assert f"There is a tip for this query type: SpotPrice. Query data: {jai_usd_query_data[2:]}" in caplog.text

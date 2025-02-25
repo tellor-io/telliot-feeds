@@ -53,6 +53,7 @@ def mock_playground(project, accounts):
 def mock_middleware_contract(mock_playground, project, accounts):
     return accounts[0].deploy(project.DIVATellorOracleMock, 0, mock_playground.address)
 
+
 @pytest.mark.skip("needs new chain fixture; test not working for a while")
 @pytest.mark.asyncio
 async def test_create_report_settle_pool(

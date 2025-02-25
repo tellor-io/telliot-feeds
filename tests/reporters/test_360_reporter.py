@@ -63,7 +63,7 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, deploy_contra
         "0x0000000000000000000000000000000000000000000000004563918244f40000",
         0,
         trb_usd_median_feed.query.query_data,
-        sender=accounts[1]
+        sender=accounts[1],
     )
 
     with mock.patch("telliot_feeds.reporters.tellor_360.time.time", return_value=chain.pending_timestamp):
@@ -73,7 +73,7 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, deploy_contra
         stake_amount, status = await r.oracle.read("getStakeAmount")
         assert status.ok
         assert stake_amount == int(20e18)
-    
+
         await r.report_once()
         # staker balance increased due to updateStakeAmount call
         assert r.stake_info.current_stake_amount == stake_amount
@@ -88,9 +88,9 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, deploy_contra
             "0x00000000000000000000000000000000000000000000021e19e0c9bab2400000",
             0,
             trb_usd_median_feed.query.query_data,
-            sender=accounts[1]
+            sender=accounts[1],
         )
-    
+
         chain.pending_timestamp += 86400
         mock_flex_contract.updateStakeAmount(sender=accounts[0])
 
@@ -149,6 +149,7 @@ async def test_fail_get_account_nonce(tellor_360, caplog, guaranteed_price_sourc
 
     chain.restore(snapshot)
 
+
 @pytest.mark.asyncio
 async def test_get_time_based_rewards(tellor_360, caplog, chain):
     time.sleep(1)
@@ -159,6 +160,7 @@ async def test_get_time_based_rewards(tellor_360, caplog, chain):
     assert isinstance(tbr, int)
     assert "not found in contract abi" not in caplog.text
     chain.restore(snapshot)
+
 
 @pytest.mark.asyncio
 async def test_360_reporter_rewards(tellor_360, guaranteed_price_source, chain):
@@ -187,7 +189,7 @@ async def test_360_reporter_rewards(tellor_360, guaranteed_price_source, chain):
 
 
 @pytest.mark.asyncio
-async def test_adding_stake(tellor_360,guaranteed_price_source, chain):
+async def test_adding_stake(tellor_360, guaranteed_price_source, chain):
     """Test 360 reporter depositing more stake"""
     contracts, account, snapshot = tellor_360
     feed = eth_usd_median_feed
@@ -226,9 +228,12 @@ async def test_adding_stake(tellor_360,guaranteed_price_source, chain):
         reporter = Tellor360Reporter(**reporter_kwargs, stake=900000)
         _, status = await reporter.report_once()
         assert status.ok
-        assert reporter.stake_info.current_staker_balance == pytest.approx(900000e18), "Staker balance should be 90000e18"
+        assert reporter.stake_info.current_staker_balance == pytest.approx(
+            900000e18
+        ), "Staker balance should be 90000e18"
 
     chain.restore(snapshot)
+
 
 @pytest.mark.asyncio
 async def test_no_native_token(tellor_360, caplog, guaranteed_price_source, chain):
@@ -304,6 +309,7 @@ async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, 
         assert f"Currently in reporter lock. Time left: {hr_min_sec}" in caplog.text
 
     chain.restore(snapshot)
+
 
 @pytest.mark.asyncio
 async def test_fail_gen_query_id(tellor_360, caplog, guaranteed_price_source, chain):
@@ -408,6 +414,7 @@ async def test_tbr_tip_increment(tellor_360, guaranteed_price_source, caplog, ch
         assert "Tips: 3.0" not in caplog.text
 
         chain.restore(snapshot)
+
 
 @pytest.mark.asyncio
 async def test_fetch_datafeed(tellor_flex_reporter):

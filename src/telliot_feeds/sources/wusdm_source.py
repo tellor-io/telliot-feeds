@@ -2,8 +2,10 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 from typing import Optional
-from web3 import Web3
+
+from eth_typing import HexStr
 from telliot_core.apps.telliot_config import TelliotConfig
+from web3 import Web3
 
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService
@@ -40,7 +42,7 @@ class wUSDMSpotPriceService(WebPriceService):
         wusdm_eth_ratio_bytes = w3.eth.call(
             {
                 "to": "0x57F5E098CaD7A3D1Eed53991D4d66C45C9AF7812",
-                "data": "0x07a2d13a0000000000000000000000000000000000000000000000000de0b6b3a7640000",
+                "data": HexStr("0x07a2d13a0000000000000000000000000000000000000000000000000de0b6b3a7640000"),
             }
         )
         wusdm_usd_ratio_decoded = w3.to_int(wusdm_eth_ratio_bytes)

@@ -1,5 +1,4 @@
 import pytest
-
 from telliot_core.apps.core import TelliotCore
 
 from telliot_feeds.integrations.diva_protocol.contract import DivaOracleTellorContract

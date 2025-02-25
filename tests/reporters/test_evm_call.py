@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock
 
 import pytest
-
 from eth_abi import decode
 from hexbytes import HexBytes
 from telliot_core.apps.core import RPCEndpoint
@@ -87,6 +86,7 @@ async def test_evm_call_e2e(tellor_360, caplog, chain):
 
     chain.restore(snapshot)
 
+
 @pytest.mark.asyncio
 async def test_no_endpoint_for_tipped_chain(tellor_360, chain, caplog):
     """Test reporter doesn't halt if chainId is not supported"""
@@ -133,6 +133,7 @@ async def test_no_endpoint_for_tipped_chain(tellor_360, chain, caplog):
     assert not status.ok
 
     chain.restore(snapshot)
+
 
 @pytest.mark.asyncio
 async def test_bad_contract_address(tellor_360, chain, caplog):
@@ -196,6 +197,7 @@ async def test_short_call_data(tellor_360, chain, caplog):
     assert status.ok
 
     chain.restore(snapshot)
+
 
 @pytest.mark.asyncio
 async def test_function_doesnt_exist(tellor_360, caplog, chain):

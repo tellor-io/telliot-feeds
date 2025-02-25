@@ -2,7 +2,6 @@ from unittest.mock import AsyncMock
 from unittest.mock import patch
 
 import pytest
-
 from eth_abi import encode
 from hexbytes import HexBytes
 from web3 import Web3

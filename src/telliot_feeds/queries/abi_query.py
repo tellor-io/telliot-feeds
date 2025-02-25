@@ -1,4 +1,3 @@
-import codecs
 from typing import ClassVar
 from typing import Optional
 
@@ -12,7 +11,6 @@ from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
-
 
 
 class AbiQuery(OracleQuery):

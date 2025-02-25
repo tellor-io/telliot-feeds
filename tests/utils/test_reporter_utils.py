@@ -2,7 +2,6 @@ from unittest import mock
 
 import pytest
 import requests
-
 from telliot_core.apps.core import TelliotCore
 from web3 import Web3
 

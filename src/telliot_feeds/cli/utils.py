@@ -231,11 +231,11 @@ def build_query(log: Optional[Callable[[str], None]] = click.echo) -> Any:
     queries = [q for q in AbiQuery.__subclasses__() if q.__name__ not in ("LegacyRequest")]
     options = [q.__name__ for q in queries]
     # Sort options and queries by alphabetical order
-    options, queries = zip(*sorted(zip(options, queries)))
+    option_names, query_subclasses = zip(*sorted(zip(options, queries)))
 
-    menu = TerminalMenu(options, title=title)
+    menu = TerminalMenu(option_names, title=title)
     selected_index = menu.show()
-    q = queries[selected_index]
+    q = query_subclasses[selected_index]
 
     if not q:
         log("No query selected")

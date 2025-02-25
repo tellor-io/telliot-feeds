@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import pytest
 import pytest_asyncio
+
 from telliot_feeds.feeds import eth_usd_median_feed
 from telliot_feeds.reporters.customized import ChainLinkFeeds
 from telliot_feeds.reporters.customized.backup_reporter import ChainlinkBackupReporter
@@ -17,23 +18,25 @@ async def reporter(tellor_360, guaranteed_price_source):
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
 
-    return ChainlinkBackupReporter(
-        oracle=contracts.oracle,
-        token=contracts.token,
-        autopay=contracts.autopay,
-        endpoint=contracts.oracle.node,
-        account=account,
-        chain_id=80001,
-        transaction_type=0,
-        min_native_token_balance=0,
-        datafeed=feed,
-        check_rewards=False,
-        chainlink_is_frozen_timeout=100,
-        chainlink_max_price_change=0.5,
-        chainlink_feed=ChainLinkFeeds[80001],
-        wait_period=0,
-    ), snapshot
-
+    return (
+        ChainlinkBackupReporter(
+            oracle=contracts.oracle,
+            token=contracts.token,
+            autopay=contracts.autopay,
+            endpoint=contracts.oracle.node,
+            account=account,
+            chain_id=80001,
+            transaction_type=0,
+            min_native_token_balance=0,
+            datafeed=feed,
+            check_rewards=False,
+            chainlink_is_frozen_timeout=100,
+            chainlink_max_price_change=0.5,
+            chainlink_feed=ChainLinkFeeds[80001],
+            wait_period=0,
+        ),
+        snapshot,
+    )
 
 
 @pytest.mark.asyncio
@@ -78,6 +81,7 @@ async def test_frozen_data(reporter, chain, caplog):
         assert "Sending submitValue transaction" in caplog.text
     chain.restore(snapshot)
 
+
 @pytest.mark.asyncio
 async def test_tellor_data_exists(reporter, chain, caplog):
     r, snapshot = reporter
@@ -121,11 +125,13 @@ async def test_price_change_condition(reporter, chain, caplog):
         assert "Sending submitValue transaction" in caplog.text
     chain.restore(snapshot)
 
+
 @pytest.mark.asyncio
 async def test_tellor_data_none(reporter, chain, caplog):
     """Test when tellor data is None"""
     r, snapshot = reporter
     module = "telliot_feeds.reporters.customized.backup_reporter."
+
     def patch_tellor_data_return(return_value):
         return patch(f"{module}ChainlinkBackupReporter.get_tellor_latest_data", return_value=return_value)
 
@@ -141,6 +147,7 @@ async def test_tellor_data_none(reporter, chain, caplog):
         await r.report(report_count=1)
         assert "tellor data is stale, time elapsed since last report" in caplog.text
     chain.restore(snapshot)
+
 
 @pytest.mark.asyncio
 async def test_bad_chainlink_address_msg(reporter, chain, caplog):

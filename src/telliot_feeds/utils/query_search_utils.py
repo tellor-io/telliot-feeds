@@ -28,7 +28,7 @@ def decode_typ_name(qdata: bytes) -> str:
     """
     qtype_name: str
     try:
-        qtype_name, _ = decode(["string","bytes"], qdata)
+        qtype_name, _ = decode(["string", "bytes"], qdata)
     except OverflowError:
         # string query for some reason encoding isn't the same as the others
         qtype_name = ast.literal_eval(qdata.decode("utf-8"))["type"]

@@ -9,6 +9,7 @@ from telliot_feeds.sources.blockhash_aggregator import get_eth_hash
 from telliot_feeds.sources.blockhash_aggregator import get_mainnet_web3
 from telliot_feeds.sources.blockhash_aggregator import TellorRNGManualSource
 
+
 @pytest.mark.skip("TODO: add etherscan API key")
 @pytest.mark.asyncio
 async def test_rng():

@@ -4,7 +4,6 @@ Copyright (c) 2022-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
 from eth_abi import decode
-from eth_abi import decode
 
 from telliot_feeds.queries.tellor_rng import TellorRNG
 

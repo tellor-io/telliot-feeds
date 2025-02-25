@@ -18,7 +18,7 @@ async def test_get_one_time_tip_funded_queries(setup_one_time_tips):
     tips = await get_funded_one_time_tips(flex.autopay)
     for query_data, tip in tips.items():
         try:
-            query_data = decode(["string","bytes"], query_data)[0]
+            query_data = decode(["string", "bytes"], query_data)[0]
         except OverflowError:
             # string query for some reason encoding isn't the same as the others
             import ast

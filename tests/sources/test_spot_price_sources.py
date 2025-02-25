@@ -79,6 +79,7 @@ def coinmarketcap_key():
 
     return key
 
+
 @pytest.mark.skip("deprecated: https://docs.cdp.coinbase.com/exchange/docs/changelog#2024-sep-11")
 @pytest.mark.asyncio
 async def test_coinbase():
@@ -171,7 +172,7 @@ async def test_gemini(caplog, monkeypatch):
 async def test_uniswap_usd(caplog):
     """Test retrieving from UniswapV3 price source in USD."""
     v, t = await get_price("fuse", "usd", service["uniswapV3"])
-    if type(v) == float:
+    if isinstance(v, float):
         validate_price(v, t)
     else:
         assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
@@ -189,7 +190,7 @@ async def test_uniswap_timeout():
 async def test_uniswap_eth(caplog):
     """Test retrieving from UniswapV3 price source in ETH."""
     v, t = await get_price("fuse", "eth", service["uniswapV3"])
-    if type(v) == float:
+    if isinstance(v, float):
         validate_price(v, t)
     else:
         assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
@@ -199,7 +200,7 @@ async def test_uniswap_eth(caplog):
 async def test_uniswap_eth_usd(caplog):
     """Test retrieving from UniswapV3 price source for Eth in USD."""
     v, t = await get_price("eth", "usd", service["uniswapV3"])
-    if type(v) == float:
+    if isinstance(v, float):
         validate_price(v, t)
     else:
         assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
@@ -219,6 +220,7 @@ async def test_pancakeswap_bnb():
     """Test retrieving from Pancakeswap price source in BNB."""
     v, t = await get_price("fuse", "bnb", service["pancakeswap"])
     validate_price(v, t)
+
 
 @pytest.mark.skip("source modified to no longer use get_url method")
 @pytest.mark.asyncio

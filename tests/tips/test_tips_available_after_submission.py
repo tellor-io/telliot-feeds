@@ -1,12 +1,11 @@
 import pytest
-
 from eth_utils import to_bytes
+from telliot_core.utils.timestamp import TimeStamp
 from web3 import Web3
 
 from telliot_feeds.feeds.albt_usd_feed import albt_usd_median_feed
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.utils import log
-from telliot_core.utils.timestamp import TimeStamp
 
 # Turn off duplicate output filter
 log.DuplicateFilter.filter = lambda _, x: True
@@ -123,5 +122,7 @@ async def test_one_time_tip_suggestion(autopay_contract_setup, chain):
     )
     assert status.ok
     # One time tipped query id should no longer be suggested after a submission
-    tip_amount = await get_feed_and_tip(autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp)
+    tip_amount = await get_feed_and_tip(
+        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp
+    )
     assert tip_amount == (None, None)

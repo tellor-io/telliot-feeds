@@ -2,8 +2,6 @@ import time
 from unittest.mock import patch
 
 import pytest
-import pytest_asyncio
-from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
@@ -115,6 +113,7 @@ async def test_missing_blockhash(tellor_360, monkeypatch, caplog, chain):
         assert caplog.text.count("bazinga") == 3
 
     chain.restore(snapshot)
+
 
 @pytest.mark.skip("etherscan API key required")
 @pytest.mark.asyncio

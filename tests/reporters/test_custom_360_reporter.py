@@ -23,7 +23,7 @@ logger = get_logger(__name__)
 @pytest.fixture(scope="function")
 def mock_reporter_contract(deploy_contracts, project, custom_reporter_ape_account):
     """mock custom reporter contract"""
-    
+
     mock_token_contract, mock_flex_contract, _, _, mock_autopay_contract = deploy_contracts
 
     return custom_reporter_ape_account.deploy(
@@ -51,7 +51,7 @@ async def custom_reporter(
         contracts.oracle.abi = project.TellorFlex.contract_type.model_dump().get("abi", [])
         contracts.oracle.address = mock_flex_contract.address
         contracts.autopay.address = mock_autopay_contract.address
-        contracts.autopay.abi =  project.Autopay.contract_type.model_dump().get("abi", [])
+        contracts.autopay.abi = project.Autopay.contract_type.model_dump().get("abi", [])
         contracts.token.address = mock_token_contract.address
 
         contracts.oracle.connect()

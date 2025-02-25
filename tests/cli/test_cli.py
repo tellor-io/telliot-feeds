@@ -6,12 +6,13 @@ from unittest import mock
 import click
 import pytest
 from click.testing import CliRunner
-from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
+
 from telliot_feeds.cli.commands.report import valid_diva_chain
 from telliot_feeds.cli.constants import STAKE_MESSAGE
 from telliot_feeds.cli.main import main as cli_main
 from telliot_feeds.cli.utils import build_feed_from_input
 from telliot_feeds.cli.utils import parse_profit_input
+from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
 
 
 def stop():
@@ -25,7 +26,7 @@ def test_build_feed_from_input(capsys):
     for i, q_type in enumerate(sorted(DATAFEED_BUILDER_MAPPING.keys())):
         if q_type == "NumericApiResponse":
             # add 1 because list starts at 1 and not 0
-            num_choice = i+1
+            num_choice = i + 1
     url = "https://api.coingecko.com/api/v3/simple/price?ids=uniswap&vs_currencies=usd&include_market_cap=false&include_24hr_vol=false&include_24hr_change=false&include_last_updated_at=falsw"  # noqa: E501
     parse_str = "uniswap, usd"
 
@@ -56,7 +57,7 @@ def test_build_evm_call_feed_from_input(capsys):
     for i, q_type in enumerate(sorted(DATAFEED_BUILDER_MAPPING.keys())):
         if q_type == "EVMCall":
             # add 1 because list starts at 1 and not 0
-            num_choice = i+1
+            num_choice = i + 1
     chain_id_str = "1"
     chain_id = 1
     contract_address = "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"

@@ -16,6 +16,7 @@ async def test_weather():
     val, _ = await source.fetch_new_datapoint()
     assert val == 279.15
 
+
 @pytest.mark.skip("remove since coindesk is not working")
 @pytest.mark.asyncio
 async def test_coindesk():

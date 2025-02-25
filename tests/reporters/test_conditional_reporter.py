@@ -16,21 +16,24 @@ async def reporter(tellor_360, guaranteed_price_source):
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
 
-    return ConditionalReporter(
-        oracle=contracts.oracle,
-        token=contracts.token,
-        autopay=contracts.autopay,
-        endpoint=contracts.oracle.node,
-        account=account,
-        chain_id=80001,
-        transaction_type=0,
-        min_native_token_balance=0,
-        datafeed=feed,
-        check_rewards=False,
-        stale_timeout=100,
-        max_price_change=0.5,
-        wait_period=0,
-    ), snapshot
+    return (
+        ConditionalReporter(
+            oracle=contracts.oracle,
+            token=contracts.token,
+            autopay=contracts.autopay,
+            endpoint=contracts.oracle.node,
+            account=account,
+            chain_id=80001,
+            transaction_type=0,
+            min_native_token_balance=0,
+            datafeed=feed,
+            check_rewards=False,
+            stale_timeout=100,
+            max_price_change=0.5,
+            wait_period=0,
+        ),
+        snapshot,
+    )
 
 
 module = "telliot_feeds.reporters.customized.conditional_reporter."
@@ -64,6 +67,7 @@ async def test_tellor_data_not_retrieved(reporter, chain, caplog):
 
     chain.restore(snapshot)
 
+
 @pytest.mark.asyncio
 async def test_tellor_data_is_stale(reporter, chain, caplog):
     """Test when tellor data is None"""
@@ -77,6 +81,7 @@ async def test_tellor_data_is_stale(reporter, chain, caplog):
         assert "tellor data is stale, time elapsed since last report" in caplog.text
 
     chain.restore(snapshot)
+
 
 @pytest.mark.asyncio
 async def test_tellor_price_change_above_max(reporter, chain, caplog):

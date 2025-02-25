@@ -1,10 +1,7 @@
 """Pytest Fixtures used for testing Pytelliot"""
-
 import pytest
 import pytest_asyncio
-
 from ape import networks
-
 from chained_accounts import ChainedAccount
 from chained_accounts import find_accounts
 from hexbytes import HexBytes
@@ -23,9 +20,11 @@ from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 NAME = "hardhat"
 
+
 @pytest.fixture(scope="session")
 def local_network_api():
     return networks.ethereum.local
+
 
 @pytest.fixture(scope="session")
 def name():
@@ -37,22 +36,26 @@ def connected_provider(name, local_network_api, chain):
     """
     The main HH local-network (non-fork) instance.
     """
-    
+
     with local_network_api.use_provider(name) as provider:
 
         yield provider
+
 
 @pytest.fixture(scope="session")
 def mumbai_test_key_name():
     return "mumbai_test_key"
 
+
 @pytest.fixture
 def custom_reporter_name():
     return "custom_reporter_address"
 
+
 @pytest.fixture
 def sepolia_test_key_name():
     return "sepolia_test_key"
+
 
 class BadDataSource(DataSource[float]):
     """Source that does not return an updated DataPoint."""
@@ -83,6 +86,7 @@ def guaranteed_price_source():
     """Used for testing no updated value for datafeeds."""
     return GoodFakeSource()
 
+
 @pytest.fixture(autouse=True)
 def sender(accounts, mumbai_test_key_name):
     accts = find_accounts(chain_id=80001, name=mumbai_test_key_name)
@@ -100,6 +104,7 @@ def sender(accounts, mumbai_test_key_name):
 
     return accounts[0]
 
+
 @pytest.fixture(autouse=True)
 def sepolia_test_key(accounts, sepolia_test_key_name):
     accts = find_accounts(chain_id=11155111, name=sepolia_test_key_name)
@@ -114,7 +119,8 @@ def sepolia_test_key(accounts, sepolia_test_key_name):
         key=accounts[0].private_key,
         password="",
     )
-    return accounts[0] 
+    return accounts[0]
+
 
 @pytest.fixture(scope="function")
 def custom_reporter_chained_account(accounts, custom_reporter_name):
@@ -131,9 +137,11 @@ def custom_reporter_chained_account(accounts, custom_reporter_name):
     )
     return acct
 
+
 @pytest.fixture(scope="function")
 def custom_reporter_ape_account(accounts):
     return accounts[2]
+
 
 def local_node_cfg(chain_id: int):
     """Return a test telliot configuration for use of tellorFlex contracts. Overrides
@@ -214,7 +222,7 @@ async def tellor_360(project, accounts, mumbai_test_cfg, deploy_contracts, chain
 
         # mint token and send to reporter address
         token.faucet(account.address, sender=accounts[0])
-        
+
         # approve token to be spent by autopay contract
         token.approve(autopay.address, 10000000000000, sender=accounts[0])
 
