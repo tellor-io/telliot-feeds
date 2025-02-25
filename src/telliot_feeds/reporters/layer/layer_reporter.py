@@ -14,7 +14,7 @@ from terra_sdk.core.coins import Coin
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.queries.grip_dyno_challenge_query import EthDenverTest
+from telliot_feeds.queries.grip_dyno_challenge_query import EthDenver2025
 from telliot_feeds.reporters.layer.client import LCDClient
 from telliot_feeds.reporters.layer.msg_submit_value import MsgSubmitValue
 from telliot_feeds.reporters.layer.msg_tip import MsgTip
@@ -263,7 +263,7 @@ async def test_direct_tip_txn():
     query_tag = "grip-dyno-denver-2025"
     source = gripDynoManualSource()
     datafeed = DataFeed(
-        query=EthDenverTest(challengeType="grip_strength_dynamometer"),
+        query=EthDenver2025(challengeType="grip_strength_dynamometer"),
         source=source,
     )
     print(f"Datafeed: {datafeed}")
@@ -284,7 +284,7 @@ async def test_submit_value():
 
     # Create mock datafeed
     datafeed = DataFeed(
-        query=EthDenverTest(challengeType="grip_strength_dynamometer"),
+        query=EthDenver2025(challengeType="grip_strength_dynamometer"),
         source=gripDynoManualSource(
             data_set=True, right_hand=99, left_hand=112, x_handle="asdf", github_username="qwer", hours_of_sleep=6
         ),
