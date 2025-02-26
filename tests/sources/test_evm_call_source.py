@@ -101,7 +101,7 @@ async def test_non_getter_calldata():
 
 
 @pytest.mark.asyncio
-async def test_report_for_bad_calldata(tellor_360):
+async def test_report_for_bad_calldata(tellor_360, chain):
     """Test report empty bytes for bad calldata."""
     contracts, account = tellor_360
 

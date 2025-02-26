@@ -26,7 +26,7 @@ logger = get_logger(__name__)
 
 @pytest.mark.asyncio
 async def test_suggested_report(tellor_360, chain):
-    contracts, _, snapshot = tellor_360
+    contracts, _ = tellor_360
     qtag = await tellor_suggested_report(contracts.oracle)
 
     assert isinstance(qtag, str)
@@ -35,7 +35,6 @@ async def test_suggested_report(tellor_360, chain):
     catalog_entry = entries[0]
     q = catalog_entry.query
     assert isinstance(q, OracleQuery)
-    chain.restore(snapshot)
 
 
 def test_reporter_sync_schedule_list():

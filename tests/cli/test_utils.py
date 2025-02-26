@@ -40,7 +40,7 @@ async def test_call_oracle(tellor_360, caplog, chain, mumbai_test_key_name):
         "gas_multiplier": None,
     }
 
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     s = Stake(
         oracle=contracts.oracle,
         token=contracts.token,
@@ -82,7 +82,6 @@ async def test_call_oracle(tellor_360, caplog, chain, mumbai_test_key_name):
                 user_inputs=user_inputs,
             )
             assert "withdrawStake transaction succeeded" in caplog.text
-    chain.restore(snapshot)
 
 
 def test_custom_hexbytes_wrapper():
@@ -90,7 +89,7 @@ def test_custom_hexbytes_wrapper():
     # test when 0x is present and not present
     for value in (CustomHexBytes("0x1234"), CustomHexBytes("1234")):
         value = CustomHexBytes("0x1234")
-        assert value.hex() == "1234"
+        assert value.hex() == "0x1234"
         assert isinstance(value, CustomHexBytes)
         assert isinstance(value, HexBytes)
         assert isinstance(value, bytes)

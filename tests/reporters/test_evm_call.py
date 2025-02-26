@@ -4,6 +4,7 @@ import pytest
 from eth_abi import decode
 from hexbytes import HexBytes
 from telliot_core.apps.core import RPCEndpoint
+from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
 
@@ -21,7 +22,7 @@ CHAIN_ID = 80001
 @pytest.mark.asyncio
 async def test_evm_call_e2e(tellor_360, caplog, chain):
     """Test tipping, reporting, and decoding EVMCall query reponse"""
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     r = Tellor360Reporter(
         oracle=contracts.oracle,
         token=contracts.token,
@@ -84,13 +85,11 @@ async def test_evm_call_e2e(tellor_360, caplog, chain):
     trb_total_supply = decode(["uint256"], v)[0]
     assert trb_total_supply > 2390472032948139443578988  # TRB total supply before
 
-    chain.restore(snapshot)
-
 
 @pytest.mark.asyncio
 async def test_no_endpoint_for_tipped_chain(tellor_360, chain, caplog):
     """Test reporter doesn't halt if chainId is not supported"""
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     r = Tellor360Reporter(
         oracle=contracts.oracle,
         token=contracts.token,
@@ -132,13 +131,11 @@ async def test_no_endpoint_for_tipped_chain(tellor_360, chain, caplog):
     assert "Endpoint not found for chain_id=123456789" in caplog.text
     assert not status.ok
 
-    chain.restore(snapshot)
-
 
 @pytest.mark.asyncio
 async def test_bad_contract_address(tellor_360, chain, caplog):
     """Test reporter doesn't halt if chainId is not supported"""
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     invalid_address = "0x1234567890123456789012345678901234567890"
 
     feed = evm_call_feed_example
@@ -164,13 +161,11 @@ async def test_bad_contract_address(tellor_360, chain, caplog):
     assert f"Invalid contract address: {invalid_address}, no bytecode, submitting empty bytes" in caplog.text
     assert status.ok
 
-    chain.restore(snapshot)
-
 
 @pytest.mark.asyncio
 async def test_short_call_data(tellor_360, chain, caplog):
     """Test when calldata is less than 4 bytes"""
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     invalid_calldata = HexBytes("0x165c4a")  # less than 4 bytes
 
     feed = evm_call_feed_example
@@ -196,13 +191,11 @@ async def test_short_call_data(tellor_360, chain, caplog):
     assert f"Invalid calldata: {invalid_calldata!r}, too short, submitting empty bytes" in caplog.text
     assert status.ok
 
-    chain.restore(snapshot)
-
 
 @pytest.mark.asyncio
 async def test_function_doesnt_exist(tellor_360, caplog, chain):
     """Test function doesn't exist in contract"""
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     feed = evm_call_feed_example
     non_existing_sig = HexBytes("0x165c4a16")
     feed.source.calldata = non_existing_sig
@@ -227,8 +220,6 @@ async def test_function_doesnt_exist(tellor_360, caplog, chain):
     assert f"function selector: {non_existing_sig!r}, not found in bytecode, submitting empty bytes" in caplog.text
     assert status.ok
 
-    chain.restore(snapshot)
-
 
 @pytest.mark.asyncio
 async def test_non_view_evm_call(tellor_360, chain, caplog):
@@ -236,16 +227,18 @@ async def test_non_view_evm_call(tellor_360, chain, caplog):
     nothing should be submitted to oracle since its hard to tell if a false
     negative could happen
     """
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     signature = Web3.keccak(text="updateStakeAmount()")[:4].hex()
     _amount = Web3.to_hex(10)[2:].zfill(64)
     non_view_call_data = HexBytes(signature + _amount)
-
+    cfg = TelliotConfig()
+    cfg.endpoints.endpoints.append(RPCEndpoint(chain_id=1337, url="http://localhost:8545"))
     feed = DataFeed(
         query=EVMCall(chainId=1337, contractAddress=contracts.oracle.address, calldata=non_view_call_data),
-        source=EVMCallSource(chainId=1337, contractAddress=contracts.oracle.address, calldata=non_view_call_data),
+        source=EVMCallSource(
+            chainId=1337, contractAddress=contracts.oracle.address, calldata=non_view_call_data, cfg=cfg
+        ),
     )
-    EVMCallSource.cfg.endpoints.endpoints.append(RPCEndpoint(chain_id=1337, url="http://localhost:8545"))
     ETHEREUM_CHAINS.add(1337)
     r = Tellor360Reporter(
         oracle=contracts.oracle,
@@ -264,5 +257,3 @@ async def test_non_view_evm_call(tellor_360, chain, caplog):
     _, status = await r.report_once()
     assert "Result is empty bytes, call might be to a non-view function" in caplog.text
     assert not status.ok
-
-    chain.restore(snapshot)

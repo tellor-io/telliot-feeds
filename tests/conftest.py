@@ -42,6 +42,13 @@ def connected_provider(name, local_network_api, chain):
         yield provider
 
 
+@pytest.fixture(autouse=True)
+def setup(chain):
+    snapshot = chain.snapshot()
+    yield
+    chain.restore(snapshot)
+
+
 @pytest.fixture(scope="session")
 def mumbai_test_key_name():
     return "mumbai_test_key"
@@ -77,7 +84,6 @@ class GoodFakeSource(DataSource[float]):
     async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
         datapoint = (1234.0, datetime_now_utc())
         self.store_datapoint(datapoint)
-        print("Guaranteed price source returning:", datapoint[0])
         return datapoint
 
 
@@ -228,8 +234,8 @@ async def tellor_360(project, accounts, mumbai_test_cfg, deploy_contracts, chain
 
         # send eth from ape address to reporter address for txn fees
         accounts[1].transfer(account.address, "1 ether")
-        snapshot = chain.snapshot()
-        return tellor360, account, snapshot
+
+        return tellor360, account
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -265,3 +271,43 @@ async def tellor_flex_reporter(accounts, mumbai_test_cfg, deploy_contracts, mumb
         accounts[1].transfer(account.address, "1 ether")
 
         return r
+
+
+@pytest.fixture
+def mock_price_feed():
+    """
+    Fixture to mock price feeds with configurable values, handling varying numbers of sources.
+    """
+    original_methods = []
+
+    def _setup_mock(feed, mock_values, sources=None, timestamp=None):
+        if timestamp is None:
+            timestamp = datetime_now_utc()
+
+        if sources is None:
+            sources = feed.source.sources
+
+        source_count = len(sources)
+        final_values = []
+
+        final_values = mock_values[:source_count]
+
+        for source in sources:
+            original_methods.append((source, source.fetch_new_datapoint))
+
+        for i, source in enumerate(sources):
+            price = final_values[i]
+
+            async def mock_fetch(self=source, price=price, ts=timestamp):
+                datapoint = (price, ts)
+                if hasattr(self, "store_datapoint"):
+                    self.store_datapoint(datapoint)
+                return datapoint
+
+            source.fetch_new_datapoint = mock_fetch
+
+    yield _setup_mock
+
+    # Restore original methods after test completes
+    for source, original_method in original_methods:
+        source.fetch_new_datapoint = original_method

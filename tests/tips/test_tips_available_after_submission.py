@@ -61,14 +61,14 @@ async def test_feed_suggestion(autopay_contract_setup, chain, caplog, guaranteed
     assert status.ok
     # Funded query shouldn't be suggested immediately after a report submission thats in window
     tip_amount = await get_feed_and_tip(
-        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp + 5
+        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp
     )
     assert tip_amount == (None, None)
     assert "No tips available in autopay" in caplog.text
     # bypass time until next window
     chain.pending_timestamp += 3600
     query, tip_amount = await get_feed_and_tip(
-        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp + 5
+        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp
     )
     assert query.get_state()["query"] == {"type": "SpotPrice", "asset": "albt", "currency": "usd"}
     assert tip_amount == int(0.5 * 1e18)
@@ -83,14 +83,14 @@ async def test_feed_suggestion(autopay_contract_setup, chain, caplog, guaranteed
     assert status.ok
     # Should be no tips available in autopay immediately after an in window report submission
     tip_amount = await get_feed_and_tip(
-        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp + 5
+        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp
     )
     assert tip_amount == (None, None)
     # bypass time until next window
     chain.pending_timestamp += 3600
     # This feeds should no longer be suggested since two previous submissions exhausted the funds
     tip_amount = await get_feed_and_tip(
-        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp + 5
+        autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp
     )
     assert tip_amount == (None, None)
 

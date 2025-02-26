@@ -6,8 +6,10 @@ from telliot_feeds.feeds.solvbtc_usd_feed import solvbtc_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_solvbtc_usd_median_feed(caplog):
+async def test_solvbtc_usd_median_feed(caplog, mock_price_feed):
     """Retrieve median solvbtc/usd price."""
+    mock_prices = [1200.50, 1205.25, 1202.75, 1203.75]
+    mock_price_feed(solvbtc_usd_median_feed, mock_prices)
     v, _ = await solvbtc_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None

@@ -31,7 +31,7 @@ CHAIN_ID = 80001
 async def test_report(tellor_360, caplog, guaranteed_price_source, deploy_contracts, accounts, chain):
     """Test 360 reporter deposit and balance changes when stakeAmount changes"""
     mock_token_contract, mock_flex_contract, _, _, _ = deploy_contracts
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
 
@@ -103,13 +103,11 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, deploy_contra
         await r.report_once()
         assert "Currently in reporter lock. Time left: 5:59" in caplog.text  # 6hr
 
-    chain.restore(snapshot)
-
 
 @pytest.mark.asyncio
 async def test_fail_get_account_nonce(tellor_360, caplog, guaranteed_price_source, chain):
     """Test 360 reporter fails to retrieve account nonce"""
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
 
@@ -147,25 +145,22 @@ async def test_fail_get_account_nonce(tellor_360, caplog, guaranteed_price_sourc
         assert val is None
         assert "Unable to retrieve account nonce: UnknownException" in caplog.text
 
-    chain.restore(snapshot)
-
 
 @pytest.mark.asyncio
 async def test_get_time_based_rewards(tellor_360, caplog, chain):
     time.sleep(1)
-    contracts, _, snapshot = tellor_360
+    contracts, _ = tellor_360
     tbr = await get_time_based_rewards(contracts.oracle)
 
     assert tbr >= 0
     assert isinstance(tbr, int)
     assert "not found in contract abi" not in caplog.text
-    chain.restore(snapshot)
 
 
 @pytest.mark.asyncio
 async def test_360_reporter_rewards(tellor_360, guaranteed_price_source, chain):
 
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
 
@@ -185,13 +180,12 @@ async def test_360_reporter_rewards(tellor_360, guaranteed_price_source, chain):
 
     assert isinstance(await r.rewards(), int)
     await r.report_once()
-    chain.restore(snapshot)
 
 
 @pytest.mark.asyncio
 async def test_adding_stake(tellor_360, guaranteed_price_source, chain):
     """Test 360 reporter depositing more stake"""
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
 
@@ -232,13 +226,11 @@ async def test_adding_stake(tellor_360, guaranteed_price_source, chain):
             900000e18
         ), "Staker balance should be 90000e18"
 
-    chain.restore(snapshot)
-
 
 @pytest.mark.asyncio
 async def test_no_native_token(tellor_360, caplog, guaranteed_price_source, chain):
     """Test reporter quits if no native token"""
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
 
@@ -260,13 +252,12 @@ async def test_no_native_token(tellor_360, caplog, guaranteed_price_source, chai
     await reporter.report(report_count=1)
 
     assert "insufficient native token funds" in caplog.text.lower()
-    chain.restore(snapshot)
 
 
 @pytest.mark.asyncio
 async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, caplog, guaranteed_price_source, chain):
     """Test reporter lock check when reporting for a tip that requires a manaul data source"""
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
 
@@ -308,13 +299,11 @@ async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, 
             hr_min_sec = str(datetime.timedelta(seconds=time_remaining))
         assert f"Currently in reporter lock. Time left: {hr_min_sec}" in caplog.text
 
-    chain.restore(snapshot)
-
 
 @pytest.mark.asyncio
 async def test_fail_gen_query_id(tellor_360, caplog, guaranteed_price_source, chain):
     """Test failure to generate query id when calling rewards() method."""
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
 
@@ -342,12 +331,11 @@ async def test_fail_gen_query_id(tellor_360, caplog, guaranteed_price_source, ch
 
     assert "Unable to generate data/id for query" in caplog.text
     eth_usd_median_feed.query.asset = asset
-    chain.restore(snapshot)
 
 
 @pytest.mark.asyncio
 async def test_tbr_tip_increment(tellor_360, guaranteed_price_source, caplog, chain):
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
     matic_usd_median_feed.source = guaranteed_price_source
@@ -412,8 +400,6 @@ async def test_tbr_tip_increment(tellor_360, guaranteed_price_source, caplog, ch
         # tip amount should not increase
         assert "Tips: 2.0" not in caplog.text
         assert "Tips: 3.0" not in caplog.text
-
-        chain.restore(snapshot)
 
 
 @pytest.mark.asyncio

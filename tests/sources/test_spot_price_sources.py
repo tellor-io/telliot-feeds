@@ -168,6 +168,7 @@ async def test_gemini(caplog, monkeypatch):
     assert t is None
 
 
+@pytest.mark.skip(reason="requires API key")
 @pytest.mark.asyncio
 async def test_uniswap_usd(caplog):
     """Test retrieving from UniswapV3 price source in USD."""
@@ -186,6 +187,7 @@ async def test_uniswap_timeout():
     assert t is None
 
 
+@pytest.mark.skip(reason="requires API key")
 @pytest.mark.asyncio
 async def test_uniswap_eth(caplog):
     """Test retrieving from UniswapV3 price source in ETH."""
@@ -196,6 +198,7 @@ async def test_uniswap_eth(caplog):
         assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
 
 
+@pytest.mark.skip(reason="requires API key")
 @pytest.mark.asyncio
 async def test_uniswap_eth_usd(caplog):
     """Test retrieving from UniswapV3 price source for Eth in USD."""

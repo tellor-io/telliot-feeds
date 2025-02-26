@@ -6,8 +6,10 @@ from telliot_feeds.feeds.ltc_usd_feed import ltc_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_ltc_usd_median_feed(caplog):
+async def test_ltc_usd_median_feed(caplog, mock_price_feed):
     """Retrieve median ltc/USD price."""
+    mock_prices = [1200.50, 1205.25, 1202.75]
+    mock_price_feed(ltc_usd_median_feed, mock_prices)
     v, _ = await ltc_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None

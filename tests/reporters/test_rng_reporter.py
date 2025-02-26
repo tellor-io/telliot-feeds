@@ -24,7 +24,7 @@ async def mock_response_status(*args, **kwargs):
 @pytest.mark.asyncio
 async def test_report(tellor_360, chain):
     """Test reporting Tellor RNG value."""
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     r = RNGReporter(
         oracle=contracts.oracle,
         token=contracts.token,
@@ -61,13 +61,11 @@ async def test_report(tellor_360, chain):
         assert not status.ok
         assert status.error in EXPECTED_ERRORS
 
-    chain.restore(snapshot)
-
 
 @pytest.mark.asyncio
 async def test_missing_blockhash(tellor_360, monkeypatch, caplog, chain):
     """Mock the datasource missing btc blockhash. Make sure still attemps to report after 3 retries."""
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     r = RNGReporter(
         oracle=contracts.oracle,
         token=contracts.token,
@@ -111,8 +109,6 @@ async def test_missing_blockhash(tellor_360, monkeypatch, caplog, chain):
         await r.report(report_count=3)
 
         assert caplog.text.count("bazinga") == 3
-
-    chain.restore(snapshot)
 
 
 @pytest.mark.skip("etherscan API key required")

@@ -10,7 +10,7 @@ from telliot_feeds.reporters.flashbot import FlashbotsReporter
 @pytest.mark.asyncio
 async def test_http_error(tellor_360, chain):
     """Test FlashbotsReporter HTTPError"""
-    contracts, account, snapshot = tellor_360
+    contracts, account = tellor_360
     account.unlock("")
 
     r = FlashbotsReporter(
@@ -31,5 +31,3 @@ async def test_http_error(tellor_360, chain):
         res, status = await r.report_once()
         assert res is None
         assert not status.ok
-
-    chain.restore(snapshot)

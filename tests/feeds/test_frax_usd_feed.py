@@ -6,8 +6,10 @@ from telliot_feeds.feeds.frax_usd_feed import frax_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_frax_usd_feed(caplog):
+async def test_frax_usd_feed(mock_price_feed, caplog):
     """Retrieve median FRAX/USD price converted to wUSDM by ratio"""
+    mock_prices = [1200.50, 1205.25, 1202.75, 1200.50]
+    mock_price_feed(frax_usd_median_feed, mock_prices)
     v, _ = await frax_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None

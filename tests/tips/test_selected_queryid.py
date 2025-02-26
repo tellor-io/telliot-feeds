@@ -100,7 +100,7 @@ async def test_ousideof_window_pt0(autopay_contract_setup, chain):
         _rewardIncreasePerSecond=0,
         _amount=int(5 * 10**18),
     )
-    chain.mine(1)
+    chain.mine(2)
     tip_amount = await fetch_feed_tip(
         autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp
     )
@@ -118,7 +118,9 @@ async def test_priceThreshold_zero(autopay_contract_setup, chain):
         **setup_datafeed_kwargs_big_window,
         _priceThreshold=price_threshold,
     )
-    tip_amount = await fetch_feed_tip(autopay=r.autopay, datafeed=matic_usd_median_feed)
+    tip_amount = await fetch_feed_tip(
+        autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp
+    )
     assert tip_amount == reward
     await r.oracle.write(
         "submitValue",

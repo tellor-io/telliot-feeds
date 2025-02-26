@@ -6,8 +6,10 @@ from telliot_feeds.feeds.frxeth_usd_feed import frxeth_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_frxeth_usd_median_feed(caplog):
+async def test_frxeth_usd_median_feed(caplog, mock_price_feed):
     """Retrieve median frxETH/USD price."""
+    mock_prices = [1200.50, 1205.25]
+    mock_price_feed(frxeth_usd_median_feed, mock_prices)
     v, _ = await frxeth_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None
