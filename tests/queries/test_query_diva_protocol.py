@@ -4,8 +4,8 @@ Copyright (c) 2021-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
 import pytest
-from eth_abi import decode_abi
-from eth_abi import encode_abi
+from eth_abi import decode
+from eth_abi import encode
 from hexbytes import HexBytes
 
 from telliot_feeds.queries.diva_protocol import DIVAProtocol
@@ -37,10 +37,10 @@ def test_constructor():
     )
     assert q.query_data == exp_query_data
 
-    query_type, encoded_param_vals = decode_abi(["string", "bytes"], q.query_data)
+    query_type, encoded_param_vals = decode(["string", "bytes"], q.query_data)
     assert query_type == "DIVAProtocol"
 
-    pool_id, diva_diamond, chain_id = decode_abi(["bytes32", "address", "uint256"], encoded_param_vals)
+    pool_id, diva_diamond, chain_id = decode(["bytes32", "address", "uint256"], encoded_param_vals)
     assert pool_id.hex() == "52a16114f6d8b8213c2a345ce81a7f6d7eb630b7ef25c182817495e2c7d4752e"
     assert diva_diamond == "0xebBAA31B1Ebd727A1a42e71dC15E304aD8905211".lower()
     assert chain_id == 3
@@ -72,7 +72,7 @@ def test_encode_decode_reported_val():
     data = [2819.35, 0.9996]
 
     data2 = [int(v * 1e18) for v in data]
-    d1 = encode_abi(["uint256", "uint256"], data2)
+    d1 = encode(["uint256", "uint256"], data2)
     submit_value = q.value_type.encode(data)
 
     assert isinstance(submit_value, bytes)

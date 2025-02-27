@@ -46,8 +46,8 @@ class LETHSpotPriceService(WebPriceService):
                     "data": "0xb6f81c85",
                 }
             )
-            total_pooled_tokens_decoded = w3.toInt(total_pooled_tokens_bytes)
-            total_pooled_tokens = w3.fromWei(total_pooled_tokens_decoded, "ether")
+            total_pooled_tokens_decoded = w3.to_int(total_pooled_tokens_bytes)
+            total_pooled_tokens = w3.from_wei(total_pooled_tokens_decoded, "ether")
             if total_pooled_tokens == 0:
                 logger.error("LETH contract response is 0!")
                 return None
@@ -66,8 +66,8 @@ class LETHSpotPriceService(WebPriceService):
                     "data": "0x18160ddd",
                 }
             )
-            total_supply_decoded = w3.toInt(total_supply_bytes)
-            total_supply = w3.fromWei(total_supply_decoded, "ether")
+            total_supply_decoded = w3.to_int(total_supply_bytes)
+            total_supply = w3.from_wei(total_supply_decoded, "ether")
             if total_supply == 0:
                 logger.error("leth contract response is 0 for supply!")
                 return None

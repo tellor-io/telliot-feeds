@@ -6,8 +6,10 @@ from telliot_feeds.feeds.rseth_usd_feed import rseth_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_rseth_usd_median_feed(caplog):
+async def test_rseth_usd_median_feed(caplog, mock_price_feed):
     """Retrieve median rsETH/USD price."""
+    mock_prices = [1200.50, 1205.25, 1202.75, 1203.00]
+    mock_price_feed(rseth_usd_median_feed, mock_prices)
     v, _ = await rseth_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None

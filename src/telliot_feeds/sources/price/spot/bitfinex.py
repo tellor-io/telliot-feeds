@@ -38,7 +38,7 @@ class BitfinexSpotPriceService(WebPriceService):
         if currency not in bitfinex_currencies:
             raise Exception(f"Currency not supported: {currency}")
 
-        request_url = f"/v2/ticker/t{asset}:{currency}"
+        request_url = f"/v2/tickers?symbols=t{asset}{currency}"
 
         d = self.get_url(request_url)
 
@@ -47,10 +47,10 @@ class BitfinexSpotPriceService(WebPriceService):
             return None, None
 
         elif "response" in d:
-            response = d["response"]
+            response = d["response"][0]
 
             try:
-                price = float(response[6])
+                price = float(response[10])
                 return price, datetime_now_utc()
             except Exception as e:
                 msg = f"Error parsing Bitfinex API response: Exception: {e}"

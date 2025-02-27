@@ -34,7 +34,7 @@ class TWAPManualSource(DataSource[float]):
                 print("Invalid input. Number must greater than 0.")
                 continue
 
-            print(f"\nTWAP value (with 18 decimals of precision) to be submitted on chain:  {inpt*10**18:.0f}")
+            print(f"\nTWAP value (with 18 decimals of precision) to be submitted on chain:  {inpt * 10**18:.0f}")
             print("Press [ENTER] to confirm.")
 
             _ = input_timeout()

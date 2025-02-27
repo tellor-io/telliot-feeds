@@ -6,8 +6,8 @@ from typing import Union
 
 from clamfig import deserialize
 from clamfig.base import Registry
-from eth_abi import decode_abi
-from eth_abi import encode_abi
+from eth_abi import decode
+from eth_abi import encode
 from eth_utils import to_checksum_address
 from hexbytes import HexBytes
 
@@ -31,14 +31,14 @@ class DIVAReturnType(ValueType):
         if len(value) != 2 or not isinstance(value[0], float) or not isinstance(value[1], float):
             raise ValueError("Invalid response type")
 
-        return encode_abi(["uint256", "uint256"], [int(v * 1e18) for v in value])
+        return encode(["uint256", "uint256"], [int(v * 1e18) for v in value])
 
     def decode(self, bytes_val: bytes) -> list[float]:
         """A decoder for DIVA Protocol response type
 
         Decodes a tuple of float values.
         """
-        return [float(float(v) / 1e18) for v in decode_abi(["uint256", "uint256"], bytes_val)]
+        return [float(float(v) / 1e18) for v in decode(["uint256", "uint256"], bytes_val)]
 
 
 @dataclass
@@ -117,15 +117,15 @@ class DIVAProtocol(AbiQuery):
                 + f"{str(self.poolId)}, {self.divaDiamond}, {self.chainId}"  # type: ignore
             )
         param_types = [p["type"] for p in self.abi]
-        encoded_params = encode_abi(param_types, [bytes(self.poolId), self.divaDiamond, self.chainId])
+        encoded_params = encode(param_types, [bytes(self.poolId), self.divaDiamond, self.chainId])
 
-        return encode_abi(["string", "bytes"], [type(self).__name__, encoded_params])
+        return encode(["string", "bytes"], [type(self).__name__, encoded_params])
 
     @staticmethod
     def get_query_from_data(query_data: bytes) -> Any:
         """Recreate an oracle query from the `query_data` field"""
         try:
-            query_type, encoded_param_values = decode_abi(["string", "bytes"], query_data)
+            query_type, encoded_param_values = decode(["string", "bytes"], query_data)
         except OverflowError:
             logger.error("OverflowError while decoding query data.")
             return None
@@ -137,7 +137,7 @@ class DIVAProtocol(AbiQuery):
         params_abi = cls.abi
         param_names = [p["name"] for p in params_abi]
         param_types = [p["type"] for p in params_abi]
-        param_values = list(decode_abi(param_types, encoded_param_values))
+        param_values = list(decode(param_types, encoded_param_values))
 
         param_values[0] = HexBytes(param_values[0])
 

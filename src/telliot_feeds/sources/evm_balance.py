@@ -1,5 +1,6 @@
 import time
 from dataclasses import dataclass
+from dataclasses import field
 from typing import Any
 from typing import Optional
 
@@ -35,7 +36,7 @@ class EVMBalanceSource(DataSource[Any]):
     chainId: Optional[int] = None
     evmAddress: Optional[str] = None
     timestamp: Optional[int] = None
-    cfg: TelliotConfig = TelliotConfig()
+    cfg: TelliotConfig = field(default_factory=TelliotConfig)
     web3: Optional[Web3] = None
 
     def get_block(self, w3: Web3, block_number: int, full_transaction: bool = False) -> Optional[BlockData]:
@@ -57,14 +58,14 @@ class EVMBalanceSource(DataSource[Any]):
     def get_balance(self, w3: Web3, address: str, block_number: int) -> Optional[int]:
         """Get balance of address at block number"""
         try:
-            balance = w3.eth.get_balance(address, block_identifier=block_number)
+            balance = w3.eth.get_balance(Web3.to_checksum_address(address), block_identifier=block_number)
         except ExtraDataLengthError as e:
             logger.info(f"POA chain detected. Injecting POA middleware in response to exception: {e}")
             try:
                 w3.middleware_onion.inject(geth_poa_middleware, layer=0)
             except ValueError as e:
                 logger.error(f"Unable to inject web3 middleware for POA chain connection: {e}")
-            balance = w3.eth.get_balance(address, block_identifier=block_number)
+            balance = w3.eth.get_balance(Web3.to_checksum_address(address), block_identifier=block_number)
         except Exception as e:
             logger.error(f"Error fetching balance: {e}")
             balance = None
@@ -80,7 +81,7 @@ class EVMBalanceSource(DataSource[Any]):
             raise ValueError("Timestamp not provided")
 
         # convert address to checksum address
-        self.evmAddress = Web3.toChecksumAddress(self.evmAddress)
+        self.evmAddress = Web3.to_checksum_address(self.evmAddress)
 
         if self.timestamp > int(time.time()):
             logger.warning("Timestamp is greater than current timestamp")

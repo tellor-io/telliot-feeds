@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from dataclasses import field
 from typing import Any
 from typing import Optional
 from typing import Tuple
@@ -10,6 +11,7 @@ from web3 import Web3
 from web3.exceptions import ContractLogicError
 from web3.exceptions import ExtraDataLengthError
 from web3.types import BlockIdentifier
+from web3.types import Wei
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
@@ -29,7 +31,7 @@ class EVMCallSource(DataSource[Any]):
     contractAddress: Optional[str] = None  # example: '0x1234567890123456789012345678901234567890'
     calldata: Optional[bytes] = None
     web3: Optional[Web3] = None
-    cfg: TelliotConfig = TelliotConfig()
+    cfg: TelliotConfig = field(default_factory=TelliotConfig)
 
     def get_response(self, block_number: BlockIdentifier = "latest") -> Optional[Tuple[HexBytes, int]]:
         """Makes requested EVM call and returns the response from the contract
@@ -67,19 +69,19 @@ class EVMCallSource(DataSource[Any]):
             logger.warning(f"Unable to retrieve current block timestamp: {e}")
             return None
 
-        self.contractAddress = self.web3.toChecksumAddress(self.contractAddress)
+        self.contractAddress = self.web3.to_checksum_address(self.contractAddress)
 
         if len(self.calldata) < 4:  # A function selector is 4 bytes long, so calldata must be at least of length 4
             logger.info(f"Invalid calldata: {self.calldata!r}, too short, submitting empty bytes")
             return (empty_bytes, ts)
         try:
             result = self.web3.eth.call(
-                {"gasPrice": 0, "to": self.contractAddress, "data": self.calldata}, block_number
+                {"gasPrice": Wei(0), "to": self.contractAddress, "data": self.calldata}, block_number
             )
         # Is there a scenario where a contract call for a view/pure function would revert when the callData is valid?
         except ContractLogicError as e:
-            bytecode = self.web3.eth.getCode(self.contractAddress)
-            if self.calldata[:4] not in bytecode:
+            bytecode = self.web3.eth.get_code(self.contractAddress)
+            if self.calldata[:4] not in bytecode:  # type: ignore
                 logger.info(f"function selector: {self.calldata!r}, not found in bytecode, submitting empty bytes")
                 return (empty_bytes, ts)
             else:
@@ -100,7 +102,7 @@ class EVMCallSource(DataSource[Any]):
         if result == HexBytes("0x"):
             # A Non-contract address returns zero bytes so we check here to see
             # if thats the reason for the zero bytes result; if so submit empty bytes to oracle
-            bytecode = self.web3.eth.getCode(self.contractAddress)
+            bytecode = self.web3.eth.get_code(self.contractAddress)
             if len(bytecode) <= 0:  # if no code means address isn't a contractAddress
                 logger.info(f"Invalid contract address: {self.contractAddress}, no bytecode, submitting empty bytes")
                 return (empty_bytes, ts)

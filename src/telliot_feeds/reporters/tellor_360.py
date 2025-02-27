@@ -14,7 +14,7 @@ from telliot_core.contract.contract import Contract
 from telliot_core.utils.key_helpers import lazy_unlock_account
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
-from web3.contract import ContractFunction
+from web3.contract import ContractConstructor
 from web3.types import TxParams
 from web3.types import TxReceipt
 
@@ -344,7 +344,7 @@ class Tellor360Reporter(Stake):
 
     def assemble_function(
         self, function_name: str, **transaction_params: Any
-    ) -> Tuple[Optional[ContractFunction], ResponseStatus]:
+    ) -> Tuple[Optional[ContractConstructor], ResponseStatus]:
         """Assemble a contract function"""
         try:
             func = self.oracle.contract.get_function_by_name(function_name)(**transaction_params)
@@ -376,7 +376,7 @@ class Tellor360Reporter(Stake):
         if params is None:
             return None, error_status("Error getting transaction parameters", status.e, logger.error)
 
-        return contract_function.buildTransaction(params), ResponseStatus()  # type: ignore
+        return contract_function.build_transaction(params), ResponseStatus()
 
     def sign_n_send_transaction(self, built_tx: Any) -> Tuple[Optional[TxReceipt], ResponseStatus]:
         """Send a signed transaction to the blockchain and wait for confirmation

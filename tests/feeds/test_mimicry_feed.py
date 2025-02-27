@@ -1,6 +1,5 @@
 from typing import get_type_hints
 
-import pytest
 from hexbytes import HexBytes
 
 from telliot_feeds.datafeed import DataFeed
@@ -42,7 +41,6 @@ def test_mimicry_nft_market_index_eth_feed():
     assert isinstance(q, MimicryNFTMarketIndex)
 
 
-@pytest.mark.asyncio
 def test_mimicry_mashup_feed():
     """Test NFT mashup feed"""
     q = mimicry_mashup_example_feed.query

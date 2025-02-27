@@ -1,7 +1,7 @@
 import math
 from typing import Optional
 
-from eth_abi import encode_abi
+from eth_abi import encode
 from telliot_core.utils.response import error_status
 from web3 import Web3 as w3
 
@@ -39,7 +39,7 @@ class FundedFeedFilter:
                 feed.params.priceThreshold,
                 feed.params.rewardIncreasePerSecond,
             ]
-            feed_id_encoded = encode_abi(feed_abi_types, feed_values)
+            feed_id_encoded = encode(feed_abi_types, feed_values)
             feed.feed_id = bytes(w3.keccak(feed_id_encoded))
 
         return feeds

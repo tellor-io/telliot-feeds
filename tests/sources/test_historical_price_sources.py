@@ -93,6 +93,7 @@ async def test_kraken_get_trades(caplog):
     # print("# trades in six hour window:", len(trades))
 
 
+@pytest.mark.skip(reason="broken endpoint")
 @pytest.mark.asyncio
 async def test_poloniex_get_price():
     """Retrieve single historical price close to given timestamp."""
@@ -116,6 +117,7 @@ async def test_poloniex_get_price():
     print("Poloniex BTC/TUSD price:", v)
 
 
+@pytest.mark.skip(reason="broken endpoint")
 @pytest.mark.asyncio
 async def test_poloniex_get_trades():
     """Retrieve all price data given a timestamp and surrounding time period."""
@@ -146,6 +148,7 @@ async def test_poloniex_get_trades():
     # print("# trades in six hour window:", len(trades))
 
 
+@pytest.mark.skip(reason="cryptowatch sunset")
 @pytest.mark.asyncio
 async def test_cryptowatch_get_price():
     """Retrieve single historical price close to given timestamp."""
@@ -158,6 +161,7 @@ async def test_cryptowatch_get_price():
     print("CryptoWatch BTC/USD last candle price:", v)
 
 
+@pytest.mark.skip(reason="cryptowatch sunset")
 @pytest.mark.asyncio
 async def test_cryptowatch_get_candles():
     """Retrieve all price data given a timestamp and surrounding time period."""

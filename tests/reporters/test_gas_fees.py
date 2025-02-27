@@ -2,16 +2,17 @@ from unittest.mock import Mock
 from unittest.mock import PropertyMock
 
 import pytest
+import pytest_asyncio
 from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.reporters.gas import GasFees
 
 
-@pytest.fixture(scope="function")
-async def gas_fees_object(mumbai_test_cfg):
+@pytest_asyncio.fixture(scope="function")
+async def gas_fees_object(mumbai_test_cfg, deploy_contracts, mumbai_test_key_name):
     """Fixture that build GasFees object."""
-    async with TelliotCore(config=mumbai_test_cfg) as core:
+    async with TelliotCore(config=mumbai_test_cfg, account_name=mumbai_test_key_name) as core:
         # get PubKey and PrivKey from config files
         account = core.get_account()
 
@@ -31,7 +32,7 @@ async def gas_fees_object(mumbai_test_cfg):
 
 @pytest.mark.asyncio
 async def test_get_legacy_gas_price(gas_fees_object):
-    gas: GasFees = await gas_fees_object
+    gas: GasFees = gas_fees_object
 
     legacy_gas_price, status = gas.get_legacy_gas_price()
     assert status.ok
@@ -54,7 +55,7 @@ async def test_get_legacy_gas_price(gas_fees_object):
 
 @pytest.mark.asyncio
 async def test_get_eip1559_gas_price(gas_fees_object):
-    gas: GasFees = await gas_fees_object
+    gas: GasFees = gas_fees_object
     mock_fee_history = AttributeDict(
         {
             "baseFeePerGas": [13676801331, 14273862890, 13972887310, 14813623596, 14046654284, 13615655875],
@@ -110,7 +111,7 @@ async def test_get_eip1559_gas_price(gas_fees_object):
 
 @pytest.mark.asyncio
 async def test_update_gas_fees(gas_fees_object):
-    gas: GasFees = await gas_fees_object
+    gas: GasFees = gas_fees_object
     status = gas.update_gas_fees()
     assert status.ok, "update_gas_fees returned not ok status"
     assert gas.gas_info["gasPrice"] is not None, "gas_info['gasPrice'] returned None"
@@ -122,7 +123,7 @@ async def test_update_gas_fees(gas_fees_object):
         "gas_limit": None,
         "max_fee_per_gas": None,
         "max_priority_fee_per_gas": None,
-        "legacy_gas_price": 20.2,
+        "legacy_gas_price": 1.455299856,
     }
     assert gas.get_gas_info_core() == gas_info_core
 

@@ -6,8 +6,10 @@ from telliot_feeds.feeds.wld_usd_feed import wld_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_wld_asset_price_feed():
+async def test_wld_asset_price_feed(mock_price_feed):
     """Retrieve median WLD/USD price."""
+    mock_prices = [1200.50]
+    mock_price_feed(wld_usd_median_feed, mock_prices)
     v, _ = await wld_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None

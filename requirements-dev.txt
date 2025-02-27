@@ -1,4 +1,4 @@
-eth-brownie
+eth-ape
 mkdocs-material
 mkdocstrings[python]
 pytest

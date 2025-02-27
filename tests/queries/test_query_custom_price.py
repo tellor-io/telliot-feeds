@@ -1,4 +1,4 @@
-from eth_abi import decode_abi
+from eth_abi import decode
 
 from telliot_feeds.queries.custom_price import CustomPrice
 
@@ -35,5 +35,5 @@ def test_custom_price_query_info():
     assert q.query_data.hex() == expected_query_data
     assert q.query_id.hex() == "6972aeebf15f6c9543b2cb717b9f0340e9a71ad9d07642db7f7a8992088b25e8"
 
-    query_type, _ = decode_abi(["string", "bytes"], q.query_data)
+    query_type, _ = decode(["string", "bytes"], q.query_data)
     assert query_type == "CustomPrice"

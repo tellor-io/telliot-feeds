@@ -6,8 +6,10 @@ from telliot_feeds.feeds.doge_usd_feed import doge_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_doge_usd_median_feed(caplog):
+async def test_doge_usd_median_feed(mock_price_feed, caplog):
     """Retrieve median doge/USD price."""
+    mock_prices = [1200.50, 1205.25, 1202.75]
+    mock_price_feed(doge_usd_median_feed, mock_prices)
     v, _ = await doge_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None

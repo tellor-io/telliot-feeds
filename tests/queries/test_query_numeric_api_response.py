@@ -1,4 +1,4 @@
-from eth_abi import decode_abi
+from eth_abi import decode
 
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 
@@ -38,10 +38,10 @@ def test_constructor():
 
     assert q.query_data == exp_query_data
 
-    query_type, encoded_param_vals = decode_abi(["string", "bytes"], q.query_data)
+    query_type, encoded_param_vals = decode(["string", "bytes"], q.query_data)
     assert query_type == "NumericApiResponse"
 
-    url = decode_abi([q.abi[0]["type"]], encoded_param_vals)[0]
+    url = decode([q.abi[0]["type"]], encoded_param_vals)[0]
     assert (
         url == "https://samples.openweathermap.org/data/2.5/weather?q=Lond`on,uk&appid=b6907d289e10d714a6e88b30761fae22"
     )

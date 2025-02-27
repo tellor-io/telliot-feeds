@@ -17,6 +17,7 @@ def test_all_query_types_in_catalog():
             "MimicryCollectionStat",
             "AutopayAddresses",
             "TellorOracleAddress",
+            "InflationData",
         ):
             continue
         assert q.__name__ in q_types

@@ -107,7 +107,7 @@ class LFJPriceService(WebPriceService):
             contract_function = contract.functions.findBestPathFromAmountIn(route, amount_in)
             data = contract_function.call()
             response_int = data[5][3]
-            response_quote = w3.fromWei(response_int, "mwei")
+            response_quote = w3.from_wei(response_int, "mwei")
             price_quote = float(response_quote)
 
         except Exception as e:

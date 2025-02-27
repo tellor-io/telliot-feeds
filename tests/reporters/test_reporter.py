@@ -177,7 +177,8 @@ async def test_stake_info(tellor_flex_reporter, guaranteed_price_source, chain):
         # this should be of length 2 since its updated after staking
         assert len(r.stake_info.staker_balance_history) == 2
         # bypass 12 hour reporting lock
-        chain.sleep(84600)
+        chain.pending_timestamp += 84600
+        chain.mine(1)
         r.datafeed = feed
         await r.report_once()
         # last report time should update during the second reporting loop

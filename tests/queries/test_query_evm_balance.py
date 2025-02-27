@@ -3,7 +3,7 @@
 Copyright (c) 2024-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
-from eth_abi import decode_abi
+from eth_abi import decode
 
 from telliot_feeds.queries.evm_balance import EVMBalance
 
@@ -30,10 +30,10 @@ def test_evm_balance_query():
 
     assert q.query_data == exp_abi
 
-    query_type, encoded_param_vals = decode_abi(["string", "bytes"], q.query_data)
+    query_type, encoded_param_vals = decode(["string", "bytes"], q.query_data)
     assert query_type == "EVMBalance"
 
-    (chainId, evmAddress, timestamp) = decode_abi(["uint256", "address", "uint256"], encoded_param_vals)
+    (chainId, evmAddress, timestamp) = decode(["uint256", "address", "uint256"], encoded_param_vals)
 
     assert chainId == 11155111
     assert evmAddress == "0x210766226c54cdd6bd0401749d43e7a5585e3868"

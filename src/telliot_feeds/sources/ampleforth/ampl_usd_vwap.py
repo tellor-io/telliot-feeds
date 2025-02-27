@@ -29,7 +29,7 @@ T = TypeVar("T")
 
 def get_yesterday_start_end() -> Tuple[datetime.datetime, datetime.datetime]:
     """Get start and end times of yesterday in UTC."""
-    today = datetime.datetime.utcnow().date()
+    today = datetime.datetime.now(datetime.UTC).date()
     yesterday_date = today - datetime.timedelta(days=1)
     yesterday_start = datetime.datetime(year=yesterday_date.year, month=yesterday_date.month, day=yesterday_date.day)
     yesterday_end = datetime.datetime.combine(yesterday_start, datetime.time.max)

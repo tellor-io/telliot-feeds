@@ -45,8 +45,8 @@ class WstETHSpotPriceService(WebPriceService):
                 "data": "0xbb2952fc0000000000000000000000000000000000000000000000000de0b6b3a7640000",
             }
         )
-        wsteth_eth_ratio_decoded = w3.toInt(wsteth_eth_ratio_bytes)
-        wsteth_eth_ratio = w3.fromWei(wsteth_eth_ratio_decoded, "ether")
+        wsteth_eth_ratio_decoded = w3.to_int(wsteth_eth_ratio_bytes)
+        wsteth_eth_ratio = w3.from_wei(wsteth_eth_ratio_decoded, "ether")
         return float(wsteth_eth_ratio)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:

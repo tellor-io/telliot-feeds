@@ -1,5 +1,4 @@
 import pytest
-from brownie import accounts
 from telliot_core.apps.core import TelliotCore
 from web3.datastructures import AttributeDict
 
@@ -8,14 +7,12 @@ from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 
 
 @pytest.mark.asyncio
-async def test_dai_usd_reporter_submit_once(
-    mumbai_test_cfg, mock_flex_contract, mock_autopay_contract, mock_token_contract
-):
+async def test_dai_usd_reporter_submit_once(mumbai_test_cfg, deploy_contracts, accounts):
     """Test reporting dai/usd on mumbai."""
     async with TelliotCore(config=mumbai_test_cfg) as core:
         # get PubKey and PrivKey from config files
         account = core.get_account()
-
+        mock_token_contract, mock_flex_contract, _, _, mock_autopay_contract = deploy_contracts
         flex = core.get_tellor360_contracts()
         flex.oracle.address = mock_flex_contract.address
         flex.autopay.address = mock_autopay_contract.address
@@ -26,7 +23,7 @@ async def test_dai_usd_reporter_submit_once(
         flex.autopay.connect()
 
         # mint token and send to reporter address
-        mock_token_contract.faucet(account.address)
+        mock_token_contract.faucet(account.address, sender=accounts[0])
 
         # send eth from brownie address to reporter address for txn fees
         accounts[2].transfer(account.address, "1 ether")

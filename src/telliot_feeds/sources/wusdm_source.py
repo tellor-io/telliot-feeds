@@ -3,7 +3,9 @@ from dataclasses import field
 from typing import Any
 from typing import Optional
 
+from eth_typing import HexStr
 from telliot_core.apps.telliot_config import TelliotConfig
+from web3 import Web3
 
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService
@@ -35,16 +37,16 @@ class wUSDMSpotPriceService(WebPriceService):
         if not ep.connect():
             logger.error("Unable to connect endpoint for mainnet to get wusdm_eth_ratio")
             return None
-        w3 = ep.web3
+        w3: Web3 = ep.web3
         # get ratio
         wusdm_eth_ratio_bytes = w3.eth.call(
             {
                 "to": "0x57F5E098CaD7A3D1Eed53991D4d66C45C9AF7812",
-                "data": "0x07a2d13a0000000000000000000000000000000000000000000000000de0b6b3a7640000",
+                "data": HexStr("0x07a2d13a0000000000000000000000000000000000000000000000000de0b6b3a7640000"),
             }
         )
-        wusdm_usd_ratio_decoded = w3.toInt(wusdm_eth_ratio_bytes)
-        wusdm_usd_ratio = w3.fromWei(wusdm_usd_ratio_decoded, "ether")
+        wusdm_usd_ratio_decoded = w3.to_int(wusdm_eth_ratio_bytes)
+        wusdm_usd_ratio = w3.from_wei(wusdm_usd_ratio_decoded, "ether")
         print(f"Ratio from wUSDM contract: {wusdm_usd_ratio}")
         return float(wusdm_usd_ratio)
 

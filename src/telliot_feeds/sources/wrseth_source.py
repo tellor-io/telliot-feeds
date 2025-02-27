@@ -45,8 +45,8 @@ class wrsETHSpotPriceService(WebPriceService):
                 "data": "0x679aefce",
             }
         )
-        wrseth_eth_ratio_decoded = w3.toInt(wrseth_eth_ratio_bytes)
-        wrseth_eth_ratio = w3.fromWei(wrseth_eth_ratio_decoded, "ether")
+        wrseth_eth_ratio_decoded = w3.to_int(wrseth_eth_ratio_bytes)
+        wrseth_eth_ratio = w3.from_wei(wrseth_eth_ratio_decoded, "ether")
         print(f"Ratio from wrseth contract: {wrseth_eth_ratio}")
         return float(wrseth_eth_ratio)
 

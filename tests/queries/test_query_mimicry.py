@@ -3,7 +3,7 @@
 Copyright (c) 2021-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
-from eth_abi import decode_abi
+from eth_abi import decode
 
 from telliot_feeds.queries.mimicry.collection_stat import MimicryCollectionStat
 
@@ -18,10 +18,10 @@ def test_query_constructor():
 
     assert q.query_data == exp_query_data
 
-    query_type, encoded_param_vals = decode_abi(["string", "bytes"], q.query_data)
+    query_type, encoded_param_vals = decode(["string", "bytes"], q.query_data)
     assert query_type == "MimicryCollectionStat"
 
-    decoded_param_vals = decode_abi(["uint256", "address", "uint256"], encoded_param_vals)
+    decoded_param_vals = decode(["uint256", "address", "uint256"], encoded_param_vals)
 
     chainId = decoded_param_vals[0]
     assert isinstance(chainId, int)

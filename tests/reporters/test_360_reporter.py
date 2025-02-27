@@ -6,8 +6,6 @@ from unittest.mock import AsyncMock
 from unittest.mock import patch
 
 import pytest
-from brownie import accounts
-from brownie import chain
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 
@@ -30,8 +28,9 @@ CHAIN_ID = 80001
 
 
 @pytest.mark.asyncio
-async def test_report(tellor_360, caplog, guaranteed_price_source, mock_flex_contract, mock_token_contract):
+async def test_report(tellor_360, caplog, guaranteed_price_source, deploy_contracts, accounts, chain):
     """Test 360 reporter deposit and balance changes when stakeAmount changes"""
+    mock_token_contract, mock_flex_contract, _, _, _ = deploy_contracts
     contracts, account = tellor_360
     feed = eth_usd_median_feed
     feed.source = guaranteed_price_source
@@ -56,52 +55,57 @@ async def test_report(tellor_360, caplog, guaranteed_price_source, mock_flex_con
     assert "reports count: 0" in caplog.text
 
     # update stakeamount increase causes reporter to deposit more to keep reporting
-    mock_token_contract.faucet(accounts[0].address)
-    mock_token_contract.approve(mock_flex_contract.address, mock_flex_contract.stakeAmount())
-    mock_flex_contract.depositStake(mock_flex_contract.stakeAmount())
+    mock_token_contract.faucet(accounts[1].address, sender=accounts[0])
+    mock_token_contract.approve(mock_flex_contract.address, mock_flex_contract.stakeAmount(), sender=accounts[1])
+    mock_flex_contract.depositStake(mock_flex_contract.stakeAmount(), sender=accounts[1])
     mock_flex_contract.submitValue(
         trb_usd_median_feed.query.query_id,
         "0x0000000000000000000000000000000000000000000000004563918244f40000",
         0,
         trb_usd_median_feed.query.query_data,
+        sender=accounts[1],
     )
-    chain.sleep(86400)
-    mock_flex_contract.updateStakeAmount()
-    chain.mine(1, timedelta=1)
-    stake_amount, status = await r.oracle.read("getStakeAmount")
-    assert status.ok
-    assert stake_amount == int(20e18)
 
-    await r.report_once()
-    # staker balance increased due to updateStakeAmount call
-    assert r.stake_info.current_stake_amount == stake_amount
-    assert "Currently in reporter lock. Time left: 11:59" in caplog.text  # 12hr
-    # report count before second report
-    assert "reports count: 1" in caplog.text
-    # decrease stakeAmount should increase reporting frequency
-    mock_token_contract.approve(mock_flex_contract.address, mock_flex_contract.stakeAmount())
-    mock_flex_contract.depositStake(mock_flex_contract.stakeAmount())
-    mock_flex_contract.submitValue(
-        trb_usd_median_feed.query.query_id,
-        "0x00000000000000000000000000000000000000000000021e19e0c9bab2400000",
-        0,
-        trb_usd_median_feed.query.query_data,
-    )
-    chain.sleep(86400)
-    mock_flex_contract.updateStakeAmount()
+    with mock.patch("telliot_feeds.reporters.tellor_360.time.time", return_value=chain.pending_timestamp):
+        chain.pending_timestamp += 86400
+        mock_flex_contract.updateStakeAmount(sender=accounts[0])
 
-    stake_amount, status = await r.oracle.read("getStakeAmount")
-    assert status.ok
-    assert stake_amount == int(10e18)
+        stake_amount, status = await r.oracle.read("getStakeAmount")
+        assert status.ok
+        assert stake_amount == int(20e18)
 
-    assert r.stake_info.current_staker_balance == int(20e18)
+        await r.report_once()
+        # staker balance increased due to updateStakeAmount call
+        assert r.stake_info.current_stake_amount == stake_amount
+        assert "Currently in reporter lock. Time left: 11:59" in caplog.text  # 12hr
+        # report count before second report
+        assert "reports count: 1" in caplog.text
+        # decrease stakeAmount should increase reporting frequency
+        mock_token_contract.approve(mock_flex_contract.address, mock_flex_contract.stakeAmount(), sender=accounts[1])
+        mock_flex_contract.depositStake(mock_flex_contract.stakeAmount(), sender=accounts[1])
+        mock_flex_contract.submitValue(
+            trb_usd_median_feed.query.query_id,
+            "0x00000000000000000000000000000000000000000000021e19e0c9bab2400000",
+            0,
+            trb_usd_median_feed.query.query_data,
+            sender=accounts[1],
+        )
 
-    await r.report_once()
-    assert "Currently in reporter lock. Time left: 5:59" in caplog.text  # 6hr
+        chain.pending_timestamp += 86400
+        mock_flex_contract.updateStakeAmount(sender=accounts[0])
+
+        stake_amount, status = await r.oracle.read("getStakeAmount")
+        assert status.ok
+        assert stake_amount == int(10e18)
+
+        assert r.stake_info.current_staker_balance == int(20e18)
+
+        await r.report_once()
+        assert "Currently in reporter lock. Time left: 5:59" in caplog.text  # 6hr
 
 
 @pytest.mark.asyncio
-async def test_fail_get_account_nonce(tellor_360, caplog, guaranteed_price_source):
+async def test_fail_get_account_nonce(tellor_360, caplog, guaranteed_price_source, chain):
     """Test 360 reporter fails to retrieve account nonce"""
     contracts, account = tellor_360
     feed = eth_usd_median_feed
@@ -143,8 +147,8 @@ async def test_fail_get_account_nonce(tellor_360, caplog, guaranteed_price_sourc
 
 
 @pytest.mark.asyncio
-async def test_get_time_based_rewards(tellor_360, caplog):
-
+async def test_get_time_based_rewards(tellor_360, caplog, chain):
+    time.sleep(1)
     contracts, _ = tellor_360
     tbr = await get_time_based_rewards(contracts.oracle)
 
@@ -154,7 +158,7 @@ async def test_get_time_based_rewards(tellor_360, caplog):
 
 
 @pytest.mark.asyncio
-async def test_360_reporter_rewards(tellor_360, guaranteed_price_source):
+async def test_360_reporter_rewards(tellor_360, guaranteed_price_source, chain):
 
     contracts, account = tellor_360
     feed = eth_usd_median_feed
@@ -179,7 +183,7 @@ async def test_360_reporter_rewards(tellor_360, guaranteed_price_source):
 
 
 @pytest.mark.asyncio
-async def test_adding_stake(tellor_360, guaranteed_price_source):
+async def test_adding_stake(tellor_360, guaranteed_price_source, chain):
     """Test 360 reporter depositing more stake"""
     contracts, account = tellor_360
     feed = eth_usd_median_feed
@@ -214,14 +218,17 @@ async def test_adding_stake(tellor_360, guaranteed_price_source):
 
     # stake more by by changing stake from default similar to how a stake amount chosen in cli
     # high stake to bypass reporter lock
-    reporter = Tellor360Reporter(**reporter_kwargs, stake=900000)
-    _, status = await reporter.report_once()
-    assert status.ok
-    assert reporter.stake_info.current_staker_balance == pytest.approx(900000e18), "Staker balance should be 90000e18"
+    with mock.patch("telliot_feeds.reporters.tellor_360.time.time", return_value=chain.pending_timestamp):
+        reporter = Tellor360Reporter(**reporter_kwargs, stake=900000)
+        _, status = await reporter.report_once()
+        assert status.ok
+        assert reporter.stake_info.current_staker_balance == pytest.approx(
+            900000e18
+        ), "Staker balance should be 90000e18"
 
 
 @pytest.mark.asyncio
-async def test_no_native_token(tellor_360, caplog, guaranteed_price_source):
+async def test_no_native_token(tellor_360, caplog, guaranteed_price_source, chain):
     """Test reporter quits if no native token"""
     contracts, account = tellor_360
     feed = eth_usd_median_feed
@@ -236,7 +243,7 @@ async def test_no_native_token(tellor_360, caplog, guaranteed_price_source):
         "chain_id": CHAIN_ID,
         "transaction_type": 0,
         "wait_period": 0,
-        "min_native_token_balance": 100 * 10**18,
+        "min_native_token_balance": 1000000 * 10**18,
         "datafeed": feed,
         "ignore_tbr": False,
     }
@@ -248,7 +255,7 @@ async def test_no_native_token(tellor_360, caplog, guaranteed_price_source):
 
 
 @pytest.mark.asyncio
-async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, caplog, guaranteed_price_source):
+async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, caplog, guaranteed_price_source, chain):
     """Test reporter lock check when reporting for a tip that requires a manaul data source"""
     contracts, account = tellor_360
     feed = eth_usd_median_feed
@@ -294,7 +301,7 @@ async def test_checks_reporter_lock_when_manual_source(tellor_360, monkeypatch, 
 
 
 @pytest.mark.asyncio
-async def test_fail_gen_query_id(tellor_360, caplog, guaranteed_price_source):
+async def test_fail_gen_query_id(tellor_360, caplog, guaranteed_price_source, chain):
     """Test failure to generate query id when calling rewards() method."""
     contracts, account = tellor_360
     feed = eth_usd_median_feed
@@ -316,12 +323,14 @@ async def test_fail_gen_query_id(tellor_360, caplog, guaranteed_price_source):
 
     # This will cause the SpotPrice query to throw an eth_abi.exceptions.EncodingTypeError when
     # trying to generate the query data for the query id.
+    asset = eth_usd_median_feed.query.asset
     eth_usd_median_feed.query.asset = None
 
     reporter = Tellor360Reporter(**reporter_kwargs)
     _ = await reporter.rewards()
 
     assert "Unable to generate data/id for query" in caplog.text
+    eth_usd_median_feed.query.asset = asset
 
 
 @pytest.mark.asyncio
@@ -331,13 +340,22 @@ async def test_tbr_tip_increment(tellor_360, guaranteed_price_source, caplog, ch
     feed.source = guaranteed_price_source
     matic_usd_median_feed.source = guaranteed_price_source
 
-    _ = await contracts.autopay.write(
+    _, status = await contracts.token.write(
+        "approve",
+        gas_limit=350000,
+        legacy_gas_price=1,
+        spender=contracts.autopay.address,
+        amount=int(1e18),
+    )
+    assert status.ok
+    _, status = await contracts.autopay.write(
         "tip",
         **txn_kwargs,
-        _amount=1 * 10**18,
+        _amount=1_000_000_000_000_000_000,
         _queryId=matic_usd_median_feed.query.query_id,
         _queryData=matic_usd_median_feed.query.query_data,
     )
+    assert status.ok
     reporter_kwargs = {
         "oracle": contracts.oracle,
         "token": contracts.token,
@@ -397,8 +415,6 @@ async def test_fetch_datafeed(tellor_flex_reporter):
     assert isinstance(feed, DataFeed)
 
 
-@pytest.mark.skip(reason="EIP-1559 not supported by ganache")
-@pytest.mark.asyncio
 def test_get_fee_info(tellor_flex_reporter):
     """Test fee info for type 2 transactions."""
     tellor_flex_reporter.transaction_type = 2
@@ -540,7 +556,7 @@ async def test_dispute(tellor_flex_reporter, caplog):
 
 
 @pytest.mark.asyncio
-async def test_reset_datafeed(tellor_flex_reporter):
+async def test_reset_datafeed(tellor_flex_reporter, chain):
     # Test when reporter selects qtag vs not
     # datafeed should persist if qtag selected
     r = tellor_flex_reporter
@@ -579,11 +595,11 @@ async def test_reset_datafeed(tellor_flex_reporter):
             await reporter1.report_once()
             assert reporter1.qtag_selected is True
             assert reporter1.datafeed.query.asset == "trb"
-            chain.sleep(43201)
+            chain.pending_timestamp += 43201
 
         for _ in range(3):
             await reporter2.report_once()
             assert reporter2.qtag_selected is False
-            chain.sleep(43201)
+            chain.pending_timestamp += 43201
 
     _ = await reprt()

@@ -16,11 +16,11 @@ class CIDValueType(ValueType):
 
     def encode(self, value: str) -> Any:
         """Encode a string value."""
-        return encode([self.abi_type], [value])  # type: ignore
+        return encode([self.abi_type], [value])
 
     def decode(self, bytes_val: bytes) -> Any:
         """Decode bytes into a string value."""
-        return decode([self.abi_type], bytes_val)  # type: ignore
+        return decode([self.abi_type], bytes_val)
 
 
 @dataclass

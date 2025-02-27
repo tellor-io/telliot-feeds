@@ -3,7 +3,7 @@
 Copyright (c) 2021-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
-from eth_abi import decode_abi
+from eth_abi import decode
 from web3 import Web3
 
 from telliot_feeds.queries.tellor.autopay_addresses import AutopayAddresses
@@ -18,10 +18,10 @@ def test_autopay_constructor():
 
     assert q.query_data.hex() == exp
 
-    query_type, encoded_param_vals = decode_abi(["string", "bytes"], q.query_data)
+    query_type, encoded_param_vals = decode(["string", "bytes"], q.query_data)
     assert query_type == "AutopayAddresses"
 
-    phantom_bytes = decode_abi(["bytes"], encoded_param_vals)[0]
+    phantom_bytes = decode(["bytes"], encoded_param_vals)[0]
     assert isinstance(phantom_bytes, bytes)
     assert phantom_bytes == b""
 
@@ -39,10 +39,10 @@ def test_autopay_encode_decode_reported_val():
     submit_value = q.value_type.encode(current_autopay_addresses)
     assert isinstance(submit_value, bytes)
 
-    decoded_result = q.value_type.decode(submit_value)
+    decoded_result = q.value_type.decode(submit_value)[0]
     assert isinstance(decoded_result, tuple)
 
-    assert Web3.toChecksumAddress(decoded_result[0]) == "0x9BE9B0CFA89Ea800556C6efbA67b455D336db1D0"
+    assert Web3.to_checksum_address(decoded_result[0]) == "0x9BE9B0CFA89Ea800556C6efbA67b455D336db1D0"
 
 
 def test_oracle_address_constructor():
@@ -54,10 +54,10 @@ def test_oracle_address_constructor():
 
     assert q.query_data.hex() == exp
 
-    query_type, encoded_param_vals = decode_abi(["string", "bytes"], q.query_data)
+    query_type, encoded_param_vals = decode(["string", "bytes"], q.query_data)
     assert query_type == "TellorOracleAddress"
 
-    phantom_bytes = decode_abi(["bytes"], encoded_param_vals)[0]
+    phantom_bytes = decode(["bytes"], encoded_param_vals)[0]
     assert isinstance(phantom_bytes, bytes)
     assert phantom_bytes == b""
 
@@ -76,7 +76,7 @@ def test_oracle_address_encode_decode_reported_val():
     submit_value = q.value_type.encode(current_oracle_addresses)
     assert isinstance(submit_value, bytes)
 
-    decoded_result = q.value_type.decode(submit_value)
+    decoded_result = q.value_type.decode(submit_value)[0]
     assert isinstance(decoded_result, str)
 
-    assert Web3.toChecksumAddress(decoded_result) == "0xB3B662644F8d3138df63D2F43068ea621e2981f9"
+    assert Web3.to_checksum_address(decoded_result) == "0xB3B662644F8d3138df63D2F43068ea621e2981f9"

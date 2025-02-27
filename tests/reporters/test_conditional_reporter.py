@@ -2,6 +2,7 @@ from contextlib import ExitStack
 from unittest.mock import patch
 
 import pytest
+import pytest_asyncio
 
 from telliot_feeds.feeds import eth_usd_median_feed
 from telliot_feeds.reporters.customized.conditional_reporter import ConditionalReporter
@@ -9,7 +10,7 @@ from telliot_feeds.reporters.customized.conditional_reporter import GetDataBefor
 from tests.utils.utils import chain_time
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function")
 async def reporter(tellor_360, guaranteed_price_source):
     contracts, account = tellor_360
     feed = eth_usd_median_feed
@@ -36,9 +37,9 @@ module = "telliot_feeds.reporters.customized.conditional_reporter."
 
 
 @pytest.mark.asyncio
-async def test_tellor_data_none(reporter, caplog):
+async def test_tellor_data_none(reporter, chain, caplog):
     """Test when tellor data is None"""
-    r = await reporter
+    r = reporter
 
     def patch_tellor_data_return(return_value):
         return patch(f"{module}ConditionalReporter.get_tellor_latest_data", return_value=return_value)
@@ -49,9 +50,9 @@ async def test_tellor_data_none(reporter, caplog):
 
 
 @pytest.mark.asyncio
-async def test_tellor_data_not_retrieved(reporter, caplog):
+async def test_tellor_data_not_retrieved(reporter, chain, caplog):
     """Test when tellor data is None"""
-    r = await reporter
+    r = reporter
 
     def patch_tellor_data_not_retrieved(return_value):
         return patch(f"{module}ConditionalReporter.get_tellor_latest_data", return_value=return_value)
@@ -62,9 +63,9 @@ async def test_tellor_data_not_retrieved(reporter, caplog):
 
 
 @pytest.mark.asyncio
-async def test_tellor_data_is_stale(reporter, caplog):
+async def test_tellor_data_is_stale(reporter, chain, caplog):
     """Test when tellor data is None"""
-    r = await reporter
+    r = reporter
 
     def patch_tellor_data_is_stale(return_value):
         return patch(f"{module}ConditionalReporter.get_tellor_latest_data", return_value=return_value)
@@ -76,11 +77,11 @@ async def test_tellor_data_is_stale(reporter, caplog):
 
 @pytest.mark.asyncio
 async def test_tellor_price_change_above_max(reporter, chain, caplog):
-    r = await reporter
+    r = reporter
 
     tellor_latest_data = GetDataBefore(True, b"", chain_time(chain))
     telliot_feed_data = 1
-    chain.mine(1, timedelta=1)
+    chain.mine(1)
     with ExitStack() as stack:
         stack.enter_context(patch(f"{module}current_time", new=lambda: chain_time(chain)))
         stack.enter_context(

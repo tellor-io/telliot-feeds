@@ -13,7 +13,7 @@ from telliot_core.apps.core import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
 from web3 import Web3
-from web3.contract import ContractFunction
+from web3.contract import ContractConstructor
 from web3.types import FeeHistory
 from web3.types import Wei
 
@@ -47,7 +47,7 @@ class GasFees:
     @staticmethod
     def to_gwei(value: Union[Wei, int]) -> Union[int, float]:
         """Converts wei to gwei."""
-        converted_value = Web3.fromWei(value, "gwei")
+        converted_value = Web3.from_wei(value, "gwei")
         # Returns float if Gwei value is Decimal, otherwise returns int
         if isinstance(converted_value, Decimal):
             return float(converted_value)
@@ -56,7 +56,7 @@ class GasFees:
     @staticmethod
     def from_gwei(value: Union[int, float, Decimal]) -> Wei:
         """Converts gwei to wei."""
-        return Web3.toWei(value, "gwei")
+        return Web3.to_wei(value, "gwei")
 
     @staticmethod
     def optional_to_gwei(value: Union[Wei, int, None]) -> Union[int, float, None]:
@@ -75,7 +75,7 @@ class GasFees:
     @staticmethod
     def to_ether(value: Union[Wei, int]) -> Union[int, float]:
         """Converts wei to ether. ie 1e18 wei = 1 ether"""
-        converted_value = Web3.fromWei(value, "ether")
+        converted_value = Web3.from_wei(value, "ether")
         if isinstance(converted_value, Decimal):
             return float(converted_value)
         return converted_value
@@ -83,7 +83,7 @@ class GasFees:
     @staticmethod
     def from_ether(value: Union[int, float, Decimal]) -> Wei:
         """Converts ether to wei. ie 1 ether = 1e18 wei"""
-        return Web3.toWei(value, "ether")
+        return Web3.to_wei(value, "ether")
 
     def __init__(
         self,
@@ -151,7 +151,7 @@ class GasFees:
             "gas_limit": gas["gas"],
         }
 
-    def estimate_gas_amount(self, pre_built_transaction: ContractFunction) -> Tuple[Optional[int], ResponseStatus]:
+    def estimate_gas_amount(self, pre_built_transaction: ContractConstructor) -> Tuple[Optional[int], ResponseStatus]:
         """Estimate the gas amount for a given transaction
         ie how many gas units will a transaction need to be executed
 
@@ -162,7 +162,7 @@ class GasFees:
             self.set_gas_info({"gas": self.gas_limit})
             return self.gas_limit, ResponseStatus()
         try:
-            gas = pre_built_transaction.estimateGas({"from": self.acct_address})
+            gas = pre_built_transaction.estimate_gas({"from": self.acct_address})
             self.set_gas_info({"gas": gas})
             return gas, ResponseStatus()
         except Exception as e:

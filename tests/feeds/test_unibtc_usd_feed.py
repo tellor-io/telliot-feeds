@@ -6,8 +6,10 @@ from telliot_feeds.feeds.unibtc_usd_feed import unibtc_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_unibtc_usd_median_feed(caplog):
+async def test_unibtc_usd_median_feed(caplog, mock_price_feed):
     """Retrieve median unibtc/usd price."""
+    mock_prices = [1200.50, 1205.25]
+    mock_price_feed(unibtc_usd_median_feed, mock_prices)
     v, _ = await unibtc_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None

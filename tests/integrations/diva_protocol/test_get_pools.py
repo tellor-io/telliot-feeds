@@ -26,6 +26,7 @@ network = "mumbai"
 data_provider = "0x9adefeb576dcf52f5220709c1b267d89d5208d78"
 
 
+@pytest.mark.skip("needs new subgraph API")
 @pytest.mark.asyncio
 async def test_get_pools_from_subgraph():
     query = query_valid_pools(

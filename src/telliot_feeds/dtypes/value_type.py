@@ -5,9 +5,9 @@ from dataclasses import dataclass
 from typing import Any
 
 from clamfig import Serializable
-from eth_abi.abi import decode_single
-from eth_abi.abi import encode_single
-from eth_abi.packed import encode_single_packed
+from eth_abi.abi import decode
+from eth_abi.abi import encode
+from eth_abi.packed import encode_packed
 
 
 @dataclass
@@ -32,13 +32,13 @@ class ValueType(Serializable):
     def encode(self, value: Any) -> bytes:
         """Encode a value using the ABI Type string."""
         if self.packed:
-            return encode_single_packed(self.abi_type, value)
+            return encode_packed([self.abi_type], [value])
         else:
-            return encode_single(self.abi_type, value)
+            return encode([self.abi_type], [value])
 
     def decode(self, bytes_val: bytes) -> Any:
         """Decode bytes into a value using abi type string."""
-        return decode_single(self.abi_type, bytes_val)
+        return decode([self.abi_type], bytes_val)
 
     # @validator("abi_type")
     # def require_valid_grammar(cls, v: str) -> str:

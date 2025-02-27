@@ -3,18 +3,18 @@ from click.testing import CliRunner
 from telliot_feeds.cli.main import main as cli_main
 
 
-def test_no_chainlink_feed_found():
+def test_no_chainlink_feed_found(sepolia_test_key_name):
     """Test no address found."""
     runner = CliRunner()
-    result = runner.invoke(cli_main, ["liquity", "-a", "git-tellorflex-test-key"])
+    result = runner.invoke(cli_main, ["liquity", "-a", sepolia_test_key_name])
     assert result.exception
     assert result.exit_code == 2
 
-    expected = "Chain link feed not found for chain id: 1337"
+    expected = "Chain link feed not found for chain id: 11155111"
     assert expected in result.stdout
 
     runner = CliRunner()
-    result = runner.invoke(cli_main, ["liquity", "-a", "git-tellorflex-test-key", "-clf", "0x"])
+    result = runner.invoke(cli_main, ["liquity", "-a", sepolia_test_key_name, "-clf", "0x"])
     print(result.stdout, result.exception)
     assert result.exception
     assert result.exit_code == 2
