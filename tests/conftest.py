@@ -54,6 +54,11 @@ def mumbai_test_key_name():
     return "mumbai_test_key"
 
 
+@pytest.fixture(autouse=True)
+def amoy_test_key_name():
+    return "amoy_test_key"
+
+
 @pytest.fixture
 def custom_reporter_name():
     return "custom_reporter_address"
@@ -104,6 +109,24 @@ def sender(accounts, mumbai_test_key_name):
     acct = ChainedAccount.add(
         mumbai_test_key_name,
         chains=80001,
+        key=accounts[0].private_key,
+        password="",
+    )
+
+    return accounts[0]
+
+
+@pytest.fixture(autouse=True)
+def amoy_test_key(accounts, amoy_test_key_name):
+    accts = find_accounts(chain_id=80002, name=amoy_test_key_name)
+
+    for acct in accts:
+        if acct.name == amoy_test_key_name:
+            acct.delete()
+            break
+    acct = ChainedAccount.add(
+        amoy_test_key_name,
+        chains=80002,
         key=accounts[0].private_key,
         password="",
     )

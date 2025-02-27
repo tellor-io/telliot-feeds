@@ -13,7 +13,7 @@ async def test_not_injecting_middlware_twice(caplog):
     """Test that reusing a POA chain does not crash from middleware"""
 
     s = EVMCallSource()
-    s.chainId = 80001  # a POA chain, so it will raise web3.exceptions.ExtraDataLengthError
+    s.chainId = 80002  # a POA chain, so it will raise web3.exceptions.ExtraDataLengthError
     s.web3 = update_web3(s.chainId, s.cfg)
 
     # We will use `getCurrentValue` on the ETH/USD query id

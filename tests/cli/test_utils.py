@@ -27,7 +27,7 @@ def test_build_query():
 
 
 @pytest.mark.asyncio
-async def test_call_oracle(tellor_360, caplog, chain, mumbai_test_key_name):
+async def test_call_oracle(tellor_360, caplog, chain, amoy_test_key_name):
     """Test calling the oracle."""
     user_inputs = {
         "min_native_token_balance": 0.0,
@@ -53,7 +53,7 @@ async def test_call_oracle(tellor_360, caplog, chain, mumbai_test_key_name):
 
     class ctx:
         def __init__(self):
-            self.obj = {"CHAIN_ID": 80001, "ACCOUNT_NAME": mumbai_test_key_name, "TEST_CONFIG": None}
+            self.obj = {"CHAIN_ID": 80002, "ACCOUNT_NAME": amoy_test_key_name, "TEST_CONFIG": None}
 
     user_inputs["password"] = ""
     with mock.patch("telliot_core.apps.core.TelliotCore.get_tellor360_contracts", return_value=contracts):

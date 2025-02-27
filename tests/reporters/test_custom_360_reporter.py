@@ -44,9 +44,10 @@ async def custom_reporter(
     accounts,
     project,
     custom_reporter_chained_account,
+    custom_reporter_name,
 ):
     mock_token_contract, mock_flex_contract, _, _, mock_autopay_contract = deploy_contracts
-    async with TelliotCore(config=mumbai_test_cfg, account_name="fake_flex_custom_reporter_address") as core:
+    async with TelliotCore(config=mumbai_test_cfg, account_name=custom_reporter_name) as core:
         contracts = core.get_tellor360_contracts()
         contracts.oracle.abi = project.TellorFlex.contract_type.model_dump().get("abi", [])
         contracts.oracle.address = mock_flex_contract.address
