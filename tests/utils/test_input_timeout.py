@@ -31,9 +31,10 @@ def is_ci_environment():
     return os.environ.get("CI") or os.environ.get("GITHUB_ACTIONS")
 
 
-@pytest.mark.skipif(is_ci_environment(), reason="Test not suitable for CI environments")
 def test_input_timeout(suspend_capture) -> None:
     """Test input_timeout() function."""
+    if is_ci_environment():
+        pytest.skip("This test fails in CI environments: PermissionError: [Errno 1] Operation not permitted")
     with suspend_capture:
         with pytest.raises(TimeoutOccurred):
             input_timeout(prompt="sup", timeout=0)

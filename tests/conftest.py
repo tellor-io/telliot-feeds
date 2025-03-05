@@ -92,7 +92,7 @@ class GoodFakeSource(DataSource[float]):
         return datapoint
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(autouse=True)
 def guaranteed_price_source():
     """Used for testing no updated value for datafeeds."""
     return GoodFakeSource()
