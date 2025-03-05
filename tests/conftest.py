@@ -230,6 +230,11 @@ def mumbai_test_cfg(connected_provider):
     return local_node_cfg(chain_id=80001)
 
 
+@pytest.fixture(scope="session")
+def amoy_test_cfg(connected_provider):
+    return local_node_cfg(chain_id=80002)
+
+
 @pytest_asyncio.fixture(scope="function")
 async def tellor_360(project, accounts, mumbai_test_cfg, deploy_contracts, chain, mumbai_test_key_name):
     token, oracle, _, _, autopay = deploy_contracts

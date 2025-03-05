@@ -1,7 +1,11 @@
+import os
+
 import pytest
 from eth_abi import decode
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
+from telliot_core.model.endpoints import EndpointList
+from telliot_core.model.endpoints import RPCEndpoint
 
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.sources.evm_call import EVMCallSource
@@ -14,6 +18,11 @@ async def test_not_injecting_middlware_twice(caplog):
 
     s = EVMCallSource()
     s.chainId = 80002  # a POA chain, so it will raise web3.exceptions.ExtraDataLengthError
+    custom_endpoint = RPCEndpoint(
+        chain_id=80002, url=f"https://polygon-amoy.infura.io/v3/{os.environ['INFURA_API_KEY']}"
+    )
+
+    s.cfg.endpoints = EndpointList(endpoints=[custom_endpoint])
     s.web3 = update_web3(s.chainId, s.cfg)
 
     # We will use `getCurrentValue` on the ETH/USD query id
@@ -48,6 +57,9 @@ async def test_source():
     assert s2.calldata == b"\x18\x16\x0d\xdd"
 
     # test update_web3
+    custom_endpoint = RPCEndpoint(chain_id=1, url=f"https://mainnet.infura.io/v3/{os.environ['INFURA_API_KEY']}")
+
+    s2.cfg.endpoints = EndpointList(endpoints=[custom_endpoint])
     s2.web3 = update_web3(s2.chainId, s2.cfg)
     assert s2.web3 is not None
 
@@ -75,6 +87,11 @@ async def test_non_getter_calldata():
     """Test if calldata is not for a getter function."""
     s = EVMCallSource()
     s.chainId = 80002
+    custom_endpoint = RPCEndpoint(
+        chain_id=80002, url=f"https://polygon-amoy.infura.io/v3/{os.environ['INFURA_API_KEY']}"
+    )
+
+    s.cfg.endpoints = EndpointList(endpoints=[custom_endpoint])
     s.web3 = update_web3(s.chainId, s.cfg)
 
     """Test non getter calldata"""
@@ -125,6 +142,9 @@ async def test_report_for_bad_calldata(tellor_360, chain):
             calldata=calldata,
         ),
     )
+    custom_endpoint = RPCEndpoint(chain_id=1, url=f"https://mainnet.infura.io/v3/{os.environ['INFURA_API_KEY']}")
+
+    bad_calldata_feed.source.cfg.endpoints = EndpointList(endpoints=[custom_endpoint])
 
     r = Tellor360Reporter(
         oracle=contracts.oracle,
@@ -151,6 +171,9 @@ def test_evm_call_on_previous_block():
 
     s = EVMCallSource()
     s.chainId = 1
+    custom_endpoint = RPCEndpoint(chain_id=1, url=f"https://mainnet.infura.io/v3/{os.environ['INFURA_API_KEY']}")
+
+    s.cfg.endpoints = EndpointList(endpoints=[custom_endpoint])
     s.web3 = update_web3(s.chainId, s.cfg)
 
     # We will use `getCurrentValue` on the ETH/USD query id

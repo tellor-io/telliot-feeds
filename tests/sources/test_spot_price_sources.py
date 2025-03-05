@@ -9,6 +9,7 @@ import pytest
 from requests import Response
 from requests.exceptions import JSONDecodeError
 from telliot_core.apps.telliot_config import TelliotConfig
+from telliot_core.model.endpoints import RPCEndpoint
 
 from telliot_feeds.sources.price.spot.bitfinex import BitfinexSpotPriceService
 from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceService
@@ -278,10 +279,16 @@ async def test_curvefi():
 
 
 @pytest.mark.asyncio
-async def test_sweth_source():
+async def test_sweth_source(monkeypatch):
     """Test swETH price service"""
     service["sweth"].contract = SWETH_CONTRACT
     service["sweth"].calldata = "0xd68b2cb6"
+    custom_endpoint = RPCEndpoint(chain_id=1, url=f"https://mainnet.infura.io/v3/{os.environ['INFURA_API_KEY']}")
+
+    def custom_find(chain_id):
+        return [custom_endpoint]
+
+    monkeypatch.setattr(service["sweth"].cfg.endpoints, "find", custom_find)
     v, t = await get_price("sweth", "usd", service["sweth"])
     validate_price(v, t)
     assert v is not None
