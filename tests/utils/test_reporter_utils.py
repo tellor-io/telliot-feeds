@@ -45,7 +45,7 @@ def test_reporter_sync_schedule_list():
 
 
 @pytest.mark.asyncio
-async def test_has_native_token_funds(mumbai_test_cfg, caplog, accounts):
+async def test_has_native_token_funds(mumbai_test_cfg, caplog, accounts, random_key_no_funds):
     """Test has_native_token_funds"""
 
     def fake_alert(msg):
@@ -54,7 +54,7 @@ async def test_has_native_token_funds(mumbai_test_cfg, caplog, accounts):
     def fail_balance_read(*args, **kwargs):
         raise Exception("bango")
 
-    async with TelliotCore(config=mumbai_test_cfg) as core:
+    async with TelliotCore(config=mumbai_test_cfg, account_name="random_key_no_funds") as core:
         account = core.get_account()
         addr = Web3.to_checksum_address(account.address)
         endpoint = core.get_endpoint()

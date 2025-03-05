@@ -1,3 +1,6 @@
+import os
+import unittest.mock
+
 import pytest
 
 from telliot_feeds.utils.input_timeout import input_timeout
@@ -23,8 +26,24 @@ def suspend_capture(pytestconfig):
     yield suspend_guard()
 
 
+def is_ci_environment():
+    """Check if running in a CI environment."""
+    return os.environ.get("CI") or os.environ.get("GITHUB_ACTIONS")
+
+
+@pytest.mark.skipif(is_ci_environment(), reason="Test not suitable for CI environments")
 def test_input_timeout(suspend_capture) -> None:
     """Test input_timeout() function."""
     with suspend_capture:
+        with pytest.raises(TimeoutOccurred):
+            input_timeout(prompt="sup", timeout=0)
+
+
+def test_input_timeout_ci() -> None:
+    if not is_ci_environment():
+        pytest.skip("This test is only relevant in CI environments")
+
+    with unittest.mock.patch("telliot_feeds.utils.input_timeout.input_timeout_func") as mock_input:
+        mock_input.side_effect = TimeoutOccurred()
         with pytest.raises(TimeoutOccurred):
             input_timeout(prompt="sup", timeout=0)

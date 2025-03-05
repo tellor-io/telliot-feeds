@@ -1,3 +1,4 @@
+import os
 from unittest import mock
 
 import pytest
@@ -11,19 +12,39 @@ from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.reporters.stake import Stake
 
 
+def is_ci_environment():
+    """Check if running in a CI environment."""
+    return os.environ.get("CI") or os.environ.get("GITHUB_ACTIONS")
+
+
+# test fails with the error: NotImplementedError: simple-term-menu can only be used in a terminal emulator,
+# on gh actions so added a workaround
 def test_build_query():
     """Test building a query."""
     queries = [q for q in AbiQuery.__subclasses__() if q.__name__ not in ("LegacyRequest")]
     options = sorted([q.__name__ for q in queries])
     idx = options.index("SpotPrice")
-    with (
-        mock.patch("simple_term_menu.TerminalMenu.show", return_value=idx),
-        mock.patch("click.prompt", side_effect=["eth", "usd"]),
-    ):
-        query = build_query()
-        assert isinstance(query, SpotPrice)
-        assert query.asset == "eth"
-        assert query.currency == "usd"
+
+    if is_ci_environment():
+        with mock.patch("simple_term_menu.TerminalMenu.__init__", return_value=None) as mock_init:
+            mock_init.side_effect = lambda *args, **kwargs: None
+            with (
+                mock.patch("simple_term_menu.TerminalMenu.show", return_value=idx),
+                mock.patch("click.prompt", side_effect=["eth", "usd"]),
+            ):
+                query = build_query()
+                assert isinstance(query, SpotPrice)
+                assert query.asset == "eth"
+                assert query.currency == "usd"
+    else:
+        with (
+            mock.patch("simple_term_menu.TerminalMenu.show", return_value=idx),
+            mock.patch("click.prompt", side_effect=["eth", "usd"]),
+        ):
+            query = build_query()
+            assert isinstance(query, SpotPrice)
+            assert query.asset == "eth"
+            assert query.currency == "usd"
 
 
 @pytest.mark.asyncio

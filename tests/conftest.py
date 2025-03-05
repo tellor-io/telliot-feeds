@@ -235,6 +235,23 @@ def amoy_test_cfg(connected_provider):
     return local_node_cfg(chain_id=80002)
 
 
+@pytest.fixture
+def random_key_no_funds(accounts):
+    accts = find_accounts(chain_id=80001, name="random_key_no_funds")
+
+    for acct in accts:
+        if acct.name == "random_key_no_funds":
+            acct.delete()
+            break
+    acct = ChainedAccount.add(
+        "random_key_no_funds",
+        chains=80001,
+        key="91e607f51e79a3d4cb45126c67a539abf9e34461ac95320d666b009762cd392b",
+        password="",
+    )
+    return acct
+
+
 @pytest_asyncio.fixture(scope="function")
 async def tellor_360(project, accounts, mumbai_test_cfg, deploy_contracts, chain, mumbai_test_key_name):
     token, oracle, _, _, autopay = deploy_contracts

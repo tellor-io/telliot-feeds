@@ -1,5 +1,4 @@
 import pytest_asyncio
-from ape import project
 from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.timestamp import TimeStamp
 
@@ -11,7 +10,7 @@ txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
 
 
 @pytest_asyncio.fixture(scope="session")
-async def autopay_contract_setup(mumbai_test_cfg, accounts, deploy_contracts, mumbai_test_key_name):
+async def autopay_contract_setup(mumbai_test_cfg, accounts, deploy_contracts, mumbai_test_key_name, project):
     mock_token_contract, mock_flex_contract, _, query_data_storage_contract, _ = deploy_contracts
     autopay_contract = accounts[0].deploy(
         project.Autopay,
