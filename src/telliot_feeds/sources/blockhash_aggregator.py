@@ -6,7 +6,6 @@ from datetime import timezone
 from typing import Any
 from typing import Optional
 from typing import Tuple
-from typing import Union
 
 import requests
 from requests import JSONDecodeError
