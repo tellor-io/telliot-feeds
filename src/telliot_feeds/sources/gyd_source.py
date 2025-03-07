@@ -181,6 +181,10 @@ class gydSpotPriceService(WebPriceService):
         except Exception as e:
             logger.warning(f"Problem retrieving Balancer pool data: {e}")
 
+        if gyd_from_usdc_pool == 0 or gyd_from_usdt_pool == 0 or gyd_from_sdai_pool == 0:
+            logger.warning("Balancer pool price is 0, returning None")
+            return None, None
+
         if gyd_from_usdc_pool is not None and gyd_from_usdt_pool is not None and gyd_from_sdai_pool is not None:
             gyd_weighted_price = (
                 (gyd_usdc_weight) * (gyd_from_usdc_pool)
@@ -205,9 +209,21 @@ class gydCustomSpotPriceSource(PriceSource):
 
 if __name__ == "__main__":
     import asyncio
+    from dataclasses import dataclass
+    from telliot_feeds.pricing.price_source import PriceSource
+
+    # Create a test-only version of the class that doesn't get registered
+    @dataclass
+    class TestGydSource:
+        asset: str = "gyd"
+        currency: str = "usd"
+        service: gydSpotPriceService = field(default_factory=gydSpotPriceService, init=False)
+
+        async def fetch_new_datapoint(self):
+            return await self.service.get_price(self.asset, self.currency)
 
     async def main() -> None:
-        source = gydCustomSpotPriceSource(asset="gyd", currency="usd")
+        source = TestGydSource(asset="gyd", currency="usd")
         v, _ = await source.fetch_new_datapoint()
         print(v)
 
