@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Union
+from typing import Optional
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
@@ -22,7 +22,7 @@ class SpotPriceManualSource(DataSource[float]):
 
         print("\nType your spot price and press [ENTER].\n\nFor example, if price is $1234.0, type 1234 or 1234.0")
 
-        spot: Union[float, None] = None
+        spot: Optional[float] = None
 
         while spot is None:
             usr_inpt = input_timeout()

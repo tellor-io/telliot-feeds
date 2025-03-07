@@ -175,7 +175,7 @@ class TellorRNGManualSource(DataSource[Any]):
         """Parse timestamp from user input."""
         print("Enter timestamp for generating a random number: ")
 
-        data: Union[int, None] = None
+        data: Optional[int] = None
         while data is None:
             inpt = input_timeout()
 
