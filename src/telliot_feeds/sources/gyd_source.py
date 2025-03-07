@@ -205,29 +205,3 @@ class gydCustomSpotPriceSource(PriceSource):
     asset: str = "gyd"
     currency: str = "usd"
     service: gydSpotPriceService = field(default_factory=gydSpotPriceService, init=False)
-
-
-if __name__ == "__main__":
-    import asyncio
-    from dataclasses import dataclass
-    from telliot_feeds.pricing.price_source import PriceSource
-
-    # Create a test-only version of the class that doesn't get registered
-    @dataclass
-    class TestGydSource:
-        asset: str = "gyd"
-        currency: str = "usd"
-        service: gydSpotPriceService = field(default_factory=gydSpotPriceService, init=False)
-
-        async def fetch_new_datapoint(self):
-            return await self.service.get_price(self.asset, self.currency)
-
-    async def main() -> None:
-        source = TestGydSource(asset="gyd", currency="usd")
-        v, _ = await source.fetch_new_datapoint()
-        print(v)
-
-        # res = await source.service.get_total_liquidity_of_pools()
-        # print(res)
-
-    asyncio.run(main())
