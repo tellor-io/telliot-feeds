@@ -6,6 +6,7 @@ from datetime import timezone
 from typing import Any
 from typing import Optional
 from typing import Tuple
+from typing import Union
 
 import requests
 from requests import JSONDecodeError
@@ -174,7 +175,7 @@ class TellorRNGManualSource(DataSource[Any]):
         """Parse timestamp from user input."""
         print("Enter timestamp for generating a random number: ")
 
-        data = None
+        data: Union[int, None] = None
         while data is None:
             inpt = input_timeout()
 

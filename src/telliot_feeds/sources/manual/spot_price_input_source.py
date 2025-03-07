@@ -1,5 +1,6 @@
 import asyncio
 from dataclasses import dataclass
+from typing import Union
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
@@ -21,7 +22,7 @@ class SpotPriceManualSource(DataSource[float]):
 
         print("\nType your spot price and press [ENTER].\n\nFor example, if price is $1234.0, type 1234 or 1234.0")
 
-        spot = None
+        spot: Union[float, None] = None
 
         while spot is None:
             usr_inpt = input_timeout()
@@ -39,7 +40,7 @@ class SpotPriceManualSource(DataSource[float]):
 
             spot = usr_inpt
 
-        return spot
+        return spot  # type guaranteed to be float here since while loop only exits when spot is not None
 
     async def fetch_new_datapoint(self) -> OptionalDataPoint[float]:
         """Update current value with time-stamped value fetched from user input.
