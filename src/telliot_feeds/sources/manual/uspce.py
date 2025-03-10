@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
@@ -23,9 +24,9 @@ class USPCESource(DataSource[float]):
         # but is passed one. TODO: fix
         _ = test_input
 
-        print("Enter USPCE value (example: 13659.3):")
+        print("Enter USPCE value (example: 126.593):")
 
-        uspce = None
+        uspce: Optional[float] = None
 
         while uspce is None:
             inpt = input_timeout()

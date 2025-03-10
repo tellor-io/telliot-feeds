@@ -80,6 +80,9 @@ class PriceAggregator(DataSource[float]):
         for datapoint in datapoints:
             v, _ = datapoint  # Ignore input timestamps
             # Check for valid answers
+            if v is not None and v == 0:
+                logger.warning(f"A source is returning 0, returning None for {self}")
+                return None, None
             if v is not None and isinstance(v, float):
                 prices.append(v)
 
