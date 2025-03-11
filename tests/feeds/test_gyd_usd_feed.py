@@ -7,7 +7,7 @@ from telliot_feeds.feeds.gyd_usd_feed import gyd_usd_median_feed
 
 @pytest.mark.asyncio
 async def test_gyd_usd_median_feed(caplog, mock_price_feed):
-    """Retrieve median SWETH/USD price."""
+    """Retrieve median GYD/USD price."""
     mock_prices = [1200.50, 1205.25]
     mock_price_feed(gyd_usd_median_feed, mock_prices)
     v, _ = await gyd_usd_median_feed.source.fetch_new_datapoint()

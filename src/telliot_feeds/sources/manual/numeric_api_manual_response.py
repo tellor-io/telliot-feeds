@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
+from typing import Optional
 
 from telliot_feeds.datasource import DataSource
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
@@ -21,7 +22,7 @@ class NumericApiManualResponse(DataSource[float]):
 
         print("\nType your numeric API response value and press [ENTER].\n\nFor example, type 1234 or 1234.56")
 
-        val = None
+        val: Optional[float] = None
 
         while val is None:
             usr_inpt = input_timeout()

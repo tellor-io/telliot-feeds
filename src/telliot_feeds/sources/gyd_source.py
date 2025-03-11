@@ -10,9 +10,6 @@ from telliot_core.apps.telliot_config import TelliotConfig
 
 from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
-from telliot_feeds.feeds.sdai_usd_feed import sdai_usd_median_feed
-from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
-from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
 from telliot_feeds.pricing.price_service import WebPriceService
 from telliot_feeds.pricing.price_source import PriceSource
 from telliot_feeds.utils.log import get_logger
@@ -61,10 +58,16 @@ class gydSpotPriceService(WebPriceService):
         gyd_priced_in_currency_float: Optional[float] = float(gyd_priced_in_currency)
 
         if contractAddress.lower() == GYD_SDAI_POOL_ADDRESS.lower():
+            from telliot_feeds.feeds.sdai_usd_feed import sdai_usd_median_feed
+
             currency_spot_price, timestamp = await sdai_usd_median_feed.source.fetch_new_datapoint()
         elif contractAddress.lower() == GYD_USDC_POOL_ADDRESS.lower():
+            from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
+
             currency_spot_price, timestamp = await usdc_usd_median_feed.source.fetch_new_datapoint()
         elif contractAddress.lower() == GYD_USDT_POOL_ADDRESS.lower():
+            from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
+
             currency_spot_price, timestamp = await usdt_usd_median_feed.source.fetch_new_datapoint()
         else:
             print("Returning from inside the else statement after getting the currency spot price")
@@ -181,6 +184,10 @@ class gydSpotPriceService(WebPriceService):
         except Exception as e:
             logger.warning(f"Problem retrieving Balancer pool data: {e}")
 
+        if gyd_from_usdc_pool == 0 or gyd_from_usdt_pool == 0 or gyd_from_sdai_pool == 0:
+            logger.warning("Balancer pool price is 0, returning None")
+            return None, None
+
         if gyd_from_usdc_pool is not None and gyd_from_usdt_pool is not None and gyd_from_sdai_pool is not None:
             gyd_weighted_price = (
                 (gyd_usdc_weight) * (gyd_from_usdc_pool)
@@ -201,17 +208,3 @@ class gydCustomSpotPriceSource(PriceSource):
     asset: str = "gyd"
     currency: str = "usd"
     service: gydSpotPriceService = field(default_factory=gydSpotPriceService, init=False)
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    async def main() -> None:
-        source = gydCustomSpotPriceSource(asset="gyd", currency="usd")
-        v, _ = await source.fetch_new_datapoint()
-        print(v)
-
-        # res = await source.service.get_total_liquidity_of_pools()
-        # print(res)
-
-    asyncio.run(main())
