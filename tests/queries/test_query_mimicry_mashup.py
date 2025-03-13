@@ -46,7 +46,7 @@ def test_encode_decode_reported_val():
     submit_value = q.value_type.encode(data)
     assert isinstance(submit_value, bytes)
 
-    decoded_data = q.value_type.decode(submit_value)[0]
+    decoded_data = q.value_type.decode(submit_value)
 
     assert isinstance(decoded_data, int)
 

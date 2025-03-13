@@ -1,10 +1,10 @@
 """Test fetching one time tip funded query_data with tip amounts"""
 import pytest
 from clamfig.base import Registry
-from eth_abi import decode
 from eth_abi import encode
 from web3 import Web3
 
+from telliot_feeds.dtypes.value_type import decode_single
 from telliot_feeds.reporters.tips.listener.one_time_tips import get_funded_one_time_tips
 
 
@@ -18,7 +18,7 @@ async def test_get_one_time_tip_funded_queries(setup_one_time_tips):
     tips = await get_funded_one_time_tips(flex.autopay)
     for query_data, tip in tips.items():
         try:
-            query_data = decode(["string", "bytes"], query_data)[0]
+            query_data = decode_single("(string,bytes)", query_data)[0]
         except OverflowError:
             # string query for some reason encoding isn't the same as the others
             import ast

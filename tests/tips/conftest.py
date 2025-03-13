@@ -9,7 +9,7 @@ from telliot_feeds.reporters.tips import CATALOG_QUERY_IDS
 txn_kwargs = {"gas_limit": 3500000, "legacy_gas_price": 1}
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(autouse=True)
 async def autopay_contract_setup(mumbai_test_cfg, accounts, deploy_contracts, mumbai_test_key_name, project):
     mock_token_contract, mock_flex_contract, _, query_data_storage_contract, _ = deploy_contracts
     autopay_contract = accounts[0].deploy(

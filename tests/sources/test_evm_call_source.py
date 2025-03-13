@@ -1,12 +1,12 @@
 import os
 
 import pytest
-from eth_abi import decode
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_core.model.endpoints import EndpointList
 from telliot_core.model.endpoints import RPCEndpoint
 
+from telliot_feeds.dtypes.value_type import decode_single
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.sources.evm_call import EVMCallSource
 from telliot_feeds.utils.source_utils import update_web3
@@ -74,7 +74,7 @@ async def test_source():
     assert t is not None
     assert isinstance(v, bytes)
     assert isinstance(t, int)
-    assert decode(["uint256"], v)[0] > 2390472032948139443578988  # an earlier total supply of TRB
+    assert decode_single("uint256", v) > 2390472032948139443578988  # an earlier total supply of TRB
 
     # test fetch_new_datapoint
     v, t = await s2.fetch_new_datapoint()
@@ -114,7 +114,7 @@ async def test_non_getter_calldata():
     assert t is not None
     assert isinstance(v, bytes)
     assert isinstance(t, int)
-    assert decode(["address"], v)[0] == "0x5446397292854D92872eDf426eEaB8FdC6Bd2bEa".lower()
+    assert decode_single("address", v) == "0x5446397292854D92872eDf426eEaB8FdC6Bd2bEa".lower()
 
 
 @pytest.mark.asyncio

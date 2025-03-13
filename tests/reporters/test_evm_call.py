@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock
 from unittest.mock import patch
 
 import pytest
-from eth_abi import decode
 from hexbytes import HexBytes
 from telliot_core.apps.core import RPCEndpoint
 from telliot_core.apps.telliot_config import TelliotConfig
@@ -13,6 +12,7 @@ from web3 import Web3
 
 from telliot_feeds.constants import ETHEREUM_CHAINS
 from telliot_feeds.datafeed import DataFeed
+from telliot_feeds.dtypes.value_type import decode_single
 from telliot_feeds.feeds.evm_call_feed import evm_call_feed_example
 from telliot_feeds.queries.evm_call import EVMCall
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
@@ -97,10 +97,10 @@ async def test_evm_call_e2e(tellor_360, caplog, chain, monkeypatch):
         assert isinstance(value, bytes)
 
         # decode EVMCall query response
-        v, t = q.value_type.decode(value)[0]
+        v, t = q.value_type.decode(value)
         assert isinstance(v, bytes)
         assert isinstance(t, int)
-        trb_total_supply = decode(["uint256"], v)[0]
+        trb_total_supply = decode_single("uint256", v)
         assert trb_total_supply > 2390472032948139443578988  # TRB total supply before
 
 

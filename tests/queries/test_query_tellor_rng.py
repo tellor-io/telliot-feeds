@@ -5,6 +5,7 @@ Distributed under the terms of the MIT License.
 """
 from eth_abi import decode
 
+from telliot_feeds.dtypes.value_type import decode_single
 from telliot_feeds.queries.tellor_rng import TellorRNG
 
 
@@ -37,7 +38,7 @@ def test_tellor_rng_query():
     query_type, encoded_param_vals = decode(["string", "bytes"], q.query_data)
     assert query_type == "TellorRNG"
 
-    timestamp = decode(["uint256"], encoded_param_vals)[0]
+    timestamp = decode_single("uint256", encoded_param_vals)
 
     assert timestamp == 1000000
     assert isinstance(timestamp, int)

@@ -39,7 +39,7 @@ def test_autopay_encode_decode_reported_val():
     submit_value = q.value_type.encode(current_autopay_addresses)
     assert isinstance(submit_value, bytes)
 
-    decoded_result = q.value_type.decode(submit_value)[0]
+    decoded_result = q.value_type.decode(submit_value)
     assert isinstance(decoded_result, tuple)
 
     assert Web3.to_checksum_address(decoded_result[0]) == "0x9BE9B0CFA89Ea800556C6efbA67b455D336db1D0"
@@ -76,7 +76,7 @@ def test_oracle_address_encode_decode_reported_val():
     submit_value = q.value_type.encode(current_oracle_addresses)
     assert isinstance(submit_value, bytes)
 
-    decoded_result = q.value_type.decode(submit_value)[0]
+    decoded_result = q.value_type.decode(submit_value)
     assert isinstance(decoded_result, str)
 
     assert Web3.to_checksum_address(decoded_result) == "0xB3B662644F8d3138df63D2F43068ea621e2981f9"
