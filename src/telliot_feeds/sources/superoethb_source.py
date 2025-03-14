@@ -73,7 +73,7 @@ class superOETHbSpotPriceService(WebPriceService):
             contract_function = contract.functions.getManyRatesWithConnectors(src_len, connectors)
             aerodrome_response = contract_function.call()
             response_int = aerodrome_response[0]
-            response_eth_ratio = w3.fromWei(response_int, "ether")
+            response_eth_ratio = w3.from_wei(response_int, "ether")
             eth_ratio = float(response_eth_ratio)
             logger.info(f"Aerodrome Response (superOETHb): {eth_ratio}")
 

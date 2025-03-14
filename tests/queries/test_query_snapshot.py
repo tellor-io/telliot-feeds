@@ -3,7 +3,7 @@
 Copyright (c) 2021-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
-from eth_abi import decode_abi
+from eth_abi import decode
 
 from telliot_feeds.queries.snapshot import Snapshot
 
@@ -34,10 +34,10 @@ def test_constructor():
 
     assert q.query_data == exp
 
-    query_type, encoded_param_vals = decode_abi(["string", "bytes"], q.query_data)
+    query_type, encoded_param_vals = decode(["string", "bytes"], q.query_data)
     assert query_type == "Snapshot"
 
-    proposal_id = decode_abi(["string"], encoded_param_vals)[0]
+    proposal_id = decode(["string"], encoded_param_vals)[0]
     assert isinstance(proposal_id, str)
     assert proposal_id == "aDd6cYVvfoKvkDX14jRcN86z6bfV135npUfhxmENjHnQ1"
 

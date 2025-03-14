@@ -2,8 +2,8 @@ import logging
 from dataclasses import dataclass
 from typing import Optional
 
-from eth_abi import decode_abi
-from eth_abi import encode_abi
+from eth_abi import decode
+from eth_abi import encode
 
 from telliot_feeds.dtypes.value_type import ValueType
 from telliot_feeds.queries.abi_query import AbiQuery
@@ -24,14 +24,14 @@ class EVMBalanceCurrentReturnType(ValueType):
         if len(value) != 2 or not isinstance(value[0], int) or not isinstance(value[1], int):
             raise ValueError("Invalid response type")
 
-        return encode_abi(["uint256", "uint256"], [int(v) for v in value])
+        return encode(["uint256", "uint256"], [int(v) for v in value])
 
     def decode(self, bytes_val: bytes) -> list[int]:
         """A decoder for EVMBalanceCurrent response type
 
         Decodes a tuple of int values.
         """
-        decoded_tuple = decode_abi(["uint256", "uint256"], bytes_val)
+        decoded_tuple = decode(["uint256", "uint256"], bytes_val)
         return list(decoded_tuple)
 
 

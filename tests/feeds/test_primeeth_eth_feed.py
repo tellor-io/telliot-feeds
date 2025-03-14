@@ -6,8 +6,10 @@ from telliot_feeds.feeds.primeeth_eth_feed import primeeth_eth_median_feed
 
 
 @pytest.mark.asyncio
-async def test_primeeth_eth_median_feed(caplog):
+async def test_primeeth_eth_median_feed(caplog, mock_price_feed):
     """Retrieve median primeETH/ETH price."""
+    mock_prices = [1200.50, 1205.25]
+    mock_price_feed(primeeth_eth_median_feed, mock_prices)
     v, _ = await primeeth_eth_median_feed.source.fetch_new_datapoint()
 
     assert v is not None

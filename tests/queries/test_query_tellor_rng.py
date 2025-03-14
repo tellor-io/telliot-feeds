@@ -3,9 +3,9 @@
 Copyright (c) 2022-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
-from eth_abi import decode_abi
-from eth_abi import decode_single
+from eth_abi import decode
 
+from telliot_feeds.dtypes.value_type import decode_single
 from telliot_feeds.queries.tellor_rng import TellorRNG
 
 
@@ -35,7 +35,7 @@ def test_tellor_rng_query():
 
     assert q.query_data == exp_abi
 
-    query_type, encoded_param_vals = decode_abi(["string", "bytes"], q.query_data)
+    query_type, encoded_param_vals = decode(["string", "bytes"], q.query_data)
     assert query_type == "TellorRNG"
 
     timestamp = decode_single("uint256", encoded_param_vals)

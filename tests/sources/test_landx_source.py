@@ -7,6 +7,7 @@ from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.sources.landx_source import LandXSource
 
 
+@pytest.mark.skip("LandX API not working")
 @pytest.mark.asyncio
 async def test_landx_source():
     price, date = await LandXSource(asset="corn").fetch_new_datapoint()
@@ -15,6 +16,7 @@ async def test_landx_source():
     assert isinstance(date, datetime.datetime)
 
 
+@pytest.mark.skip("LandX API not working")
 @pytest.mark.asyncio
 async def test_landx_query_report(tellor_flex_reporter):
     r: Tellor360Reporter = tellor_flex_reporter

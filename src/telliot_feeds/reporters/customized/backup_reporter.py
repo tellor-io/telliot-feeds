@@ -3,7 +3,9 @@ from dataclasses import dataclass
 from typing import Any
 from typing import Optional
 
-from eth_abi.abi import decode_abi
+from eth_abi.abi import decode
+from eth_typing import HexStr
+from web3.types import Wei
 
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.utils.log import get_logger
@@ -53,11 +55,13 @@ class ChainlinkBackupReporter(Tellor360Reporter):
         - Optional[RoundData]: latest round data from chainlink feed
         """
         try:
-            data = self.web3.eth.call({"gasPrice": 0, "to": self.chainlink_feed, "data": "0xfeaf968c"}, "latest")
-            latest_round_data = decode_abi(["uint80", "int256", "uint256", "uint256", "uint80"], data)
+            data = self.web3.eth.call(
+                {"gasPrice": Wei(0), "to": self.chainlink_feed, "data": HexStr("0xfeaf968c")}, "latest"
+            )
+            latest_round_data = decode(["uint80", "int256", "uint256", "uint256", "uint80"], data)
             return RoundData(*latest_round_data)
         except Exception as e:
-            if "Tried to read 32 bytes.  Only got 0 bytes" in str(e):
+            if "Tried to read 32 bytes, only got 0 bytes" in str(e):
                 msg = f"Make sure you're using the correct chainlink feed address {self.chainlink_feed}: {e}"
                 logger.warning(msg)
             else:
@@ -76,9 +80,11 @@ class ChainlinkBackupReporter(Tellor360Reporter):
             # getRoundData(uint80) sig
             function_selector = "0x9a6fc8f5"
             calldata = function_selector + f"{previous_round_id:064x}"
-            data = self.web3.eth.call({"gasPrice": 0, "to": self.chainlink_feed, "data": calldata}, "latest")
+            data = self.web3.eth.call(
+                {"gasPrice": Wei(0), "to": self.chainlink_feed, "data": HexStr(calldata)}, "latest"
+            )
 
-            previous_round_data = decode_abi(["uint80", "int256", "uint256", "uint256", "uint80"], data)
+            previous_round_data = decode(["uint80", "int256", "uint256", "uint256", "uint80"], data)
             return RoundData(*previous_round_data)
         except Exception as e:
             logger.warning(f"error getting chainlink previous round data: {e}")

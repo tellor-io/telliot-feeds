@@ -1,5 +1,6 @@
 import asyncio
 from dataclasses import dataclass
+from typing import Any
 from typing import Optional
 
 from telliot_feeds.datasource import DataSource
@@ -17,7 +18,7 @@ logger = get_logger(__name__)
 class SpotPriceManualSource(DataSource[float]):
     """DataSource for a spot-price manually-entered data."""
 
-    def parse_user_val(self) -> float:
+    def parse_user_val(self) -> Any:
         """Parse user input for a spot price value."""
 
         print("\nType your spot price and press [ENTER].\n\nFor example, if price is $1234.0, type 1234 or 1234.0")
@@ -33,7 +34,7 @@ class SpotPriceManualSource(DataSource[float]):
                 print("Invalid input. Enter decimal value (float).")
                 continue
 
-            print(f"\nSpot price (with 18 decimals of precision) to be submitted on chain: {usr_inpt*10**18:.0f}")
+            print(f"\nSpot price (with 18 decimals of precision) to be submitted on chain: {usr_inpt * 10**18:.0f}")
             print("Press [ENTER] to confirm.")
 
             _ = input_timeout()

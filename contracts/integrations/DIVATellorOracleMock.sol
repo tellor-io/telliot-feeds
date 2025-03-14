@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "../../interfaces/ITellor.sol";
 import "./interfaces/IDIVADiamond.sol";
+import "../interfaces/ITellor.sol";
+
 
 contract DIVATellorOracleMock {
     enum Status {

@@ -2,8 +2,6 @@ import time
 from unittest.mock import patch
 
 import pytest
-import pytest_asyncio
-from telliot_core.apps.core import TelliotCore
 from telliot_core.utils.response import ResponseStatus
 from web3.datastructures import AttributeDict
 
@@ -23,28 +21,20 @@ async def mock_response_status(*args, **kwargs):
     return ResponseStatus()
 
 
-@pytest_asyncio.fixture(scope="function")
-async def rng_reporter(mumbai_test_cfg, tellor_360):
-    async with TelliotCore(config=mumbai_test_cfg) as core:
-        contracts, account = tellor_360
-        r = RNGReporter(
-            oracle=contracts.oracle,
-            token=contracts.token,
-            autopay=contracts.autopay,
-            endpoint=core.endpoint,
-            account=account,
-            chain_id=80001,
-            transaction_type=0,
-            min_native_token_balance=0,
-        )
-
-        return r
-
-
 @pytest.mark.asyncio
-async def test_report(rng_reporter):
+async def test_report(tellor_360, chain):
     """Test reporting Tellor RNG value."""
-    r = rng_reporter
+    contracts, account = tellor_360
+    r = RNGReporter(
+        oracle=contracts.oracle,
+        token=contracts.token,
+        autopay=contracts.autopay,
+        endpoint=contracts.oracle.node,
+        account=account,
+        chain_id=80001,
+        transaction_type=0,
+        min_native_token_balance=0,
+    )
     r.wait_period = 0
 
     EXPECTED_ERRORS = {
@@ -73,9 +63,19 @@ async def test_report(rng_reporter):
 
 
 @pytest.mark.asyncio
-async def test_missing_blockhash(rng_reporter, monkeypatch, caplog):
+async def test_missing_blockhash(tellor_360, monkeypatch, caplog, chain):
     """Mock the datasource missing btc blockhash. Make sure still attemps to report after 3 retries."""
-    r = rng_reporter
+    contracts, account = tellor_360
+    r = RNGReporter(
+        oracle=contracts.oracle,
+        token=contracts.token,
+        autopay=contracts.autopay,
+        endpoint=contracts.oracle.node,
+        account=account,
+        chain_id=80001,
+        transaction_type=0,
+        min_native_token_balance=0,
+    )
     r.wait_period = 0
 
     # mock datasource failure
@@ -111,6 +111,7 @@ async def test_missing_blockhash(rng_reporter, monkeypatch, caplog):
         assert caplog.text.count("bazinga") == 3
 
 
+@pytest.mark.skip("etherscan API key required")
 @pytest.mark.asyncio
 async def test_invalid_timestamp(rng_reporter, monkeypatch, caplog):
     """Test reporting Tellor RNG value."""
@@ -130,6 +131,7 @@ async def test_invalid_timestamp(rng_reporter, monkeypatch, caplog):
             assert "should be greater than eth genesis block timestamp" in caplog.text
 
 
+@pytest.mark.skip("etherscan API key required")
 @pytest.mark.asyncio
 async def test_invalid_timestamp_in_future(rng_reporter, monkeypatch, caplog):
     """Test invalid timestamp in the future."""
@@ -155,6 +157,7 @@ def generate_numbers():
         current_number = int(time.time())
 
 
+@pytest.mark.skip("etherscan API key required")
 @pytest.mark.asyncio
 async def test_repeat_auto_rng_report_value(rng_reporter: RNGReporter, monkeypatch, caplog):
     """Test that shows the bad behavior before bug fix that was causing same value
@@ -189,6 +192,7 @@ async def test_repeat_auto_rng_report_value(rng_reporter: RNGReporter, monkeypat
         assert count == 2
 
 
+@pytest.mark.skip("etherscan API key required")
 @pytest.mark.asyncio
 async def test_unique_rng_report_value(rng_reporter: RNGReporter, monkeypatch, caplog):
     """Test that rng report value isn't submitting the same value twice."""

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 from typing import Optional
 
 from telliot_feeds.datasource import DataSource
@@ -16,7 +17,7 @@ logger = get_logger(__name__)
 class USPCESource(DataSource[float]):
     """DataSource for USPCE manually-entered data."""
 
-    def parse_user_val(test_input: str) -> float:
+    def parse_user_val(test_input: str) -> Any:
         """Parse USPCE value from user input."""
         # This arg is to avoid a TypeError when the default
         # input_timeout() method is overriden in test_source.py.

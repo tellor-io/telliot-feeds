@@ -39,12 +39,12 @@ def get_mainnet_web3() -> Any:
     cfg.main.chain_id = 1
     try:
         cfg.get_endpoint().connect()
-        return cfg.get_endpoint().web3
+        return cfg
     except ValueError:
         return None
 
 
-def block_num_from_timestamp(timestamp: int) -> Optional[int]:
+def block_num_from_timestamp(timestamp: int, api_key: str) -> Optional[int]:
     with requests.Session() as s:
         s.mount("https://", adapter)
         try:
@@ -54,7 +54,7 @@ def block_num_from_timestamp(timestamp: int) -> Optional[int]:
                 "&action=getblocknobytime"
                 f"&timestamp={timestamp}"
                 "&closest=before"
-                "&apikey="
+                f"&apikey={api_key}"
             )
         except requests.exceptions.ConnectTimeout:
             logger.error("Connection timeout getting ETH block num from timestamp")
@@ -88,7 +88,11 @@ def block_num_from_timestamp(timestamp: int) -> Optional[int]:
 
 async def get_eth_hash(timestamp: int) -> Optional[str]:
     """Fetches next Ethereum blockhash after timestamp from API."""
-    w3 = get_mainnet_web3()
+    cfg: TelliotConfig = get_mainnet_web3()
+    if cfg is None:
+        logger.warning("Web3 not connected")
+        return None
+    w3: Web3 = cfg.get_endpoint().web3
     if w3 is None:
         logger.warning("Web3 not connected")
         return None
@@ -102,8 +106,11 @@ async def get_eth_hash(timestamp: int) -> Optional[str]:
     if this_block["timestamp"] < timestamp:
         logger.error(f"Timestamp {timestamp} is older than current block timestamp {this_block['timestamp']}")
         return None
-
-    block_num = block_num_from_timestamp(timestamp)
+    api_key = TelliotConfig().api_keys.find(name="etherscan")
+    if not api_key:
+        logger.info("API key required to query Etherscan.")
+        return None
+    block_num = block_num_from_timestamp(timestamp, api_key=api_key[0].key)
     if block_num is None:
         logger.warning("Unable to retrieve block number from Etherscan API")
         return None
@@ -170,7 +177,7 @@ class TellorRNGManualSource(DataSource[Any]):
     def set_timestamp(self, timestamp: int) -> None:
         self.timestamp = timestamp
 
-    def parse_user_val(self) -> int:
+    def parse_user_val(self) -> Any:
         """Parse timestamp from user input."""
         print("Enter timestamp for generating a random number: ")
 
@@ -238,7 +245,7 @@ class TellorRNGManualSource(DataSource[Any]):
             logger.warning("Unable to retrieve Ethereum blockhash")
             return None, None
 
-        data = Web3.solidityKeccak(["string", "string"], [eth_hash, btc_hash])
+        data = Web3.solidity_keccak(["string", "string"], [eth_hash, btc_hash])
         dt = datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
         datapoint = (data, dt)
 

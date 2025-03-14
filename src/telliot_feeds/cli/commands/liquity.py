@@ -82,7 +82,7 @@ async def liquity(
             raise click.UsageError(f"Chain link feed not found for chain id: {chain_id}")
     else:
         try:
-            chainlink_feed = Web3.toChecksumAddress(chainlink_feed)
+            chainlink_feed = Web3.to_checksum_address(chainlink_feed)
         except ValueError:
             raise click.UsageError("Invalid chain link feed address")
 

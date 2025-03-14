@@ -53,8 +53,8 @@ class gydSpotPriceService(WebPriceService):
             }
         )
 
-        gyd_currency_price_decoded = w3.toInt(gyd_priced_in_currency)
-        gyd_priced_in_currency = w3.fromWei(gyd_currency_price_decoded, "ether")
+        gyd_currency_price_decoded = w3.to_int(gyd_priced_in_currency)
+        gyd_priced_in_currency = w3.from_wei(gyd_currency_price_decoded, "ether")
         gyd_priced_in_currency_float: Optional[float] = float(gyd_priced_in_currency)
 
         if contractAddress.lower() == GYD_SDAI_POOL_ADDRESS.lower():

@@ -1,0 +1,8 @@
+contracts_folder: ./contracts/
+hardhat:
+  host: 127.0.0.1:8545
+  hardhat_config_file: ./hardhat.config.js
+
+plugins:
+  - name: hardhat
+  - name: solidity

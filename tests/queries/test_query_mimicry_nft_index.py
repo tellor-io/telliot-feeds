@@ -3,7 +3,7 @@
 Copyright (c) 2021-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
-from eth_abi import decode_abi
+from eth_abi import decode
 
 from telliot_feeds.queries.mimicry.nft_market_index import MimicryNFTMarketIndex
 
@@ -23,7 +23,7 @@ def test_query_constructor():
     )
     assert q.query_data == exp_query_data
 
-    query_type, _ = decode_abi(["string", "bytes"], q.query_data)
+    query_type, _ = decode(["string", "bytes"], q.query_data)
     assert query_type == "MimicryNFTMarketIndex"
 
     query: MimicryNFTMarketIndex = q.get_query_from_data(q.query_data)

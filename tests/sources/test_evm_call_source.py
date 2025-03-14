@@ -1,8 +1,12 @@
+import os
+
 import pytest
-from eth_abi import decode_single
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
+from telliot_core.model.endpoints import EndpointList
+from telliot_core.model.endpoints import RPCEndpoint
 
+from telliot_feeds.dtypes.value_type import decode_single
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.sources.evm_call import EVMCallSource
 from telliot_feeds.utils.source_utils import update_web3
@@ -13,7 +17,12 @@ async def test_not_injecting_middlware_twice(caplog):
     """Test that reusing a POA chain does not crash from middleware"""
 
     s = EVMCallSource()
-    s.chainId = 80001  # a POA chain, so it will raise web3.exceptions.ExtraDataLengthError
+    s.chainId = 80002  # a POA chain, so it will raise web3.exceptions.ExtraDataLengthError
+    custom_endpoint = RPCEndpoint(
+        chain_id=80002, url=f"https://polygon-amoy.infura.io/v3/{os.environ['INFURA_API_KEY']}"
+    )
+
+    s.cfg.endpoints = EndpointList(endpoints=[custom_endpoint])
     s.web3 = update_web3(s.chainId, s.cfg)
 
     # We will use `getCurrentValue` on the ETH/USD query id
@@ -48,6 +57,9 @@ async def test_source():
     assert s2.calldata == b"\x18\x16\x0d\xdd"
 
     # test update_web3
+    custom_endpoint = RPCEndpoint(chain_id=1, url=f"https://mainnet.infura.io/v3/{os.environ['INFURA_API_KEY']}")
+
+    s2.cfg.endpoints = EndpointList(endpoints=[custom_endpoint])
     s2.web3 = update_web3(s2.chainId, s2.cfg)
     assert s2.web3 is not None
 
@@ -74,12 +86,17 @@ async def test_source():
 async def test_non_getter_calldata():
     """Test if calldata is not for a getter function."""
     s = EVMCallSource()
-    s.chainId = 80001
+    s.chainId = 80002
+    custom_endpoint = RPCEndpoint(
+        chain_id=80002, url=f"https://polygon-amoy.infura.io/v3/{os.environ['INFURA_API_KEY']}"
+    )
+
+    s.cfg.endpoints = EndpointList(endpoints=[custom_endpoint])
     s.web3 = update_web3(s.chainId, s.cfg)
 
     """Test non getter calldata"""
     s.calldata = b"\x3a\x0c\xe3\x42"  # calldata for updateStakeAmount()
-    s.contractAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"  # Oracle contract
+    s.contractAddress = "0xe331Afe3a8D7836bEdF1F09bC91549f4bc8c60C9"  # Oracle contract
 
     # test get_response
     response = s.get_response()
@@ -97,11 +114,11 @@ async def test_non_getter_calldata():
     assert t is not None
     assert isinstance(v, bytes)
     assert isinstance(t, int)
-    assert decode_single("address", v) == "0x46038969d7dc0b17bc72137d07b4ede43859da45"
+    assert decode_single("address", v) == "0x5446397292854D92872eDf426eEaB8FdC6Bd2bEa".lower()
 
 
 @pytest.mark.asyncio
-async def test_report_for_bad_calldata(tellor_360):
+async def test_report_for_bad_calldata(tellor_360, chain):
     """Test report empty bytes for bad calldata."""
     contracts, account = tellor_360
 
@@ -125,6 +142,9 @@ async def test_report_for_bad_calldata(tellor_360):
             calldata=calldata,
         ),
     )
+    custom_endpoint = RPCEndpoint(chain_id=1, url=f"https://mainnet.infura.io/v3/{os.environ['INFURA_API_KEY']}")
+
+    bad_calldata_feed.source.cfg.endpoints = EndpointList(endpoints=[custom_endpoint])
 
     r = Tellor360Reporter(
         oracle=contracts.oracle,
@@ -151,11 +171,14 @@ def test_evm_call_on_previous_block():
 
     s = EVMCallSource()
     s.chainId = 1
+    custom_endpoint = RPCEndpoint(chain_id=1, url=f"https://mainnet.infura.io/v3/{os.environ['INFURA_API_KEY']}")
+
+    s.cfg.endpoints = EndpointList(endpoints=[custom_endpoint])
     s.web3 = update_web3(s.chainId, s.cfg)
 
     # We will use `getCurrentValue` on the ETH/USD query id
     s.calldata = bytes.fromhex("adf1639d83a7f3d48786ac2667503a61e8c415438ed2922eb86a2906e4ee66d9a2ce4992")
-    s.contractAddress = "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
+    s.contractAddress = "0x8cFc184c877154a8F9ffE0fe75649dbe5e2DBEbf"
 
     current_value, current_timestamp = s.get_response()
 

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 from typing import Optional
 
 from telliot_feeds.datasource import DataSource
@@ -16,7 +17,7 @@ logger = get_logger(__name__)
 class NumericApiManualResponse(DataSource[float]):
     """DataSource for a manually-entered numeric value."""
 
-    def parse_user_val(self) -> float:
+    def parse_user_val(self) -> Any:
         """Parse user input for a numeric value."""
 
         print("\nType your numeric API response value and press [ENTER].\n\nFor example, type 1234 or 1234.56")
@@ -34,7 +35,7 @@ class NumericApiManualResponse(DataSource[float]):
 
             print(
                 "\nNumeric API response value (with 18 decimals of precision) "
-                + f"to be submitted on chain:  {usr_inpt*10**18:.0f}"
+                + f"to be submitted on chain:  {usr_inpt * 10**18:.0f}"
             )
             print("Press [ENTER] to confirm.")
 

@@ -45,8 +45,8 @@ class sFRAXSpotPriceService(WebPriceService):
                 "data": "0x99530b06",
             }
         )
-        sfrax_usd_ratio_decoded = w3.toInt(sfrax_eth_ratio_bytes)
-        sfrax_usd_ratio = w3.fromWei(sfrax_usd_ratio_decoded, "ether")
+        sfrax_usd_ratio_decoded = w3.to_int(sfrax_eth_ratio_bytes)
+        sfrax_usd_ratio = w3.from_wei(sfrax_usd_ratio_decoded, "ether")
         print(f"Ratio from sFRAX contract: {sfrax_usd_ratio}")
         return float(sfrax_usd_ratio)
 

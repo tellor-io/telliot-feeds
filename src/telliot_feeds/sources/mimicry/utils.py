@@ -1,6 +1,5 @@
+import datetime
 import operator
-from datetime import datetime
-from datetime import timezone
 from typing import Dict
 from typing import List
 from typing import Union
@@ -19,9 +18,9 @@ def sort_transactions(transaction_history: List[Transaction]) -> List[Transactio
 def filter_valid_transactions(transaction_history: List[Transaction]) -> List[Transaction]:
     """Given a list of transactions, this returns only transactions that have at least
     2 sales in the last year, and at least one sale in the last 6 months."""
-    now = datetime.utcnow()
-    one_year_ago = (now - relativedelta(years=1)).replace(tzinfo=timezone.utc)
-    six_months_ago = (now - relativedelta(months=6)).replace(tzinfo=timezone.utc)
+    now = datetime.datetime.now(datetime.UTC)
+    one_year_ago = (now - relativedelta(years=1)).replace(tzinfo=datetime.timezone.utc)
+    six_months_ago = (now - relativedelta(months=6)).replace(tzinfo=datetime.timezone.utc)
 
     inclusion_map: Dict[Union[float, int], InclusionMapValue] = {}
     for transaction in transaction_history:

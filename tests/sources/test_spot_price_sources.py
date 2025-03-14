@@ -9,6 +9,7 @@ import pytest
 from requests import Response
 from requests.exceptions import JSONDecodeError
 from telliot_core.apps.telliot_config import TelliotConfig
+from telliot_core.model.endpoints import RPCEndpoint
 
 from telliot_feeds.sources.price.spot.bitfinex import BitfinexSpotPriceService
 from telliot_feeds.sources.price.spot.coinbase import CoinbaseSpotPriceService
@@ -80,6 +81,7 @@ def coinmarketcap_key():
     return key
 
 
+@pytest.mark.skip("deprecated: https://docs.cdp.coinbase.com/exchange/docs/changelog#2024-sep-11")
 @pytest.mark.asyncio
 async def test_coinbase():
     """Test retrieving from Coinbase price source."""
@@ -167,11 +169,12 @@ async def test_gemini(caplog, monkeypatch):
     assert t is None
 
 
+@pytest.mark.skip(reason="requires API key")
 @pytest.mark.asyncio
 async def test_uniswap_usd(caplog):
     """Test retrieving from UniswapV3 price source in USD."""
     v, t = await get_price("fuse", "usd", service["uniswapV3"])
-    if type(v) == float:
+    if isinstance(v, float):
         validate_price(v, t)
     else:
         assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
@@ -185,21 +188,23 @@ async def test_uniswap_timeout():
     assert t is None
 
 
+@pytest.mark.skip(reason="requires API key")
 @pytest.mark.asyncio
 async def test_uniswap_eth(caplog):
     """Test retrieving from UniswapV3 price source in ETH."""
     v, t = await get_price("fuse", "eth", service["uniswapV3"])
-    if type(v) == float:
+    if isinstance(v, float):
         validate_price(v, t)
     else:
         assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
 
 
+@pytest.mark.skip(reason="requires API key")
 @pytest.mark.asyncio
 async def test_uniswap_eth_usd(caplog):
     """Test retrieving from UniswapV3 price source for Eth in USD."""
     v, t = await get_price("eth", "usd", service["uniswapV3"])
-    if type(v) == float:
+    if isinstance(v, float):
         validate_price(v, t)
     else:
         assert "Uniswap API not included, because price response is 0" in caplog.records[0].msg
@@ -221,6 +226,7 @@ async def test_pancakeswap_bnb():
     validate_price(v, t)
 
 
+@pytest.mark.skip("source modified to no longer use get_url method")
 @pytest.mark.asyncio
 async def test_coingecko_price_service_rate_limit(caplog):
     def mock_get_url(self, url=""):
@@ -273,10 +279,16 @@ async def test_curvefi():
 
 
 @pytest.mark.asyncio
-async def test_sweth_source():
+async def test_sweth_source(monkeypatch):
     """Test swETH price service"""
     service["sweth"].contract = SWETH_CONTRACT
     service["sweth"].calldata = "0xd68b2cb6"
+    custom_endpoint = RPCEndpoint(chain_id=1, url=f"https://mainnet.infura.io/v3/{os.environ['INFURA_API_KEY']}")
+
+    def custom_find(chain_id):
+        return [custom_endpoint]
+
+    monkeypatch.setattr(service["sweth"].cfg.endpoints, "find", custom_find)
     v, t = await get_price("sweth", "usd", service["sweth"])
     validate_price(v, t)
     assert v is not None

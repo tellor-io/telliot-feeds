@@ -3,7 +3,7 @@
 Copyright (c) 2021-, Tellor Development Community
 Distributed under the terms of the MIT License.
 """
-from eth_abi import decode_abi
+from eth_abi import decode
 
 from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import COLLECTIONS
 from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import TOKENS
@@ -25,7 +25,7 @@ def test_query_constructor():
     )
     assert q.query_data == exp_query_data
 
-    query_type, _ = decode_abi(["string", "bytes"], q.query_data)
+    query_type, _ = decode(["string", "bytes"], q.query_data)
     assert query_type == "MimicryMacroMarketMashup"
 
     query: MimicryMacroMarketMashup = q.get_query_from_data(q.query_data)

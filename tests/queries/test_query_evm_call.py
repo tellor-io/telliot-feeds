@@ -1,4 +1,4 @@
-from eth_abi import decode_abi
+from eth_abi import decode
 
 from telliot_feeds.queries.evm_call import EVMCall
 
@@ -30,7 +30,7 @@ def test_evm_call_constructor():
 
     assert q.query_data.hex() == expected_query_data
 
-    query_type, _ = decode_abi(["string", "bytes"], q.query_data)
+    query_type, _ = decode(["string", "bytes"], q.query_data)
     assert query_type == "EVMCall"
 
     exp_q_id = "d7472d51b2cd65a9c6b81da09854efdeeeff8afcda1a2934566f54b731a922f3"

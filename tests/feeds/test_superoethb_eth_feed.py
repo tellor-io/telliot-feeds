@@ -6,8 +6,10 @@ from telliot_feeds.feeds.superoethb_eth_feed import superoethb_eth_median_feed
 
 
 @pytest.mark.asyncio
-async def test_superoethb_eth_median_feed(caplog):
+async def test_superoethb_eth_median_feed(caplog, mock_price_feed):
     """Retrieve median superOETHb/ETH price."""
+    mock_prices = [1200.50, 1205.25]
+    mock_price_feed(superoethb_eth_median_feed, mock_prices)
     v, _ = await superoethb_eth_median_feed.source.fetch_new_datapoint()
 
     assert v is not None

@@ -15,4 +15,4 @@ async def passing_bool_w_status(*args, **kwargs):
 
 
 def chain_time(chain):
-    return round(chain.time())
+    return round(chain.pending_timestamp)

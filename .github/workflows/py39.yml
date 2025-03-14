@@ -13,7 +13,7 @@ jobs:
     name: "Python ${{ matrix.python-version }}"
     runs-on: "ubuntu-latest"
     env:
-      USING_COVERAGE: '3.9'
+      USING_COVERAGE: '3.12'
       NODE_URL: ${{ secrets.TEST_NODE_URL }} 
       PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       TEST_SECRET: ${{ secrets.TEST_SECRET }}
@@ -23,23 +23,30 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.12"]
 
     steps:
       - uses: "actions/checkout@v2"
       - uses: "actions/setup-python@v2"
         with:
           python-version: "${{ matrix.python-version }}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+              node-version: '22'
+
+      - name: "Install hardhat"
+        run: npm install --save-dev hardhat
+      
       - name: "Install dependencies"
         run: |
-          apt-get update && apt-get install -y npm
-          npm install -g ganache-cli
           python -m pip install --upgrade pip
           python -m pip install --upgrade tox tox-gh-actions          
 
       - name: "Run tox targets for ${{ matrix.python-version }}"
         run:
-          tox -e py39
+          tox -e py312
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2

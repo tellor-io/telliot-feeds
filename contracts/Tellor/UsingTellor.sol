@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "../../interfaces/ITellor.sol";
-import "../../interfaces/IERC2362.sol";
-import "../../interfaces/IMappingContract.sol";
+import "../interfaces/ITellor.sol";
+import "../interfaces/IERC2362.sol";
+import "../interfaces/IMappingContract.sol";
 
 /**
  @author Tellor Inc

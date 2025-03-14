@@ -1,5 +1,6 @@
 import statistics
 from dataclasses import dataclass
+from dataclasses import field
 from typing import Any
 from typing import Optional
 
@@ -24,7 +25,7 @@ logger = get_logger(__name__)
 class GasPriceOracleSource(DataSource[Any]):
     chainId: Optional[int] = None
     timestamp: Optional[int] = None
-    cfg: TelliotConfig = TelliotConfig()
+    cfg: TelliotConfig = field(default_factory=TelliotConfig)
     web3: Optional[Web3] = None
 
     def get_block(self, w3: Web3, block_number: int, full_transaction: bool = False) -> Optional[BlockData]:

@@ -76,7 +76,7 @@ class ConditionalReporter(Tellor360Reporter):
         Returns:
         - bool: True if price change is above max price deviation, False otherwise
         """
-        oracle_price = (Web3.toInt(tellor_latest_data.value)) / 10**18
+        oracle_price = (Web3.to_int(tellor_latest_data.value)) / 10**18
         feed_price = telliot_feed_data if telliot_feed_data else None
 
         if feed_price is None:

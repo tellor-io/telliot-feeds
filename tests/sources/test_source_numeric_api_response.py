@@ -17,6 +17,7 @@ async def test_weather():
     assert val == 279.15
 
 
+@pytest.mark.skip("remove since coindesk is not working")
 @pytest.mark.asyncio
 async def test_coindesk():
     source = NumericApiResponseSource(

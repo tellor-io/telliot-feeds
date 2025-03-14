@@ -107,14 +107,14 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
 
     if ctx.obj["TEST_CONFIG"]:
         try:
-            from brownie import chain
+            from ape import chain
         except ModuleNotFoundError:
             print("pip install -r requirements-dev.txt in venv to use test config")
 
         # core.config.main.chain_id = 1337
         core.config.main.url = "http://127.0.0.1:8545"
 
-        chain.mine(10)
+        chain.provider.mine(10)
 
         accounts = find_accounts(chain_id=1337)
         if not accounts:
@@ -231,11 +231,11 @@ def build_query(log: Optional[Callable[[str], None]] = click.echo) -> Any:
     queries = [q for q in AbiQuery.__subclasses__() if q.__name__ not in ("LegacyRequest")]
     options = [q.__name__ for q in queries]
     # Sort options and queries by alphabetical order
-    options, queries = [zip(*sorted(zip(options, queries)))]
+    option_names, query_subclasses = zip(*sorted(zip(options, queries)))
 
-    menu = TerminalMenu(options, title=title)
+    menu = TerminalMenu(option_names, title=title)
     selected_index = menu.show()
-    q = queries[selected_index]
+    q = query_subclasses[selected_index]
 
     if not q:
         log("No query selected")
