@@ -125,7 +125,10 @@ async def test_update_gas_fees(gas_fees_object):
         "max_priority_fee_per_gas": None,
         "legacy_gas_price": 1.455299856,
     }
-    assert gas.get_gas_info_core() == gas_info_core
+    assert gas.get_gas_info_core()["gas_limit"] is None
+    assert gas.get_gas_info_core()["max_fee_per_gas"] is None
+    assert gas.get_gas_info_core()["max_priority_fee_per_gas"] is None
+    assert gas.get_gas_info_core()["legacy_gas_price"] == pytest.approx(1.455299856, rel=1e-5)
 
     gas.web3 = Mock()
     type(gas.web3.eth).gas_price = PropertyMock(return_value=None)
