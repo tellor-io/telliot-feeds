@@ -162,6 +162,22 @@ def test_bool_array():
     assert list(decoded) == value
 
 
+def test_decode_nested_uints():
+    """Test decoding nested uints"""
+    value = [(1,), (2,)]
+    encoded = encode_single("(uint256)[2]", value)
+    decoded = decode_single("(uint256)[2]", encoded)
+    assert list(decoded) == value
+
+
+def test_decode_multi_nested_uints():
+    """Test decoding nested uints"""
+    value = [(1, 2), (2, 3)]
+    encoded = encode_single("(uint256,uint256)[2]", value)
+    decoded = decode_single("(uint256,uint256)[2]", encoded)
+    assert list(decoded) == value
+
+
 def test_parse_types_encode_simple():
     """Test parse_types_encode with simple type"""
     types, values = parse_types_encode("uint256", 123)
@@ -186,3 +202,9 @@ def test_parse_types_decoding_tuple():
     """Test parse_types_decoding with tuple type"""
     types = parse_types_decoding("(uint256,bool)")
     assert types == ["uint256", "bool"]
+
+
+def test_parse_types_decoding_tuple_multiple():
+    """Test parse_types_decoding with tuple type"""
+    types = parse_types_decoding("(uint256,bool)[2]")
+    assert types == ["(uint256,bool)[2]"]
