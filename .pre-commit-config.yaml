@@ -1,4 +1,4 @@
-exclude: ".git|.tox|docs|tox.ini"
+exclude: ".git|.tox|docs|tox.ini|telliot_feeds/proto"
 default_stages: [pre-commit]
 fail_fast: true
 

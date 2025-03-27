@@ -50,6 +50,7 @@ from telliot_feeds.feeds.frxeth_usd_feed import frxeth_usd_median_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed
 from telliot_feeds.feeds.gas_price_oracle_feed import gas_price_oracle_feed_example
 from telliot_feeds.feeds.gno_usd_feed import gno_usd_median_feed
+from telliot_feeds.feeds.grip_dyno_manual_feed import grip_dyno_manual_feed
 from telliot_feeds.feeds.grt_usd_feed import grt_usd_median_feed
 from telliot_feeds.feeds.gyd_usd_feed import gyd_usd_median_feed
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
@@ -242,6 +243,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "unibtc-usd-spot": unibtc_usd_median_feed,
     "solvbtc-usd-spot": solvbtc_usd_median_feed,
     "solvbtcbbn-usd-spot": solvbtcbbn_usd_median_feed,
+    "grip-dyno-denver-2025": grip_dyno_manual_feed,
     "cult-usd-spot": cult_usd_median_feed,
     "filecid-query-example": filecid_example_feed,
 }
@@ -266,6 +268,8 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "EVMCall": evm_call_feed,
     "CustomPrice": custom_price_manual_feed,
     "FileCID": fileCID_manual_feed,
+    "GripDynoChallenge": grip_dyno_manual_feed,
+    "cult-usd-spot": cult_usd_median_feed,
     "BTCBalance": btc_balance_feed,
     "EVMBalance": evm_balance_feed,
     "BTCBalanceCurrent": btc_balance_current_feed,
