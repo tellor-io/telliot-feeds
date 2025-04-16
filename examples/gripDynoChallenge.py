@@ -1,7 +1,7 @@
 """Text Query Example """
-from telliot_feeds.queries.grip_dyno_challenge_query import EthDC2025Test
+from telliot_feeds.queries.grip_dyno_challenge_query import ETHDC2025test
 
-q = EthDC2025Test(challengeType="grip_strength_dynamometer")
+q = ETHDC2025test(challengeType="grip_strength_dynamometer")
 print(f"Challenge Type: {q.challengeType}")
 
 print(f"QueryData: 0x{q.query_data.hex()}")
@@ -9,11 +9,9 @@ print(f"QueryID: 0x{q.query_id.hex()}")
 
 value = (
     True,  # data_set
-    109,  # right_hand
-    114.52,  # left_hand
-    "0xspuddy_x",  # x_handle
-    "0xspuddy_git",  # github_username
-    4,  # hours_of_sleep
+    1,  # right_hand
+    1,  # left_hand
+    "spuddy_test",  # cypherpunk_name
 )
 print(f"submitValue: {value}")
 

@@ -28,11 +28,9 @@ class gripDynoManualSource(DataSource[Any]):
     data_set: Optional[bool] = True
     right_hand: Optional[float] = None
     left_hand: Optional[float] = None
-    x_handle: Optional[str] = None
-    github_username: Optional[str] = None
-    hours_of_sleep: Optional[float] = None
+    cypherpunk_name: Optional[str] = None
 
-    # user_vals = [data_set, right_hand, left_hand, x_handle, github_username, hours_of_sleep]
+    # user_vals = [data_set, right_hand, left_hand, cypherpunk_name, github_username, hours_of_sleep]
 
     def parse_user_vals(self) -> Optional[Any]:
         """Parse user input and return list of the participant's data."""
@@ -74,43 +72,21 @@ class gripDynoManualSource(DataSource[Any]):
             logger.info("Using 0 for LEFT HAND strength (or ctrl+c to start over)")
             self.left_hand = 0
 
-        print("\nParticipant's X handle (username):")
+        print("\nParticipant's Cypherpunk name:")
         print("Leave this blank if you do NOT want to be tagged on X:")
         try:
-            self.x_handle = input_timeout().strip().lower()
-            if not self.x_handle:
-                self.x_handle = "@eth_denver_tellor_fan_2025"
+            self.cypherpunk_name = input_timeout().strip().lower()
+            if not self.cypherpunk_name:
+                self.cypherpunk_name = "@eth_denver_tellor_fan_2025"
         except TimeoutOccurred:
             logger.info('Timeout occurred waiting for X username. (using default "@eth_denver_tellor_fan_2025")')
-            self.x_handle = "@eth_denver_tellor_fan_2025"
-
-        print("\n")
-        print("Github username?")
-        print("Leave this blank if you do NOT want share your github:")
-        try:
-            self.github_username = input_timeout().strip().lower()
-            if not self.github_username:
-                self.github_username = "tellor_dev"
-        except TimeoutOccurred:
-            print('Timeout occurred waiting for github username. (using default "tellor_dev")')
-            self.github_username = "tellor_dev"
-
-        print("\n")
-        print("How many hours of sleep did you get last night?: ")
-        try:
-            self.hours_of_sleep = int(input_timeout())
-        except (TimeoutOccurred, ValueError):
-            print("Timeout or invalid input occurred waiting for hours of sleep.")
-            print("Using default (6 hours of glorious slumber)")
-            self.hours_of_sleep = 6
+            self.cypherpunk_name = "@eth_denver_tellor_fan_2025"
 
         print("\n")
         print("[bold blue]REPORTING THE FOLLOWING DATA TO TELLOR[/]")
         print(f"[bold blue]Right hand: {self.right_hand}")
         print(f"[bold blue]Left hand: {self.left_hand}")
-        print(f"[bold blue]X Handle: {self.x_handle}")
-        print(f"[bold blue]Github username: {self.github_username}")
-        print(f"[bold blue]Hours of Sleep: {self.hours_of_sleep}")
+        print(f"[bold blue]Cypherpunk name: {self.cypherpunk_name}")
         print("[bold red]Press [ENTER] to report the data shown above.")
         print("[blue]OR Use ctrl+c to start over...")
         try:
@@ -119,9 +95,7 @@ class gripDynoManualSource(DataSource[Any]):
                 self.data_set,
                 self.right_hand,
                 self.left_hand,
-                self.x_handle,
-                self.github_username,
-                self.hours_of_sleep,
+                self.cypherpunk_name,
             )
             return self.user_vals
         except TimeoutOccurred:
@@ -143,10 +117,8 @@ class gripDynoManualSource(DataSource[Any]):
 
         if response[3]:
             print(f"[bold]{response[3]} reported their grip strength! {response[1]}(RH), {response[2]}(LH)[/]")
-        elif response[4]:
-            print(f"[bold]{response[4]} reported their grip strength! {response[1]}(RH), {response[2]}(LH)[/]")
         else:
-            print(f"[bold]You reported their grip strength! {response[1]}(RH), {response[2]}(LH)[/]")
+            print(f"[bold]You reported your grip strength! {response[1]}(RH), {response[2]}(LH)[/]")
 
         return datapoint
 
