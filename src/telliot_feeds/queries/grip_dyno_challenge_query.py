@@ -24,31 +24,29 @@ class GripDynoReturnType(ValueType):
     def encode(self, value: list[Any]) -> bytes:
         """encoder for grip dyno challenge response type
 
-        Encodes a tuple of 6 values.
+        Encodes a tuple of 4 values.
         """
         # check types
         return encode_abi(
-            ["bool", "uint256", "uint256", "string", "string", "uint256"],
+            ["bool", "uint256", "uint256", "string"],
             [
                 value[0],  # bool
                 int(value[1] * 1000000000000000000),  # uint256
                 int(value[2] * 1000000000000000000),  # uint256
                 value[3],  # string
-                value[4],  # string
-                int(value[5]),  # uint256
             ],
         )
 
     def decode(self, bytes_val: bytes) -> tuple[Any, ...]:
         """A decoder for grip dyno challenge response type
 
-        Decodes a tuple of 6 values.
+        Decodes a tuple of 4 values.
         """
-        return decode_abi(["bool", "uint256", "uint256", "string", "string", "uint256"], bytes_val)
+        return decode_abi(["bool", "uint256", "uint256", "string"], bytes_val)
 
 
 @dataclass
-class EthDenverTester(AbiQuery):
+class EthDC2025Test(AbiQuery):
     """Returns the self-reported results of an in person grip strength dynamometer challenge.
     Attributes:
         challengeType:
