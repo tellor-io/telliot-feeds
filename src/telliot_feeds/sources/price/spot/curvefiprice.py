@@ -34,7 +34,7 @@ class CurveFiUSDPriceService(WebPriceService):
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "Curve-Prices Service"
-        kwargs["url"] = "https://prices.curve.fi/v1/usd_price"
+        kwargs["url"] = "https://prices.curve.finance/v1/usd_price"
         super().__init__(**kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:

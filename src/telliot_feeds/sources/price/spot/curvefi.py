@@ -25,7 +25,7 @@ class CurveFinanceSpotPriceService(WebPriceService):
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["name"] = "CurveFinance Price Service"
-        kwargs["url"] = "https://api.curve.fi"
+        kwargs["url"] = "https://api.curve.finance"
         super().__init__(**kwargs)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
