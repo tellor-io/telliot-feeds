@@ -692,3 +692,9 @@ query_catalog.add_entry(
     title="CULT/USD spot price",
     q=SpotPrice(asset="cult", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="osgno-usd-spot",
+    title="OSGNO/USD spot price",
+    q=SpotPrice(asset="osgno", currency="usd"),
+)

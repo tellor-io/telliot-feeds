@@ -96,6 +96,7 @@ coingecko_coin_id = {
     "solvbtc": "solv-btc",
     "solvbtcbbn": "solv-protocol-solvbtc-bbn",
     "cult": "milady-cult-coin",
+    "osgno": "stakewise-staked-gno-2",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key
