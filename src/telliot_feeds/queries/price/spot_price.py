@@ -105,6 +105,7 @@ SPOT_PRICE_PAIRS = [
     "SOLVBTC/USD",
     "SOLVBTCBBN/USD",
     "CULT/USD",
+    "OSGNO/USD",
 ]
 
 

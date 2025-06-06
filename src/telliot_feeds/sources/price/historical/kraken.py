@@ -20,8 +20,8 @@ logger = get_logger(__name__)
 # Hardcoded supported assets & currencies
 # Kraken uses XBT instead of BTC for its APIs:
 # https://support.kraken.com/hc/en-us/articles/360001206766-Bitcoin-currency-code-XBT-vs-BTC
-kraken_assets = {"ETH", "XBT"}
-kraken_currencies = {"USD"}
+kraken_assets = {"ETH", "XBT", "GNO", "OSGNO"}
+kraken_currencies = {"USD", "USDC"}
 
 
 class KrakenHistoricalPriceService(WebPriceService):

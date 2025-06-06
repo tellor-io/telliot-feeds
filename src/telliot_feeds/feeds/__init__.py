@@ -80,6 +80,7 @@ from telliot_feeds.feeds.oeth_usd_feed import oeth_usd_median_feed
 from telliot_feeds.feeds.ogv_eth_feed import ogv_eth_median_feed
 from telliot_feeds.feeds.olympus import ohm_eth_median_feed
 from telliot_feeds.feeds.op_usd_feed import op_usd_median_feed
+from telliot_feeds.feeds.osgno_usd_feed import osgno_usd_median_feed
 from telliot_feeds.feeds.ousd_usd_feed import ousd_usd_median_feed
 from telliot_feeds.feeds.pls_usd_feed import pls_usd_median_feed
 from telliot_feeds.feeds.primeeth_eth_feed import primeeth_eth_median_feed
@@ -244,6 +245,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "solvbtcbbn-usd-spot": solvbtcbbn_usd_median_feed,
     "cult-usd-spot": cult_usd_median_feed,
     "filecid-query-example": filecid_example_feed,
+    "osgno-usd-spot": osgno_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
