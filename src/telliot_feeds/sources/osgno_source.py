@@ -46,7 +46,7 @@ class osGNOSpotPriceService(WebPriceService):
         )
         osgno_gno_ratio_decoded = w3.to_int(osgno_gno_ratio_bytes)
         osgno_gno_ratio = w3.from_wei(osgno_gno_ratio_decoded, "ether")
-        print(f"osgno_gno_ratio: {osgno_gno_ratio}")
+        logger.info(f"osgno_gno_ratio: {osgno_gno_ratio}")
         return float(osgno_gno_ratio)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
