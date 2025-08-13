@@ -189,10 +189,7 @@ class gydSpotPriceService(WebPriceService):
             return None, None
 
         if gyd_from_usdc_pool is not None and gyd_from_sdai_pool is not None:
-            gyd_weighted_price = (
-                (gyd_usdc_weight) * (gyd_from_usdc_pool)
-                + (gyd_sdai_weight) * (gyd_from_sdai_pool)
-            )
+            gyd_weighted_price = (gyd_usdc_weight) * (gyd_from_usdc_pool) + (gyd_sdai_weight) * (gyd_from_sdai_pool)
             print(f"GYD weighted price: {gyd_weighted_price}")
             timestamp = datetime_now_utc()
             return gyd_weighted_price, timestamp

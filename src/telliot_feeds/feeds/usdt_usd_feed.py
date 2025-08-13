@@ -4,7 +4,6 @@ from telliot_feeds.sources.price.spot.agni import agniFinancePriceSource
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.cryptodotcom import CryptodotcomSpotPriceSource
 from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceSource
-from telliot_feeds.sources.price.spot.okx import OKXSpotPriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 
 usdt_usd_median_feed = DataFeed(
