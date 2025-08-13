@@ -17,7 +17,7 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 GYD_USDC_POOL_ADDRESS = "0xC2AA60465BfFa1A88f5bA471a59cA0435c3ec5c1"
-GYD_USDT_POOL_ADDRESS = "0xfbfaD5fa9E99081da6461F36f229B5cC88A64c63"
+# GYD_USDT_POOL_ADDRESS = "0xfbfaD5fa9E99081da6461F36f229B5cC88A64c63"
 GYD_SDAI_POOL_ADDRESS = "0x2191Df821C198600499aA1f0031b1a7514D7A7D9"
 
 API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
@@ -65,10 +65,10 @@ class gydSpotPriceService(WebPriceService):
             from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 
             currency_spot_price, timestamp = await usdc_usd_median_feed.source.fetch_new_datapoint()
-        elif contractAddress.lower() == GYD_USDT_POOL_ADDRESS.lower():
-            from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
+        # elif contractAddress.lower() == GYD_USDT_POOL_ADDRESS.lower():
+        #     from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
 
-            currency_spot_price, timestamp = await usdt_usd_median_feed.source.fetch_new_datapoint()
+        #     currency_spot_price, timestamp = await usdt_usd_median_feed.source.fetch_new_datapoint()
         else:
             print("Returning from inside the else statement after getting the currency spot price")
             return None
@@ -126,7 +126,7 @@ class gydSpotPriceService(WebPriceService):
 
             try:
                 gyd_usdc_liquidity = 0
-                gyd_usdt_liquidity = 0
+                # gyd_usdt_liquidity = 0
                 gyd_sdai_liquidity = 0
                 poolsArr = response["data"]["pools"]
                 for d in poolsArr:
@@ -134,14 +134,14 @@ class gydSpotPriceService(WebPriceService):
                         gyd_sdai_liquidity = d["totalLiquidity"]
                     elif d["address"].lower() == GYD_USDC_POOL_ADDRESS.lower():
                         gyd_usdc_liquidity = d["totalLiquidity"]
-                    elif d["address"].lower() == GYD_USDT_POOL_ADDRESS.lower():
-                        gyd_usdt_liquidity = d["totalLiquidity"]
+                    # elif d["address"].lower() == GYD_USDT_POOL_ADDRESS.lower():
+                    #     gyd_usdt_liquidity = d["totalLiquidity"]
 
                 return [
                     float(gyd_usdc_liquidity),
-                    float(gyd_usdt_liquidity),
+                    # float(gyd_usdt_liquidity),
                     float(gyd_sdai_liquidity),
-                    float(gyd_usdc_liquidity) + float(gyd_usdt_liquidity) + float(gyd_sdai_liquidity),
+                    float(gyd_usdc_liquidity) + float(gyd_sdai_liquidity),  # Total liquidity now only USDC + SDAI
                 ]
             except KeyError as e:
                 msg = "Error parsing BalancerV2 response: KeyError: {}".format(e)
@@ -162,20 +162,20 @@ class gydSpotPriceService(WebPriceService):
             return None, None
 
         gyd_from_usdc_pool = None
-        gyd_from_usdt_pool = None
+        # gyd_from_usdt_pool = None
         gyd_from_sdai_pool = None
 
         try:
             logger.info("Gathering prices from Balancer pools...")
             gyd_from_usdc_pool = await self.get_spot_from_pool(GYD_USDC_POOL_ADDRESS)
-            gyd_from_usdt_pool = await self.get_spot_from_pool(GYD_USDT_POOL_ADDRESS)
+            # gyd_from_usdt_pool = await self.get_spot_from_pool(GYD_USDT_POOL_ADDRESS)
             gyd_from_sdai_pool = await self.get_spot_from_pool(GYD_SDAI_POOL_ADDRESS)
 
             logger.info("Gathering liquidity data from Balancer pools...")
             liquidity_data = await self.get_total_liquidity_of_pools()
-            gyd_usdc_weight = liquidity_data[0] / liquidity_data[3]
-            gyd_usdt_weight = liquidity_data[1] / liquidity_data[3]
-            gyd_sdai_weight = liquidity_data[2] / liquidity_data[3]
+            gyd_usdc_weight = liquidity_data[0] / liquidity_data[2]  # liquidity_data[2] is now total liquidity
+            # gyd_usdt_weight = liquidity_data[1] / liquidity_data[3]
+            gyd_sdai_weight = liquidity_data[1] / liquidity_data[2]  # liquidity_data[1] is SDAI, [2] is total
         except IndexError:
             logger.warning("Rate limit or theGraph API key not found. Sleeping for 10 seconds...")
             time.sleep(10)
@@ -184,16 +184,12 @@ class gydSpotPriceService(WebPriceService):
         except Exception as e:
             logger.warning(f"Problem retrieving Balancer pool data: {e}")
 
-        if gyd_from_usdc_pool == 0 or gyd_from_usdt_pool == 0 or gyd_from_sdai_pool == 0:
+        if gyd_from_usdc_pool == 0 or gyd_from_sdai_pool == 0:
             logger.warning("Balancer pool price is 0, returning None")
             return None, None
 
-        if gyd_from_usdc_pool is not None and gyd_from_usdt_pool is not None and gyd_from_sdai_pool is not None:
-            gyd_weighted_price = (
-                (gyd_usdc_weight) * (gyd_from_usdc_pool)
-                + (gyd_usdt_weight) * (gyd_from_usdt_pool)
-                + (gyd_sdai_weight) * (gyd_from_sdai_pool)
-            )
+        if gyd_from_usdc_pool is not None and gyd_from_sdai_pool is not None:
+            gyd_weighted_price = (gyd_usdc_weight) * (gyd_from_usdc_pool) + (gyd_sdai_weight) * (gyd_from_sdai_pool)
             print(f"GYD weighted price: {gyd_weighted_price}")
             timestamp = datetime_now_utc()
             return gyd_weighted_price, timestamp
