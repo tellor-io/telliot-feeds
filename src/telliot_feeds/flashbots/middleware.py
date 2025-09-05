@@ -6,8 +6,10 @@
 from typing import Any
 from typing import Callable
 
+from eth_utils.toolz import curry
 from web3 import Web3
-from web3.middleware import Middleware
+from web3.middleware.base import Web3Middleware
+from web3.middleware.base import Web3MiddlewareBuilder
 from web3.types import RPCEndpoint
 from web3.types import RPCResponse
 
@@ -19,27 +21,30 @@ FLASHBOTS_METHODS = [
 ]
 
 
-def construct_flashbots_middleware(
-    flashbots_provider: FlashbotProvider,
-) -> Middleware:
-    """Captures Flashbots RPC requests and sends them to the Flashbots endpoint
-    while also injecting the required authorization headers
+class FlashbotsMiddlewareBuilder(Web3MiddlewareBuilder):
+    """Web3 v6-compatible Flashbots middleware.
 
-    Keyword arguments:
-    flashbots_provider -- An HTTP provider instantiated with any authorization headers
-    required
+    Intercepts Flashbots RPC methods and routes them to the Flashbots relay
+    provider while allowing all other requests to pass through normally.
     """
 
-    def flashbots_middleware(
-        make_request: Callable[[RPCEndpoint, Any], Any], w3: Web3
-    ) -> Callable[[RPCEndpoint, Any], RPCResponse]:
+    flashbots_provider: FlashbotProvider = None  # type: ignore[assignment]
+
+    @staticmethod
+    @curry
+    def build(w3: Web3, flashbots_provider: FlashbotProvider) -> "FlashbotsMiddlewareBuilder":
+        middleware = FlashbotsMiddlewareBuilder(w3)
+        middleware.flashbots_provider = flashbots_provider
+        return middleware
+
+    def wrap_make_request(self, make_request: Callable[[RPCEndpoint, Any], RPCResponse]) -> Callable[[RPCEndpoint, Any], RPCResponse]:
         def middleware(method: RPCEndpoint, params: Any) -> RPCResponse:
-            if method not in FLASHBOTS_METHODS:
-                return make_request(method, params)
-            else:
-                # otherwise intercept it and POST it
-                return flashbots_provider.make_request(method, params)
+            if method in FLASHBOTS_METHODS:
+                return self.flashbots_provider.make_request(method, params)
+            return make_request(method, params)
 
         return middleware
 
-    return flashbots_middleware
+
+# Backwards-compatible constructor name used elsewhere in the codebase
+construct_flashbots_middleware = FlashbotsMiddlewareBuilder.build

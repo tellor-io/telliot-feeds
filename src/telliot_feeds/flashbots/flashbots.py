@@ -65,7 +65,7 @@ class FlashbotsTransactionResponse:
 
     def wait(self) -> None:
         """Waits until the target block has been reached"""
-        while self.w3.eth.blockNumber < self.target_block_number:
+        while self.w3.eth.block_number < self.target_block_number:
             time.sleep(1)
 
     def receipts(self) -> List[Union[_Hash32, HexBytes, HexStr]]:

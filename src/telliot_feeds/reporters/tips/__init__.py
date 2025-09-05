@@ -1,6 +1,7 @@
 import logging
 from typing import Optional
 
+from eth_utils import to_checksum_address
 from multicall.constants import MULTICALL2_ADDRESSES
 from multicall.constants import MULTICALL3_ADDRESSES
 from multicall.constants import Network
@@ -27,11 +28,11 @@ def add_multicall_support(
             # Gnosis chain doesn't have state override so we need to add it
             # to the list of chains that don't have state override in the package
             # to avoid errors
-            NO_STATE_OVERRIDE.append(attr)
+            NO_STATE_OVERRIDE.add(attr)
         if multicall2_address:
-            MULTICALL2_ADDRESSES[attr] = multicall2_address
-        else:
-            MULTICALL3_ADDRESSES[attr] = multicall3_address
+            MULTICALL2_ADDRESSES[attr] = to_checksum_address(multicall2_address)
+        elif multicall3_address:
+            MULTICALL3_ADDRESSES[attr] = to_checksum_address(multicall3_address)
     else:
         logger.info(f"Network {network} already exists in multicall package")
 

@@ -10,13 +10,13 @@ from typing import Any
 from typing import Optional
 from typing import Union
 
+import requests
 from eth_account import Account
 from eth_account import messages
 from eth_account.signers.local import LocalAccount
 from eth_typing import URI
 from web3 import HTTPProvider
 from web3 import Web3
-import requests
 from web3.types import RPCEndpoint
 from web3.types import RPCResponse
 

@@ -70,7 +70,7 @@ class Stake(GasFees):
         if not approve_status.ok:
             msg = "Unable to approve staking: "
             return False, error_status(msg, e=approve_status.error, log=logger.error)
-        logger.debug(f"Approve transaction status: {approve_receipt.status}, block: {approve_receipt.blockNumber}")
+        logger.debug(f"Approve transaction status: {approve_receipt.status}, block: {approve_receipt.block_number}")
         return True, approve_status
 
     async def deposit_stake(self, amount: int) -> Tuple[bool, ResponseStatus]:
@@ -117,5 +117,5 @@ class Stake(GasFees):
         if not deposit_status.ok:
             msg = "Unable to deposit stake!"
             return False, error_status(msg, e=deposit_status.error, log=logger.error)
-        logger.debug(f"Deposit transaction status: {deposit_receipt.status}, block: {deposit_receipt.blockNumber}")
+        logger.debug(f"Deposit transaction status: {deposit_receipt.status}, block: {deposit_receipt.block_number}")
         return True, deposit_status

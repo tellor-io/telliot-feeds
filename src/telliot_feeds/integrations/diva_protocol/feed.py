@@ -1,6 +1,7 @@
 """Helper functions for reporting data for Diva Protocol."""
 from typing import Optional
 
+from hexbytes import HexBytes
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
 from telliot_feeds.integrations.diva_protocol import SUPPORTED_COLLATERAL_TOKEN_SYMBOLS
@@ -50,7 +51,7 @@ def assemble_diva_datafeed(
     )
 
     feed = DataFeed(
-        query=DIVAProtocol(pool.pool_id, divaDiamond=diva_diamond, chainId=chain_id),
+        query=DIVAProtocol(HexBytes(pool.pool_id), divaDiamond=diva_diamond, chainId=chain_id),
         source=source,
     )
 

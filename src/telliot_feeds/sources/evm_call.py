@@ -6,10 +6,10 @@ from typing import Tuple
 
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
-from web3.middleware import ExtraDataToPOAMiddleware
 from web3 import Web3
 from web3.exceptions import ContractLogicError
 from web3.exceptions import ExtraDataLengthError
+from web3.middleware import ExtraDataToPOAMiddleware
 from web3.types import BlockIdentifier
 from web3.types import Wei
 

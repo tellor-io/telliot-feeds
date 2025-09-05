@@ -33,7 +33,7 @@ class AssembleCall:
         """
         status = ResponseStatus()
         multi_call = Multicall(
-            calls=calls, _w3=self.autopay.node._web3, require_success=success, gas_limit=self.gas_limit
+            calls=calls, _w3=self.autopay.node._web3, require_success=success, gas_limit=self.gas_limit or 0
         )
         try:
             data: dict[Any, Any] = await multi_call.coroutine()

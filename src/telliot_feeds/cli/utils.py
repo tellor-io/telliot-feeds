@@ -496,9 +496,15 @@ async def call_oracle(
 
 
 class CustomHexBytes(HexBytes):
-    """Wrapper around HexBytes that doesn't accept int or bool"""
+    """HexBytes with stricter construction and 0x-prefixed hex() output."""
 
     def __new__(cls: Type[bytes], val: Union[bytearray, bytes, str]) -> "CustomHexBytes":
         if isinstance(val, (int, bool)):
             raise ValueError("Invalid value")
         return cast(CustomHexBytes, super().__new__(cls, val))
+
+    def hex(self) -> str:  # type: ignore[override]
+        h = super().hex()
+        if not h.startswith("0x"):
+            return "0x" + h
+        return h

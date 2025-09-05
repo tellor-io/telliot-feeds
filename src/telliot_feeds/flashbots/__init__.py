@@ -10,11 +10,12 @@ from typing import Union
 from eth_account.signers.local import LocalAccount
 from eth_typing import URI
 from web3 import Web3
-# attach_modules is now a method on Web3 instance
 
 from .flashbots import Flashbots
 from .middleware import construct_flashbots_middleware
 from .provider import FlashbotProvider
+
+# attach_modules is now a method on Web3 instance
 
 
 DEFAULT_FLASHBOTS_RELAY = "https://relay.flashbots.net"
