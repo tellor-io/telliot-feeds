@@ -19,8 +19,8 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_account._utils.legacy_transactions import Transaction
-from eth_account._utils.typed_transactions import AccessListTransaction
-from eth_account._utils.typed_transactions import DynamicFeeTransaction
+from eth_account.typed_transactions import AccessListTransaction
+from eth_account.typed_transactions import DynamicFeeTransaction
 from eth_typing import HexStr
 from hexbytes import HexBytes
 from toolz import dissoc

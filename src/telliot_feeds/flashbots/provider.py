@@ -16,7 +16,7 @@ from eth_account.signers.local import LocalAccount
 from eth_typing import URI
 from web3 import HTTPProvider
 from web3 import Web3
-from web3._utils.request import make_post_request
+import requests
 from web3.types import RPCEndpoint
 from web3.types import RPCResponse
 
@@ -54,7 +54,7 @@ class FlashbotProvider(HTTPProvider):
             "X-Flashbots-Signature": f"{self.signature_account.address}:{signed_message.signature.hex()}"
         }
 
-        raw_response = make_post_request(self.endpoint_uri, request_data, headers=headers)
+        raw_response = requests.post(self.endpoint_uri, data=request_data, headers=headers)
         response = self.decode_rpc_response(raw_response)
         self.logger.debug(f"Getting response HTTP. URI: {self.endpoint_uri}, Method: {method}, Response: {response}")
         return response

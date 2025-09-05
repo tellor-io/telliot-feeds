@@ -8,7 +8,7 @@ from telliot_core.apps.telliot_config import TelliotConfig
 from urllib3.util import Retry
 from web3 import Web3
 from web3.exceptions import ExtraDataLengthError
-from web3.middleware import geth_poa_middleware
+from web3.middleware import ExtraDataToPOAMiddleware
 from web3.types import BlockData
 
 from telliot_feeds.datasource import DataSource
@@ -45,7 +45,7 @@ class EVMBalanceCurrentSource(DataSource[Any]):
         except ExtraDataLengthError as e:
             logger.info(f"POA chain detected. Injecting POA middleware in response to exception: {e}")
             try:
-                w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+                w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
             except ValueError as e:
                 logger.error(f"Unable to inject web3 middleware for POA chain connection: {e}")
             block = w3.eth.get_block(block_number, full_transaction)
@@ -61,7 +61,7 @@ class EVMBalanceCurrentSource(DataSource[Any]):
         except ExtraDataLengthError as e:
             logger.info(f"POA chain detected. Injecting POA middleware in response to exception: {e}")
             try:
-                w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+                w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
             except ValueError as e:
                 logger.error(f"Unable to inject web3 middleware for POA chain connection: {e}")
             balance = w3.eth.get_balance(Web3.to_checksum_address(address), block_identifier=block_number)

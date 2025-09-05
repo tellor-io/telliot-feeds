@@ -73,9 +73,9 @@ class CurveFiUSDPriceService(WebPriceService):
             logger.error("Failed to parse response data from Curve Finance API 'usd_price' key not found")
             return None, None
 
-        isAddress = data.get("address", "").lower() == asset_address.lower()
+        is_address = data.get("address", "").lower() == asset_address.lower()
 
-        if not isAddress:
+        if not is_address:
             logger.error("Asset '0x' address in API response doesn't match contract address stored")
             return None, None
         return asset_price, datetime_now_utc()

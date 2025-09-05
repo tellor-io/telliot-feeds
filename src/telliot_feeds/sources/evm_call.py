@@ -6,7 +6,7 @@ from typing import Tuple
 
 from hexbytes import HexBytes
 from telliot_core.apps.telliot_config import TelliotConfig
-from web3 import middleware
+from web3.middleware import ExtraDataToPOAMiddleware
 from web3 import Web3
 from web3.exceptions import ContractLogicError
 from web3.exceptions import ExtraDataLengthError
@@ -58,7 +58,7 @@ class EVMCallSource(DataSource[Any]):
             logger.info(f"EVMCall to POA chain detected. Injecting POA middleware in response to exception: {e}")
 
             try:
-                self.web3.middleware_onion.inject(middleware.geth_poa_middleware, layer=0)
+                self.web3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
             except ValueError as e:
                 logger.warning(f"Unable to inject web3 middleware for POA chain connection: {e}")
 
