@@ -72,7 +72,7 @@ class FlashbotsReporter(Tellor360Reporter):
         result.wait()
         try:
             tx_receipt = result.receipts()[0]
-            print(f"Bundle was executed in block {tx_receipt.block_number}")
+            print(f"Bundle was executed in block {tx_receipt.blockNumber}")
         except TransactionNotFound as e:
             status.error = "Bundle was not executed: " + str(e)
             logger.error(status.error)
