@@ -2,6 +2,7 @@
 from typing import Optional
 
 from hexbytes import HexBytes
+
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
 from telliot_feeds.integrations.diva_protocol import SUPPORTED_COLLATERAL_TOKEN_SYMBOLS

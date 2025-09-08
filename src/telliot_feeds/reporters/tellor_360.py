@@ -390,7 +390,7 @@ class Tellor360Reporter(Stake):
         local_account = self.account.local_account
         tx_signed = local_account.sign_transaction(built_tx)
         try:
-            tx_hash = self.web3.eth.send_raw_transaction(tx_signed.rawTransaction)
+            tx_hash = self.web3.eth.send_raw_transaction(tx_signed.raw_transaction)
         except Exception as e:
             note = "Send transaction failed"
             return None, error_status(note, log=logger.error, e=e)

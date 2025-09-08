@@ -1,6 +1,6 @@
+from typing import cast
 from typing import Type
 from typing import Union
-from typing import cast
 
 from hexbytes import HexBytes
 
@@ -22,5 +22,3 @@ class CustomHexBytes(HexBytes):
         if not h.startswith("0x"):
             return "0x" + h
         return h
-
-
