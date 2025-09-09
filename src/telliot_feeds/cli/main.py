@@ -13,6 +13,7 @@ from telliot_feeds.cli.commands.catalog import catalog
 from telliot_feeds.cli.commands.conditional import conditional
 from telliot_feeds.cli.commands.config import config
 from telliot_feeds.cli.commands.integrations import integrations
+from telliot_feeds.cli.commands.layer import layer
 from telliot_feeds.cli.commands.liquity import liquity
 from telliot_feeds.cli.commands.query import query
 from telliot_feeds.cli.commands.report import report
@@ -55,6 +56,7 @@ main.add_command(request_withdraw)
 main.add_command(withdraw)
 main.add_command(conditional)
 main.add_command(ampleforth)
+main.add_command(layer)
 
 if __name__ == "__main__":
     main()
