@@ -5,7 +5,6 @@ import requests
 
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.reporters.flashbot import FlashbotsReporter
-from telliot_feeds.flashbots.provider import FlashbotProvider
 
 
 @pytest.mark.asyncio
@@ -28,7 +27,7 @@ async def test_http_error(tellor_360, chain):
         check_rewards=False,
     )
 
-    with mock.patch.object(r.endpoint._web3.flashbots, 'send_bundle', side_effect=requests.exceptions.HTTPError):
+    with mock.patch.object(r.endpoint._web3.flashbots, "send_bundle", side_effect=requests.exceptions.HTTPError):
         res, status = await r.report_once()
         assert res is None
         assert not status.ok

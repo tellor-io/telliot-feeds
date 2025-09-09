@@ -32,11 +32,11 @@ async def test_suggested_report(tellor_360, chain):
     assert isinstance(qtag, str)
     entries = query_catalog.find(tag=qtag)
     assert len(entries) >= 1, f"Expected at least 1 entry for tag '{qtag}', got {len(entries)}"
-    
+
     # Find exact match for the tag
     exact_matches = [entry for entry in entries if entry.tag == qtag]
     assert len(exact_matches) == 1, f"Expected exactly 1 exact match for tag '{qtag}', got {len(exact_matches)}"
-    
+
     catalog_entry = exact_matches[0]
     q = catalog_entry.query
     assert isinstance(q, OracleQuery)
