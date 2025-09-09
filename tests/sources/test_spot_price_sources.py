@@ -19,7 +19,6 @@ from telliot_feeds.sources.price.spot.coinpaprika import CoinpaprikaSpotPriceSer
 from telliot_feeds.sources.price.spot.curvefi import CurveFinanceSpotPriceService
 from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceService
 from telliot_feeds.sources.price.spot.kraken import KrakenSpotPriceService
-from telliot_feeds.sources.price.spot.nomics import NomicsSpotPriceService
 from telliot_feeds.sources.price.spot.pancakeswap import (
     PancakeswapPriceService,
 )
@@ -32,7 +31,6 @@ service = {
     "coinbase": CoinbaseSpotPriceService(),
     "coingecko": CoinGeckoSpotPriceService(),
     "gemini": GeminiSpotPriceService(),
-    "nomics": NomicsSpotPriceService(),
     "pancakeswap": PancakeswapPriceService(),
     "uniswapV3": UniswapV3PriceService(),
     "kraken": KrakenSpotPriceService(),
@@ -59,16 +57,6 @@ def validate_price(v, t):
     assert isinstance(t, datetime)
     print(v)
     print(t)
-
-
-@pytest.fixture(scope="module")
-def nomics_key():
-    key = TelliotConfig().api_keys.find(name="nomics")[0].key
-
-    if not key and "NOMICS_KEY" in os.environ:
-        key = os.environ["NOMICS_KEY"]
-
-    return key
 
 
 @pytest.fixture(scope="module")
@@ -112,17 +100,6 @@ async def test_kraken():
     v, t = await get_price("xbt", "usd", service["kraken"])
     print(v)
     validate_price(v, t)
-
-
-@pytest.mark.skip("requires enterprise api key")
-@pytest.mark.asyncio
-async def test_nomics(nomics_key):
-    """Test retrieving from Nomics price source."""
-    if nomics_key:
-        v, t = await get_price("btc", "usd", service["nomics"])
-        validate_price(v, t)
-    else:
-        print("No Nomics API key ")
 
 
 @pytest.mark.asyncio

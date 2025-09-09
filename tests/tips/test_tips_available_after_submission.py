@@ -5,13 +5,13 @@ from eth_utils import to_bytes
 from telliot_core.utils.timestamp import TimeStamp
 from web3 import Web3
 
-from telliot_feeds.feeds.albt_usd_feed import albt_usd_median_feed
+from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
 from telliot_feeds.reporters.tips.suggest_datafeed import get_feed_and_tip
 from telliot_feeds.utils import log
 
 # Turn off duplicate output filter
 log.DuplicateFilter.filter = lambda _, x: True
-query_data = "0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000953706f745072696365000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000004616c62740000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000037573640000000000000000000000000000000000000000000000000000000000"  # noqa: E501
+query_data = "0x00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000953706f745072696365000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000003627463000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000037573640000000000000000000000000000000000000000000000000000000000"  # noqa: E501
 query_id = Web3.keccak(to_bytes(hexstr=query_data))
 
 txn_kwargs = {
@@ -50,9 +50,10 @@ async def test_feed_suggestion(autopay_contract_setup, chain, caplog, guaranteed
     query, tip_amount = await get_feed_and_tip(
         autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp
     )
-    assert query.get_state()["query"] == {"type": "SpotPrice", "asset": "albt", "currency": "usd"}
+    assert query is not None, "Expected to get a query suggestion but got None"
+    assert query.get_state()["query"] == {"type": "SpotPrice", "asset": "btc", "currency": "usd"}
     assert tip_amount == int(0.5 * 1e18)
-    feed = albt_usd_median_feed
+    feed = btc_usd_median_feed
     feed.source = guaranteed_price_source
     get_price = await feed.source.fetch_new_datapoint()
     price = get_price[0]
@@ -75,7 +76,8 @@ async def test_feed_suggestion(autopay_contract_setup, chain, caplog, guaranteed
     query, tip_amount = await get_feed_and_tip(
         autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp
     )
-    assert query.get_state()["query"] == {"type": "SpotPrice", "asset": "albt", "currency": "usd"}
+    assert query is not None, "Expected to get a query suggestion but got None"
+    assert query.get_state()["query"] == {"type": "SpotPrice", "asset": "btc", "currency": "usd"}
     assert tip_amount == int(0.5 * 1e18)
     chain.pending_timestamp += 43200
     # Second in window submission which should exhaust funds in feed
@@ -117,7 +119,8 @@ async def test_one_time_tip_suggestion(autopay_contract_setup, chain):
     query, tip_amount = await get_feed_and_tip(
         autopay=flex.autopay, skip_manual_feeds=False, current_timestamp=chain.pending_timestamp
     )
-    assert query.get_state()["query"] == {"type": "SpotPrice", "asset": "albt", "currency": "usd"}
+    assert query is not None, "Expected to get a query suggestion but got None"
+    assert query.get_state()["query"] == {"type": "SpotPrice", "asset": "btc", "currency": "usd"}
     assert tip_amount == 1e18
     _, status = await flex.oracle.write(
         "submitValue",

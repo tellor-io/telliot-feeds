@@ -35,14 +35,14 @@ jobs:
         --outdir dist/
         .
     - name: Publish telliot-feeds to Test PyPI
-      if: "github.event.release.prerelease"
+      if: !github.event.release.prerelease
       uses: pypa/gh-action-pypi-publish@unstable/v1
       with:
         password: ${{ secrets.TELLIOT_FEEDS_TEST_PYPI_API_TOKEN }}
         repository-url: https://test.pypi.org/legacy/
 
     - name: Publish telliot-feeds to PyPI
-      if: "!github.event.release.prerelease"
+      if: !github.event.release.prerelease
       uses: pypa/gh-action-pypi-publish@unstable/v1
       with:
         password: ${{ secrets.TELLIOT_FEEDS_PYPI_API_TOKEN }}
