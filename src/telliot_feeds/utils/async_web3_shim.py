@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+
 from web3 import AsyncWeb3 as _AsyncWeb3
 
 

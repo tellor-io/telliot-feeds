@@ -29,9 +29,9 @@ def add_multicall_support(
             # to the list of chains that don't have state override in the package
             # to avoid errors
             NO_STATE_OVERRIDE.add(attr)
-        if multicall2_address:
+        if multicall2_address and multicall2_address != "0x":
             MULTICALL2_ADDRESSES[attr] = to_checksum_address(multicall2_address)
-        elif multicall3_address:
+        elif multicall3_address and multicall3_address != "0x":
             MULTICALL3_ADDRESSES[attr] = to_checksum_address(multicall3_address)
     else:
         logger.info(f"Network {network} already exists in multicall package")

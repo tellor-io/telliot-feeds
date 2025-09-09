@@ -1,12 +1,14 @@
-from typing import Any, cast
+from typing import Any
+from typing import cast
 from typing import Optional
 
+import multicall.utils as _mutils
 from multicall import Call
 from multicall import Multicall
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
-import multicall.utils as _mutils
+
 from telliot_feeds.utils.async_web3_shim import AsyncWeb3Shim
 
 _mutils.AsyncWeb3 = cast(Any, AsyncWeb3Shim)
