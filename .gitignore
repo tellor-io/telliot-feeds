@@ -164,7 +164,6 @@ Pipfile.lock
 
 # ignore Ganache/brownie files
 node_modules/
-package.json
 
 # aws keys
 *.pem
