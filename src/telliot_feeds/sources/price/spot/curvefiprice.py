@@ -26,6 +26,7 @@ ethereum_contract_map = {
     "ousd": "0x2a8e1e676ec238d8a992307b495b45b3feaa5e86",
     "pufeth": "0xd9a442856c234a39a81a089c06451ebaa4306a72",
     "solvbtc": "0x7a56e1c57c7475ccf742a1832b028f0456652f97",
+    "wsteth": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
 }
 
 

@@ -692,3 +692,57 @@ query_catalog.add_entry(
     title="CULT/USD spot price",
     q=SpotPrice(asset="cult", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="saga-usd-spot",
+    title="SAGA/USD spot price",
+    q=SpotPrice(asset="saga", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="atom-usd-spot",
+    title="ATOM/USD spot price",
+    q=SpotPrice(asset="atom", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="susde-usd-spot",
+    title="sUSDe/USD spot price",
+    q=SpotPrice(asset="susde", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="tbtc-usd-spot",
+    title="TBTC/USD spot price",
+    q=SpotPrice(asset="tbtc", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="fbtc-usd-spot",
+    title="FBTC/USD spot price",
+    q=SpotPrice(asset="fbtc", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="king-usd-spot",
+    title="KING/USD spot price",
+    q=SpotPrice(asset="king", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="usdn-usd-spot",
+    title="USDN/USD spot price",
+    q=SpotPrice(asset="usdn", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="yusd-usd-spot",
+    title="YUSD/USD spot price",
+    q=SpotPrice(asset="yusd", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="susds-usd-spot",
+    title="SUSDS/USD spot price",
+    q=SpotPrice(asset="susds", currency="usd"),
+)

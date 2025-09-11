@@ -1,4 +1,3 @@
-# type: ignore
 import asyncio
 import base64
 from typing import Any
@@ -15,10 +14,10 @@ from terra_sdk.core.coins import Coin
 
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
-from telliot_feeds.reporters.layer.client import LCDClient
-from telliot_feeds.reporters.layer.msg_submit_value import MsgSubmitValue
-from telliot_feeds.reporters.layer.msg_tip import MsgTip
-from telliot_feeds.reporters.layer.raw_key import RawKey
+from telliot_feeds.reporters.layer.client import LCDClient  # type: ignore[attr-defined]
+from telliot_feeds.reporters.layer.msg_submit_value import MsgSubmitValue  # type: ignore[attr-defined]
+from telliot_feeds.reporters.layer.msg_tip import MsgTip  # type: ignore[attr-defined]
+from telliot_feeds.reporters.layer.raw_key import RawKey  # type: ignore[attr-defined]
 from telliot_feeds.utils.log import get_logger
 from telliot_feeds.utils.query_search_utils import feed_from_catalog_feeds
 from telliot_feeds.utils.reporter_utils import is_online
@@ -93,15 +92,15 @@ class LayerReporter:
             if not status.ok:
                 return None
 
-        datafeed = feed_from_catalog_feeds(base64.b64decode(query))
+        datafeed = feed_from_catalog_feeds(base64.b64decode(query)) if query else None
 
         return datafeed
 
-    async def fetch_tx_info(self, response) -> Optional[dict]:
+    async def fetch_tx_info(self, response: Any) -> Optional[Dict[str, Any]]:
         for _ in range(10):
             try:
                 tx_info = await self.client._get(f"/cosmos/tx/v1beta1/txs/{response.txhash}")
-                return tx_info
+                return tx_info  # type: ignore[no-any-return]
             except Exception as e:
                 if "tx not found" in str(e):
                     print("tx not found, retrying...")
@@ -112,7 +111,7 @@ class LayerReporter:
                     raise e
         return None
 
-    async def direct_submit_txn(self, datafeed: DataFeed[Any]) -> Tuple[Optional[dict], ResponseStatus]:
+    async def direct_submit_txn(self, datafeed: DataFeed[Any]) -> Tuple[Optional[Dict[str, Any]], ResponseStatus]:
         print("SPUD STARTING direct_submit_txn")
         await datafeed.source.fetch_new_datapoint()
         latest_data = datafeed.source.latest
@@ -146,7 +145,7 @@ class LayerReporter:
             print(msg, e.__str__())
             return None, error_status(msg, e=e, log=logger.error)
 
-    async def direct_tip_txn(self, datafeed: DataFeed[Any]) -> Tuple[Optional[dict], ResponseStatus]:
+    async def direct_tip_txn(self, datafeed: DataFeed[Any]) -> Tuple[Optional[Dict[str, Any]], ResponseStatus]:
         """Submit a direct tip transaction for a query"""
         print("SPUD STARTING direct_tip_txn")
         try:
@@ -184,7 +183,9 @@ class LayerReporter:
             logger.error(f"{msg}: {str(e)}")
             return None, error_status(msg, e=e, log=logger.error)
 
-    async def direct_tip_and_report_txn(self, datafeed: DataFeed[Any]) -> Tuple[Optional[dict], ResponseStatus]:
+    async def direct_tip_and_report_txn(
+        self, datafeed: DataFeed[Any]
+    ) -> Tuple[Optional[Dict[str, Any]], ResponseStatus]:
         """Submits the tip and the report in the same block"""
         print("SPUD STARTING direct_tip_and_report_txn")
 
@@ -249,6 +250,8 @@ class LayerReporter:
         if self.qtag_selected:
             print(f"query_tag_selected = {self.qtag_selected}")
             datafeed = self.datafeed
+            if datafeed is None:
+                return None, error_status("No datafeed available", log=logger.error)
             txn_info, status = await self.direct_tip_and_report_txn(datafeed)
             if txn_info is None or not status.ok:
                 return None, error_status("Tip+Report transaction failed", e=status.e, log=logger.error)

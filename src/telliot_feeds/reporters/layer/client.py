@@ -59,7 +59,7 @@ class AsyncLCDClient:
         gas_prices: Optional[Coins.Input] = None,
         gas_adjustment: Optional[Numeric.Input] = None,
         loop: Optional[AbstractEventLoop] = None,
-        _create_session: bool = True,  # don't create a session (used for sync LCDClient)
+        _create_session: bool = True,
     ):
         if loop is None:
             loop = get_event_loop()

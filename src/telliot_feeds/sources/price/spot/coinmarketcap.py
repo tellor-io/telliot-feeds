@@ -17,8 +17,16 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
-coinmarketcap_assets = {"BCT", "ALBT"}
-coinmarketcap_currencies = {"USD"}
+coinmarketcap_assets = {"BCT", "ALBT", "SAGA", "FBTC", "KING", "USDN", "TBTC", "SUSDE", "RETH"}
+coinmarketcap_currencies = {"USD", "USDT", "USDC"}
+coinmarketcap_ids = {
+    "susde": "29471",
+    "fbtc": "32306",
+    "king": "33695",
+    "usdn": "36538",
+    "tbtc": "26133",
+    "reth": "15060",
+}
 
 API_KEY = TelliotConfig().api_keys.find(name="coinmarketcap")[0].key
 
@@ -40,6 +48,7 @@ class CoinMarketCapSpotPriceService(WebPriceService):
 
         asset = asset.upper()
         currency = currency.upper()
+        asset_lower = asset.lower()
 
         if asset not in coinmarketcap_assets:
             raise Exception(f"Asset not supported: {asset}")
@@ -48,7 +57,13 @@ class CoinMarketCapSpotPriceService(WebPriceService):
 
         request_url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
 
-        parameters = {"symbol": asset}
+        # Use ID if available in mapping, otherwise use symbol
+        if asset_lower in coinmarketcap_ids:
+            parameters = {"id": coinmarketcap_ids[asset_lower]}
+            logger.debug(f"Using CoinMarketCap ID {coinmarketcap_ids[asset_lower]} for asset {asset}")
+        else:
+            parameters = {"symbol": asset}
+            logger.debug(f"Using CoinMarketCap symbol {asset} (no ID mapping found)")
         headers = {
             "Accepts": "application/json",
             "X-CMC_PRO_API_KEY": API_KEY,
@@ -71,7 +86,15 @@ class CoinMarketCapSpotPriceService(WebPriceService):
             return None, None
 
         try:
-            price = data["data"][asset]["quote"][currency]["price"]
+            # When using ID, response is keyed by ID; when using symbol, it's keyed by symbol
+            if asset_lower in coinmarketcap_ids:
+                # Response is keyed by the ID when using ID parameter
+                data_key = coinmarketcap_ids[asset_lower]
+            else:
+                # Response is keyed by the symbol when using symbol parameter
+                data_key = asset
+
+            price = data["data"][data_key]["quote"][currency]["price"]
             return price, datetime_now_utc()
         except Exception as e:
             msg = f"Error parsing CoinMarketCap API response: Exception: {e}"

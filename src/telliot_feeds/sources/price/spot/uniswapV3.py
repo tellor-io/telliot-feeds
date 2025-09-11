@@ -38,6 +38,8 @@ uniswapV3_map = {
     "lsk": "0x6033f7f88332b8db6ad452b7c6d5bb643990ae3f",
     "cult": "0x0000000000c5dc95539589fbd24be07c6c14eca4",
     "mkr": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
+    "tbtc": "0x18084fba666a33d37592fa2633fd49a74dd93a88",
+    "king": "0x8f08b70456eb22f6109f57b8fafe862ed28e6040",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
@@ -135,7 +137,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        price_source = UniswapV3PriceSource(asset="mkr", currency="usd")
+        price_source = UniswapV3PriceSource(asset="tbtc", currency="usd")
         price, timestamp = await price_source.fetch_new_datapoint()
         print(price, timestamp)
 

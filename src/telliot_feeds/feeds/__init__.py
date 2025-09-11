@@ -5,6 +5,7 @@ from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds.aave_usd_feed import aave_usd_median_feed
 from telliot_feeds.feeds.albt_usd_feed import albt_usd_median_feed
 from telliot_feeds.feeds.ampl_usd_vwap_feed import ampl_usd_vwap_feed
+from telliot_feeds.feeds.atom_usd_feed import atom_usd_median_feed
 from telliot_feeds.feeds.avax_usd_feed import avax_usd_median_feed
 from telliot_feeds.feeds.badger_usd_feed import badger_usd_median_feed
 from telliot_feeds.feeds.bch_usd_feed import bch_usd_median_feed
@@ -42,6 +43,7 @@ from telliot_feeds.feeds.evm_balance_current import evm_balance_current_feed_exa
 from telliot_feeds.feeds.evm_call_feed import evm_call_feed
 from telliot_feeds.feeds.evm_call_feed import evm_call_feed_example
 from telliot_feeds.feeds.ezeth_usd_feed import ezeth_usd_median_feed
+from telliot_feeds.feeds.fbtc_usd_feed import fbtc_usd_median_feed
 from telliot_feeds.feeds.fil_usd_feed import fil_usd_median_feed
 from telliot_feeds.feeds.fileCID_manual_feed import filecid_example_feed
 from telliot_feeds.feeds.fileCID_manual_feed import fileCID_manual_feed
@@ -53,6 +55,7 @@ from telliot_feeds.feeds.gno_usd_feed import gno_usd_median_feed
 from telliot_feeds.feeds.grt_usd_feed import grt_usd_median_feed
 from telliot_feeds.feeds.gyd_usd_feed import gyd_usd_median_feed
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
+from telliot_feeds.feeds.king_usd_feed import king_usd_median_feed
 from telliot_feeds.feeds.landx_feed import corn
 from telliot_feeds.feeds.landx_feed import rice
 from telliot_feeds.feeds.landx_feed import soy
@@ -90,6 +93,7 @@ from telliot_feeds.feeds.reth_btc_feed import reth_btc_median_feed
 from telliot_feeds.feeds.reth_usd_feed import reth_usd_median_feed
 from telliot_feeds.feeds.ric_usd_feed import ric_usd_median_feed
 from telliot_feeds.feeds.rseth_usd_feed import rseth_usd_median_feed
+from telliot_feeds.feeds.saga_usd_feed import saga_usd_median_feed
 from telliot_feeds.feeds.sdai_usd_feed import sdai_usd_median_feed
 from telliot_feeds.feeds.sfrax_usd_feed import sfrax_usd_feed
 from telliot_feeds.feeds.shib_usd_feed import shib_usd_median_feed
@@ -103,9 +107,12 @@ from telliot_feeds.feeds.steth_usd_feed import steth_usd_median_feed
 from telliot_feeds.feeds.stone_usd_feed import stone_usd_median_feed
 from telliot_feeds.feeds.string_query_feed import string_query_feed
 from telliot_feeds.feeds.superoethb_eth_feed import superoethb_eth_median_feed
+from telliot_feeds.feeds.susde_usd_feed import susde_usd_median_feed
+from telliot_feeds.feeds.susds_usd_feed import susds_usd_median_feed
 from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
 from telliot_feeds.feeds.sweth_usd_feed import sweth_usd_median_feed
 from telliot_feeds.feeds.tara_usd_feed import tara_usd_median_feed
+from telliot_feeds.feeds.tbtc_usd_feed import tbtc_usd_median_feed
 from telliot_feeds.feeds.tellor_rng_feed import tellor_rng_feed
 from telliot_feeds.feeds.tellor_rng_manual_feed import tellor_rng_manual_feed
 from telliot_feeds.feeds.tlos_usd_feed import tlos_usd_median_feed
@@ -116,6 +123,7 @@ from telliot_feeds.feeds.uni_usd_feed import uni_usd_median_feed
 from telliot_feeds.feeds.unibtc_usd_feed import unibtc_usd_median_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.usdm_usd_feed import usdm_usd_median_feed
+from telliot_feeds.feeds.usdn_usd_feed import usdn_usd_median_feed
 from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
 from telliot_feeds.feeds.usdy_usd_feed import usdy_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
@@ -131,10 +139,12 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
+from telliot_feeds.feeds.yusd_usd_feed import yusd_usd_median_feed
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "ampleforth-custom": ampl_usd_vwap_feed,
     "ampleforth-uspce": uspce_feed,
+    "atom-usd-spot": atom_usd_median_feed,
     "eth-jpy-spot": eth_jpy_median_feed,
     "ohm-eth-spot": ohm_eth_median_feed,
     "vsq-usd-spot": vsq_usd_median_feed,
@@ -237,6 +247,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "tara-usd-spot": tara_usd_median_feed,
     "pufeth-usd-spot": pufeth_usd_median_feed,
     "stone-usd-spot": stone_usd_median_feed,
+    "susde-usd-spot": susde_usd_median_feed,
     "superoethb-eth-spot": superoethb_eth_median_feed,
     "lsk-usd-spot": lsk_usd_median_feed,
     "unibtc-usd-spot": unibtc_usd_median_feed,
@@ -244,6 +255,13 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "solvbtcbbn-usd-spot": solvbtcbbn_usd_median_feed,
     "cult-usd-spot": cult_usd_median_feed,
     "filecid-query-example": filecid_example_feed,
+    "saga-usd-spot": saga_usd_median_feed,
+    "tbtc-usd-spot": tbtc_usd_median_feed,
+    "fbtc-usd-spot": fbtc_usd_median_feed,
+    "king-usd-spot": king_usd_median_feed,
+    "usdn-usd-spot": usdn_usd_median_feed,
+    "yusd-usd-spot": yusd_usd_median_feed,
+    "susds-usd-spot": susds_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
