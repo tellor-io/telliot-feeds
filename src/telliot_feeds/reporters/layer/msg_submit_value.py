@@ -55,7 +55,7 @@ class MsgSubmitValue(Msg):
             "@type": self.type_url,
             "creator": self.creator,
             "query_data": self.query_data,
-            "amount": self.amount.to_data(),
+            "value": self.value,
         }
 
     @classmethod
