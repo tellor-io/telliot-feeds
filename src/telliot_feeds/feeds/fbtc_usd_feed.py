@@ -1,6 +1,5 @@
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.price.spot_price import SpotPrice
-
 from telliot_feeds.sources.price.spot.coinpaprika import CoinpaprikaSpotPriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 

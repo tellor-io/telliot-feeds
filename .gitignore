@@ -171,6 +171,3 @@ node_modules/
 # ignore stray test files
 reported_pools.pickle
 tenv
-
-# ignore proto files
-src/telliot_feeds/proto/
