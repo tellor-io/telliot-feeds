@@ -3,7 +3,7 @@
 ## Prerequisites
 - An account with your chain's native token for gas fees. Testnets often have a faucet. For example, [here is Polygon's](https://faucet.polygon.technology/) for Mumbai testnet.
 - [Test TRB](https://docs.tellor.io/tellor/the-basics/readme#need-testnet-tokens-trb) for staking.
-- [Python 3.9](https://www.python.org/downloads/release/python-3915/) is required to install and use`telliot-feeds`. Alternatively, you can use our [docker](https://docs.docker.com/get-started/) release. If using Docker, please follow the [Docker setup instructions](#optional-docker-setup).
+- [Python 3.12](https://www.python.org/downloads/release/python-3915/) is required to install and use`telliot-feeds`. Alternatively, you can use our [docker](https://docs.docker.com/get-started/) release. If using Docker, please follow the [Docker setup instructions](#optional-docker-setup).
 
 
 ## Install Telliot Feeds
@@ -15,32 +15,38 @@ In this example, the virtual environment will be created in a subfolder called `
 === "Linux"
 
     ```
-    python3.9 -m venv tenv
-    source tenv/bin/activate
+    python3.12 -m venv env
+    source env/bin/activate
     ```
 
 === "Windows"
 
     ```
-    py3.9 -m venv tenv
-    tenv\Scripts\activate
+    py3.12 -m venv env
+    env\Scripts\activate
     ```
 
 === "Mac M1"
 
     ```
-    python3.9 -m venv tenv
-    source tenv/bin/activate
+    python3.12 -m venv env
+    source env/bin/activate
     ```
 
 Once the virtual environment is activated, install telliot feeds with pip:
 
+    ```
     pip install telliot-feeds
+    ```
+For layer reporting install terra-sdk:
+    ```
+    pip install terra-sdk==4.0.0
+    ```
 
 *If your log shows no errors, that's it! Next, follow the instructions for [configuring telliot](#telliot-configuration).*
 
 ## (Optional) Docker Setup
-*Skip this section if you already have Python 3.9 and and the correct dependencies installed.*
+*Skip this section if you already have Python 3.12 and and the correct dependencies installed.*
 *This Docker Setup guide is for Linux Ubuntu. The commands will be different for Windows, Mac, and other Linux distros.*
 ### Prerequisites
 - Linux Ubuntu 20.04
