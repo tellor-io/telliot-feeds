@@ -6,9 +6,10 @@ from telliot_feeds.feeds.fbtc_usd_feed import fbtc_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_fbtc_usd_median_feed(caplog):
+async def test_fbtc_usd_median_feed(mock_price_feed, caplog):
     """Retrieve median FBTC/USD price."""
-
+    mock_prices = [95000.50]
+    mock_price_feed(fbtc_usd_median_feed, mock_prices)
     v, _ = await fbtc_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None

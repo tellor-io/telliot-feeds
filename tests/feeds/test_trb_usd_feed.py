@@ -6,9 +6,10 @@ from telliot_feeds.feeds.trb_usd_feed import trb_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_trb_asset_price_feed(caplog):
+async def test_trb_asset_price_feed(mock_price_feed, caplog):
     """Retrieve median TRB/USD price."""
-
+    mock_prices = [85.25, 86.50, 84.75, 85.80]
+    mock_price_feed(trb_usd_median_feed, mock_prices)
     v, _ = await trb_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None

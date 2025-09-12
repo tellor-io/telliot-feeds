@@ -74,8 +74,9 @@ class UniswapV3PriceService(WebPriceService):
         request_url = f"{self.url}/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV"
 
         session = Session()
+        headers = {"Accepts": "application/json"}
         if API_KEY != "":
-            headers = {"Accepts": "application/json", "Authorization": f"Bearer {API_KEY}"}
+            headers["Authorization"] = f"Bearer {API_KEY}"
             session.headers.update(headers)
         if API_KEY == "":
             logger.warning("No Graph API key found for Uniswap prices!")
