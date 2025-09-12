@@ -8,7 +8,8 @@ from telliot_feeds.feeds.tbtc_usd_feed import tbtc_usd_median_feed
 @pytest.mark.asyncio
 async def test_tbtc_usd_median_feed(mock_price_feed, caplog):
     """Retrieve median TBTC/USD price."""
-
+    mock_prices = [1200.50, 1205.25]
+    mock_price_feed(tbtc_usd_median_feed, mock_prices)
     v, _ = await tbtc_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None

@@ -8,7 +8,8 @@ from telliot_feeds.feeds.yusd_usd_feed import yusd_usd_median_feed
 @pytest.mark.asyncio
 async def test_yusd_usd_median_feed(mock_price_feed, caplog):
     """Retrieve median YUSD/USD price."""
-
+    mock_prices = [1200.50]
+    mock_price_feed(yusd_usd_median_feed, mock_prices)
     v, _ = await yusd_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None
