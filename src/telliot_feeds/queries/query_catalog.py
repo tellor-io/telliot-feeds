@@ -746,3 +746,9 @@ query_catalog.add_entry(
     title="SUSDS/USD spot price",
     q=SpotPrice(asset="susds", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="statom-usd-spot",
+    title="STATOM/USD spot price",
+    q=SpotPrice(asset="statom", currency="usd"),
+)

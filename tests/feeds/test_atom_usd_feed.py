@@ -7,7 +7,7 @@ from telliot_feeds.feeds.atom_usd_feed import atom_usd_median_feed
 
 @pytest.mark.asyncio
 async def test_atom_usd_median_feed(mock_price_feed, caplog):
-    """Retrieve median SAGA/USD price."""
+    """Retrieve median ATOM/USD price."""
 
     v, _ = await atom_usd_median_feed.source.fetch_new_datapoint()
 

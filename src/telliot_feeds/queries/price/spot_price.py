@@ -114,6 +114,7 @@ SPOT_PRICE_PAIRS = [
     "USDN/USD",
     "YUSD/USD",
     "SUSDS/USD",
+    "STATOM/USD",
 ]
 
 

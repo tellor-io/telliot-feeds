@@ -104,6 +104,7 @@ coingecko_coin_id = {
     "usdn": "noble-dollar-usdn",
     "yusd": "yieldfi-ytoken",
     "susds": "susds",
+    "statom": "stride-staked-atom",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key

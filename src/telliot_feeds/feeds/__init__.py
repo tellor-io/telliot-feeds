@@ -102,6 +102,7 @@ from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
 from telliot_feeds.feeds.solvbtc_usd_feed import solvbtc_usd_median_feed
 from telliot_feeds.feeds.solvbtcbbn_usd_feed import solvbtcbbn_usd_median_feed
 from telliot_feeds.feeds.spot_price_manual_feed import spot_price_manual_feed
+from telliot_feeds.feeds.statom_usd_feed import statom_usd_median_feed
 from telliot_feeds.feeds.steth_btc_feed import steth_btc_median_feed
 from telliot_feeds.feeds.steth_usd_feed import steth_usd_median_feed
 from telliot_feeds.feeds.stone_usd_feed import stone_usd_median_feed
@@ -262,6 +263,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "usdn-usd-spot": usdn_usd_median_feed,
     "yusd-usd-spot": yusd_usd_median_feed,
     "susds-usd-spot": susds_usd_median_feed,
+    "statom-usd-spot": statom_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
