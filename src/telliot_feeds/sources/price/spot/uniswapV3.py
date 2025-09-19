@@ -138,7 +138,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        price_source = UniswapV3PriceSource(asset="tbtc", currency="usd")
+        price_source = UniswapV3PriceSource(asset="reth", currency="usd")
         price, timestamp = await price_source.fetch_new_datapoint()
         print(price, timestamp)
 

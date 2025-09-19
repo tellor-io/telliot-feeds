@@ -8,13 +8,13 @@ from telliot_feeds.feeds.tbtc_usd_feed import tbtc_usd_median_feed
 @pytest.mark.asyncio
 async def test_tbtc_usd_median_feed(mock_price_feed, caplog):
     """Retrieve median TBTC/USD price."""
-    mock_prices = [1200.50, 1205.25]
+    mock_prices = [1200.50, 1205.25, 1200.25]
     mock_price_feed(tbtc_usd_median_feed, mock_prices)
     v, _ = await tbtc_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None
     assert v > 0
-    assert "sources used in aggregate: 2" in caplog.text.lower()
+    assert "sources used in aggregate: 3" in caplog.text.lower()
     print(f"TBTC/USD Price: {v}")
 
     # Get list of data sources from sources dict
