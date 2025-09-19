@@ -15,21 +15,21 @@ In this example, the virtual environment will be created in a subfolder called `
 === "Linux"
 
     ```
-    python3.12 -m venv env
+    python3.12 -m venv tenv
     source env/bin/activate
     ```
 
 === "Windows"
 
     ```
-    py3.12 -m venv env
+    py3.12 -m venv tenv
     env\Scripts\activate
     ```
 
 === "Mac M1"
 
     ```
-    python3.12 -m venv env
+    python3.12 -m venv tenv
     source env/bin/activate
     ```
 

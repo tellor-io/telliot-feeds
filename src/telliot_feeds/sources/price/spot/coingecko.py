@@ -105,6 +105,7 @@ coingecko_coin_id = {
     "yusd": "yieldfi-ytoken",
     "susds": "susds",
     "statom": "stride-staked-atom",
+    "fbtc": "ignition-fbtc",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key
