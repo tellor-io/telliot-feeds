@@ -35,6 +35,7 @@ KRAKEN_ASSETS = {
     "LSK",
     "SAGA",
     "ATOM",
+    "POL",
 }
 KRAKEN_CURRENCIES = {"USD"}
 

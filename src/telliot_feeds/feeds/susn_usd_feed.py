@@ -1,19 +1,16 @@
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
-from telliot_feeds.sources.price.spot.curvefiprice import CurveFiUSDPriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 
-
-yusd_usd_median_feed = DataFeed(
-    query=SpotPrice(asset="yusd", currency="USD"),
+susn_usd_median_feed = DataFeed(
+    query=SpotPrice(asset="sUSN", currency="USD"),
     source=PriceAggregator(
-        asset="yusd",
+        asset="susn",
         currency="usd",
         algorithm="median",
         sources=[
-            CoinGeckoSpotPriceSource(asset="yusd", currency="usd"),
-            CurveFiUSDPriceSource(asset="yusd", currency="usd"),
+            CoinGeckoSpotPriceSource(asset="susn", currency="usd"),
         ],
     ),
 )
