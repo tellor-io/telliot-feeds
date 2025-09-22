@@ -96,6 +96,16 @@ coingecko_coin_id = {
     "solvbtc": "solv-btc",
     "solvbtcbbn": "solv-protocol-solvbtc-bbn",
     "cult": "milady-cult-coin",
+    "saga": "saga-2",
+    "atom": "cosmos",
+    "susde": "ethena-staked-usde",
+    "tbtc": "tbtc",
+    "king": "lrt-squared",
+    "usdn": "noble-dollar-usdn",
+    "yusd": "yieldfi-ytoken",
+    "susds": "susds",
+    "statom": "stride-staked-atom",
+    "fbtc": "ignition-fbtc",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key

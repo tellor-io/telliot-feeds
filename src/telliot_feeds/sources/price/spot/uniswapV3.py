@@ -37,6 +37,9 @@ uniswapV3_map = {
     "rai": "0x03ab458634910aad20ef5f1c8ee96f1d6ac54919",
     "lsk": "0x6033f7f88332b8db6ad452b7c6d5bb643990ae3f",
     "cult": "0x0000000000c5dc95539589fbd24be07c6c14eca4",
+    "mkr": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
+    "tbtc": "0x18084fba666a33d37592fa2633fd49a74dd93a88",
+    "king": "0x8f08b70456eb22f6109f57b8fafe862ed28e6040",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
@@ -71,8 +74,9 @@ class UniswapV3PriceService(WebPriceService):
         request_url = f"{self.url}/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV"
 
         session = Session()
+        headers = {"Accepts": "application/json"}
         if API_KEY != "":
-            headers = {"Accepts": "application/json", "Authorization": f"Bearer {API_KEY}"}
+            headers["Authorization"] = f"Bearer {API_KEY}"
             session.headers.update(headers)
         if API_KEY == "":
             logger.warning("No Graph API key found for Uniswap prices!")
@@ -134,7 +138,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        price_source = UniswapV3PriceSource(asset="reth", currency="eth")
+        price_source = UniswapV3PriceSource(asset="reth", currency="usd")
         price, timestamp = await price_source.fetch_new_datapoint()
         print(price, timestamp)
 

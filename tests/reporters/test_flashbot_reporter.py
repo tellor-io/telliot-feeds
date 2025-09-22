@@ -27,7 +27,7 @@ async def test_http_error(tellor_360, chain):
         check_rewards=False,
     )
 
-    with mock.patch("telliot_feeds.flashbots.provider.make_post_request", side_effect=requests.exceptions.HTTPError):
+    with mock.patch.object(r.endpoint._web3.flashbots, "send_bundle", side_effect=requests.exceptions.HTTPError):
         res, status = await r.report_once()
         assert res is None
         assert not status.ok

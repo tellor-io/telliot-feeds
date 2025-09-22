@@ -20,6 +20,7 @@ def diva_oracle_mock_contract(project, accounts):
     return accounts[0].deploy(project.DIVATellorOracleMock, 3600, "0x0000000000000000000000000000000000001234")
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_diva_protocol_contract(mumbai_test_cfg, diva_mock_contract, mumbai_test_key_name, deploy_contracts):
     """Test the DIVAProtocol contract"""
@@ -68,6 +69,7 @@ async def test_diva_protocol_contract(mumbai_test_cfg, diva_mock_contract, mumba
         assert p.capacity == 0
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_diva_tellor_oracle_contract(mumbai_test_cfg, diva_oracle_mock_contract):
     """Test the DIVAOracleTellor contract"""

@@ -312,7 +312,7 @@ def common_reporter_options(f: Callable[..., Any]) -> Callable[..., Any]:
         type=click.Choice([q.tag for q in query_catalog.find()]),
     )
     @click.option(
-        "-wp", "--wait-period", help="wait period between feed suggestion calls", nargs=1, type=int, default=7
+        "-wp", "--wait-period", help="wait period between feed suggestion calls", nargs=1, type=int, default=10
     )
     @click.option("--submit-once/--submit-continuous", default=False)
     @click.option("--stake", "-s", "stake", help=STAKE_MESSAGE, nargs=1, type=float, default=10.0)
@@ -496,9 +496,15 @@ async def call_oracle(
 
 
 class CustomHexBytes(HexBytes):
-    """Wrapper around HexBytes that doesn't accept int or bool"""
+    """HexBytes with stricter construction and 0x-prefixed hex() output."""
 
     def __new__(cls: Type[bytes], val: Union[bytearray, bytes, str]) -> "CustomHexBytes":
         if isinstance(val, (int, bool)):
             raise ValueError("Invalid value")
         return cast(CustomHexBytes, super().__new__(cls, val))
+
+    def hex(self) -> str:  # type: ignore[override]
+        h = super().hex()
+        if not h.startswith("0x"):
+            return "0x" + h
+        return h

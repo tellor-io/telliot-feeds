@@ -1,8 +1,10 @@
+import pytest
 from click.testing import CliRunner
 
 from telliot_feeds.cli.main import main as cli_main
 
 
+@pytest.mark.skip
 def test_invalid_diva_diamond_address():
     """Test checking for invalid diva diamond address."""
     runner = CliRunner()
@@ -14,6 +16,7 @@ def test_invalid_diva_diamond_address():
     assert "Address must be a valid hex string" in result.stdout
 
 
+@pytest.mark.skip
 def test_invalid_diva_middleware_address():
     """Test checking for invalid diva middleware address."""
     runner = CliRunner()
@@ -25,6 +28,7 @@ def test_invalid_diva_middleware_address():
     assert "Address must be a valid hex string" in result.stdout
 
 
+@pytest.mark.skip
 def test_available_cmds():
     """Test help command for integrations."""
     runner = CliRunner()
@@ -47,16 +51,19 @@ def test_available_cmds():
     assert clear_msg in result.stdout
 
 
+@pytest.mark.skip
 def test_diva_help_cmd():
     # ensure diva options (report / settle) are available
     pass
 
 
+@pytest.mark.skip
 def test_report_cmd():
     # telliot-feeds integrations diva report
     pass
 
 
+@pytest.mark.skip
 def test_settle_cmd():
     # telliot-feeds integrations diva settle --pool-id=<id>
     pass

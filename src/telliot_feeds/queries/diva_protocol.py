@@ -13,6 +13,7 @@ from hexbytes import HexBytes
 
 from telliot_feeds.dtypes.value_type import ValueType
 from telliot_feeds.queries.abi_query import AbiQuery
+from telliot_feeds.utils.hexbytes import CustomHexBytes
 
 
 logger = logging.getLogger(__name__)
@@ -89,7 +90,8 @@ class DIVAProtocol(AbiQuery):
     def __post_init__(self) -> None:
         """Validate parameters."""
         if self.poolId is not None:
-            self.poolId = HexBytes(self.poolId)
+            # Ensure 0x-prefixed hex() output for tests and CLI expectations
+            self.poolId = CustomHexBytes(self.poolId)
 
         parameters_set = (
             self.poolId is not None,

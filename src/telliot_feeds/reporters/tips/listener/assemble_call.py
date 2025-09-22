@@ -1,11 +1,17 @@
 from typing import Any
+from typing import cast
 from typing import Optional
 
+import multicall.utils as _mutils
 from multicall import Call
 from multicall import Multicall
 from telliot_core.tellor.tellorflex.autopay import TellorFlexAutopayContract
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
+
+from telliot_feeds.utils.async_web3_shim import AsyncWeb3Shim
+
+_mutils.AsyncWeb3 = cast(Any, AsyncWeb3Shim)
 
 
 class AssembleCall:
@@ -32,8 +38,9 @@ class AssembleCall:
         - dictionary of of Any type key, could be tuple, string, or number
         """
         status = ResponseStatus()
+
         multi_call = Multicall(
-            calls=calls, _w3=self.autopay.node._web3, require_success=success, gas_limit=self.gas_limit
+            calls=calls, _w3=self.autopay.node._web3, require_success=success, gas_limit=self.gas_limit or 0
         )
         try:
             data: dict[Any, Any] = await multi_call.coroutine()

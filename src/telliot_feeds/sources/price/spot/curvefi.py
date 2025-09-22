@@ -14,9 +14,11 @@ logger = get_logger(__name__)
 
 contract_map = {
     "eth": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
-    "steth": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+    "steth": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
     "btc": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
     "sfrax": "0xe3b3FE7bcA19cA77Ad877A5Bebab186bEcfAD906",
+    "frax": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
+    "frxeth": "0x5E8422345238F34275888049021821E8E08CAa1f",
 }
 
 
@@ -58,7 +60,7 @@ class CurveFinanceSpotPriceService(WebPriceService):
             asset_price = None
             for pool in pool_data:
                 for coin in pool["coins"]:
-                    if coin["address"] == asset_address:
+                    if coin["address"].lower() == asset_address.lower():
                         asset_price = coin.get("usdPrice")
                         break
                 if asset_price is not None:
@@ -73,7 +75,7 @@ class CurveFinanceSpotPriceService(WebPriceService):
                 currency_price = None
                 for pool in pool_data:
                     for coin in pool["coins"]:
-                        if coin["address"] == contract_map[currency]:
+                        if coin["address"].lower() == contract_map[currency].lower():
                             currency_price = coin.get("usdPrice")
                             break
                     if currency_price is not None:
@@ -100,6 +102,6 @@ if __name__ == "__main__":
     async def main() -> None:
         source = CurveFinanceSpotPriceSource(asset="steth", currency="btc")
         v, _ = await source.fetch_new_datapoint()
-        print(v)
+        print(f"stETH/BTC price: {v}")
 
     asyncio.run(main())

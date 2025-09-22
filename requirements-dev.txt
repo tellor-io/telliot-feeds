@@ -1,4 +1,6 @@
 eth-ape
+ape-hardhat
+ape-solidity
 mkdocs-material
 mkdocstrings[python]
 pytest

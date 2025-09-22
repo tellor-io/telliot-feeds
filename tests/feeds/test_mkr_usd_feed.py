@@ -4,7 +4,9 @@ from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_fetch_price():
+async def test_fetch_price(mock_price_feed):
+    mock_prices = [1745.4, 1753.78, 1750.5]
+    mock_price_feed(mkr_usd_median_feed, mock_prices)
     (value, _) = await mkr_usd_median_feed.source.fetch_new_datapoint()
     assert value > 0
     print(value)

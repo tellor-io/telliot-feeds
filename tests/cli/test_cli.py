@@ -91,19 +91,6 @@ def test_parse_profit_input():
         _ = parse_profit_input({}, None, "asdf")
 
 
-@pytest.mark.skip
-def test_flag_staker_tag():
-    """Test user choosing to use different staker."""
-    runner = CliRunner()
-    result = runner.invoke(cli_main, ["-st", "thisdoesnotexist", "report"])
-
-    assert result.exception
-    assert result.exit_code == 1
-
-    expected = "No staker found for given tag, using default"
-    assert expected in result.stdout
-
-
 def test_invalid_report_option_query_tag():
     """Test selecting datafeed using wrong query tag."""
     runner = CliRunner()
@@ -140,18 +127,6 @@ def test_diva_protocol_invalid_chain():
     valid = valid_diva_chain(chain_id=1)
 
     assert not valid
-
-
-@pytest.mark.skip("Disabled until we need this functionality")
-def test_cmd_tip():
-    """Test CLI tip command"""
-    runner = CliRunner()
-    trb = "0.00001"
-    result = runner.invoke(cli_main, ["--test_config", "tip", "--amount-usd", trb])
-
-    expected = "Error: No such option: --amount-usd Did you mean --amount-trb?"
-
-    assert expected in result.output
 
 
 def test_stake_flag():

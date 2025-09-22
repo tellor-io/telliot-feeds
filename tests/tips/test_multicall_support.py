@@ -8,10 +8,10 @@ def test_add_multicall_support(caplog):
     add_multicall_support(
         network="FakeNetwork",
         network_id=2500,
-        multicall2_address="0x",
+        multicall2_address="0x5FbDB2315678afecb367f032d93F642f64180aa3",
     )
     assert "Network FakeNetwork already exists in multicall package" not in caplog.text
-    assert MULTICALL2_ADDRESSES[2500] == "0x"
+    assert MULTICALL2_ADDRESSES[2500] == "0x5FbDB2315678afecb367f032d93F642f64180aa3"
     # add testnet support for multicall that is avaialable in the package
     add_multicall_support(
         network="Chiado",

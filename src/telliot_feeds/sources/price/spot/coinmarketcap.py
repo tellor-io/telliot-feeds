@@ -17,8 +17,19 @@ from telliot_feeds.utils.log import get_logger
 
 logger = get_logger(__name__)
 
-coinmarketcap_assets = {"BCT", "ALBT"}
-coinmarketcap_currencies = {"USD"}
+# Source: see "API token list" https://coinmarketcap.com/api/documentation/v1/#introduction
+# USD pairs only for now.
+coinmarketcap_ids = {
+    "susde": "29471",
+    "fbtc": "32306",
+    "king": "33695",
+    "usdn": "36538",
+    "tbtc": "26133",
+    "reth": "15060",
+    "statom": "21686",
+    "bct": "12949",
+    "saga": "30372",
+}
 
 API_KEY = TelliotConfig().api_keys.find(name="coinmarketcap")[0].key
 
@@ -40,15 +51,15 @@ class CoinMarketCapSpotPriceService(WebPriceService):
 
         asset = asset.upper()
         currency = currency.upper()
+        asset_lower = asset.lower()
 
-        if asset not in coinmarketcap_assets:
-            raise Exception(f"Asset not supported: {asset}")
-        if currency not in coinmarketcap_currencies:
-            raise Exception(f"Currency not supported: {currency}")
+        if asset_lower not in coinmarketcap_ids:
+            raise Exception(f"Asset not supported: {asset}. Only assets with ID mappings are supported.")
 
         request_url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+        parameters = {"id": coinmarketcap_ids[asset_lower]}
+        logger.debug(f"Using CoinMarketCap ID {coinmarketcap_ids[asset_lower]} for asset {asset}")
 
-        parameters = {"symbol": asset}
         headers = {
             "Accepts": "application/json",
             "X-CMC_PRO_API_KEY": API_KEY,
@@ -71,7 +82,9 @@ class CoinMarketCapSpotPriceService(WebPriceService):
             return None, None
 
         try:
-            price = data["data"][asset]["quote"][currency]["price"]
+            # Response is always keyed by the ID when using ID parameter
+            data_key = coinmarketcap_ids[asset_lower]
+            price = data["data"][data_key]["quote"][currency]["price"]
             return price, datetime_now_utc()
         except Exception as e:
             msg = f"Error parsing CoinMarketCap API response: Exception: {e}"

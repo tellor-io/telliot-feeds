@@ -1,31 +1,29 @@
-import statistics
+from unittest.mock import AsyncMock
+from unittest.mock import patch
 
 import pytest
 
 from telliot_feeds.feeds.wrseth_usd_feed import wrseth_usd_feed
-from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
-from telliot_feeds.sources.price.spot.coinpaprika import CoinpaprikaSpotPriceSource
-from telliot_feeds.sources.price.spot.curvefiprice import CurveFiUSDPriceSource
-from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceSource
 
 
 @pytest.mark.asyncio
 async def test_wrseth_usd_feed(caplog, mock_price_feed):
     """Retrieve median WrsETH/USD price."""
-    mock_prices = [1200.50, 1205.25, 1202.75, 1201.00]
-    mock_price_feed(
-        wrseth_usd_feed,
-        mock_prices,
-        [CoinGeckoSpotPriceSource, CoinpaprikaSpotPriceSource, CurveFiUSDPriceSource, UniswapV3PriceSource],
-    )
-    v, _ = await wrseth_usd_feed.source.fetch_new_datapoint()
+    # Mock the blockchain call that gets the wrsETH ratio
+    with patch("telliot_feeds.sources.wrseth_source.wrsETHSpotPriceService.get_wrseth_eth_ratio", return_value=1.05):
+        # Mock the underlying price sources for rsETH
+        # mock_prices = [3200.50, 3205.25, 3202.75, 3201.00]
 
-    assert v is not None
-    assert v > 0
-    assert "sources used in aggregate: 4" in caplog.text.lower()
-    print(f"WrsETH/USD Price: {v}")
-    # Get list of data sources from sources dict
-    source_prices = wrseth_usd_feed.source.latest[0]
+        # Create a mock price aggregator for the internal sources
+        with patch("telliot_feeds.sources.wrseth_source.PriceAggregator") as mock_aggregator:
+            mock_aggregator_instance = mock_aggregator.return_value
+            mock_aggregator_instance.fetch_new_datapoint = AsyncMock(return_value=(3202.125, None))
 
-    # Make sure error is less than decimal tolerance
-    assert (v - statistics.median([source_prices])) < 10**-6
+            v, _ = await wrseth_usd_feed.source.fetch_new_datapoint()
+
+            assert v is not None
+            assert v > 0
+            # Expected price should be approximately 3202.125 * 1.05 = 3362.23
+            expected_price = 3202.125 * 1.05
+            assert abs(v - expected_price) < 1.0  # Allow small tolerance
+            print(f"WrsETH/USD Price: {v}")

@@ -164,8 +164,6 @@ Pipfile.lock
 
 # ignore Ganache/brownie files
 node_modules/
-package-lock.json
-package.json
 
 # aws keys
 *.pem
@@ -173,3 +171,4 @@ package.json
 # ignore stray test files
 reported_pools.pickle
 tenv
+env

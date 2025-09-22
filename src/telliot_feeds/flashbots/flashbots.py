@@ -19,8 +19,8 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from eth_account._utils.legacy_transactions import Transaction
-from eth_account._utils.typed_transactions import AccessListTransaction
-from eth_account._utils.typed_transactions import DynamicFeeTransaction
+from eth_account.typed_transactions import AccessListTransaction
+from eth_account.typed_transactions import DynamicFeeTransaction
 from eth_typing import HexStr
 from hexbytes import HexBytes
 from toolz import dissoc
@@ -65,7 +65,7 @@ class FlashbotsTransactionResponse:
 
     def wait(self) -> None:
         """Waits until the target block has been reached"""
-        while self.w3.eth.blockNumber < self.target_block_number:
+        while self.w3.eth.block_number < self.target_block_number:
             time.sleep(1)
 
     def receipts(self) -> List[Union[_Hash32, HexBytes, HexStr]]:
@@ -107,7 +107,7 @@ class Flashbots(Module):
                     tx["gas"] = self.w3.eth.estimate_gas(tx)
 
                 signed_tx = signer.sign_transaction(tx)
-                signed_transactions.append(signed_tx.rawTransaction)
+                signed_transactions.append(signed_tx.raw_transaction)
 
             elif all(key in tx for key in ["v", "r", "s"]):  # FlashbotsBundleDictTx
                 v, r, s = (

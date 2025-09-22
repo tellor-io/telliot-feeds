@@ -26,6 +26,7 @@ ethereum_contract_map = {
     "ousd": "0x2a8e1e676ec238d8a992307b495b45b3feaa5e86",
     "pufeth": "0xd9a442856c234a39a81a089c06451ebaa4306a72",
     "solvbtc": "0x7a56e1c57c7475ccf742a1832b028f0456652f97",
+    "wsteth": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
 }
 
 
@@ -73,9 +74,9 @@ class CurveFiUSDPriceService(WebPriceService):
             logger.error("Failed to parse response data from Curve Finance API 'usd_price' key not found")
             return None, None
 
-        isAddress = data.get("address", "").lower() == asset_address.lower()
+        is_address = data.get("address", "").lower() == asset_address.lower()
 
-        if not isAddress:
+        if not is_address:
             logger.error("Asset '0x' address in API response doesn't match contract address stored")
             return None, None
         return asset_price, datetime_now_utc()

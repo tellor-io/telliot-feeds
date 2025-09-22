@@ -33,7 +33,7 @@ async def test_not_injecting_middlware_twice(caplog):
     assert "It is quite likely that you are connected to a POA chain." in caplog.text
 
     s.get_response()
-    assert "Layer already has middleware with identifier: geth_poa_middleware" not in caplog.text
+    assert "Layer already has middleware with identifier: ExtraDataToPOAMiddleware" not in caplog.text
 
 
 @pytest.mark.asyncio

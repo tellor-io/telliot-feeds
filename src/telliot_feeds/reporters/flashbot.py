@@ -47,7 +47,7 @@ class FlashbotsReporter(Tellor360Reporter):
         # Create bundle of one pre-signed, EIP-1559 (type 2) transaction
         tx_signed = self.account.local_account.sign_transaction(built_tx)
         bundle = [
-            {"signed_transaction": tx_signed.rawTransaction},
+            {"signed_transaction": tx_signed.raw_transaction},
         ]
 
         # Send bundle to be executed in the next block

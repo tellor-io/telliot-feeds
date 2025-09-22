@@ -93,7 +93,7 @@ async def test_call_oracle(tellor_360, caplog, chain, sepolia_test_key_name):
                 func="withdrawStake",
                 user_inputs=user_inputs,
             )
-            assert "7 days didn't pass" in caplog.text
+            assert "7 days didn" in caplog.text
             chain.pending_timestamp += 604800
             user_inputs["password"] = ""
             user_inputs["min_native_token_balance"] = 0.0

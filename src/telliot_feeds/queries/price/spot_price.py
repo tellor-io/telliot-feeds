@@ -105,6 +105,16 @@ SPOT_PRICE_PAIRS = [
     "SOLVBTC/USD",
     "SOLVBTCBBN/USD",
     "CULT/USD",
+    "SAGA/USD",
+    "ATOM/USD",
+    "SUSDE/USD",
+    "TBTC/USD",
+    "FBTC/USD",
+    "KING/USD",
+    "USDN/USD",
+    "YUSD/USD",
+    "SUSDS/USD",
+    "STATOM/USD",
 ]
 
 

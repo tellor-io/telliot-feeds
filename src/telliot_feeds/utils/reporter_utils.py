@@ -138,7 +138,7 @@ def create_custom_contract(
 
     Reports to user if custom contract ABI differs from original contract ABI.
     Confirms if user wants to continue with custom contract ABI."""
-    original_functions = sorted(list(original_contract.contract.functions))
+    original_functions = sorted([str(func) for func in original_contract.contract.functions])
 
     if not custom_abi:
         # fetch ABI from block explorer
@@ -151,7 +151,7 @@ def create_custom_contract(
 
     custom_contract = Contract(custom_contract_addr, custom_abi, endpoint, account)
     custom_contract.connect()
-    custom_functions = sorted(list(custom_contract.contract.functions))
+    custom_functions = sorted([str(func) for func in custom_contract.contract.functions])
 
     missing_functions = [f for f in original_functions if f not in custom_functions]
     if missing_functions:
