@@ -770,3 +770,9 @@ query_catalog.add_entry(
     title="sfrxUSD/USD spot price",
     q=SpotPrice(asset="sfrxusd", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="usn-usd-spot",
+    title="USN/USD spot price",
+    q=SpotPrice(asset="usn", currency="usd"),
+)
