@@ -12,7 +12,7 @@ async def test_wrseth_usd_feed(caplog, mock_price_feed):
     # Mock the blockchain call that gets the wrsETH ratio
     with patch("telliot_feeds.sources.wrseth_source.wrsETHSpotPriceService.get_wrseth_eth_ratio", return_value=1.05):
         # Mock the underlying price sources for rsETH
-        # mock_prices = [3200.50, 3205.25, 3202.75, 3201.00]
+        mock_prices = [3200.50, 3205.25, 3202.75, 3201.00]
 
         # Create a mock price aggregator for the internal sources
         with patch("telliot_feeds.sources.wrseth_source.PriceAggregator") as mock_aggregator:
