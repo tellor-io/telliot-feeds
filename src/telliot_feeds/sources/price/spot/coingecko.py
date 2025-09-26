@@ -106,6 +106,9 @@ coingecko_coin_id = {
     "susds": "susds",
     "statom": "stride-staked-atom",
     "fbtc": "ignition-fbtc",
+    "susn": "staked-usn",
+    "sfrxusd": "staked-frax-usd",
+    "usn": "noon-usn",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key

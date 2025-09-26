@@ -752,3 +752,27 @@ query_catalog.add_entry(
     title="STATOM/USD spot price",
     q=SpotPrice(asset="statom", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="susn-usd-spot",
+    title="SUSN/USD spot price",
+    q=SpotPrice(asset="susn", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="vyusd-usd-spot",
+    title="vyUSD/USD spot price",
+    q=SpotPrice(asset="vyusd", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="sfrxusd-usd-spot",
+    title="sfrxUSD/USD spot price",
+    q=SpotPrice(asset="sfrxusd", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="usn-usd-spot",
+    title="USN/USD spot price",
+    q=SpotPrice(asset="usn", currency="usd"),
+)

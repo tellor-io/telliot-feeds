@@ -96,6 +96,7 @@ from telliot_feeds.feeds.rseth_usd_feed import rseth_usd_median_feed
 from telliot_feeds.feeds.saga_usd_feed import saga_usd_median_feed
 from telliot_feeds.feeds.sdai_usd_feed import sdai_usd_median_feed
 from telliot_feeds.feeds.sfrax_usd_feed import sfrax_usd_feed
+from telliot_feeds.feeds.sfrxusd_usd_feed import sfrxusd_usd_median_feed
 from telliot_feeds.feeds.shib_usd_feed import shib_usd_median_feed
 from telliot_feeds.feeds.snapshot_feed import snapshot_feed_example
 from telliot_feeds.feeds.snapshot_feed import snapshot_manual_feed
@@ -111,6 +112,7 @@ from telliot_feeds.feeds.superoethb_eth_feed import superoethb_eth_median_feed
 from telliot_feeds.feeds.susde_usd_feed import susde_usd_median_feed
 from telliot_feeds.feeds.susds_usd_feed import susds_usd_median_feed
 from telliot_feeds.feeds.sushi_usd_feed import sushi_usd_median_feed
+from telliot_feeds.feeds.susn_usd_feed import susn_usd_median_feed
 from telliot_feeds.feeds.sweth_usd_feed import sweth_usd_median_feed
 from telliot_feeds.feeds.tara_usd_feed import tara_usd_median_feed
 from telliot_feeds.feeds.tbtc_usd_feed import tbtc_usd_median_feed
@@ -127,8 +129,10 @@ from telliot_feeds.feeds.usdm_usd_feed import usdm_usd_median_feed
 from telliot_feeds.feeds.usdn_usd_feed import usdn_usd_median_feed
 from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
 from telliot_feeds.feeds.usdy_usd_feed import usdy_usd_median_feed
+from telliot_feeds.feeds.usn_usd_feed import usn_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.feeds.vesq import vsq_usd_median_feed
+from telliot_feeds.feeds.vyusd_usd_feed import vyusd_usd_median_feed
 from telliot_feeds.feeds.wbeth_usd_feed import wbeth_usd_median_feed
 from telliot_feeds.feeds.wbtc_usd_feed import wbtc_usd_median_feed
 from telliot_feeds.feeds.weeth_usd_feed import weeth_usd_median_feed
@@ -264,6 +268,10 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "yusd-usd-spot": yusd_usd_median_feed,
     "susds-usd-spot": susds_usd_median_feed,
     "statom-usd-spot": statom_usd_median_feed,
+    "susn-usd-spot": susn_usd_median_feed,
+    "vyusd-usd-spot": vyusd_usd_median_feed,
+    "sfrxusd-usd-spot": sfrxusd_usd_median_feed,
+    "usn-usd-spot": usn_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

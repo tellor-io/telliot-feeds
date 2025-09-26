@@ -90,11 +90,29 @@ class UniswapV3PoolPriceService(WebPriceService):
             response = data["response"]
 
             try:
-                token_price = float(response["data"]["pool"][key])
+                # Check if pool data exists in the response
+                pool_info = response["data"].get("pool")
+                if pool_info is None:
+                    msg = f"UniswapV3 Pool API: No pool data available for token {asset.upper()}"
+                    logger.warning(msg)
+                    return None, None
+
+                # Check if the specific price key exists and is not None
+                token_price_value = pool_info.get(key)
+                if token_price_value is None:
+                    msg = f"UniswapV3 Pool API: No {key} value available for token {asset.upper()}"
+                    logger.warning(msg)
+                    return None, None
+
+                token_price = float(token_price_value)
                 return token_price, datetime_now_utc()
             except KeyError as e:
                 msg = "Error parsing UniswapV3 pool response: KeyError: {}".format(e)
                 logger.critical(msg)
+                return None, None
+            except (TypeError, ValueError) as e:
+                msg = f"UniswapV3 Pool API: Error processing pool price data for {asset.upper()}: {e}"
+                logger.warning(msg)
                 return None, None
 
         else:
@@ -112,7 +130,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        price_source = UniswapV3PoolPriceSource(asset="oeth", currency="eth")
+        price_source = UniswapV3PoolPriceSource(asset="usn", currency="eth")
         price, timestamp = await price_source.fetch_new_datapoint()
         print(price, timestamp)
 

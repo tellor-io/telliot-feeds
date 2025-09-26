@@ -104,13 +104,28 @@ class UniswapV3PriceService(WebPriceService):
 
             try:
                 ethprice = float(response["data"]["bundles"][0]["ethPriceUSD"])
+
+                # Check if token data exists in the response
+                token_info = response["data"].get("token")
+                if token_info is None:
+                    msg = f"UniswapV3 API: No price data available for token {asset.upper()}"
+                    logger.warning(msg)
+                    return None, None
+
                 if asset.lower() == "eth":
                     token_data = 1
                 elif currency.lower() == "eth":
                     ethprice = 1
-                    token_data = response["data"]["token"]["derivedETH"]
+                    token_data = token_info["derivedETH"]
                 else:
-                    token_data = response["data"]["token"]["derivedETH"]
+                    token_data = token_info["derivedETH"]
+
+                # Additional check for None derivedETH value
+                if token_data is None:
+                    msg = f"UniswapV3 API: No derivedETH value available for token {asset.upper()}"
+                    logger.warning(msg)
+                    return None, None
+
                 price = ethprice * float(token_data)
                 if price == 0.0:
                     msg = "Uniswap API not included, because price response is 0"
@@ -121,6 +136,10 @@ class UniswapV3PriceService(WebPriceService):
             except KeyError as e:
                 msg = "Error parsing UniswapV3 response: KeyError: {}".format(e)
                 logger.critical(msg)
+                return None, None
+            except (TypeError, ValueError) as e:
+                msg = f"UniswapV3 API: Error processing price data for {asset.upper()}: {e}"
+                logger.warning(msg)
                 return None, None
 
         else:
@@ -138,7 +157,7 @@ if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        price_source = UniswapV3PriceSource(asset="reth", currency="usd")
+        price_source = UniswapV3PriceSource(asset="king", currency="usd")
         price, timestamp = await price_source.fetch_new_datapoint()
         print(price, timestamp)
 
