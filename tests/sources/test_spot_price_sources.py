@@ -249,7 +249,7 @@ async def test_coinpaprika():
 @pytest.mark.asyncio
 async def test_curvefi():
     """Test CurveFinance price service"""
-    v, t = await get_price("frax", "btc", service["curvefi"])
+    v, t = await get_price("frxeth", "usd", service["curvefi"])
     validate_price(v, t)
     assert v is not None
     assert t is not None
