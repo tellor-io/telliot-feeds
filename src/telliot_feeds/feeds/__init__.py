@@ -143,6 +143,7 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
+from telliot_feeds.feeds.yeth_usd_feed import yeth_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
 from telliot_feeds.feeds.yusd_usd_feed import yusd_usd_median_feed
 
@@ -272,6 +273,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "vyusd-usd-spot": vyusd_usd_median_feed,
     "sfrxusd-usd-spot": sfrxusd_usd_median_feed,
     "usn-usd-spot": usn_usd_median_feed,
+    "yeth-usd-spot": yeth_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {

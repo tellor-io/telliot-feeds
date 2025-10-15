@@ -776,3 +776,9 @@ query_catalog.add_entry(
     title="USN/USD spot price",
     q=SpotPrice(asset="usn", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="yeth-usd-spot",
+    title="YETH/USD spot price",
+    q=SpotPrice(asset="yeth", currency="usd"),
+)
