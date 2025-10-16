@@ -9,7 +9,9 @@ from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService
 from telliot_feeds.pricing.price_source import PriceSource
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
-from telliot_feeds.sources.price.spot.curvefiprice import CurveFiUSDPriceSource
+from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceSource
+from telliot_feeds.sources.price.spot.kraken import KrakenSpotPriceSource
+from telliot_feeds.sources.price.spot.okx import OKXSpotPriceSource
 from telliot_feeds.sources.price_aggregator import PriceAggregator
 from telliot_feeds.utils.log import get_logger
 
@@ -25,7 +27,7 @@ class vyUSDSpotPriceService(WebPriceService):
         super().__init__(**kwargs)
         self.cfg = TelliotConfig()
 
-    def get_vyusd_usd_ratio(self) -> Optional[float]:
+    def get_vyusd_usdc_ratio(self) -> Optional[float]:
         # get endpoint
         endpoint = self.cfg.endpoints.find(chain_id=1)
         if not endpoint:
@@ -55,7 +57,7 @@ class vyUSDSpotPriceService(WebPriceService):
         asset = asset.lower()
         currency = currency.lower()
 
-        vyusd_ratio = self.get_vyusd_usd_ratio()
+        vyusd_ratio = self.get_vyusd_usdc_ratio()
         if vyusd_ratio is None:
             logger.error("Unable to get vyusd_USDM_ratio")
             return None, None
@@ -63,8 +65,10 @@ class vyUSDSpotPriceService(WebPriceService):
         source = PriceAggregator(
             algorithm="median",
             sources=[
-                CoinGeckoSpotPriceSource(asset="yusd", currency="usd"),
-                CurveFiUSDPriceSource(asset="yusd", currency="usd"),
+                CoinGeckoSpotPriceSource(asset="usdc", currency="usd"),
+                GeminiSpotPriceSource(asset="usdc", currency="usd"),
+                KrakenSpotPriceSource(asset="usdc", currency="usd"),
+                OKXSpotPriceSource(asset="usdc", currency="usdt"),
             ],
         )
 
