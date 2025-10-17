@@ -14,7 +14,7 @@ from telliot_feeds.utils.log import get_logger
 
 
 logger = get_logger(__name__)
-uniswapV3_map = {
+uniswapV4_map = {
     "eth": "0x0000000000000000000000000000000000000000",
     "wbtc": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
     "matic": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
@@ -39,16 +39,17 @@ uniswapV3_map = {
     "cult": "0x0000000000c5dc95539589fbd24be07c6c14eca4",
     "mkr": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
     "tbtc": "0x18084fba666a33d37592fa2633fd49a74dd93a88",
+    "king": "0x8f08b70456eb22f6109f57b8fafe862ed28e6040",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
 
 
-class UniswapV3PriceService(WebPriceService):
-    """UniswapV3 Price Service in USD and ETH"""
+class UniswapV4PriceService(WebPriceService):
+    """UniswapV4 Price Service in USD and ETH"""
 
     def __init__(self, **kwargs: Any) -> None:
-        kwargs["name"] = "UniswapV3 Price Service"
+        kwargs["name"] = "UniswapV4 Price Service"
         kwargs["url"] = "https://gateway-arbitrum.network.thegraph.com"
         kwargs["timeout"] = 10.0
         super().__init__(**kwargs)
@@ -57,12 +58,12 @@ class UniswapV3PriceService(WebPriceService):
         """Implement PriceServiceInterface
 
         This implementation gets the price from a decentralized subgraph:
-        https://thegraph.com/explorer/subgraphs/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV?view=Query&chain=arbitrum-one
+        https://thegraph.com/explorer/subgraphs/DiYPVdygkfjDWhbxGSqAQxwBKmfKnkWQojqeM2rkLb3G?view=Query&chain=arbitrum-one
         """
 
         asset = asset.lower()
 
-        token = uniswapV3_map.get(asset, None)
+        token = uniswapV4_map.get(asset, None)
         if not token:
             raise Exception("Asset not supported: {}".format(asset))
 
@@ -70,7 +71,7 @@ class UniswapV3PriceService(WebPriceService):
 
         json_data = {"query": query}
 
-        request_url = f"{self.url}/api/subgraphs/id/5zvR82QoaXYFyDEKLZ9t6v9adgnptxYpKpSbxtgVENFV"
+        request_url = f"{self.url}/api/subgraphs/id/DiYPVdygkfjDWhbxGSqAQxwBKmfKnkWQojqeM2rkLb3G"
 
         session = Session()
         headers = {"Accepts": "application/json"}
@@ -107,7 +108,7 @@ class UniswapV3PriceService(WebPriceService):
                 # Check if token data exists in the response
                 token_info = response["data"].get("token")
                 if token_info is None:
-                    msg = f"UniswapV3 API: No price data available for token {asset.upper()}"
+                    msg = f"UniswapV4 API: No price data available for token {asset.upper()}"
                     logger.warning(msg)
                     return None, None
 
@@ -121,7 +122,7 @@ class UniswapV3PriceService(WebPriceService):
 
                 # Additional check for None derivedETH value
                 if token_data is None:
-                    msg = f"UniswapV3 API: No derivedETH value available for token {asset.upper()}"
+                    msg = f"UniswapV4 API: No derivedETH value available for token {asset.upper()}"
                     logger.warning(msg)
                     return None, None
 
@@ -133,11 +134,11 @@ class UniswapV3PriceService(WebPriceService):
                 else:
                     return price, datetime_now_utc()
             except KeyError as e:
-                msg = "Error parsing UniswapV3 response: KeyError: {}".format(e)
+                msg = "Error parsing UniswapV4 response: KeyError: {}".format(e)
                 logger.critical(msg)
                 return None, None
             except (TypeError, ValueError) as e:
-                msg = f"UniswapV3 API: Error processing price data for {asset.upper()}: {e}"
+                msg = f"UniswapV4 API: Error processing price data for {asset.upper()}: {e}"
                 logger.warning(msg)
                 return None, None
 
@@ -146,17 +147,17 @@ class UniswapV3PriceService(WebPriceService):
 
 
 @dataclass
-class UniswapV3PriceSource(PriceSource):
+class UniswapV4PriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
-    service: UniswapV3PriceService = field(default_factory=UniswapV3PriceService, init=False)
+    service: UniswapV4PriceService = field(default_factory=UniswapV4PriceService, init=False)
 
 
 if __name__ == "__main__":
     import asyncio
 
     async def main() -> None:
-        price_source = UniswapV3PriceSource(asset="king", currency="usd")
+        price_source = UniswapV4PriceSource(asset="king", currency="usd")
         price, timestamp = await price_source.fetch_new_datapoint()
         print(price, timestamp)
 
