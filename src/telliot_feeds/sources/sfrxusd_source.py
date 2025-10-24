@@ -26,46 +26,46 @@ class sfrxUSDSpotPriceService(WebPriceService):
         super().__init__(**kwargs)
         self.cfg = TelliotConfig()
 
-    def get_sfraxusd_frxusd_ratio(self) -> Optional[float]:
+    def get_sfrxusd_frxusd_ratio(self) -> Optional[float]:
         # get endpoint
         endpoint = self.cfg.endpoints.find(chain_id=1)
         if not endpoint:
-            logger.error("Endpoint not found for mainnet to get sfraxusd_frxusd_ratio")
+            logger.error("Endpoint not found for mainnet to get sfrxusd_frxusd_ratio")
             return None
         ep = endpoint[0]
         if not ep.connect():
-            logger.error("Unable to connect endpoint for mainnet to get sfraxusd_frxusd_ratio")
+            logger.error("Unable to connect endpoint for mainnet to get sfrxusd_frxusd_ratio")
             return None
         w3 = ep.web3
         # get supply numbers from sfrxUSD contract
-        sfraxusd_totalAssets_bytes = w3.eth.call(
+        sfrxusd_totalAssets_bytes = w3.eth.call(
             {
                 "to": "0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6",
                 "data": "0x01e1d114",
             }
         )
-        sfraxusd_totalSupply_bytes = w3.eth.call(
+        sfrxusd_totalSupply_bytes = w3.eth.call(
             {
                 "to": "0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6",
                 "data": "0x18160ddd",
             }
         )
-        sfraxusd_totalAssets_decoded = w3.to_int(sfraxusd_totalAssets_bytes)
-        sfraxusd_totalSupply_decoded = w3.to_int(sfraxusd_totalSupply_bytes)
-        sfraxusd_frxusd_ratio = sfraxusd_totalAssets_decoded / sfraxusd_totalSupply_decoded
-        logger.info(f"sfrxusd/frxusd Ratio from contract: {sfraxusd_frxusd_ratio}")
-        return float(sfraxusd_frxusd_ratio)
+        sfrxusd_totalAssets_decoded = w3.to_int(sfrxusd_totalAssets_bytes)
+        sfrxusd_totalSupply_decoded = w3.to_int(sfrxusd_totalSupply_bytes)
+        sfrxusd_frxusd_ratio = sfrxusd_totalAssets_decoded / sfrxusd_totalSupply_decoded
+        logger.info(f"sfrxusd/frxusd Ratio from contract: {sfrxusd_frxusd_ratio}")
+        return float(sfrxusd_frxusd_ratio)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         """This implementation gets the price of USDM from multiple sources and
-        calculates the price of sFRAX using the ratio of sFRAX to FRAX from sFRAX contract.
+        calculates the price of sfrxUSD using the ratio of sFRXUSD to FRXUSD from sFRXUSD contract.
         """
         asset = asset.lower()
         currency = currency.lower()
 
-        sfraxusd_frxusd_ratio = self.get_sfraxusd_frxusd_ratio()
-        if sfraxusd_frxusd_ratio is None:
-            logger.error("Unable to get sfraxusd_frxusd_ratio")
+        sfrxusd_frxusd_ratio = self.get_sfrxusd_frxusd_ratio()
+        if sfrxusd_frxusd_ratio is None:
+            logger.error("Unable to get sfrxusd_frxusd_ratio")
             return None, None
 
         source = PriceAggregator(
@@ -80,7 +80,7 @@ class sfrxUSDSpotPriceService(WebPriceService):
         if frxusd_price is None:
             logger.error("Unable to get frxusd price")
             return None, None
-        return frxusd_price * sfraxusd_frxusd_ratio, timestamp
+        return frxusd_price * sfrxusd_frxusd_ratio, timestamp
 
 
 @dataclass
