@@ -38,26 +38,19 @@ class sfrxUSDSpotPriceService(WebPriceService):
             return None
         w3 = ep.web3
         # get supply numbers from sfrxUSD contract
-        sfrxusd_totalAssets_bytes = w3.eth.call(
+        sfrxusd_frxusd_ratio_bytes = w3.eth.call(
             {
                 "to": "0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6",
-                "data": "0x01e1d114",
+                "data": "0x99530b06",
             }
         )
-        sfrxusd_totalSupply_bytes = w3.eth.call(
-            {
-                "to": "0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6",
-                "data": "0x18160ddd",
-            }
-        )
-        sfrxusd_totalAssets_decoded = w3.to_int(sfrxusd_totalAssets_bytes)
-        sfrxusd_totalSupply_decoded = w3.to_int(sfrxusd_totalSupply_bytes)
-        sfrxusd_frxusd_ratio = sfrxusd_totalAssets_decoded / sfrxusd_totalSupply_decoded
+        sfrxusd_frxusd_ratio_decoded = w3.to_int(sfrxusd_frxusd_ratio_bytes)
+        sfrxusd_frxusd_ratio = w3.from_wei(sfrxusd_frxusd_ratio_decoded, "ether")
         logger.info(f"sfrxusd/frxusd Ratio from contract: {sfrxusd_frxusd_ratio}")
         return float(sfrxusd_frxusd_ratio)
 
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
-        """This implementation gets the price of USDM from multiple sources and
+        """This implementation gets the price of FRXUSD from multiple sources and
         calculates the price of sfrxUSD using the ratio of sFRXUSD to FRXUSD from sFRXUSD contract.
         """
         asset = asset.lower()

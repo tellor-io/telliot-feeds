@@ -18,7 +18,7 @@ async def test_susn_usd_feed(caplog, mock_price_feed, monkeypatch):
         return [custom_endpoint]
 
     monkeypatch.setattr(susn_usd_feed.source.service.cfg.endpoints, "find", custom_find)
-    mock_prices = [1200.50, 1205.25]
+    mock_prices = [1.12, 1.15]
     mock_price_feed(susn_usd_feed, mock_prices, [CoinGeckoSpotPriceSource, CoinpaprikaSpotPriceSource])
     v, _ = await susn_usd_feed.source.fetch_new_datapoint()
 
