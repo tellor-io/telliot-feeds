@@ -37,7 +37,7 @@ class sfrxUSDSpotPriceService(WebPriceService):
             logger.error("Unable to connect endpoint for mainnet to get sfrxusd_frxusd_ratio")
             return None
         w3 = ep.web3
-        # get supply numbers from sfrxUSD contract
+        # get pricePerShare from sfrxUSD contract
         sfrxusd_frxusd_ratio_bytes = w3.eth.call(
             {
                 "to": "0xcf62F905562626CfcDD2261162a51fd02Fc9c5b6",
