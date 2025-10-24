@@ -107,6 +107,7 @@ coingecko_coin_id = {
     "statom": "stride-staked-atom",
     "fbtc": "ignition-fbtc",
     "susn": "staked-usn",
+    "frxusd": "frax-usd",
     "sfrxusd": "staked-frax-usd",
     "usn": "noon-usn",
 }
