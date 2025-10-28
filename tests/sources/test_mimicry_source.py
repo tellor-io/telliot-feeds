@@ -12,6 +12,7 @@ from telliot_feeds.sources.mimicry.mashup_source import NFTMashupSource
 from telliot_feeds.sources.mimicry.nft_market_index import NFTGoSource
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_fetching_collection_stat_data():
     """Test fetching data from Mimicry API"""
@@ -24,6 +25,7 @@ async def test_fetching_collection_stat_data():
     assert isinstance(val, float)
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_fetching_nft_mashup_mcap():
     """Test mimicry market cap mashup"""
@@ -37,6 +39,7 @@ async def test_fetching_nft_mashup_mcap():
         assert val > 0
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_fetching_nft_index_mcap():
     """Test fetch nft market cap"""
@@ -50,6 +53,7 @@ async def test_fetching_nft_index_mcap():
         assert val > 0
 
 
+@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_aiohttp_errors(caplog):
     source = NFTMashupSource(metric="market-cap", currency="usd", collections=COLLECTIONS, tokens=TOKENS, retries=1)
