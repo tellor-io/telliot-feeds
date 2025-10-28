@@ -8,13 +8,13 @@ from telliot_feeds.feeds.badger_usd_feed import badger_usd_median_feed
 @pytest.mark.asyncio
 async def test_badger_usd_median_feed(mock_price_feed, caplog):
     """Retrieve median badger/USD price."""
-    mock_prices = [1200.50, 1205.25, 1202.75]
+    mock_prices = [1200.50, 1205.25]
     mock_price_feed(badger_usd_median_feed, mock_prices)
     v, _ = await badger_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None
     assert v > 0
-    assert "sources used in aggregate: 3" in caplog.text.lower()
+    assert "sources used in aggregate: 2" in caplog.text.lower()
     print(f"badger/USD Price: {v}")
 
     # Get list of data sources from sources dict

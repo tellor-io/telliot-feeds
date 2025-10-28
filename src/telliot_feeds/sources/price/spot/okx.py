@@ -45,9 +45,34 @@ class OKXSpotPriceService(WebPriceService):
 
         else:
             raise Exception("Invalid response from get_url")
+        try:
+            code = response.get("code")
+            msg = response.get("msg") or response.get("message")
+            if code is not None and str(code) != "0":
+                logger.error(f"API ERROR ({self.name}): code={code} msg={msg}")
+                return None, None
 
-        price = float(response["data"][0]["last"])
-        return price, datetime_now_utc()
+            data = response.get("data")
+            if not data or not isinstance(data, list):
+                logger.warning(f"No ticker data returned from {self.name} for request: {request_url}")
+                return None, None
+
+            first_entry = data[0]
+            if not isinstance(first_entry, dict):
+                logger.error(f"Unexpected ticker format from {self.name}: first entry not a dict")
+                return None, None
+
+            last_price_str = first_entry.get("last")
+            if last_price_str is None:
+                logger.warning(f"Missing 'last' field in ticker from {self.name} for request: {request_url}")
+                return None, None
+
+            price = float(last_price_str)
+            return price, datetime_now_utc()
+
+        except (TypeError, ValueError) as e:
+            logger.error(f"Failed to parse price from {self.name} response: {e}")
+            return None, None
 
 
 @dataclass
