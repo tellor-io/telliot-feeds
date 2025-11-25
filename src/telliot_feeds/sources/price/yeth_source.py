@@ -41,7 +41,7 @@ class yETHSpotPriceService(WebPriceService):
         # get ratio exchangeRate
         yeth_ratio_bytes = w3.eth.call(
             {
-                "to": "0x8464F6eCAe1EA58E816C13f964030eAb8Ec123A",
+                "to": "0x8464F6eCAe1EA58EC816C13f964030eAb8Ec123A",
                 "data": "0x3ba0b9a9",
             }
         )
