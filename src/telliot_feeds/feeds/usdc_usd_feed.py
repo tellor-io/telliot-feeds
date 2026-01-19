@@ -13,7 +13,6 @@ usdc_usd_median_feed = DataFeed(
         currency="usd",
         algorithm="median",
         sources=[
-            CoinGeckoSpotPriceSource(asset="usdc", currency="usd"),
             GeminiSpotPriceSource(asset="usdc", currency="usd"),
             KrakenSpotPriceSource(asset="usdc", currency="usd"),
             OKXSpotPriceSource(asset="usdc", currency="usdt"),

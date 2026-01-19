@@ -64,7 +64,6 @@ class WstETHSpotPriceService(WebPriceService):
         source = PriceAggregator(
             algorithm="median",
             sources=[
-                CoinGeckoSpotPriceSource(asset="steth", currency=currency),
                 CoinpaprikaSpotPriceSource(asset="steth-lido-staked-ether", currency=currency),
                 UniswapV3PriceSource(asset="steth", currency=currency),
                 CurveFiUSDPriceSource(asset="steth", currency=currency),

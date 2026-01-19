@@ -65,7 +65,6 @@ class wrsETHSpotPriceService(WebPriceService):
         source = PriceAggregator(
             algorithm="median",
             sources=[
-                CoinGeckoSpotPriceSource(asset="rseth", currency="usd"),
                 CurveFiUSDPriceSource(asset="rseth", currency="usd"),
                 CoinpaprikaSpotPriceSource(asset="rseth-rseth", currency=currency),
                 UniswapV3PriceSource(asset="rseth", currency=currency),

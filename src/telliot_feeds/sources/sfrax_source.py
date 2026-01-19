@@ -65,7 +65,6 @@ class sFRAXSpotPriceService(WebPriceService):
         source = PriceAggregator(
             algorithm="median",
             sources=[
-                CoinGeckoSpotPriceSource(asset="frax", currency="usd"),
                 CurveFiUSDPriceSource(asset="frax", currency="usd"),
                 CoinpaprikaSpotPriceSource(asset="frax-frax", currency=currency),
                 UniswapV3PriceSource(asset="frax", currency=currency),
