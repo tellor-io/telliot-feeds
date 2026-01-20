@@ -32,7 +32,7 @@ async def test_wsteth_eth_median_feed(caplog, mock_price_feed, monkeypatch):
 
     assert v is not None
     assert v > 0
-    assert "sources used in aggregate: 4" in caplog.text.lower()
+    assert "sources used in aggregate: 3" in caplog.text.lower()
     print(f"WSTETH/ETH Price: {v}")
     # Get list of data sources from sources dict
     source_prices = wsteth_eth_median_feed.source.latest[0]

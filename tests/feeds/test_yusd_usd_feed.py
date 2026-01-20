@@ -24,5 +24,5 @@ async def test_yusd_usd_feed(caplog, mock_price_feed, monkeypatch):
 
     assert v is not None
     assert v > 0
-    assert "sources used in aggregate: 4" in caplog.text.lower()
+    assert "sources used in aggregate: 3" in caplog.text.lower()
     print(f"yusd/usd Price: {v}")

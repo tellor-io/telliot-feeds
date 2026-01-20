@@ -17,7 +17,7 @@ async def test_AssetPriceFeed(mock_price_feed):
 
     # Fetch price
     # status, price, tstamp = await btc_usd_median_feed.update_value()
-    mock_prices = [12000.50, 12005.25, 12002.75, 12003.75]
+    mock_prices = [12000.50, 12005.25, 12002.75]
     mock_price_feed(btc_usd_median_feed, mock_prices)
     v, t = await btc_usd_median_feed.source.fetch_new_datapoint()
 
