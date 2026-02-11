@@ -4,7 +4,7 @@ fail_fast: true
 
 repos:
   - repo: https://github.com/econchick/interrogate
-    rev: 1.4.0
+    rev: 1.7.0
     hooks:
       - id: interrogate
         name: Check for docstrings
