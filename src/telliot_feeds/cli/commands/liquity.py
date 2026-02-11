@@ -36,7 +36,7 @@ def liquity_reporter() -> None:
 @click.option("-pc", "--percent-change", type=float, default=0.5)
 @click.option("-ft", "--frozen-timeout", type=int, default=14400)
 @click.pass_context
-@async_run
+@async_run  # type: ignore[untyped-decorator]
 async def liquity(
     ctx: Context,
     tx_type: int,

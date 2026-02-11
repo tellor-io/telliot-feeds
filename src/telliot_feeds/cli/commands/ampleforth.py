@@ -36,7 +36,7 @@ def ampleforth_reporter() -> None:
     default=1080,
 )
 @click.pass_context
-@async_run
+@async_run  # type: ignore[untyped-decorator]
 async def ampleforth(
     ctx: Context,
     tx_type: int,

@@ -51,7 +51,7 @@ def diva() -> None:
 )
 @click.option("-pswd", "--password", type=str)
 @click.pass_context
-@async_run
+@async_run  # type: ignore[untyped-decorator]
 async def settle(
     ctx: Context,
     account_str: str,

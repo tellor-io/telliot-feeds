@@ -24,7 +24,7 @@ def deposit_stake() -> None:
 @common_options
 @click.option("--amount", "-amt", "amount", help="Amount of tokens to stake", nargs=1, type=float, required=True)
 @click.pass_context
-@async_run
+@async_run  # type: ignore[untyped-decorator]
 async def stake(
     ctx: Context,
     account_str: str,

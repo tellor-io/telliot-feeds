@@ -21,7 +21,7 @@ def request_withdraw_stake() -> None:
     "--amount", "-amt", "amount", help="Amount of tokens to request withdraw", nargs=1, type=float, required=True
 )
 @click.pass_context
-@async_run
+@async_run  # type: ignore[untyped-decorator]
 async def request_withdraw(
     ctx: Context,
     account_str: str,

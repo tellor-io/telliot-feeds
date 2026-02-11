@@ -48,7 +48,7 @@ def reporter() -> None:
     type=click.Choice([q.tag for q in query_catalog.find()]),
 )
 @click.pass_context
-@async_run
+@async_run  # type: ignore[untyped-decorator]
 async def layer(
     ctx: Context,
     query_tag: str,

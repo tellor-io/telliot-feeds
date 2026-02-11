@@ -41,7 +41,7 @@ def tipper() -> None:
     required=True,
 )
 @click.pass_context
-@async_run
+@async_run  # type: ignore[untyped-decorator]
 async def tip(
     ctx: Context,
     query_tag: str,
