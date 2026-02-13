@@ -1,13 +1,12 @@
 """Bitfinex data source."""
 import asyncio
 import logging
+import time
 from typing import Any
 
 import requests
 
 from telliot_feeds.sources.ampleforth.symbols import SYMBOLS
-
-# import time
 
 
 logger = logging.getLogger(__name__)
@@ -22,8 +21,8 @@ def build_buckets(start: int, a_list: list[list[int]], bucket_size: int = THOUSA
     vwap_per_slot: dict[int, dict[str, Any]] = {}
     for i in a_list:
         slot = (i[1] - start) // bucket_size
-        amount = i[2]
-        price = i[3]
+        amount = float(i[2])
+        price = float(i[3])
 
         vwap_bucket = vwap_per_slot.get(slot)
         if vwap_bucket:
@@ -73,25 +72,48 @@ def volume_weighted_average_price(start: int, from_list: list[list[int]], to_lis
     return {"vwap": sum_amount_and_prices / sum_volume, "volume": sum_volume}
 
 
-def retrieve_bitfinex_trades(route: str, start: int, end: int) -> Any:
+def retrieve_bitfinex_trades(route: str, start: int, end: int, retry_count: int = 0) -> Any:
     """Retrieve trades from Bitfinex API."""
     # rate-limit: 30 req/min
+    max_retries = 3
     url = f"https://api-pub.bitfinex.com/v2/trades/{route}/hist?limit=10000&sort=1&start={start}&end={end}"
     try:
         response = requests.get(url)
     except Exception as e:
-        logger.error(f"Error when retrieving Bitfinex trades for {route}:", e)
+        logger.error(f"Error when retrieving Bitfinex trades for {route}: {e}")
         return []
 
     # convert response
     all_trades = response.json()
+
+    # Check for API error responses (e.g., ["error", 11010, "ratelimit: error"])
+    if isinstance(all_trades, list) and len(all_trades) > 0 and all_trades[0] == "error":
+        error_code = all_trades[1] if len(all_trades) > 1 else "unknown"
+        error_msg = all_trades[2] if len(all_trades) > 2 else "unknown"
+        logger.warning(f"Bitfinex API error for {route}: {error_code} - {error_msg}")
+
+        # Retry on rate limit errors
+        if error_code == 11010 and retry_count < max_retries:
+            wait_time = 2**retry_count  # Exponential backoff: 1s, 2s, 4s
+            logger.info(f"Rate limited, waiting {wait_time}s before retry {retry_count + 1}/{max_retries}")
+            time.sleep(wait_time)
+            return retrieve_bitfinex_trades(route, start, end, retry_count + 1)
+        return []
+
     if not all_trades:
         logger.warning(f"Could not get Bitfinex trades for {route}")
+        return []
+
+    # Validate that we got actual trade data (each trade should be a list of numbers)
+    if not isinstance(all_trades[0], list):
+        logger.error(f"Unexpected response format from Bitfinex for {route}: {all_trades[:100]}")
         return []
 
     if len(all_trades) >= 10000:
         logger.warning(f"Bitfinex response too big, scrolling: {route} ({start} - {end})")
         last_timestamp = all_trades[-1][1]
+        # Add delay to avoid rate limiting when scrolling (30 req/min limit)
+        time.sleep(2)
         next_frame = retrieve_bitfinex_trades(route, last_timestamp, end)
         all_trades.extend(next_frame)
     logger.info(f"Bitfinex trades for {route}: {len(all_trades)}")
@@ -126,8 +148,8 @@ def calculate_vwap_direct(symbol_route: dict[str, Any], start: int, end: int) ->
     response = retrieve_bitfinex_trades(symbol_route["bitFinexSymbol"], start, end)
     if len(response) == 0:
         raise Exception(f'No trades found for {symbol_route["bitFinexSymbol"]}')
-    sum_amount_and_prices = sum([abs(trade[2] * trade[3]) for trade in response])
-    sum_volume = sum([abs(trade[2]) for trade in response])
+    sum_amount_and_prices = sum([abs(float(trade[2]) * float(trade[3])) for trade in response])
+    sum_volume = sum([abs(float(trade[2])) for trade in response])
     return {"vwap": sum_amount_and_prices / sum_volume, "volume": sum_volume}
 
 
