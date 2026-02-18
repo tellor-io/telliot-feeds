@@ -112,6 +112,9 @@ async def test_get_eip1559_gas_price(gas_fees_object):
 @pytest.mark.asyncio
 async def test_update_gas_fees(gas_fees_object):
     gas: GasFees = gas_fees_object
+    # Mock the gas price to avoid relying on live RPC data
+    mock_gas_price_wei = 1455299856  # 1.455299856 Gwei in wei
+    type(gas.web3.eth).gas_price = PropertyMock(return_value=mock_gas_price_wei)
     status = gas.update_gas_fees()
     assert status.ok, "update_gas_fees returned not ok status"
     assert gas.gas_info["gasPrice"] is not None, "gas_info['gasPrice'] returned None"
