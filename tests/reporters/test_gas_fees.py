@@ -4,6 +4,7 @@ from unittest.mock import PropertyMock
 import pytest
 import pytest_asyncio
 from telliot_core.apps.core import TelliotCore
+from web3 import Web3
 from web3.datastructures import AttributeDict
 
 from telliot_feeds.reporters.gas import GasFees
@@ -112,6 +113,8 @@ async def test_get_eip1559_gas_price(gas_fees_object):
 @pytest.mark.asyncio
 async def test_update_gas_fees(gas_fees_object):
     gas: GasFees = gas_fees_object
+    mock_gas_price_wei = 1_440_890_000
+    type(gas.web3.eth).gas_price = PropertyMock(return_value=mock_gas_price_wei)
     status = gas.update_gas_fees()
     assert status.ok, "update_gas_fees returned not ok status"
     assert gas.gas_info["gasPrice"] is not None, "gas_info['gasPrice'] returned None"
@@ -119,16 +122,11 @@ async def test_update_gas_fees(gas_fees_object):
     assert gas.gas_info["gas"] is None
     assert gas.gas_info["maxFeePerGas"] is None
     assert gas.gas_info["maxPriorityFeePerGas"] is None
-    gas_info_core = {
-        "gas_limit": None,
-        "max_fee_per_gas": None,
-        "max_priority_fee_per_gas": None,
-        "legacy_gas_price": 1.455299856,
-    }
+    expected_legacy_gwei = float(Web3.from_wei(int(mock_gas_price_wei * 1.01), "gwei"))
     assert gas.get_gas_info_core()["gas_limit"] is None
     assert gas.get_gas_info_core()["max_fee_per_gas"] is None
     assert gas.get_gas_info_core()["max_priority_fee_per_gas"] is None
-    assert gas.get_gas_info_core()["legacy_gas_price"] == pytest.approx(1.455299856, rel=1e-5)
+    assert gas.get_gas_info_core()["legacy_gas_price"] == pytest.approx(expected_legacy_gwei, rel=1e-5)
 
     gas.web3 = Mock()
     type(gas.web3.eth).gas_price = PropertyMock(return_value=None)
@@ -136,9 +134,12 @@ async def test_update_gas_fees(gas_fees_object):
     assert not status.ok
     assert "Failed to update gas fees for legacy type transaction:" in status.error
     assert gas.gas_info["gasPrice"] is None, "gas_info['gasPrice'] should be None since gas update failed"
-    # set gas price to None and check if gas info is updated properly
-    gas_info_core["legacy_gas_price"] = None
-    assert gas.get_gas_info_core() == gas_info_core
+    assert gas.get_gas_info_core() == {
+        "gas_limit": None,
+        "max_fee_per_gas": None,
+        "max_priority_fee_per_gas": None,
+        "legacy_gas_price": None,
+    }
 
     # change to type 2 transactions
     mock_fee_history = AttributeDict(

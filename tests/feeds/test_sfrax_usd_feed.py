@@ -10,6 +10,7 @@ from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceSource
 async def test_sfrax_usd_feed(caplog, mock_price_feed, monkeypatch):
     """Retrieve median sFRAX/USD price converted to wUSDM by ratio with custom endpoint"""
 
+    monkeypatch.setattr(sfrax_usd_feed.source.service, "get_sfrax_usd_ratio", lambda: 1.05)
     mock_prices = [1200.50, 1202.75, 1201.00]
     mock_price_feed(
         sfrax_usd_feed,
