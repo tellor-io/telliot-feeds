@@ -18,7 +18,7 @@ def withdraw_stake() -> None:
 @withdraw_stake.command()
 @common_options
 @click.pass_context
-@async_run
+@async_run  # type: ignore[untyped-decorator]
 async def withdraw(
     ctx: Context,
     account_str: str,

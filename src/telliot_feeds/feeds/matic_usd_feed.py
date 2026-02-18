@@ -14,8 +14,7 @@ matic_usd_median_feed = DataFeed(
         currency="usd",
         algorithm="median",
         sources=[
-            CoinGeckoSpotPriceSource(asset="matic", currency="usd"),
-            # BinanceSpotPriceSource(asset="matic", currency="usdt"),
+            CoinGeckoSpotPriceSource(asset="pol", currency="usd"),
             GeminiSpotPriceSource(asset="pol", currency="usd"),
             KrakenSpotPriceSource(asset="pol", currency="usd"),
         ],

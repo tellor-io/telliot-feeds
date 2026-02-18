@@ -28,7 +28,7 @@ coingecko_coin_id = {
     "eth": "ethereum",
     "idle": "idle",
     "mkr": "maker",
-    "matic": "matic-network",
+    "pol": "polygon-ecosystem-token",
     "ric": "richochet",
     "sushi": "sushi",
     "trb": "tellor",

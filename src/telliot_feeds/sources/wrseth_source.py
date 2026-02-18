@@ -8,7 +8,6 @@ from telliot_core.apps.telliot_config import TelliotConfig
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService
 from telliot_feeds.pricing.price_source import PriceSource
-from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.coinpaprika import CoinpaprikaSpotPriceSource
 from telliot_feeds.sources.price.spot.curvefiprice import CurveFiUSDPriceSource
 from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceSource
@@ -65,7 +64,6 @@ class wrsETHSpotPriceService(WebPriceService):
         source = PriceAggregator(
             algorithm="median",
             sources=[
-                CoinGeckoSpotPriceSource(asset="rseth", currency="usd"),
                 CurveFiUSDPriceSource(asset="rseth", currency="usd"),
                 CoinpaprikaSpotPriceSource(asset="rseth-rseth", currency=currency),
                 UniswapV3PriceSource(asset="rseth", currency=currency),

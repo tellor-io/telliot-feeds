@@ -10,7 +10,6 @@ from web3 import Web3
 from telliot_feeds.dtypes.datapoint import OptionalDataPoint
 from telliot_feeds.pricing.price_service import WebPriceService
 from telliot_feeds.pricing.price_source import PriceSource
-from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.gemini import GeminiSpotPriceSource
 from telliot_feeds.sources.price.spot.kraken import KrakenSpotPriceSource
 from telliot_feeds.sources.price.spot.okx import OKXSpotPriceSource
@@ -67,7 +66,6 @@ class yUSDSpotPriceService(WebPriceService):
         source = PriceAggregator(
             algorithm="median",
             sources=[
-                CoinGeckoSpotPriceSource(asset="usdc", currency="usd"),
                 GeminiSpotPriceSource(asset="usdc", currency="usd"),
                 KrakenSpotPriceSource(asset="usdc", currency="usd"),
                 OKXSpotPriceSource(asset="usdc", currency="usdt"),

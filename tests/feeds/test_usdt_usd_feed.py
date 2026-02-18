@@ -8,13 +8,13 @@ from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
 @pytest.mark.asyncio
 async def test_usdt_usd_median_feed(caplog, mock_price_feed):
     """Retrieve median usdt/USD price."""
-    mock_prices = [1.0001, 1.0002, 1.0003, 1.0004, 1.0005]
+    mock_prices = [1.0001, 1.0002, 1.0003]
     mock_price_feed(usdt_usd_median_feed, mock_prices)
     v, _ = await usdt_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None
     assert v > 0
-    assert "sources used in aggregate: 4" in caplog.text.lower()
+    assert "sources used in aggregate: 3" in caplog.text.lower()
     print(f"usdt/usd Price: {v}")
     source_prices = usdt_usd_median_feed.source.latest[0]
     # Get list of data sources from sources dict

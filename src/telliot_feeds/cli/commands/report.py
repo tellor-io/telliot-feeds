@@ -146,7 +146,7 @@ def reporter() -> None:
     default=False,
 )
 @click.pass_context
-@async_run
+@async_run  # type: ignore[untyped-decorator]
 async def report(
     ctx: Context,
     query_tag: str,

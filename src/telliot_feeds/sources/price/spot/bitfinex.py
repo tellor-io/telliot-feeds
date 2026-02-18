@@ -67,3 +67,14 @@ class BitfinexSpotPriceSource(PriceSource):
     asset: str = ""
     currency: str = ""
     service: BitfinexSpotPriceService = field(default_factory=BitfinexSpotPriceService, init=False)
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main() -> None:
+        price_source = BitfinexSpotPriceSource(asset="eth", currency="jpy   ")
+        price, timestamp = await price_source.fetch_new_datapoint()
+        print(price, timestamp)
+
+    asyncio.run(main())

@@ -2,7 +2,6 @@ import os
 
 import pytest
 from eth_utils import to_bytes
-from telliot_core.utils.timestamp import TimeStamp
 from web3 import Web3
 
 from telliot_feeds.feeds.btc_usd_feed import btc_usd_median_feed
@@ -21,9 +20,10 @@ txn_kwargs = {
     "_queryData": query_data,
 }
 # setup a datafeed in autopay contact
+# Note: _startTime is set dynamically in the test using chain.pending_timestamp
+# to ensure consistency with the blockchain's simulated time
 data_feed = {
     "_reward": int(0.5 * 1e18),  # should run out after two in window submissions
-    "_startTime": TimeStamp.now().ts,
     "_interval": 3600,
     "_window": 600,
     "_priceThreshold": 2500,
@@ -41,10 +41,12 @@ async def test_feed_suggestion(autopay_contract_setup, chain, caplog, guaranteed
     flex = autopay_contract_setup
 
     # setup and fund a feed on autopay
+    # Use chain.pending_timestamp for _startTime to ensure consistency with blockchain time
     _, _ = await flex.autopay.write(
         "setupDataFeed",
         **txn_kwargs,
         **data_feed,
+        _startTime=chain.pending_timestamp,
     )
     # First report should get a funded query suggestion
     query, tip_amount = await get_feed_and_tip(

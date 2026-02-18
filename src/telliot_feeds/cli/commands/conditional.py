@@ -43,7 +43,7 @@ def conditional_reporter() -> None:
     default=85500,
 )
 @click.pass_context
-@async_run
+@async_run  # type: ignore[untyped-decorator]
 async def conditional(
     ctx: Context,
     tx_type: int,
