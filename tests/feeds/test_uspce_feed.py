@@ -1,5 +1,5 @@
-import yaml
 import pytest
+import yaml
 
 from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.sources.bea_gov import BEAPCESource

@@ -3,6 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from decimal import InvalidOperation
 from typing import Any
+from typing import cast
 from typing import Optional
 
 import requests
@@ -28,7 +29,7 @@ def load_bea_api_key() -> Optional[str]:
     for name in ("BEA", "bea"):
         api_keys = keys.find(name=name)
         if api_keys and api_keys[0].key:
-            return api_keys[0].key
+            return cast(str, api_keys[0].key)
     return None
 
 
@@ -88,7 +89,7 @@ class BEAPCESource(DataSource[Decimal]):
             with requests.Session() as session:
                 response = session.get(self.url, params=params, timeout=self.request_timeout)
                 response.raise_for_status()
-                data = response.json()
+                data = cast(dict[str, Any], response.json())
         except requests.exceptions.RequestException as e:
             logger.error(f"Error retrieving PCE data from BEA: {e}")
             return None
