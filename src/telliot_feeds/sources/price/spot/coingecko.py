@@ -110,6 +110,7 @@ coingecko_coin_id = {
     "frxusd": "frax-usd",
     "sfrxusd": "staked-frax-usd",
     "usn": "noon-usn",
+    "usde": "ethena-usde",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key

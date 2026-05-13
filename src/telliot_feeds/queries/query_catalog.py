@@ -730,6 +730,12 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
+    tag="usde-usd-spot",
+    title="USDe/USD spot price",
+    q=SpotPrice(asset="usde", currency="usd"),
+)
+
+query_catalog.add_entry(
     tag="usdn-usd-spot",
     title="USDN/USD spot price",
     q=SpotPrice(asset="usdn", currency="usd"),

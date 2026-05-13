@@ -30,6 +30,8 @@ ethereum_contract_map = {
     "frxusd": "0xcacd6fd266af91b8aed52accc382b4e165586e29",
     "sfrxusd": "0xcf62f905562626cfcdd2261162a51fd02fc9c5b6",
     "yusd": "0x19ebd191f7a24ece672ba13a302212b5ef7f35cb",
+    "usde": "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3",
+    "susds": "0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
 }
 
 
