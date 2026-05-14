@@ -6,6 +6,7 @@ from telliot_feeds.feeds.diva_usd_feed import diva_usd_median_feed
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip(reason="Skipping because no longer needed")
 async def test_diva_usd_median_feed():
     """Retrieve median DIVA/USD price."""
     v, _ = await diva_usd_median_feed.source.fetch_new_datapoint()

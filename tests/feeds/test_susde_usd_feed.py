@@ -1,25 +1,22 @@
-import statistics
-
 import pytest
 
+from telliot_feeds.dtypes.datapoint import datetime_now_utc
 from telliot_feeds.feeds.susde_usd_feed import susde_usd_median_feed
+from telliot_feeds.sources.susde_fundamental_source import sUSDESpotPriceService
 
 
 @pytest.mark.asyncio
-async def test_susde_usd_median_feed(mock_price_feed, caplog):
-    """Retrieve median SAGA/USD price."""
-    mock_prices = [1200.50, 1205.25, 1202.75]
-    mock_price_feed(susde_usd_median_feed, mock_prices)
-    v, _ = await susde_usd_median_feed.source.fetch_new_datapoint()
+async def test_susde_usd_median_feed(monkeypatch: pytest.MonkeyPatch) -> None:
+    """sUSDe/USD comes from sUSDESpotPriceService (contract ratio × USDe/USD), not a top-level PriceAggregator."""
+
+    async def fake_get_price(self: sUSDESpotPriceService, asset: str, currency: str):
+        return (1202.75, datetime_now_utc())
+
+    monkeypatch.setattr(sUSDESpotPriceService, "get_price", fake_get_price)
+
+    v, t = await susde_usd_median_feed.source.fetch_new_datapoint()
 
     assert v is not None
-    assert v > 0
-    assert "sources used in aggregate: 3" in caplog.text.lower()
+    assert v == pytest.approx(1202.75)
+    assert t is not None
     print(f"sUSDe/USD Price: {v}")
-
-    # Get list of data sources from sources dict
-    source_prices = [source.latest[0] for source in susde_usd_median_feed.source.sources]
-    print(source_prices)
-
-    # Make sure error is less than decimal tolerance
-    assert (v - statistics.median(source_prices)) < 10**-6
