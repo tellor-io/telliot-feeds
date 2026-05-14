@@ -16,6 +16,7 @@ from telliot_feeds.utils.log import get_logger
 logger = get_logger(__name__)
 
 OSMOSIS_LCD_URL = "https://lcd.osmosis.zone"
+OSMOSIS_SQS_URL = "https://sqs.osmosis.zone"
 
 # stATOM/ATOM concentrated liquidity pool on Osmosis (pool 1283)
 STATOM_ATOM_POOL_ID = 1283
@@ -23,15 +24,23 @@ STATOM_ATOM_POOL_ID = 1283
 STATOM_IBC = "ibc/C140AFD542AE77BD7DCC83F13FDD8C5E5BB8C4929785E6EC2F4C636F98F17901"
 ATOM_IBC = "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2"
 
+# Noble Dollar (USDN) and Noble USDC IBC denoms on Osmosis
+USDN_IBC = "ibc/0C39BD03B5C57A1753A9B73164705871A9B549F1A5226CFD7E39BE7BF73CF8CF"
+USDC_IBC = "ibc/498A0751C798A0D9A389AA3691123DADA57DAA4FE165D5C75894505B876BA6E4"
+
 
 class OsmosisPoolPriceService(WebPriceService):
-    """Osmosis Concentrated Liquidity Pool Price Service for stATOM/USD.
+    """Osmosis Price Service supporting stATOM/USD and USDN/USD.
 
-    Fetches the current_sqrt_price from the Osmosis LCD REST API for the
-    stATOM/ATOM pool, squares it to obtain the stATOM/ATOM ratio, then
-    multiplies by the ATOM/USD price from CoinGecko.
+    For stATOM/USD: fetches current_sqrt_price from the Osmosis LCD REST API
+    for the stATOM/ATOM concentrated liquidity pool (1283), squares it to get
+    the stATOM/ATOM ratio, then multiplies by the ATOM/USD price from CoinGecko.
 
-    Only supports asset="statom", currency="usd".
+    For USDN/USD: queries the Osmosis SQS tokens/prices endpoint to get the
+    Noble Dollar (USDN) price in Noble USDC terms. Since USDC ≈ $1, the ratio
+    is returned directly as the USD price.
+
+    Supports asset="statom" or asset="usdn", currency="usd".
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -40,12 +49,65 @@ class OsmosisPoolPriceService(WebPriceService):
         kwargs["timeout"] = 10.0
         super().__init__(**kwargs)
 
+    async def _get_usdn_usd_price(self) -> OptionalDataPoint[float]:
+        """Fetch USDN/USD price via Osmosis SQS tokens/prices endpoint.
+
+        USDN (Noble Dollar) is priced against Noble USDC on Osmosis.
+        USDC ≈ $1, so the USDN/USDC ratio is returned directly as USD price.
+        """
+        sqs_url = f"{OSMOSIS_SQS_URL}/tokens/prices?base={USDN_IBC}"
+        try:
+            with requests.Session() as s:
+                r = s.get(sqs_url, timeout=self.timeout)
+                if r.status_code != 200:
+                    logger.warning(f"Osmosis SQS returned status {r.status_code} for USDN price")
+                    return None, None
+                data = r.json()
+        except requests.exceptions.ConnectTimeout:
+            logger.warning("Osmosis SQS request timed out for USDN price")
+            return None, None
+        except Exception as e:
+            logger.warning(f"Osmosis SQS request failed for USDN price: {e}")
+            return None, None
+
+        prices = data.get(USDN_IBC)
+        if prices is None:
+            logger.warning("Osmosis SQS response missing USDN denom key")
+            return None, None
+
+        price_str = prices.get(USDC_IBC)
+        if price_str is None:
+            logger.warning(f"Osmosis SQS USDN response has no USDC quote. Got: {prices}")
+            return None, None
+
+        try:
+            price = float(price_str)
+        except (TypeError, ValueError) as e:
+            logger.warning(f"Could not parse Osmosis SQS USDN price '{price_str}': {e}")
+            return None, None
+
+        if price == 0.0:
+            logger.warning("Osmosis SQS returned zero price for USDN")
+            return None, None
+
+        from telliot_feeds.dtypes.datapoint import datetime_now_utc
+
+        logger.info(f"Osmosis USDN/USD (via SQS): {price}")
+        return price, datetime_now_utc()
+
     async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
         asset = asset.lower()
         currency = currency.lower()
 
-        if asset != "statom" or currency != "usd":
-            logger.error(f"OsmosisPoolPriceService only supports statom/usd, got {asset}/{currency}")
+        if currency != "usd":
+            logger.error(f"OsmosisPoolPriceService only supports usd currency, got {currency}")
+            return None, None
+
+        if asset == "usdn":
+            return await self._get_usdn_usd_price()
+
+        if asset != "statom":
+            logger.error(f"OsmosisPoolPriceService only supports statom/usd or usdn/usd, got {asset}/{currency}")
             return None, None
 
         pool_url = f"{self.url}/osmosis/gamm/v1beta1/pools/{STATOM_ATOM_POOL_ID}"
@@ -70,9 +132,9 @@ class OsmosisPoolPriceService(WebPriceService):
             return None, None
 
         # Validate that this pool contains stATOM and ATOM
-        pool_tokens: list = pool.get("pool_liquidity", []) or pool.get("tokens", [])
+        pool_tokens: list[dict[str, Any]] = pool.get("pool_liquidity", []) or pool.get("tokens", [])
         # CL pools expose tokens via token0/token1 or pool_assets; try all known fields
-        token_denoms: set = set()
+        token_denoms: set[str] = set()
         for key in ("token0", "token1"):
             val = pool.get(key)
             if val:
@@ -157,5 +219,9 @@ if __name__ == "__main__":
         source = OsmosisPoolPriceSource(asset="statom", currency="usd")
         price, ts = await source.fetch_new_datapoint()
         print(f"stATOM/USD = {price} @ {ts}")
+
+        source2 = OsmosisPoolPriceSource(asset="usdn", currency="usd")
+        price2, ts2 = await source2.fetch_new_datapoint()
+        print(f"USDN/USD = {price2} @ {ts2}")
 
     asyncio.run(main())

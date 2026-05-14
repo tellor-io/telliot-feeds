@@ -126,8 +126,8 @@ from telliot_feeds.feeds.twap_manual_feed import twap_manual_feed
 from telliot_feeds.feeds.uni_usd_feed import uni_usd_median_feed
 from telliot_feeds.feeds.unibtc_usd_feed import unibtc_usd_median_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
-from telliot_feeds.feeds.usdm_usd_feed import usdm_usd_median_feed
 from telliot_feeds.feeds.usde_usd_feed import usde_usd_median_feed
+from telliot_feeds.feeds.usdm_usd_feed import usdm_usd_median_feed
 from telliot_feeds.feeds.usdn_usd_feed import usdn_usd_median_feed
 from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
 from telliot_feeds.feeds.usdy_usd_feed import usdy_usd_median_feed

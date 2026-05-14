@@ -172,3 +172,4 @@ node_modules/
 reported_pools.pickle
 tenv
 env
+.venv

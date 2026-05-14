@@ -3,6 +3,7 @@ from dataclasses import field
 from typing import Any
 from typing import Optional
 
+from eth_typing import HexStr
 from telliot_core.apps.telliot_config import TelliotConfig
 from web3 import Web3
 
@@ -44,13 +45,13 @@ class sUSDESpotPriceService(WebPriceService):
         total_assets_bytes = w3.eth.call(
             {
                 "to": SUSDE_CONTRACT,
-                "data": "0x01e1d114",  # totalAssets()
+                "data": HexStr("0x01e1d114"),  # totalAssets()
             }
         )
         total_supply_bytes = w3.eth.call(
             {
                 "to": SUSDE_CONTRACT,
-                "data": "0x18160ddd",  # totalSupply()
+                "data": HexStr("0x18160ddd"),  # totalSupply()
             }
         )
 
