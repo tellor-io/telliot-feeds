@@ -23,7 +23,6 @@ from telliot_core.cli.utils import cli_core
 
 from telliot_feeds.cli.constants import REWARDS_CHECK_MESSAGE
 from telliot_feeds.cli.constants import STAKE_MESSAGE
-from telliot_feeds.constants import DIVA_PROTOCOL_CHAINS
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import DATAFEED_BUILDER_MAPPING
 from telliot_feeds.queries.abi_query import AbiQuery
@@ -47,7 +46,6 @@ def print_reporter_settings(
     chain_id: int,
     transaction_type: int,
     legacy_gas_price: Optional[int],
-    reporting_diva_protocol: bool,
     stake_amount: float,
     min_native_token_balance: float,
 ) -> None:
@@ -60,8 +58,6 @@ def print_reporter_settings(
 
     if query_tag:
         click.echo(f"Reporting query tag: {query_tag}")
-    elif reporting_diva_protocol:
-        click.echo("Reporting & settling DIVA Protocol pools")
     else:
         click.echo("Reporting with synchronized queries")
 
@@ -133,14 +129,6 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
     assert core.config
 
     return core
-
-
-def valid_diva_chain(chain_id: int) -> bool:
-    """Ensure given chain ID supports reporting Diva Protocol data."""
-    if chain_id not in DIVA_PROTOCOL_CHAINS:
-        print(f"Current chain id ({chain_id}) not supported for reporting DIVA Protocol data.")
-        return False
-    return True
 
 
 def convert_input(target_type: Callable[[Union[str, int, float]], Any], input_str: str) -> Any:

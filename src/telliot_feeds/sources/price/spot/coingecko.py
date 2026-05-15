@@ -64,7 +64,6 @@ coingecko_coin_id = {
     "ousd": "origin-dollar",
     "sweth": "sweth",
     "wld": "worldcoin",
-    "diva": "diva-protocol",
     "cbeth": "coinbase-wrapped-staked-eth",
     "wbeth": "wrapped-beacon-eth",
     "pyth": "pyth-network",

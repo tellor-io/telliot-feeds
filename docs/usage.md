@@ -39,7 +39,7 @@ Usage: telliot report [OPTIONS]
 Options:
   -b, --build-feed                build a datafeed from a query type and query
                                   parameters
-  -qt, --query-tag [trb-usd-spot|ohm-eth-spot|vsq-usd-spot|bct-usd-spot|dai-usd-spot|ric-usd-spot|idle-usd-spot|mkr-usd-spot|sushi-usd-spot|matic-usd-spot|usdc-usd-spot|gas-price-oracle-example|eur-usd-spot|snapshot-proposal-example|eth-usd-30day_volatility|numeric-api-response-example|diva-protocol-example|string-query-example|pls-usd-spot|eth-usd-spot|btc-usd-spot|tellor-rng-example|twap-eth-usd-example|ampleforth-uspce|ampleforth-custom|albt-usd-spot|rai-usd-spot]
+  -qt, --query-tag [trb-usd-spot|ohm-eth-spot|vsq-usd-spot|bct-usd-spot|dai-usd-spot|ric-usd-spot|idle-usd-spot|mkr-usd-spot|sushi-usd-spot|matic-usd-spot|usdc-usd-spot|gas-price-oracle-example|eur-usd-spot|snapshot-proposal-example|eth-usd-30day_volatility|numeric-api-response-example|string-query-example|pls-usd-spot|eth-usd-spot|btc-usd-spot|tellor-rng-example|twap-eth-usd-example|ampleforth-uspce|ampleforth-custom|albt-usd-spot|rai-usd-spot]
                                   select datafeed using query tag
   -gl, --gas-limit INTEGER        use custom gas limit
   -mf, --max-fee INTEGER          use custom maxFeePerGas (gwei)
@@ -54,12 +54,6 @@ Options:
   -wp, --wait-period INTEGER      wait period between feed suggestion calls
   -rngts, --rng-timestamp INTEGER
                                   timestamp for Tellor RNG
-  -dpt, --diva-protocol BOOLEAN   Report & settle DIVA Protocol derivative
-                                  pools
-  -dda, --diva-diamond-address TEXT
-                                  DIVA Protocol contract address
-  -dma, --diva-middleware-address TEXT
-                                  DIVA Protocol middleware contract address
   -custom-token, --custom-token-contract TEXT
                                   Address of custom token contract
   -custom-oracle, --custom-oracle-contract TEXT
