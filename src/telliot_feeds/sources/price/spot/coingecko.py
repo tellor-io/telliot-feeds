@@ -64,7 +64,6 @@ coingecko_coin_id = {
     "ousd": "origin-dollar",
     "sweth": "sweth",
     "wld": "worldcoin",
-    "diva": "diva-protocol",
     "cbeth": "coinbase-wrapped-staked-eth",
     "wbeth": "wrapped-beacon-eth",
     "pyth": "pyth-network",
@@ -110,6 +109,7 @@ coingecko_coin_id = {
     "frxusd": "frax-usd",
     "sfrxusd": "staked-frax-usd",
     "usn": "noon-usn",
+    "usde": "ethena-usde",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="coingecko")[0].key

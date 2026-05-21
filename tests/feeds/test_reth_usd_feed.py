@@ -1,4 +1,5 @@
-import statistics
+from unittest.mock import AsyncMock
+from unittest.mock import patch
 
 import pytest
 
@@ -6,19 +7,18 @@ from telliot_feeds.feeds.reth_usd_feed import reth_usd_median_feed
 
 
 @pytest.mark.asyncio
-async def test_reth_usd_median_feed(caplog, mock_price_feed):
-    """Retrieve median RETH/USD price."""
-    mock_prices = [1200.50, 1205.25, 1202.75]
-    mock_price_feed(reth_usd_median_feed, mock_prices)
-    v, _ = await reth_usd_median_feed.source.fetch_new_datapoint()
+async def test_reth_usd_median_feed(caplog):
+    """Retrieve fundamental RETH/USD price (ETH/USD median × rETH exchange rate)."""
+    with patch("telliot_feeds.sources.reth_source.RethSpotPriceService.get_reth_eth_ratio", return_value=1.05):
+        with patch(
+            "telliot_feeds.sources.reth_source.eth_usd_median_feed.source.fetch_new_datapoint",
+            new_callable=AsyncMock,
+            return_value=(3202.125, None),
+        ):
+            v, _ = await reth_usd_median_feed.source.fetch_new_datapoint()
 
-    assert v is not None
-    assert v > 0
-    assert "sources used in aggregate: 3" in caplog.text.lower()
-    print(f"RETH/USD Price: {v}")
-
-    # Get list of data sources from sources dict
-    source_prices = [source.latest[0] for source in reth_usd_median_feed.source.sources if source.latest[0]]
-
-    # Make sure error is less than decimal tolerance
-    assert (v - statistics.median(source_prices)) < 10**-6
+            assert v is not None
+            assert v > 0
+            expected_price = 3202.125 * 1.05
+            assert abs(v - expected_price) < 1.0
+            print(f"RETH/USD Price: {v}")

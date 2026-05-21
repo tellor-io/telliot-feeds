@@ -25,9 +25,6 @@ from telliot_feeds.feeds.cult_usd_feed import cult_usd_median_feed
 from telliot_feeds.feeds.custom_price_manual_feed import custom_price_manual_feed
 from telliot_feeds.feeds.dai_usd_feed import dai_usd_median_feed
 from telliot_feeds.feeds.daily_volatility_manual_feed import daily_volatility_manual_feed
-from telliot_feeds.feeds.diva_feed import diva_example_feed
-from telliot_feeds.feeds.diva_feed import diva_manual_feed
-from telliot_feeds.feeds.diva_usd_feed import diva_usd_median_feed
 from telliot_feeds.feeds.doge_usd_feed import doge_usd_median_feed
 from telliot_feeds.feeds.dot_usd_feed import dot_usd_median_feed
 from telliot_feeds.feeds.eth_btc_feed import eth_btc_median_feed
@@ -126,6 +123,7 @@ from telliot_feeds.feeds.twap_manual_feed import twap_manual_feed
 from telliot_feeds.feeds.uni_usd_feed import uni_usd_median_feed
 from telliot_feeds.feeds.unibtc_usd_feed import unibtc_usd_median_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
+from telliot_feeds.feeds.usde_usd_feed import usde_usd_median_feed
 from telliot_feeds.feeds.usdm_usd_feed import usdm_usd_median_feed
 from telliot_feeds.feeds.usdn_usd_feed import usdn_usd_median_feed
 from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
@@ -168,7 +166,6 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "eur-usd-spot": eur_usd_median_feed,
     "snapshot-proposal-example": snapshot_feed_example,
     "numeric-api-response-example": numeric_api_response_feed,
-    "diva-protocol-example": diva_example_feed,
     "string-query-example": string_query_feed,
     "tellor-rng-example": tellor_rng_feed,
     "twap-eth-usd-example": twap_30d_example_manual_feed,
@@ -220,7 +217,6 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "oeth-eth-spot": oeth_eth_median_feed,
     "wld-usd-spot": wld_usd_median_feed,
     "sweth-usd-spot": sweth_usd_median_feed,
-    "diva-usd-spot": diva_usd_median_feed,
     "cbeth-usd-spot": cbeth_usd_median_feed,
     "wbeth-usd-spot": wbeth_usd_median_feed,
     "oeth-usd-spot": oeth_usd_median_feed,
@@ -266,6 +262,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "tbtc-usd-spot": tbtc_usd_median_feed,
     "fbtc-usd-spot": fbtc_usd_median_feed,
     "king-usd-spot": king_usd_median_feed,
+    "usde-usd-spot": usde_usd_median_feed,
     "usdn-usd-spot": usdn_usd_median_feed,
     "yusd-usd-spot": yusd_usd_feed,
     "susds-usd-spot": susds_usd_median_feed,
@@ -280,7 +277,6 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "SpotPrice": spot_price_manual_feed,
-    "DivaProtocol": diva_manual_feed,
     "SnapshotOracle": snapshot_manual_feed,
     "GasPriceOracle": gas_price_oracle_feed,
     "StringQuery": string_query_feed,
@@ -307,7 +303,6 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
 # populate list with feeds that require manual input
 MANUAL_FEEDS: list[str] = [
     "SpotPrice",
-    "DivaProtocol",
     "SnapshotOracle",
     "NumericApiManualResponse",
     "TWAP",

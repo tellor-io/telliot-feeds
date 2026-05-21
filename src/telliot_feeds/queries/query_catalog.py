@@ -1,8 +1,5 @@
-from hexbytes import HexBytes
-
 from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import COLLECTIONS
 from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import TOKENS
-from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
 from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AmpleforthCustomSpotPrice
 from telliot_feeds.queries.ampleforth.uspce import AmpleforthUSPCE
 from telliot_feeds.queries.btc_balance import BTCBalance
@@ -10,7 +7,6 @@ from telliot_feeds.queries.btc_balance_current import BTCBalanceCurrent
 from telliot_feeds.queries.catalog import Catalog
 from telliot_feeds.queries.custom_price import CustomPrice
 from telliot_feeds.queries.daily_volatility import DailyVolatility
-from telliot_feeds.queries.diva_protocol import DIVAProtocol
 from telliot_feeds.queries.evm_balance import EVMBalance
 from telliot_feeds.queries.evm_balance_current import EVMBalanceCurrent
 from telliot_feeds.queries.evm_call import EVMCall
@@ -122,15 +118,6 @@ query_catalog.add_entry(
     title="Numeric API response example",
     q=NumericApiResponse(
         url="https://api.coingecko.com/api/v3/simple/price?ids=garlicoin&vs_currencies=usd", parseStr="garlicoin, usd"
-    ),
-)
-query_catalog.add_entry(
-    tag="diva-protocol-example",
-    title="DIVA Protocol example",
-    q=DIVAProtocol(
-        poolId=HexBytes("0x29a5e6c77d5ba659b3c6688799a02beb98b061c1ba6431c1e660cd8454cdc984"),
-        divaDiamond=DIVA_DIAMOND_ADDRESS,
-        chainId=80001,
     ),
 )
 query_catalog.add_entry(
@@ -448,12 +435,6 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
-    tag="diva-usd-spot",
-    title="DIVA/USD spot price",
-    q=SpotPrice(asset="diva", currency="usd"),
-)
-
-query_catalog.add_entry(
     tag="cbeth-usd-spot",
     title="CBETH/USD spot price",
     q=SpotPrice(asset="cbeth", currency="usd"),
@@ -727,6 +708,12 @@ query_catalog.add_entry(
     tag="king-usd-spot",
     title="KING/USD spot price",
     q=SpotPrice(asset="king", currency="usd"),
+)
+
+query_catalog.add_entry(
+    tag="usde-usd-spot",
+    title="USDe/USD spot price",
+    q=SpotPrice(asset="usde", currency="usd"),
 )
 
 query_catalog.add_entry(

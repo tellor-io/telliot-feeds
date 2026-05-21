@@ -15,14 +15,10 @@ from telliot_feeds.cli.utils import common_reporter_options
 from telliot_feeds.cli.utils import get_accounts_from_name
 from telliot_feeds.cli.utils import print_reporter_settings
 from telliot_feeds.cli.utils import reporter_cli_core
-from telliot_feeds.cli.utils import valid_diva_chain
 from telliot_feeds.cli.utils import validate_address
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.feeds.tellor_rng_feed import assemble_rng_datafeed
-from telliot_feeds.integrations.diva_protocol import DIVA_DIAMOND_ADDRESS
-from telliot_feeds.integrations.diva_protocol import DIVA_TELLOR_MIDDLEWARE_ADDRESS
-from telliot_feeds.integrations.diva_protocol.report import DIVAProtocolReporter
 from telliot_feeds.reporters.flashbot import FlashbotsReporter
 from telliot_feeds.reporters.rng_interval import RNGReporter
 from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
@@ -68,35 +64,6 @@ def reporter() -> None:
     help="timestamp for Tellor RNG",
     nargs=1,
     type=int,
-)
-@click.option(
-    "--diva-protocol",
-    "-dpt",
-    "reporting_diva_protocol",
-    help="Report & settle DIVA Protocol derivative pools",
-    default=False,
-)
-@click.option(
-    "--diva-diamond-address",
-    "-dda",
-    "diva_diamond_address",
-    help="DIVA Protocol contract address",
-    nargs=1,
-    type=click.UNPROCESSED,
-    callback=validate_address,
-    default=DIVA_DIAMOND_ADDRESS,
-    prompt=False,
-)
-@click.option(
-    "--diva-middleware-address",
-    "-dma",
-    "diva_middleware_address",
-    help="DIVA Protocol middleware contract address",
-    nargs=1,
-    type=click.UNPROCESSED,
-    callback=validate_address,
-    default=DIVA_TELLOR_MIDDLEWARE_ADDRESS,
-    prompt=False,
 )
 @click.option(
     "--custom-token-contract",
@@ -160,9 +127,6 @@ async def report(
     expected_profit: str,
     submit_once: bool,
     wait_period: int,
-    reporting_diva_protocol: bool,
-    diva_diamond_address: Optional[str],
-    diva_middleware_address: Optional[str],
     rng_timestamp: int,
     password: str,
     signature_password: str,
@@ -231,11 +195,6 @@ async def report(
             except KeyError:
                 click.echo(f"No corresponding datafeed found for query tag: {query_tag}\n")
                 return
-        elif reporting_diva_protocol:
-            if not valid_diva_chain(chain_id=core.config.main.chain_id):
-                click.echo("Diva Protocol not supported for this chain")
-                return
-            chosen_feed = None
         elif rng_timestamp is not None:
             chosen_feed = await assemble_rng_datafeed(timestamp=rng_timestamp)
         else:
@@ -252,7 +211,6 @@ async def report(
             legacy_gas_price=legacy_gas_price,
             expected_profit=expected_profit,
             chain_id=core.config.main.chain_id,
-            reporting_diva_protocol=reporting_diva_protocol,
             stake_amount=stake,
             min_native_token_balance=min_native_token_balance,
         )
@@ -333,16 +291,6 @@ async def report(
             common_reporter_kwargs["wait_period"] = 120 if wait_period < 120 else wait_period
             reporter = RNGReporter(
                 **common_reporter_kwargs,
-            )
-        elif reporting_diva_protocol:
-            diva_reporter_kwargs = {}
-            if diva_diamond_address is not None:
-                diva_reporter_kwargs["diva_diamond_address"] = diva_diamond_address
-            if diva_middleware_address is not None:
-                diva_reporter_kwargs["middleware_address"] = diva_middleware_address
-            reporter = DIVAProtocolReporter(
-                **common_reporter_kwargs,
-                **diva_reporter_kwargs,  # type: ignore
             )
         else:
             reporter = Tellor360Reporter(

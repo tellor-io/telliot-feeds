@@ -7,7 +7,6 @@ import click
 import pytest
 from click.testing import CliRunner
 
-from telliot_feeds.cli.commands.report import valid_diva_chain
 from telliot_feeds.cli.constants import STAKE_MESSAGE
 from telliot_feeds.cli.main import main as cli_main
 from telliot_feeds.cli.utils import build_feed_from_input
@@ -123,12 +122,6 @@ def test_custom_gas_flag():
     assert expected in result.output
 
 
-def test_diva_protocol_invalid_chain():
-    valid = valid_diva_chain(chain_id=1)
-
-    assert not valid
-
-
 def test_stake_flag():
     """Test using the stake flag."""
     runner = CliRunner()
@@ -156,16 +149,6 @@ def test_report_options_available():
     assert result.exit_code == 0
     assert "--check-rewards" in result.stdout
     assert "--random-feeds" in result.stdout
-
-
-def test_cmd_settle():
-    """Test CLI settle DIVA pool command"""
-    runner = CliRunner()
-    result = runner.invoke(cli_main, ["--test-config", "settle", "--pool-id", 1])
-
-    expected = "Invalid value"
-
-    assert expected in result.output
 
 
 @pytest.mark.skip("Asking for password when it should not")

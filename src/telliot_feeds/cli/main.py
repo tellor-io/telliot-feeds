@@ -12,13 +12,11 @@ from telliot_feeds.cli.commands.ampleforth import ampleforth
 from telliot_feeds.cli.commands.catalog import catalog
 from telliot_feeds.cli.commands.conditional import conditional
 from telliot_feeds.cli.commands.config import config
-from telliot_feeds.cli.commands.integrations import integrations
 from telliot_feeds.cli.commands.layer import layer
 from telliot_feeds.cli.commands.liquity import liquity
 from telliot_feeds.cli.commands.query import query
 from telliot_feeds.cli.commands.report import report
 from telliot_feeds.cli.commands.request_withdraw_stake import request_withdraw
-from telliot_feeds.cli.commands.settle import settle
 from telliot_feeds.cli.commands.stake import stake
 from telliot_feeds.cli.commands.withdraw import withdraw
 from telliot_feeds.utils.log import get_logger
@@ -46,8 +44,6 @@ def main(
 main.add_command(report)
 main.add_command(query)
 main.add_command(catalog)
-main.add_command(settle)
-main.add_command(integrations)
 main.add_command(config)
 main.add_command(account)
 main.add_command(stake)

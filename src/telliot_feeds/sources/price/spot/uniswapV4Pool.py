@@ -1,0 +1,130 @@
+from dataclasses import dataclass
+from dataclasses import field
+from typing import Any
+
+import requests
+from requests import Session
+from telliot_core.apps.telliot_config import TelliotConfig
+
+from telliot_feeds.dtypes.datapoint import datetime_now_utc
+from telliot_feeds.dtypes.datapoint import OptionalDataPoint
+from telliot_feeds.pricing.price_service import WebPriceService
+from telliot_feeds.pricing.price_source import PriceSource
+from telliot_feeds.utils.log import get_logger
+
+
+logger = get_logger(__name__)
+
+# Asset is token0 in the pool → query token0Price (price of token0 expressed in token1)
+uniswapV4token0_pool_map = {
+    "susds": "",
+}
+
+# Asset is token1 in the pool → query token1Price (price of token1 expressed in token0)
+uniswapV4token1_pool_map: dict[str, str] = {}
+
+API_KEY = TelliotConfig().api_keys.find(name="thegraph")[0].key
+
+
+class UniswapV4PoolPriceService(WebPriceService):
+    """UniswapV4 Price Service for Pool Ratios"""
+
+    def __init__(self, **kwargs: Any) -> None:
+        kwargs["name"] = "UniswapV4 Pool Price Service"
+        kwargs["url"] = "https://gateway-arbitrum.network.thegraph.com"
+        kwargs["timeout"] = 10.0
+        super().__init__(**kwargs)
+
+    async def get_price(self, asset: str, currency: str) -> OptionalDataPoint[float]:
+        """Implement PriceServiceInterface
+        This implementation gets the price from the UniswapV4 subgraph using the pool query.
+        """
+        asset = asset.lower()
+        pool0 = uniswapV4token0_pool_map.get(asset, None)
+        pool1 = uniswapV4token1_pool_map.get(asset, None)
+
+        if not pool0 and not pool1:
+            raise Exception("Asset not supported: {}".format(asset))
+
+        if pool0:
+            query = "{pool" + f'(id: "{pool0}")' + "{ token0Price } }"
+            key = "token0Price"
+        else:
+            query = "{pool" + f'(id: "{pool1}")' + "{ token1Price } }"
+            key = "token1Price"
+
+        json_data = {"query": query}
+
+        request_url = f"{self.url}/api/subgraphs/id/DiYPVdygkfjDWhbxGSqAQxwBKmfKnkWQojqeM2rkLb3G"
+
+        session = Session()
+        headers = {"Accepts": "application/json"}
+        if API_KEY != "":
+            headers["Authorization"] = f"Bearer {API_KEY}"
+            session.headers.update(headers)
+
+        with requests.Session() as s:
+            try:
+                r = s.post(request_url, headers=headers, json=json_data, timeout=self.timeout)
+                res = r.json()
+                data = {"response": res}
+
+            except requests.exceptions.ConnectTimeout:
+                logger.warning("Timeout Error, No pool prices retrieved from UniswapV4")
+                return None, None
+
+            except Exception:
+                logger.warning("No pool prices retrieved from UniswapV4")
+                return None, None
+
+        if "error" in data:
+            logger.error(data)
+            return None, None
+
+        elif "response" in data:
+            response = data["response"]
+
+            try:
+                pool_info = response["data"].get("pool")
+                if pool_info is None:
+                    msg = f"UniswapV4 Pool API: No pool data available for token {asset.upper()}"
+                    logger.warning(msg)
+                    return None, None
+
+                token_price_value = pool_info.get(key)
+                if token_price_value is None:
+                    msg = f"UniswapV4 Pool API: No {key} value available for token {asset.upper()}"
+                    logger.warning(msg)
+                    return None, None
+
+                token_price = float(token_price_value)
+                return token_price, datetime_now_utc()
+            except KeyError as e:
+                msg = "Error parsing UniswapV4 pool response: KeyError: {}".format(e)
+                logger.critical(msg)
+                return None, None
+            except (TypeError, ValueError) as e:
+                msg = f"UniswapV4 Pool API: Error processing pool price data for {asset.upper()}: {e}"
+                logger.warning(msg)
+                return None, None
+
+        else:
+            raise Exception("Invalid response from get_url")
+
+
+@dataclass
+class UniswapV4PoolPriceSource(PriceSource):
+    asset: str = ""
+    currency: str = ""
+    service: UniswapV4PoolPriceService = field(default_factory=UniswapV4PoolPriceService, init=False)
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    async def main() -> None:
+        price_source = UniswapV4PoolPriceSource(asset="susds", currency="usd")
+        price, timestamp = await price_source.fetch_new_datapoint()
+        print(price, timestamp)
+
+    asyncio.run(main())
