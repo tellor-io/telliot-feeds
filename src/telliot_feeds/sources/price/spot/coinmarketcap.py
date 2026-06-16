@@ -23,7 +23,6 @@ coinmarketcap_ids = {
     "susde": "29471",
     "fbtc": "32306",
     "king": "33695",
-    "usdn": "36538",
     "tbtc": "26133",
     "reth": "15060",
     "statom": "21686",

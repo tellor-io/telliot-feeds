@@ -717,12 +717,6 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
-    tag="usdn-usd-spot",
-    title="USDN/USD spot price",
-    q=SpotPrice(asset="usdn", currency="usd"),
-)
-
-query_catalog.add_entry(
     tag="yusd-usd-spot",
     title="YUSD/USD spot price",
     q=SpotPrice(asset="yusd", currency="usd"),

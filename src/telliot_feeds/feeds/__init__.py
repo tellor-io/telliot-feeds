@@ -125,7 +125,6 @@ from telliot_feeds.feeds.unibtc_usd_feed import unibtc_usd_median_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.usde_usd_feed import usde_usd_median_feed
 from telliot_feeds.feeds.usdm_usd_feed import usdm_usd_median_feed
-from telliot_feeds.feeds.usdn_usd_feed import usdn_usd_median_feed
 from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
 from telliot_feeds.feeds.usdy_usd_feed import usdy_usd_median_feed
 from telliot_feeds.feeds.usn_usd_feed import usn_usd_median_feed
@@ -263,7 +262,6 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "fbtc-usd-spot": fbtc_usd_median_feed,
     "king-usd-spot": king_usd_median_feed,
     "usde-usd-spot": usde_usd_median_feed,
-    "usdn-usd-spot": usdn_usd_median_feed,
     "yusd-usd-spot": yusd_usd_feed,
     "susds-usd-spot": susds_usd_median_feed,
     "statom-usd-spot": statom_usd_median_feed,
