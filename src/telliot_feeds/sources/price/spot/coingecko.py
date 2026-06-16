@@ -100,7 +100,6 @@ coingecko_coin_id = {
     "susde": "ethena-staked-usde",
     "tbtc": "tbtc",
     "king": "lrt-squared",
-    "yusd": "yieldfi-ytoken",
     "susds": "susds",
     "statom": "stride-staked-atom",
     "fbtc": "ignition-fbtc",

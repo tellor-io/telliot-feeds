@@ -111,15 +111,12 @@ SPOT_PRICE_PAIRS = [
     "FBTC/USD",
     "KING/USD",
     "USDE/USD",
-    "YUSD/USD",
     "SUSDS/USD",
     "STATOM/USD",
     "SUSN/USD",
     "FRXUSD/USD",
     "SFRXUSD/USD",
-    "VYUSD/USD",
     "USN/USD",
-    "YETH/USD",
 ]
 
 
