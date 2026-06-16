@@ -23,14 +23,12 @@ coinmarketcap_ids = {
     "susde": "29471",
     "fbtc": "32306",
     "king": "33695",
-    "usdn": "36538",
     "tbtc": "26133",
     "reth": "15060",
     "statom": "21686",
     "bct": "12949",
     "saga": "30372",
     "sfrxusd": "36038",
-    "yusd": "34304",
 }
 
 API_KEY = TelliotConfig().api_keys.find(name="coinmarketcap")[0].key

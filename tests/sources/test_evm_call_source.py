@@ -180,11 +180,16 @@ def test_evm_call_on_previous_block():
     s.calldata = bytes.fromhex("adf1639d83a7f3d48786ac2667503a61e8c415438ed2922eb86a2906e4ee66d9a2ce4992")
     s.contractAddress = "0x8cFc184c877154a8F9ffE0fe75649dbe5e2DBEbf"
 
+    latest_block = s.web3.eth.get_block_number()
+    old_block_number = latest_block - 2000
+
     current_value, current_timestamp = s.get_response()
-
-    old_block_number = s.web3.eth.get_block_number() - 2000
-
     previous_value, previous_timestamp = s.get_response(old_block_number)
 
-    assert current_value != previous_value
+    # Oracle values may be identical when no report was submitted between blocks.
+    # Timestamps prove get_response() honors the requested block number.
     assert current_timestamp != previous_timestamp
+    assert previous_timestamp < current_timestamp
+    assert previous_timestamp == s.web3.eth.get_block(old_block_number)["timestamp"]
+    assert current_value is not None
+    assert previous_value is not None
