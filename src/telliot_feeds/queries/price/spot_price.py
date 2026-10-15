@@ -121,6 +121,7 @@ SPOT_PRICE_PAIRS = [
     "VYUSD/USD",
     "USN/USD",
     "YETH/USD",
+    "MORPHO/USD",
 ]
 
 

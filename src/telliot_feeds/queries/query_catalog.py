@@ -775,3 +775,9 @@ query_catalog.add_entry(
     title="YETH/USD spot price",
     q=SpotPrice(asset="yeth", currency="usd"),
 )
+
+query_catalog.add_entry(
+    tag="morpho-usd-spot",
+    title="MORPHO/USD spot price",
+    q=SpotPrice(asset="morpho", currency="usd"),
+)
