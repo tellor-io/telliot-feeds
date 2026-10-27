@@ -125,13 +125,11 @@ from telliot_feeds.feeds.unibtc_usd_feed import unibtc_usd_median_feed
 from telliot_feeds.feeds.usdc_usd_feed import usdc_usd_median_feed
 from telliot_feeds.feeds.usde_usd_feed import usde_usd_median_feed
 from telliot_feeds.feeds.usdm_usd_feed import usdm_usd_median_feed
-from telliot_feeds.feeds.usdn_usd_feed import usdn_usd_median_feed
 from telliot_feeds.feeds.usdt_usd_feed import usdt_usd_median_feed
 from telliot_feeds.feeds.usdy_usd_feed import usdy_usd_median_feed
 from telliot_feeds.feeds.usn_usd_feed import usn_usd_median_feed
 from telliot_feeds.feeds.uspce_feed import uspce_feed
 from telliot_feeds.feeds.vesq import vsq_usd_median_feed
-from telliot_feeds.feeds.vyusd_usd_feed import vyusd_usd_median_feed
 from telliot_feeds.feeds.wbeth_usd_feed import wbeth_usd_median_feed
 from telliot_feeds.feeds.wbtc_usd_feed import wbtc_usd_median_feed
 from telliot_feeds.feeds.weeth_usd_feed import weeth_usd_median_feed
@@ -142,9 +140,7 @@ from telliot_feeds.feeds.wsteth_feed import wsteth_eth_median_feed
 from telliot_feeds.feeds.wsteth_feed import wsteth_usd_median_feed
 from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_feed
 from telliot_feeds.feeds.xdai_usd_feed import xdai_usd_median_feed
-from telliot_feeds.feeds.yeth_usd_feed import yeth_usd_median_feed
 from telliot_feeds.feeds.yfi_usd_feed import yfi_usd_median_feed
-from telliot_feeds.feeds.yusd_usd_feed import yusd_usd_feed
 
 CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "ampleforth-custom": ampl_usd_vwap_feed,
@@ -263,16 +259,12 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "fbtc-usd-spot": fbtc_usd_median_feed,
     "king-usd-spot": king_usd_median_feed,
     "usde-usd-spot": usde_usd_median_feed,
-    "usdn-usd-spot": usdn_usd_median_feed,
-    "yusd-usd-spot": yusd_usd_feed,
     "susds-usd-spot": susds_usd_median_feed,
     "statom-usd-spot": statom_usd_median_feed,
     "susn-usd-spot": susn_usd_feed,
-    "vyusd-usd-spot": vyusd_usd_median_feed,
     "sfrxusd-usd-spot": sfrxusd_usd_feed,
     "frxusd-usd-spot": frxusd_usd_median_feed,
     "usn-usd-spot": usn_usd_median_feed,
-    "yeth-usd-spot": yeth_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
