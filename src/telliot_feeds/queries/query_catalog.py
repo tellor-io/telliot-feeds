@@ -661,18 +661,6 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
-    tag="usdn-usd-spot",
-    title="USDN/USD spot price",
-    q=SpotPrice(asset="usdn", currency="usd"),
-)
-
-query_catalog.add_entry(
-    tag="yusd-usd-spot",
-    title="YUSD/USD spot price",
-    q=SpotPrice(asset="yusd", currency="usd"),
-)
-
-query_catalog.add_entry(
     tag="susds-usd-spot",
     title="SUSDS/USD spot price",
     q=SpotPrice(asset="susds", currency="usd"),
@@ -691,12 +679,6 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
-    tag="vyusd-usd-spot",
-    title="vyUSD/USD spot price",
-    q=SpotPrice(asset="vyusd", currency="usd"),
-)
-
-query_catalog.add_entry(
     tag="frxusd-usd-spot",
     title="FRXUSD/USD spot price",
     q=SpotPrice(asset="frxusd", currency="usd"),
@@ -712,12 +694,6 @@ query_catalog.add_entry(
     tag="usn-usd-spot",
     title="USN/USD spot price",
     q=SpotPrice(asset="usn", currency="usd"),
-)
-
-query_catalog.add_entry(
-    tag="yeth-usd-spot",
-    title="YETH/USD spot price",
-    q=SpotPrice(asset="yeth", currency="usd"),
 )
 
 query_catalog.add_entry(

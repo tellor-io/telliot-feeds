@@ -76,7 +76,8 @@ class EVMCallSource(DataSource[Any]):
             return (empty_bytes, ts)
         try:
             result = self.web3.eth.call(
-                {"gasPrice": Wei(0), "to": self.contractAddress, "data": self.calldata}, block_number
+                {"gasPrice": Wei(0), "to": self.contractAddress, "data": self.calldata},
+                block_identifier=block_number,
             )
         # Is there a scenario where a contract call for a view/pure function would revert when the callData is valid?
         except ContractLogicError as e:
