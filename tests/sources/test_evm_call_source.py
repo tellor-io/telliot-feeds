@@ -11,6 +11,8 @@ from telliot_feeds.reporters.tellor_360 import Tellor360Reporter
 from telliot_feeds.sources.evm_call import EVMCallSource
 from telliot_feeds.utils.source_utils import update_web3
 
+pytestmark = pytest.mark.live
+
 
 @pytest.mark.asyncio
 async def test_not_injecting_middlware_twice(caplog):

@@ -1,5 +1,3 @@
-from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import COLLECTIONS
-from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import TOKENS
 from telliot_feeds.queries.ampleforth.ampl_usd_vwap import AmpleforthCustomSpotPrice
 from telliot_feeds.queries.ampleforth.uspce import AmpleforthUSPCE
 from telliot_feeds.queries.btc_balance import BTCBalance
@@ -12,9 +10,6 @@ from telliot_feeds.queries.evm_balance_current import EVMBalanceCurrent
 from telliot_feeds.queries.evm_call import EVMCall
 from telliot_feeds.queries.fileCID import FileCIDQuery
 from telliot_feeds.queries.gas_price_oracle import GasPriceOracle
-from telliot_feeds.queries.mimicry.collection_stat import MimicryCollectionStat
-from telliot_feeds.queries.mimicry.macro_market_mash_up import MimicryMacroMarketMashup
-from telliot_feeds.queries.mimicry.nft_market_index import MimicryNFTMarketIndex
 from telliot_feeds.queries.numeric_api_response_query import NumericApiResponse
 from telliot_feeds.queries.price.spot_price import SpotPrice
 from telliot_feeds.queries.price.twap import TWAP
@@ -294,33 +289,6 @@ query_catalog.add_entry(
 )
 
 query_catalog.add_entry(
-    tag="mimicry-crypto-coven-tami",
-    title="Crypto Coven TAMI calculation for Mimicry",
-    q=MimicryCollectionStat(collectionAddress="0x5180db8F5c931aaE63c74266b211F580155ecac8", chainId=1, metric=0),
-)
-
-query_catalog.add_entry(
-    tag="mimicry-nft-index-usd",
-    title="NFT Market Index usd",
-    q=MimicryNFTMarketIndex(chain="ethereum", currency="usd"),
-    active=True,
-)
-
-query_catalog.add_entry(
-    tag="mimicry-nft-index-eth",
-    title="NFT Market Index eth",
-    q=MimicryNFTMarketIndex(chain="ethereum", currency="eth"),
-    active=True,
-)
-
-query_catalog.add_entry(
-    tag="mimicry-mashup-example",
-    title="NFT market cap mashup",
-    q=MimicryMacroMarketMashup(metric="market-cap", currency="usd", collections=COLLECTIONS, tokens=TOKENS),
-    active=True,
-)
-
-query_catalog.add_entry(
     tag="steth-btc-spot",
     title="STETH/BTC spot price",
     q=SpotPrice(asset="steth", currency="btc"),
@@ -384,30 +352,6 @@ query_catalog.add_entry(
     tag="brl-usd-spot",
     title="BRL/USD spot price",
     q=SpotPrice(asset="brl", currency="usd"),
-)
-
-query_catalog.add_entry(
-    tag="corn-usd-custom",
-    title="Corn price in usd per kilogram",
-    q=CustomPrice(identifier="landx", asset="corn", currency="usd", unit="per_kilogram"),
-)
-
-query_catalog.add_entry(
-    tag="rice-usd-custom",
-    title="Rice price in usd per kilogram",
-    q=CustomPrice(identifier="landx", asset="rice", currency="usd", unit="per_kilogram"),
-)
-
-query_catalog.add_entry(
-    tag="wheat-usd-custom",
-    title="Wheat price in usd per kilogram",
-    q=CustomPrice(identifier="landx", asset="wheat", currency="usd", unit="per_kilogram"),
-)
-
-query_catalog.add_entry(
-    tag="soy-usd-custom",
-    title="Soy price in usd per kilogram",
-    q=CustomPrice(identifier="landx", asset="soy", currency="usd", unit="per_kilogram"),
 )
 
 query_catalog.add_entry(

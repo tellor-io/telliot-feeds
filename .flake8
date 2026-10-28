@@ -1,0 +1,2 @@
+[flake8]
+exclude = src/telliot_feeds/proto/

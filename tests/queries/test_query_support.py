@@ -14,7 +14,6 @@ def test_all_query_types_in_catalog():
         if q.__name__ in (
             "LegacyRequest",
             "FakeQueryType",
-            "MimicryCollectionStat",
             "AutopayAddresses",
             "TellorOracleAddress",
             "InflationData",

@@ -4,10 +4,10 @@ from telliot_feeds.sources.manual.spot_price_input_source import SpotPriceManual
 
 
 # Using dummy defaults to bypass an error handle for feeds w/out non-manual sources
-identifier: str = "landx"
-asset: str = "corn"
+identifier: str = "example"
+asset: str = "asset"
 currency: str = "usd"
-unit: str = "per_kilogram"
+unit: str = ""
 
 
 custom_price_manual_feed = DataFeed(

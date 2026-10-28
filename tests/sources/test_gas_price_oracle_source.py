@@ -9,6 +9,8 @@ from telliot_core.model.endpoints import RPCEndpoint
 
 from telliot_feeds.sources.gas_price_oracle import GasPriceOracleSource
 
+pytestmark = pytest.mark.live
+
 
 @pytest.mark.asyncio
 async def test_fetch_new_datapoint():
