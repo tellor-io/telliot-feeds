@@ -117,6 +117,7 @@ SPOT_PRICE_PAIRS = [
     "FRXUSD/USD",
     "SFRXUSD/USD",
     "USN/USD",
+    "MORPHO/USD",
 ]
 
 

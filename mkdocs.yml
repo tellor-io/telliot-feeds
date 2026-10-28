@@ -1,11 +1,9 @@
-site_name: Telliot Feed Examples Documentation
-
 # Project information
-site_name: Telliot Feed Examples Documentation
+site_name: Telliot Feeds
 site_url: https://tellor-io.github.io/telliot-feeds/
 site_author: Tellor Development Community
 site_description: >-
-  Contains examples and plugins for reporting to the TellorX Oracle.
+  Tools for interacting with Tellor Protocol smart contracts.
 
 # Repository
 repo_name: tellor-io/telliot-feeds
@@ -15,13 +13,9 @@ edit_uri: ""
 # Copyright
 copyright: Copyright (c) 2021-, Tellor Development Community
 
-
 theme:
   name: material
-  logo: assets/tellor_swoosh.png
-  favicon: assets/favicon-32x32.png
   features:
-    # - navigation.tabs
     - navigation.sections
   palette:
     primary: black
@@ -29,54 +23,16 @@ theme:
 
 plugins:
   - search
-  - autorefs
-  - mkdocstrings:
-      enable_inventory: true
-      watch:
-        - src
-      handlers:
-        python:
-          options:
-            show_root_heading: true
-            show_root_full_path: false
-            members_order: source
-            heading_level: 2
 
 markdown_extensions:
   - admonition
-  - abbr
   - attr_list
   - def_list
   - footnotes
-  - meta
   - md_in_html
-  - codehilite
-  - pymdownx.highlight
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
   - toc:
       permalink: true
-  - markdown.extensions.codehilite:
-      guess_lang: false
   - pymdownx.superfences
-  - pymdownx.tabbed:
-      alternate_style: true
 
 nav:
   - Home: index.md
-  - Getting started: getting-started.md
-  - Usage (telliot CLI): usage.md
-  - Contributing:
-      - Developer's Setup: contributing.md
-      - Add New Spot Price: add-spot-price.md
-      - Add New Chain: add-chain.md
-      - Add New Data Type (query type): new-query.md
-      - Documentation: documentation.md
-      - New Release Steps: new-release.md
-  - Code Reference:
-    - Queries Module:
-        - Query Types: code/query-types.md
-        - Query Base Classes: code/query-base-classes.md
-        - Query Catalog: code/query-catalog.md
-    - Data Feed Module: code/datafeed.md
-    - Types Module: code/dtypes.md

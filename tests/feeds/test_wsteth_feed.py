@@ -10,6 +10,8 @@ from telliot_feeds.sources.price.spot.coinpaprika import CoinpaprikaSpotPriceSou
 from telliot_feeds.sources.price.spot.curvefiprice import CurveFiUSDPriceSource
 from telliot_feeds.sources.price.spot.uniswapV3 import UniswapV3PriceSource
 
+pytestmark = pytest.mark.live
+
 
 @pytest.mark.asyncio
 async def test_wsteth_eth_median_feed(caplog, mock_price_feed, monkeypatch):

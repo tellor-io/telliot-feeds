@@ -54,7 +54,7 @@ def mumbai_test_key_name():
     return "mumbai_test_key"
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")
 def amoy_test_key_name():
     return "amoy_test_key"
 
@@ -64,7 +64,7 @@ def custom_reporter_name():
     return "custom_reporter_address"
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def sepolia_test_key_name():
     return "sepolia_test_key"
 
@@ -98,7 +98,7 @@ def guaranteed_price_source():
     return GoodFakeSource()
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")  # keyfile contents identical every test; per-test re-add cost ~1.3s/test
 def sender(accounts, mumbai_test_key_name):
     accts = find_accounts(chain_id=80001, name=mumbai_test_key_name)
 
@@ -116,7 +116,7 @@ def sender(accounts, mumbai_test_key_name):
     return accounts[0]
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")  # keyfile contents identical every test; per-test re-add cost ~1.3s/test
 def amoy_test_key(accounts, amoy_test_key_name):
     accts = find_accounts(chain_id=80002, name=amoy_test_key_name)
 
@@ -134,7 +134,7 @@ def amoy_test_key(accounts, amoy_test_key_name):
     return accounts[0]
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")  # keyfile contents identical every test; per-test re-add cost ~1.3s/test
 def sepolia_test_key(accounts, sepolia_test_key_name):
     accts = find_accounts(chain_id=11155111, name=sepolia_test_key_name)
 

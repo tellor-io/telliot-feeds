@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  docs:
+  style:
     name: "Style enforcement on Python ${{ matrix.python-version }}"
     runs-on: "ubuntu-latest"
 
@@ -19,14 +19,11 @@ jobs:
 
     steps:
       - uses: "actions/checkout@v2"
-      - uses: "actions/setup-python@v2"
+      - uses: "astral-sh/setup-uv@v10.3.2"
+      - uses: "actions/setup-python@v5"
         with:
           python-version: "${{ matrix.python-version }}"
       - name: "Install dependencies"
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade tox tox-gh-actions          
-
-      - name: "Run tox targets for ${{ matrix.python-version }}"
-        run:
-          tox -e style
+        run: uv sync --frozen
+      - name: "Run style checks"
+        run: uv run pre-commit run --all-files
