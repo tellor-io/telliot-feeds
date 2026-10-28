@@ -20,9 +20,8 @@ async def test_not_injecting_middlware_twice(caplog):
 
     s = EVMCallSource()
     s.chainId = 80002  # a POA chain, so it will raise web3.exceptions.ExtraDataLengthError
-    custom_endpoint = RPCEndpoint(
-        chain_id=80002, url=f"https://polygon-amoy.infura.io/v3/{os.environ['INFURA_API_KEY']}"
-    )
+    # Keyless public Amoy RPC: Infura's Amoy endpoint intermittently 401s on the CI project id.
+    custom_endpoint = RPCEndpoint(chain_id=80002, url="https://polygon-amoy.drpc.org")
 
     s.cfg.endpoints = EndpointList(endpoints=[custom_endpoint])
     s.web3 = update_web3(s.chainId, s.cfg)
@@ -89,9 +88,8 @@ async def test_non_getter_calldata():
     """Test if calldata is not for a getter function."""
     s = EVMCallSource()
     s.chainId = 80002
-    custom_endpoint = RPCEndpoint(
-        chain_id=80002, url=f"https://polygon-amoy.infura.io/v3/{os.environ['INFURA_API_KEY']}"
-    )
+    # Keyless public Amoy RPC: Infura's Amoy endpoint intermittently 401s on the CI project id.
+    custom_endpoint = RPCEndpoint(chain_id=80002, url="https://polygon-amoy.drpc.org")
 
     s.cfg.endpoints = EndpointList(endpoints=[custom_endpoint])
     s.web3 = update_web3(s.chainId, s.cfg)
