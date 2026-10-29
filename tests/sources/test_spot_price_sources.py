@@ -27,6 +27,9 @@ from telliot_feeds.sources.sweth_source import SWETH_CONTRACT
 from telliot_feeds.sources.sweth_source import swETHSpotPriceService
 
 
+pytestmark = pytest.mark.live
+
+
 service = {
     "coinbase": CoinbaseSpotPriceService(),
     "coingecko": CoinGeckoSpotPriceService(),

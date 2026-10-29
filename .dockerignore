@@ -1,0 +1,13 @@
+.git
+.hermes
+.venv
+site
+node_modules
+.pytest_cache
+.mypy_cache
+.ruff_cache
+*.egg-info
+build
+dist
+docs
+tests

@@ -54,26 +54,16 @@ from telliot_feeds.feeds.grt_usd_feed import grt_usd_median_feed
 from telliot_feeds.feeds.gyd_usd_feed import gyd_usd_median_feed
 from telliot_feeds.feeds.idle_usd_feed import idle_usd_median_feed
 from telliot_feeds.feeds.king_usd_feed import king_usd_median_feed
-from telliot_feeds.feeds.landx_feed import corn
-from telliot_feeds.feeds.landx_feed import rice
-from telliot_feeds.feeds.landx_feed import soy
-from telliot_feeds.feeds.landx_feed import wheat
 from telliot_feeds.feeds.leth_usd_feed import leth_usd_feed
 from telliot_feeds.feeds.link_usd_feed import link_usd_median_feed
 from telliot_feeds.feeds.lsk_usd_feed import lsk_usd_median_feed
 from telliot_feeds.feeds.ltc_usd_feed import ltc_usd_median_feed
 from telliot_feeds.feeds.matic_usd_feed import matic_usd_median_feed
 from telliot_feeds.feeds.meth_usd_feed import meth_usd_median_feed
-from telliot_feeds.feeds.mimicry.collection_stat_feed import mimicry_collection_stat_feed
-from telliot_feeds.feeds.mimicry.collection_stat_feed import mimicry_example_feed
-from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import mimicry_mashup_example_feed
-from telliot_feeds.feeds.mimicry.macro_market_mashup_feed import mimicry_mashup_feed
-from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_eth_feed
-from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_feed
-from telliot_feeds.feeds.mimicry.nft_index_feed import mimicry_nft_market_index_usd_feed
 from telliot_feeds.feeds.mkr_usd_feed import mkr_usd_median_feed
 from telliot_feeds.feeds.mnt_usd_feed import mnt_usd_median_feed
 from telliot_feeds.feeds.mode_usd_feed import mode_usd_median_feed
+from telliot_feeds.feeds.morpho_usd_feed import morpho_usd_median_feed
 from telliot_feeds.feeds.numeric_api_response_feed import numeric_api_response_feed
 from telliot_feeds.feeds.numeric_api_response_manual_feed import numeric_api_response_manual_feed
 from telliot_feeds.feeds.oeth_eth_feed import oeth_eth_median_feed
@@ -191,10 +181,6 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "uni-usd-spot": uni_usd_median_feed,
     "usdt-usd-spot": usdt_usd_median_feed,
     "yfi-usd-spot": yfi_usd_median_feed,
-    "mimicry-crypto-coven-tami": mimicry_example_feed,
-    "mimicry-nft-index-usd": mimicry_nft_market_index_usd_feed,
-    "mimicry-nft-index-eth": mimicry_nft_market_index_eth_feed,
-    "mimicry-mashup-example": mimicry_mashup_example_feed,
     "steth-btc-spot": steth_btc_median_feed,
     "steth-usd-spot": steth_usd_median_feed,
     "reth-btc-spot": reth_btc_median_feed,
@@ -205,10 +191,6 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "grt-usd-spot": grt_usd_median_feed,
     "cny-usd-spot": cny_usd_median_feed,
     "brl-usd-spot": brl_usd_median_feed,
-    "corn-usd-custom": corn,
-    "rice-usd-custom": rice,
-    "wheat-usd-custom": wheat,
-    "soy-usd-custom": soy,
     "ousd-usd-spot": ousd_usd_median_feed,
     "oeth-eth-spot": oeth_eth_median_feed,
     "wld-usd-spot": wld_usd_median_feed,
@@ -265,6 +247,7 @@ CATALOG_FEEDS: Dict[str, DataFeed[Any]] = {
     "sfrxusd-usd-spot": sfrxusd_usd_feed,
     "frxusd-usd-spot": frxusd_usd_median_feed,
     "usn-usd-spot": usn_usd_median_feed,
+    "morpho-usd-spot": morpho_usd_median_feed,
 }
 
 DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
@@ -280,9 +263,6 @@ DATAFEED_BUILDER_MAPPING: Dict[str, DataFeed[Any]] = {
     "TellorRNGManualResponse": tellor_rng_manual_feed,
     "AmpleforthCustomSpotPrice": ampl_usd_vwap_feed,
     "AmpleforthUSPCE": uspce_feed,
-    "MimicryCollectionStat": mimicry_collection_stat_feed,
-    "MimicryNFTMarketIndex": mimicry_nft_market_index_feed,
-    "MimicryMacroMarketMashup": mimicry_mashup_feed,
     "EVMCall": evm_call_feed,
     "CustomPrice": custom_price_manual_feed,
     "FileCID": fileCID_manual_feed,

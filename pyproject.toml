@@ -1,10 +1,116 @@
 [build-system]
-requires = [
-    "setuptools >= 56.0",
-    "setuptools_scm >= 6.0",
-    "wheel"
-]
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "telliot-feeds"
+description = "Tools for interacting with Tellor Protocol smart contracts."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Tellor Development Community" }]
+requires-python = ">=3.12,<3.13"
+dynamic = ["version"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: System :: Networking",
+    "Topic :: Office/Business :: Financial",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = ["oracle", "ethereum", "blockchain"]
+dependencies = [
+    # aiohttp 3.11.13 is yanked upstream; the exact pin keeps uv.lock resolving it (dvm does the same)
+    "aiohttp==3.11.13",
+    "attrs>=24.0.0",
+    "bech32>=1.2.0",  # vendored terra_sdk.core.bech32
+    "betterproto>=2.0.0b4",
+    "boltons>=21.0.0",  # vendored terra_sdk.util.remove_none
+    "chained-accounts==0.0.1",
+    "clamfig>=0.1.3",
+    "click>=8.1,<9",
+    "ecdsa>=0.17.0",  # vendored terra_sdk.key.raw
+    "eth-abi>=5.2.0",
+    "eth-account>=0.13.6,<0.14",
+    "eth-typing>=5,<6",
+    "eth-utils>=5,<6",
+    "furl>=2.1.3",  # vendored terra_sdk.client.lcd.lcdclient
+    "grpclib>=0.4.9",
+    "hexbytes>=1.2.0,<2",
+    "multicall>=0.10.0",
+    "multidict>=6.0",  # vendored terra_sdk LCD client (normally via aiohttp)
+    "nest-asyncio>=1.6.0",
+    # protobuf floor is the CVE-2024-7254 security floor; also enforced via [tool.uv] overrides
+    "protobuf>=5.29.3",
+    "python-dateutil>=2.9.0",
+    "python-dotenv>=1.0.1",
+    "pytz>=2025.1",
+    "PyYAML>=6.0.2",
+    "requests>=2.32.3",
+    "rlp>=4,<5",
+    "setuptools<81",  # betterproto 2.0.0b* imports pkg_resources at runtime
+    "simple-term-menu>=1.6.6",
+    "telliot-core==0.4.2",
+    # replaces the transitive pull terra-sdk 4.0.0 used to provide; the
+    # terra_sdk python code itself is vendored (src/telliot_feeds/_vendor/)
+    "terra-proto==4.0.2",
+    "toolz>=1.0.0",
+    "urllib3>=2.3.0",
+    "web3>=7,<8",
+    "wrapt>=1.13.3,<2",  # vendored terra_sdk LCD base API (same range terra-sdk used)
+]
+
+[project.urls]
+Homepage = "https://github.com/tellor-io/telliot-feeds"
+
+[project.scripts]
+telliot = "telliot_feeds.cli.main:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.dynamic]
+version = { attr = "telliot_feeds.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"telliot_feeds._vendor" = ["UPSTREAM.md", "terra_sdk-LICENSE"]
+
+[dependency-groups]
+dev = [
+    "ape-hardhat",
+    "ape-solidity",
+    "eth-ape",
+    "eth-tester==0.13.0b1",
+    # mkdocs 2.0 is only pre-releases; prerelease="allow" would pull them in
+    "mkdocs>=1.6,<2",
+    "mkdocs-material>=9,<10",
+    "mypy",
+    "mypy-extensions",
+    "pre-commit",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-dotenv",
+    "pytest-rerunfailures",
+    "types-PyYAML",
+    "types-requests",
+]
+
+[tool.uv]
+# No override-dependencies: terra-sdk was the only dep whose metadata capped
+# attrs (<22) and protobuf (<4); it is now vendored (src/telliot_feeds/_vendor/),
+# so the tree resolves cleanly with modern attrs (telliot-core needs >=25.1.0)
+# and protobuf (CVE-2024-7254 floor >=5.29.3) on plain resolution.
+# prerelease=allow is needed for betterproto 2.0.0b*, wrapt RCs, and
+# transitive pins like ipfshttpclient==0.8.0a2.
+prerelease = "allow"
 
 [tool.pytest.ini_options]
 log_cli = true

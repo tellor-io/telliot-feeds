@@ -8,6 +8,8 @@ from telliot_core.model.endpoints import RPCEndpoint
 
 from telliot_feeds.sources.evm_balance import EVMBalanceSource
 
+pytestmark = pytest.mark.live
+
 
 @pytest.mark.asyncio
 async def test_evm_balance():
