@@ -61,7 +61,7 @@ dependencies = [
     "toolz>=1.0.0",
     "urllib3>=2.3.0",
     "web3>=7,<8",
-    "wrapt>=1.13.3",  # vendored terra_sdk LCD base API
+    "wrapt>=1.13.3,<2",  # vendored terra_sdk LCD base API (same range terra-sdk used)
 ]
 
 [project.urls]
@@ -104,14 +104,13 @@ dev = [
 ]
 
 [tool.uv]
-# attrs/protobuf overrides: terra-sdk is now vendored (src/telliot_feeds/_vendor/),
-# but other transitive deps may still carry stale attrs/protobuf caps; Task in
-# plan revisits whether the overrides can go. Runtime needs modern attrs
-# (telliot-core>=25.1.0) and modern protobuf (CVE-2024-7254 floor >=5.29.3).
-# prerelease=allow is still needed for betterproto 2.0.0b* and
+# No override-dependencies: terra-sdk was the only dep whose metadata capped
+# attrs (<22) and protobuf (<4); it is now vendored (src/telliot_feeds/_vendor/),
+# so the tree resolves cleanly with modern attrs (telliot-core needs >=25.1.0)
+# and protobuf (CVE-2024-7254 floor >=5.29.3) on plain resolution.
+# prerelease=allow is needed for betterproto 2.0.0b*, wrapt RCs, and
 # transitive pins like ipfshttpclient==0.8.0a2.
 prerelease = "allow"
-override-dependencies = ["attrs>=24", "protobuf>=5.29.3"]
 
 [tool.pytest.ini_options]
 log_cli = true
