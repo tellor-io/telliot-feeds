@@ -17,7 +17,7 @@ from terra_proto.ibc.core.client.v1 import (
 )
 from terra_proto.ibc.core.client.v1 import Params as Params_pb
 
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = [
     "Height",

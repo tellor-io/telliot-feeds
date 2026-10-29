@@ -7,7 +7,7 @@ import attr
 from terra_proto.ibc.core.commitment.v1 import MerklePrefix as MerklePrefix_pb
 from terra_proto.ibc.core.commitment.v1 import MerkleRoot as MerkleRoot_pb
 
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = ["MerkleRoot", "MerklePrefix"]
 

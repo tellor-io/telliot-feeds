@@ -8,7 +8,7 @@ from terra_proto.ibc.core.client.v1 import (
 
 __all__ = ["ClientUpdateProposal"]
 
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 
 @attr.s

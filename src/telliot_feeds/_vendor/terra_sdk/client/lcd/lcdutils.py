@@ -2,7 +2,7 @@ from functools import reduce
 from math import ceil
 from typing import Any, Dict, Union
 
-from terra_sdk.core import Coin
+from telliot_feeds._vendor.terra_sdk.core import Coin
 
 from .api._base import BaseAsyncAPI, sync_bind
 
@@ -24,7 +24,7 @@ class AsyncLCDUtils(BaseAsyncAPI):
         )
         next_key = ""
         while True:
-            from terra_sdk.client.lcd import PaginationOptions
+            from telliot_feeds._vendor.terra_sdk.client.lcd import PaginationOptions
 
             validators, pag = await BaseAsyncAPI._try_await(
                 self._c.staking.validators(PaginationOptions(key=next_key))

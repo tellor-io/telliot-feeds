@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from terra_sdk.core.public_key import PublicKey
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core.public_key import PublicKey
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 from .base_account import BaseAccount
 from .continuous_vesting_account import ContinuousVestingAccount

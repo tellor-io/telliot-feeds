@@ -7,7 +7,7 @@ from typing import Union
 import attr
 from terra_proto.cosmos.base.v1beta1 import Coin as Coin_pb
 
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 from .numeric import Dec, Numeric
 

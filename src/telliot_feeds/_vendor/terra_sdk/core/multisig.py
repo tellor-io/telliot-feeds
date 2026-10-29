@@ -6,12 +6,12 @@ from typing import List
 
 import attr
 
-from terra_sdk.core.compact_bit_array import CompactBitArray
-from terra_sdk.core.public_key import LegacyAminoMultisigPublicKey, SimplePublicKey
-from terra_sdk.core.signature_v2 import Descriptor
-from terra_sdk.core.signature_v2 import Multi as MultiDescriptor
-from terra_sdk.core.signature_v2 import SignatureV2
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core.compact_bit_array import CompactBitArray
+from telliot_feeds._vendor.terra_sdk.core.public_key import LegacyAminoMultisigPublicKey, SimplePublicKey
+from telliot_feeds._vendor.terra_sdk.core.signature_v2 import Descriptor
+from telliot_feeds._vendor.terra_sdk.core.signature_v2 import Multi as MultiDescriptor
+from telliot_feeds._vendor.terra_sdk.core.signature_v2 import SignatureV2
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = ["MultiSignature"]
 

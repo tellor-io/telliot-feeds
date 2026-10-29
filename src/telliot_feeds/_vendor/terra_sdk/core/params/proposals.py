@@ -11,7 +11,7 @@ from terra_proto.cosmos.params.v1beta1 import (
     ParameterChangeProposal as ParameterChangeProposal_pb,
 )
 
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = ["ParameterChangeProposal", "ParamChange"]
 

@@ -4,7 +4,7 @@ from typing import Optional
 
 import attr
 
-from terra_sdk.core import (
+from telliot_feeds._vendor.terra_sdk.core import (
     AccAddress,
     AccPubKey,
     ModeInfo,
@@ -14,15 +14,15 @@ from terra_sdk.core import (
     ValAddress,
     ValPubKey,
 )
-from terra_sdk.core.bech32 import get_bech
-from terra_sdk.core.public_key import (
+from telliot_feeds._vendor.terra_sdk.core.bech32 import get_bech
+from telliot_feeds._vendor.terra_sdk.core.public_key import (
     PublicKey,
     address_from_public_key,
     amino_pubkey_from_public_key,
 )
-from terra_sdk.core.signature_v2 import Descriptor
-from terra_sdk.core.signature_v2 import Single as SingleDescriptor
-from terra_sdk.core.tx import AuthInfo, SignerInfo, SignMode, Tx
+from telliot_feeds._vendor.terra_sdk.core.signature_v2 import Descriptor
+from telliot_feeds._vendor.terra_sdk.core.signature_v2 import Single as SingleDescriptor
+from telliot_feeds._vendor.terra_sdk.core.tx import AuthInfo, SignerInfo, SignMode, Tx
 
 __all__ = ["Key", "SignOptions"]
 

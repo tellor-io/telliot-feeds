@@ -12,9 +12,9 @@ from terra_proto.cosmos.staking.v1beta1 import CommissionRates as CommissionRate
 from terra_proto.cosmos.staking.v1beta1 import Description as Description_pb
 from terra_proto.cosmos.staking.v1beta1 import Validator as Validator_pb
 
-from terra_sdk.core import Dec, ValAddress, ValConsPubKey
-from terra_sdk.util.converter import to_isoformat
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core import Dec, ValAddress, ValConsPubKey
+from telliot_feeds._vendor.terra_sdk.util.converter import to_isoformat
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = ["CommissionRates", "Commission", "Description", "Validator", "BondStatus"]
 

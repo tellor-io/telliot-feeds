@@ -7,12 +7,12 @@ import json
 import attr
 from terra_proto.cosmos.tx.v1beta1 import SignDoc as SignDoc_pb
 
-from terra_sdk.core.tx import AuthInfo, TxBody
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core.tx import AuthInfo, TxBody
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = ["SignDoc"]
 
-from terra_sdk.util.remove_none import remove_none
+from telliot_feeds._vendor.terra_sdk.util.remove_none import remove_none
 
 
 @attr.s

@@ -12,9 +12,9 @@ from terra_proto.cosmwasm.wasm.v1 import AccessTypeParam as AccessTypeParam_pb
 from terra_proto.cosmwasm.wasm.v1 import ContractCodeHistoryEntry as HistoryEntry_pb
 from terra_proto.cosmwasm.wasm.v1 import ContractCodeHistoryOperationType
 
-from terra_sdk.core.bech32 import AccAddress
-from terra_sdk.core.msg import Msg
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core.bech32 import AccAddress
+from telliot_feeds._vendor.terra_sdk.core.msg import Msg
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = ["AccessType", "AccessConfig", "AccessConfigUpdate", "AccessTypeParam"]
 

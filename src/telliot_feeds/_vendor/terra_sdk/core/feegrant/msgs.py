@@ -11,8 +11,8 @@ from terra_proto.cosmos.feegrant.v1beta1 import (
     MsgRevokeAllowance as MsgRevokeAllowance_pb,
 )
 
-from terra_sdk.core import AccAddress
-from terra_sdk.core.msg import Msg
+from telliot_feeds._vendor.terra_sdk.core import AccAddress
+from telliot_feeds._vendor.terra_sdk.core.msg import Msg
 
 from .data import Allowance
 

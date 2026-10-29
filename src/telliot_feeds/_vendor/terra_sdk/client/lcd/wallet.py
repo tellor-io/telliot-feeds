@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from terra_sdk.key.key import Key, SignOptions
+from telliot_feeds._vendor.terra_sdk.key.key import Key, SignOptions
 
 from .api.tx import CreateTxOptions, SignerOptions
 

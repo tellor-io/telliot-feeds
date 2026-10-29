@@ -7,8 +7,8 @@ from terra_proto.cosmos.gov.v1beta1 import MsgDeposit as MsgDeposit_pb
 from terra_proto.cosmos.gov.v1beta1 import MsgSubmitProposal as MsgSubmitProposal_pb
 from terra_proto.cosmos.gov.v1beta1 import MsgVote as MsgVote_pb
 
-from terra_sdk.core import AccAddress, Coins
-from terra_sdk.core.msg import Msg
+from telliot_feeds._vendor.terra_sdk.core import AccAddress, Coins
+from telliot_feeds._vendor.terra_sdk.core.msg import Msg
 
 from .data import Content, VoteOption
 
@@ -58,7 +58,7 @@ class MsgSubmitProposal(Msg):
 
     @classmethod
     def from_data(cls, data: dict) -> MsgSubmitProposal:
-        from terra_sdk.util.parse_content import parse_content
+        from telliot_feeds._vendor.terra_sdk.util.parse_content import parse_content
 
         content = parse_content(data["content"])
         return cls(
@@ -76,7 +76,7 @@ class MsgSubmitProposal(Msg):
 
     @classmethod
     def from_proto(cls, proto: MsgSubmitProposal_pb) -> MsgSubmitProposal:
-        from terra_sdk.util.parse_content import parse_content_unpack_any
+        from telliot_feeds._vendor.terra_sdk.util.parse_content import parse_content_unpack_any
 
         content = parse_content_unpack_any(proto.content)
         return cls(

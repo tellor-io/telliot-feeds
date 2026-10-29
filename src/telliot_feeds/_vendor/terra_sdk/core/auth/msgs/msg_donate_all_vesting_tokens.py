@@ -6,8 +6,8 @@ from terra_proto.cosmos.vesting.v1beta1 import (
     MsgDonateAllVestingTokens as MsgDonateAllVestingTokens_pb,
 )
 
-from terra_sdk.core import AccAddress, Coins
-from terra_sdk.core.msg import Msg
+from telliot_feeds._vendor.terra_sdk.core import AccAddress, Coins
+from telliot_feeds._vendor.terra_sdk.core.msg import Msg
 
 __all__ = ["MsgDonateAllVestingTokens"]
 

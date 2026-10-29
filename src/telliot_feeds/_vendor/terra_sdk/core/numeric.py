@@ -6,7 +6,7 @@ import re
 from decimal import Decimal
 from typing import Union
 
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 DEC_NUM_DIGITS = 18
 """Number of digits for Decimal."""

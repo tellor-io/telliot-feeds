@@ -1,6 +1,6 @@
 from typing import Optional
 
-from terra_sdk.core import AccAddress, Coins
+from telliot_feeds._vendor.terra_sdk.core import AccAddress, Coins
 
 from ..params import APIParams
 from ._base import BaseAsyncAPI, sync_bind

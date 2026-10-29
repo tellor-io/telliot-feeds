@@ -10,8 +10,8 @@ from terra_proto.cosmos.authz.v1beta1 import MsgExec as MsgExec_pb
 from terra_proto.cosmos.authz.v1beta1 import MsgGrant as MsgGrant_pb
 from terra_proto.cosmos.authz.v1beta1 import MsgRevoke as MsgRevoke_pb
 
-from terra_sdk.core import AccAddress
-from terra_sdk.core.msg import Msg
+from telliot_feeds._vendor.terra_sdk.core import AccAddress
+from telliot_feeds._vendor.terra_sdk.core.msg import Msg
 
 from .data import Authorization, AuthorizationGrant
 

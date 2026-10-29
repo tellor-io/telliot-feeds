@@ -36,3 +36,15 @@ EOF
 ```
 
 Expect: `97` (`client/` 22, `core/` 62, `util/` 8, `key/` 3, 2 top-level).
+
+### Known limitation: deserialize-only helpers
+
+The lazy imports inside `Msg.from_data/from_proto/unpack_any`,
+`Authorization.from_*`, and `MsgSubmitProposal.from_*` point at
+`terra_sdk.util.parse_msg` / `parse_authorization` / `parse_content`, which
+are outside the closure (they are never loaded at import time). Calling those
+static methods in a terra-sdk-free environment raises `ModuleNotFoundError`;
+the write path (`to_data` / `to_proto` / signing / broadcast) is unaffected.
+This matches the old behavior for any environment without a full terra_sdk
+install; deserialization of chain responses goes through the REST/ LCD dicts
+instead.

@@ -8,9 +8,9 @@ from terra_proto.cosmos.vesting.v1beta1 import (
     MsgCreatePeriodicVestingAccount as MsgCreatePeriodicVestingAccount_pb,
 )
 
-from terra_sdk.core import AccAddress
-from terra_sdk.core.auth.data.periodic_vesting_account import Period
-from terra_sdk.core.msg import Msg
+from telliot_feeds._vendor.terra_sdk.core import AccAddress
+from telliot_feeds._vendor.terra_sdk.core.auth.data.periodic_vesting_account import Period
+from telliot_feeds._vendor.terra_sdk.core.msg import Msg
 
 __all__ = ["MsgCreatePeriodicVestingAccount"]
 

@@ -15,8 +15,8 @@ from terra_proto.cosmos.upgrade.v1beta1 import (
     SoftwareUpgradeProposal as SoftwareUpgradeProposal_pb,
 )
 
-from terra_sdk.core.upgrade.plan import Plan
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core.upgrade.plan import Plan
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 
 @attr.s

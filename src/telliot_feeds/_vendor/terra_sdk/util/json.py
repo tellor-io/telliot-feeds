@@ -4,7 +4,7 @@ from abc import ABC
 from datetime import datetime
 from typing import Any
 
-from terra_sdk.util.converter import to_isoformat
+from telliot_feeds._vendor.terra_sdk.util.converter import to_isoformat
 
 
 def to_data(x: Any) -> Any:

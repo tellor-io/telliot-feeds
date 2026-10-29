@@ -9,7 +9,7 @@ from terra_proto.cosmos.tx.v1beta1 import ModeInfo as ModeInfo_pb
 from terra_proto.cosmos.tx.v1beta1 import ModeInfoMulti as ModeInfoMulti_pb
 from terra_proto.cosmos.tx.v1beta1 import ModeInfoSingle as ModeInfoSingle_pb
 
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 from .compact_bit_array import CompactBitArray
 

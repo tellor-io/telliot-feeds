@@ -3,8 +3,8 @@ from __future__ import annotations
 import attr
 from terra_proto.cosmos.gov.v1beta1 import Deposit as Deposit_pb
 
-from terra_sdk.core import AccAddress
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core import AccAddress
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 from .coins import Coins
 

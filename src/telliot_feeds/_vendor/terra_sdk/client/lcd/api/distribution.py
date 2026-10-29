@@ -2,7 +2,7 @@ from typing import Dict, Optional
 
 import attr
 
-from terra_sdk.core import AccAddress, Coins, ValAddress
+from telliot_feeds._vendor.terra_sdk.core import AccAddress, Coins, ValAddress
 
 from ..params import APIParams
 from ._base import BaseAsyncAPI, sync_bind

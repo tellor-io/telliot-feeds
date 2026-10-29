@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from betterproto.lib.google.protobuf import Any as Any_pb
 
-from terra_sdk.util.base import BaseTerraData
+from telliot_feeds._vendor.terra_sdk.util.base import BaseTerraData
 
 
 class Msg(BaseTerraData):
@@ -14,18 +14,18 @@ class Msg(BaseTerraData):
 
     @staticmethod
     def from_data(data: dict) -> Msg:
-        from terra_sdk.util.parse_msg import parse_msg
+        from telliot_feeds._vendor.terra_sdk.util.parse_msg import parse_msg
 
         return parse_msg(data)
 
     @staticmethod
     def from_proto(proto: any) -> Msg:
-        from terra_sdk.util.parse_msg import parse_proto
+        from telliot_feeds._vendor.terra_sdk.util.parse_msg import parse_proto
 
         return parse_proto(proto)
 
     @staticmethod
     def unpack_any(any_pb: Any_pb) -> Msg:
-        from terra_sdk.util.parse_msg import parse_unpack_any
+        from telliot_feeds._vendor.terra_sdk.util.parse_msg import parse_unpack_any
 
         return parse_unpack_any(any_pb)

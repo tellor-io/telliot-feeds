@@ -2,7 +2,7 @@ from typing import List, Optional, Union
 
 from dateutil import parser
 
-from terra_sdk.core import Dec, Numeric, ValConsPubKey
+from telliot_feeds._vendor.terra_sdk.core import Dec, Numeric, ValConsPubKey
 
 from ._base import BaseAsyncAPI, sync_bind
 

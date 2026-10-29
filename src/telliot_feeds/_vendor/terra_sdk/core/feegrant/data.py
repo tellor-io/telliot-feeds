@@ -17,10 +17,10 @@ from terra_proto.cosmos.feegrant.v1beta1 import (
     PeriodicAllowance as PeriodicAllowance_pb,
 )
 
-from terra_sdk.core import Coins
-from terra_sdk.util.base import create_demux_unpack_any
-from terra_sdk.util.converter import to_isoformat
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core import Coins
+from telliot_feeds._vendor.terra_sdk.util.base import create_demux_unpack_any
+from telliot_feeds._vendor.terra_sdk.util.converter import to_isoformat
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = ["BasicAllowance", "PeriodicAllowance", "AllowedMsgAllowance", "Allowance"]
 

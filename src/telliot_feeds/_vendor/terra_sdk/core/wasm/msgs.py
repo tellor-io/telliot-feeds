@@ -18,10 +18,10 @@ from terra_proto.cosmwasm.wasm.v1 import MsgMigrateContract as MsgMigrateContrac
 from terra_proto.cosmwasm.wasm.v1 import MsgStoreCode as MsgStoreCode_pb
 from terra_proto.cosmwasm.wasm.v1 import MsgUpdateAdmin as MsgUpdateAdmin_pb
 
-from terra_sdk.core import AccAddress, Coins
-from terra_sdk.core.msg import Msg
-from terra_sdk.core.wasm.data import AccessConfig, AccessTypeParam
-from terra_sdk.util.remove_none import remove_none
+from telliot_feeds._vendor.terra_sdk.core import AccAddress, Coins
+from telliot_feeds._vendor.terra_sdk.core.msg import Msg
+from telliot_feeds._vendor.terra_sdk.core.wasm.data import AccessConfig, AccessTypeParam
+from telliot_feeds._vendor.terra_sdk.util.remove_none import remove_none
 
 __all__ = [
     "MsgStoreCode",

@@ -1,7 +1,7 @@
 from typing import List, Optional
 
-from terra_sdk.core import AccAddress
-from terra_sdk.core.authz import AuthorizationGrant
+from telliot_feeds._vendor.terra_sdk.core import AccAddress
+from telliot_feeds._vendor.terra_sdk.core.authz import AuthorizationGrant
 
 from ..params import APIParams
 from ._base import BaseAsyncAPI, sync_bind

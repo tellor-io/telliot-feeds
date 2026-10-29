@@ -7,9 +7,9 @@ from typing import Optional
 import attr
 from terra_proto.cosmos.tx.v1beta1 import Fee as Fee_pb
 
-from terra_sdk.core.bech32 import AccAddress
-from terra_sdk.core.coins import Coins
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core.bech32 import AccAddress
+from telliot_feeds._vendor.terra_sdk.core.coins import Coins
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = ["Fee"]
 

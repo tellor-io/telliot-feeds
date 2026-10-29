@@ -21,9 +21,9 @@ from terra_proto.cosmos.staking.v1beta1 import (
     UnbondingDelegationEntry as UnbondingDelegationEntry_pb,
 )
 
-from terra_sdk.core import AccAddress, Coin, Dec, ValAddress
-from terra_sdk.util.converter import to_isoformat
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core import AccAddress, Coin, Dec, ValAddress
+from telliot_feeds._vendor.terra_sdk.util.converter import to_isoformat
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = [
     "Delegation",

@@ -1,7 +1,7 @@
 from typing import Optional
 
-from terra_sdk.core import AccAddress
-from terra_sdk.core.feegrant import Allowance
+from telliot_feeds._vendor.terra_sdk.core import AccAddress
+from telliot_feeds._vendor.terra_sdk.core.feegrant import Allowance
 
 from ..params import APIParams
 from ._base import BaseAsyncAPI, sync_bind

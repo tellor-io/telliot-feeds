@@ -8,11 +8,11 @@ import nest_asyncio
 from aiohttp import ClientSession
 from multidict import CIMultiDict
 
-from terra_sdk.core import Coins, Dec, Numeric
-from terra_sdk.exceptions import LCDResponseError
-from terra_sdk.key.key import Key
-from terra_sdk.util.json import dict_to_data
-from terra_sdk.util.url import urljoin
+from telliot_feeds._vendor.terra_sdk.core import Coins, Dec, Numeric
+from telliot_feeds._vendor.terra_sdk.exceptions import LCDResponseError
+from telliot_feeds._vendor.terra_sdk.key.key import Key
+from telliot_feeds._vendor.terra_sdk.util.json import dict_to_data
+from telliot_feeds._vendor.terra_sdk.util.url import urljoin
 
 from .api.auth import AsyncAuthAPI, AuthAPI
 from .api.authz import AsyncAuthzAPI, AuthzAPI

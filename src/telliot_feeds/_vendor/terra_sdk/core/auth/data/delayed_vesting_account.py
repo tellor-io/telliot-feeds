@@ -10,8 +10,8 @@ from terra_proto.cosmos.vesting.v1beta1 import (
     DelayedVestingAccount as DelayedVestingAccount_pb,
 )
 
-from terra_sdk.core import Dec
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core import Dec
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 from ...public_key import PublicKey
 from .base_account import BaseAccount

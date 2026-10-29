@@ -21,10 +21,10 @@ from terra_proto.cosmos.staking.v1beta1 import (
     StakeAuthorizationValidators as StakeAuthorizationValidators_pb,
 )
 
-from terra_sdk.core import AccAddress, Coin, Coins
-from terra_sdk.util.base import BaseTerraData
-from terra_sdk.util.converter import to_isoformat
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core import AccAddress, Coin, Coins
+from telliot_feeds._vendor.terra_sdk.util.base import BaseTerraData
+from telliot_feeds._vendor.terra_sdk.util.converter import to_isoformat
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = [
     "Authorization",
@@ -41,25 +41,25 @@ class Authorization(BaseTerraData):
 
     @staticmethod
     def from_amino(amino: dict) -> Authorization:
-        from terra_sdk.util.parse_authorization import parse_authorization_amino
+        from telliot_feeds._vendor.terra_sdk.util.parse_authorization import parse_authorization_amino
 
         return parse_authorization_amino(amino)
 
     @staticmethod
     def from_data(data: dict) -> Authorization:
-        from terra_sdk.util.parse_authorization import parse_authorization
+        from telliot_feeds._vendor.terra_sdk.util.parse_authorization import parse_authorization
 
         return parse_authorization(data)
 
     @staticmethod
     def from_proto(proto: Any_pb) -> Authorization:
-        from terra_sdk.util.parse_authorization import parse_authorization_proto
+        from telliot_feeds._vendor.terra_sdk.util.parse_authorization import parse_authorization_proto
 
         return parse_authorization_proto(proto)
 
     @staticmethod
     def unpack_any(proto: Any_pb) -> Authorization:
-        from terra_sdk.util.parse_authorization import parse_authorization_unpack_any
+        from telliot_feeds._vendor.terra_sdk.util.parse_authorization import parse_authorization_unpack_any
 
         return parse_authorization_unpack_any(proto)
 

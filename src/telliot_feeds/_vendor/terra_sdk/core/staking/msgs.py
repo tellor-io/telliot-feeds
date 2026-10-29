@@ -15,8 +15,8 @@ from terra_proto.cosmos.staking.v1beta1 import MsgDelegate as MsgDelegate_pb
 from terra_proto.cosmos.staking.v1beta1 import MsgEditValidator as MsgEditValidator_pb
 from terra_proto.cosmos.staking.v1beta1 import MsgUndelegate as MsgUndelegate_pb
 
-from terra_sdk.core import AccAddress, Coin, Dec, PublicKey, ValAddress, ValConsPubKey
-from terra_sdk.core.msg import Msg
+from telliot_feeds._vendor.terra_sdk.core import AccAddress, Coin, Dec, PublicKey, ValAddress, ValConsPubKey
+from telliot_feeds._vendor.terra_sdk.core.msg import Msg
 
 from .data import CommissionRates, Description
 

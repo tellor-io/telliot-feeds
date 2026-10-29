@@ -17,11 +17,11 @@ from terra_proto.ibc.core.client.v1 import (
     ClientUpdateProposal as ClientUpdateProposal_pb,
 )
 
-from terra_sdk.core.distribution.proposals import CommunityPoolSpendProposal
-from terra_sdk.core.gov.proposals import TextProposal
-from terra_sdk.core.ibc.proposals import ClientUpdateProposal
-from terra_sdk.core.params.proposals import ParameterChangeProposal
-from terra_sdk.core.upgrade import (
+from telliot_feeds._vendor.terra_sdk.core.distribution.proposals import CommunityPoolSpendProposal
+from telliot_feeds._vendor.terra_sdk.core.gov.proposals import TextProposal
+from telliot_feeds._vendor.terra_sdk.core.ibc.proposals import ClientUpdateProposal
+from telliot_feeds._vendor.terra_sdk.core.params.proposals import ParameterChangeProposal
+from telliot_feeds._vendor.terra_sdk.core.upgrade import (
     CancelSoftwareUpgradeProposal,
     SoftwareUpgradeProposal,
 )

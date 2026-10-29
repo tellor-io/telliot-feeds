@@ -6,8 +6,8 @@ from typing import List, Optional, Union
 
 import attr
 
-from terra_sdk.core.auth import TxLog, parse_tx_logs
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core.auth import TxLog, parse_tx_logs
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = [
     "BlockTxBroadcastResult",

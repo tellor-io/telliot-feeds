@@ -18,17 +18,17 @@ from terra_proto.cosmos.tx.v1beta1 import SignerInfo as SignerInfo_pb
 from terra_proto.cosmos.tx.v1beta1 import Tx as Tx_pb
 from terra_proto.cosmos.tx.v1beta1 import TxBody as TxBody_pb
 
-from terra_sdk.core.compact_bit_array import CompactBitArray
-from terra_sdk.core.fee import Fee
-from terra_sdk.core.mode_info import ModeInfo, ModeInfoMulti, ModeInfoSingle
-from terra_sdk.core.msg import Msg
-from terra_sdk.core.public_key import (
+from telliot_feeds._vendor.terra_sdk.core.compact_bit_array import CompactBitArray
+from telliot_feeds._vendor.terra_sdk.core.fee import Fee
+from telliot_feeds._vendor.terra_sdk.core.mode_info import ModeInfo, ModeInfoMulti, ModeInfoSingle
+from telliot_feeds._vendor.terra_sdk.core.msg import Msg
+from telliot_feeds._vendor.terra_sdk.core.public_key import (
     LegacyAminoMultisigPublicKey,
     PublicKey,
     SimplePublicKey,
 )
-from terra_sdk.core.signature_v2 import SignatureV2
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core.signature_v2 import SignatureV2
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = [
     "SignMode",

@@ -2,8 +2,8 @@ from typing import List, Optional
 
 import attr
 
-from terra_sdk.core import AccAddress, Coin, Numeric, ValAddress
-from terra_sdk.core.staking import (
+from telliot_feeds._vendor.terra_sdk.core import AccAddress, Coin, Numeric, ValAddress
+from telliot_feeds._vendor.terra_sdk.core.staking import (
     Delegation,
     Redelegation,
     UnbondingDelegation,

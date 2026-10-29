@@ -14,10 +14,10 @@ from terra_proto.cosmos.gov.v1beta1 import Vote as Vote_pb
 from terra_proto.cosmos.gov.v1beta1 import VoteOption
 from terra_proto.cosmos.gov.v1beta1 import WeightedVoteOption as WeightedVoteOption_pb
 
-from terra_sdk.core import AccAddress, Coins
-from terra_sdk.util.converter import to_isoformat
-from terra_sdk.util.json import JSONSerializable
-from terra_sdk.util.parse_content import Content, parse_content
+from telliot_feeds._vendor.terra_sdk.core import AccAddress, Coins
+from telliot_feeds._vendor.terra_sdk.util.converter import to_isoformat
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.util.parse_content import Content, parse_content
 
 __all__ = ["Proposal", "Content", "VoteOption", "WeightedVoteOption", "ProposalStatus"]
 

@@ -2,8 +2,8 @@ import base64
 import json
 from typing import Any, List, Optional, Union
 
-from terra_sdk.core import Numeric
-from terra_sdk.core.wasm.data import AbsoluteTxPosition, HistoryEntry
+from telliot_feeds._vendor.terra_sdk.core import Numeric
+from telliot_feeds._vendor.terra_sdk.core.wasm.data import AbsoluteTxPosition, HistoryEntry
 
 from ..params import APIParams
 from ._base import BaseAsyncAPI, sync_bind

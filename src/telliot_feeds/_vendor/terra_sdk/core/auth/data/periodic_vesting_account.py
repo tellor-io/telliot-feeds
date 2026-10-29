@@ -11,8 +11,8 @@ from terra_proto.cosmos.vesting.v1beta1 import (
     PeriodicVestingAccount as PeriodicVestingAccount_pb,
 )
 
-from terra_sdk.core import Coins
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core import Coins
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 from ...public_key import PublicKey
 from .base_account import BaseAccount

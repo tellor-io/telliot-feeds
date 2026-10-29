@@ -1,7 +1,7 @@
 from typing import Optional, Union
 
-from terra_sdk.core import AccAddress
-from terra_sdk.core.auth import (
+from telliot_feeds._vendor.terra_sdk.core import AccAddress
+from telliot_feeds._vendor.terra_sdk.core.auth import (
     Account,
     BaseAccount,
     ContinuousVestingAccount,

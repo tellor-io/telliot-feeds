@@ -10,8 +10,8 @@ from terra_proto.ibc.core.channel.v1 import Order
 from terra_proto.ibc.core.channel.v1 import Packet as Packet_pb
 from terra_proto.ibc.core.channel.v1 import State
 
-from terra_sdk.core.ibc.data.client import Height
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core.ibc.data.client import Height
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = ["Counterparty", "Channel", "Order", "State", "Packet"]
 

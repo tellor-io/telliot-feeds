@@ -16,8 +16,8 @@ from terra_proto.cosmos.distribution.v1beta1 import (
     MsgWithdrawValidatorCommission as MsgWithdrawValidatorCommission_pb,
 )
 
-from terra_sdk.core import AccAddress, Coins, ValAddress
-from terra_sdk.core.msg import Msg
+from telliot_feeds._vendor.terra_sdk.core import AccAddress, Coins, ValAddress
+from telliot_feeds._vendor.terra_sdk.core.msg import Msg
 
 __all__ = [
     "MsgSetWithdrawAddress",

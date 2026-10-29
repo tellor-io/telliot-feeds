@@ -1,9 +1,9 @@
 from typing import List, Optional, Tuple
 
-from terra_sdk.core import Coins, Dec
-from terra_sdk.core.deposit import Deposit
-from terra_sdk.core.gov import Proposal, ProposalStatus, WeightedVoteOption
-from terra_sdk.core.gov.data import Vote
+from telliot_feeds._vendor.terra_sdk.core import Coins, Dec
+from telliot_feeds._vendor.terra_sdk.core.deposit import Deposit
+from telliot_feeds._vendor.terra_sdk.core.gov import Proposal, ProposalStatus, WeightedVoteOption
+from telliot_feeds._vendor.terra_sdk.core.gov.data import Vote
 
 from ._base import BaseAsyncAPI, sync_bind
 

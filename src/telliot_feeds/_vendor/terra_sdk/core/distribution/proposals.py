@@ -8,8 +8,8 @@ from terra_proto.cosmos.distribution.v1beta1 import (
     CommunityPoolSpendProposal as CommunityPoolSpendProposal_pb,
 )
 
-from terra_sdk.core import AccAddress, Coins
-from terra_sdk.util.json import JSONSerializable
+from telliot_feeds._vendor.terra_sdk.core import AccAddress, Coins
+from telliot_feeds._vendor.terra_sdk.util.json import JSONSerializable
 
 __all__ = ["CommunityPoolSpendProposal"]
 
