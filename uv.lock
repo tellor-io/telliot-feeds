@@ -2131,7 +2131,7 @@ wheels = [
 
 [[package]]
 name = "telliot-core"
-version = "0.4.1"
+version = "0.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
@@ -2143,9 +2143,9 @@ dependencies = [
     { name = "requests" },
     { name = "web3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/52/31/0b6f4044d65460ff0de52f3c3c5dbcbc520d61ca022c423632af30d3cf4c/telliot_core-0.4.1.tar.gz", hash = "sha256:bfd0b9cc249a4e21ec08d2c64a5b6843140dde48e3dd62831cbd5b8416a4bfb6", size = 263411, upload-time = "2026-02-13T19:53:05.435Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/97/dc/778a33791fba9234c33d5130e1546c604e1e976a67ce67ef5718ea6ce79a/telliot_core-0.4.2.tar.gz", hash = "sha256:0239b3b6c60e98e1df32682409759462fe75c3f644699ba476a23c1f27d2364b", size = 263468, upload-time = "2026-04-03T17:41:08.911Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1e/c9/334aa19d5f042b4c0f1c2ca6c964d75cdad3656fa38cd335ef906578249e/telliot_core-0.4.1-py3-none-any.whl", hash = "sha256:45ebc10d5d82451b726b03fcfc47d181e2ad7e1a69abd40bbcaeb0a931033c03", size = 72166, upload-time = "2026-02-13T19:53:03.979Z" },
+    { url = "https://files.pythonhosted.org/packages/13/1a/987a76e6d0ab5a3863535ce33f802d1652d012445c06c97de287fd9ae667/telliot_core-0.4.2-py3-none-any.whl", hash = "sha256:4fa6eb5b8f4b2d642936564a44c31a9bd3b2ee49d7335faf5edd9a58bdf72795", size = 72249, upload-time = "2026-04-03T17:41:07.735Z" },
 ]
 
 [[package]]
@@ -2238,7 +2238,7 @@ requires-dist = [
     { name = "rlp", specifier = ">=4,<5" },
     { name = "setuptools", specifier = "<81" },
     { name = "simple-term-menu", specifier = ">=1.6.6" },
-    { name = "telliot-core", specifier = "==0.4.1" },
+    { name = "telliot-core", specifier = "==0.4.2" },
     { name = "terra-proto", specifier = "==4.0.2" },
     { name = "toolz", specifier = ">=1.0.0" },
     { name = "urllib3", specifier = ">=2.3.0" },

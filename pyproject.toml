@@ -54,7 +54,7 @@ dependencies = [
     "rlp>=4,<5",
     "setuptools<81",  # betterproto 2.0.0b* imports pkg_resources at runtime
     "simple-term-menu>=1.6.6",
-    "telliot-core==0.4.1",
+    "telliot-core==0.4.2",
     # replaces the transitive pull terra-sdk 4.0.0 used to provide; the
     # terra_sdk python code itself is vendored (src/telliot_feeds/_vendor/)
     "terra-proto==4.0.2",
