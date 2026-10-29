@@ -11,6 +11,7 @@ from typing import Union
 import nest_asyncio
 from aiohttp import ClientSession
 from multidict import CIMultiDict
+
 from telliot_feeds._vendor.terra_sdk.client.lcd.api.auth import AsyncAuthAPI
 from telliot_feeds._vendor.terra_sdk.client.lcd.api.auth import AuthAPI
 from telliot_feeds._vendor.terra_sdk.client.lcd.api.authz import AsyncAuthzAPI

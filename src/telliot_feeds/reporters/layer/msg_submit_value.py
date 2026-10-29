@@ -1,6 +1,5 @@
 # type: ignore
 from telliot_feeds._vendor.terra_sdk.core.msg import Msg
-
 from telliot_feeds.proto.layer.oracle import MsgSubmitValue as MsgSubmitValue_pb
 
 

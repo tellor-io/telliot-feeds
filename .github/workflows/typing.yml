@@ -30,3 +30,4 @@ jobs:
           uv run mypy --strict --install-types --non-interactive src
           --implicit-reexport --ignore-missing-imports
           --disable-error-code misc --exclude src/telliot_feeds/proto/
+          --exclude src/telliot_feeds/_vendor/

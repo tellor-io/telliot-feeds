@@ -10,6 +10,7 @@ import attr
 from ecdsa import SECP256k1
 from ecdsa import SigningKey
 from ecdsa.util import sigencode_string_canonize
+
 from telliot_feeds._vendor.terra_sdk.core import AccAddress
 from telliot_feeds._vendor.terra_sdk.core import AccPubKey
 from telliot_feeds._vendor.terra_sdk.core import ModeInfo
