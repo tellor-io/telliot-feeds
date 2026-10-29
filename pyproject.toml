@@ -79,6 +79,9 @@ version = { attr = "telliot_feeds.__version__" }
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"telliot_feeds._vendor" = ["UPSTREAM.md", "terra_sdk-LICENSE"]
+
 [dependency-groups]
 dev = [
     "ape-hardhat",
