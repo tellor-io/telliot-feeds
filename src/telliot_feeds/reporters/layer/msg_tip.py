@@ -1,6 +1,6 @@
 # type: ignore
-from terra_sdk.core import Coin
-from terra_sdk.core.msg import Msg
+from telliot_feeds._vendor.terra_sdk.core import Coin
+from telliot_feeds._vendor.terra_sdk.core.msg import Msg
 
 from telliot_feeds.proto.layer.oracle import MsgTip as MsgTip_pb
 from telliot_feeds.reporters.layer.msg_submit_value import MsgSubmitValue

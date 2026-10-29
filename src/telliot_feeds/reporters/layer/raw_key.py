@@ -10,25 +10,25 @@ import attr
 from ecdsa import SECP256k1
 from ecdsa import SigningKey
 from ecdsa.util import sigencode_string_canonize
-from terra_sdk.core import AccAddress
-from terra_sdk.core import AccPubKey
-from terra_sdk.core import ModeInfo
-from terra_sdk.core import ModeInfoSingle
-from terra_sdk.core import PublicKey
-from terra_sdk.core import SignatureV2
-from terra_sdk.core import SignDoc
-from terra_sdk.core import SimplePublicKey
-from terra_sdk.core import ValAddress
-from terra_sdk.core import ValPubKey
-from terra_sdk.core.bech32 import get_bech
-from terra_sdk.core.public_key import address_from_public_key
-from terra_sdk.core.public_key import amino_pubkey_from_public_key
-from terra_sdk.core.signature_v2 import Descriptor
-from terra_sdk.core.signature_v2 import Single as SingleDescriptor
-from terra_sdk.core.tx import AuthInfo
-from terra_sdk.core.tx import SignerInfo
-from terra_sdk.core.tx import SignMode
-from terra_sdk.core.tx import Tx
+from telliot_feeds._vendor.terra_sdk.core import AccAddress
+from telliot_feeds._vendor.terra_sdk.core import AccPubKey
+from telliot_feeds._vendor.terra_sdk.core import ModeInfo
+from telliot_feeds._vendor.terra_sdk.core import ModeInfoSingle
+from telliot_feeds._vendor.terra_sdk.core import PublicKey
+from telliot_feeds._vendor.terra_sdk.core import SignatureV2
+from telliot_feeds._vendor.terra_sdk.core import SignDoc
+from telliot_feeds._vendor.terra_sdk.core import SimplePublicKey
+from telliot_feeds._vendor.terra_sdk.core import ValAddress
+from telliot_feeds._vendor.terra_sdk.core import ValPubKey
+from telliot_feeds._vendor.terra_sdk.core.bech32 import get_bech
+from telliot_feeds._vendor.terra_sdk.core.public_key import address_from_public_key
+from telliot_feeds._vendor.terra_sdk.core.public_key import amino_pubkey_from_public_key
+from telliot_feeds._vendor.terra_sdk.core.signature_v2 import Descriptor
+from telliot_feeds._vendor.terra_sdk.core.signature_v2 import Single as SingleDescriptor
+from telliot_feeds._vendor.terra_sdk.core.tx import AuthInfo
+from telliot_feeds._vendor.terra_sdk.core.tx import SignerInfo
+from telliot_feeds._vendor.terra_sdk.core.tx import SignMode
+from telliot_feeds._vendor.terra_sdk.core.tx import Tx
 
 
 __all__ = ["Key", "SignOptions", "RawKey"]
