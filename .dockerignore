@@ -1,6 +1,7 @@
 .git
 .hermes
 .venv
+venv
 site
 node_modules
 .pytest_cache

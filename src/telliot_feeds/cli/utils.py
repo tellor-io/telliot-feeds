@@ -105,7 +105,7 @@ def reporter_cli_core(ctx: click.Context) -> TelliotCore:
         try:
             from ape import chain
         except ModuleNotFoundError:
-            print("pip install -r requirements-dev.txt in venv to use test config")
+            print("run `uv sync` (installs the dev group, including ape) to use test config")
 
         # core.config.main.chain_id = 1337
         core.config.main.url = "http://127.0.0.1:8545"

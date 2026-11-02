@@ -10,11 +10,9 @@ from .data import (
     TxLog,
     parse_tx_logs,
 )
-from .msgs import (
-    MsgCreatePeriodicVestingAccount,
-    MsgCreateVestingAccount,
-    MsgDonateAllVestingTokens,
-)
+
+# the layer reporter only reads accounts, never
+# creates vesting accounts so those are not vendored.
 
 __all__ = [
     "Account",
@@ -26,7 +24,4 @@ __all__ = [
     "TxInfo",
     "PublicKey",
     "parse_tx_logs",
-    "MsgCreatePeriodicVestingAccount",
-    "MsgCreateVestingAccount",
-    "MsgDonateAllVestingTokens",
 ]

@@ -14,7 +14,6 @@ __all__ = [
     "SignDoc",
     "CompactBitArray",
     "SignatureV2",
-    "MultiSignature",
     "Tx",
     "TxInfo",
     "TxLog",
@@ -27,7 +26,6 @@ from .bech32 import AccAddress, AccPubKey, ValAddress, ValPubKey
 from .coin import Coin
 from .coins import Coins
 from .compact_bit_array import CompactBitArray
-from .multisig import MultiSignature
 from .numeric import Dec, Numeric
 from .public_key import (
     LegacyAminoMultisigPublicKey,
