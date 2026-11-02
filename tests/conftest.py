@@ -1,4 +1,8 @@
 """Pytest Fixtures used for testing Pytelliot"""
+from typing import Any
+from typing import Dict
+from typing import Tuple
+
 import pytest
 import pytest_asyncio
 from ape import networks
@@ -356,3 +360,36 @@ def mock_price_feed():
     # Restore original methods after test completes
     for source, original_method in original_methods:
         source.fetch_new_datapoint = original_method
+
+
+@pytest.fixture(scope="session", autouse=True)
+def coingecko_price_cache():
+    """Memoize CoinGecko spot price fetches for the whole test session.
+
+    Many tests fetch the same prices (TRB/USD alone is requested ~10 times
+    by the reporter profit/tip checks), and the public CoinGecko API is
+    rate-limited hard enough that duplicate requests make CI flaky with 429s.
+    Only successful results are cached so rate limits and transient failures
+    are retried on the next fetch.
+    """
+    from telliot_feeds.sources.price.spot.coingecko import CoinGeckoBRC20SpotPriceService
+    from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceService
+
+    monkeypatch = pytest.MonkeyPatch()
+    for service_class in (CoinGeckoSpotPriceService, CoinGeckoBRC20SpotPriceService):
+        cache: Dict[Tuple[str, str], Any] = {}
+        original_get_price = service_class.get_price
+
+        async def cached_get_price(self, asset, currency, _orig=original_get_price, _cache=cache):
+            key = (asset.lower(), currency.lower())
+            if key not in _cache:
+                result = await _orig(self, asset, currency)
+                if result[0] is not None:
+                    _cache[key] = result
+            return _cache.get(key, (None, None))
+
+        monkeypatch.setattr(service_class, "get_price", cached_get_price)
+
+    yield
+
+    monkeypatch.undo()

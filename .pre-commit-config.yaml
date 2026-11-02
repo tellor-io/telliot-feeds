@@ -1,4 +1,4 @@
-exclude: ".git|.tox|docs|tox.ini|src/telliot_feeds/proto"
+exclude: ".git|.tox|docs|tox.ini|src/telliot_feeds/proto|src/telliot_feeds/_vendor"
 default_stages: [commit]
 fail_fast: true
 
@@ -29,7 +29,7 @@ repos:
         additional_dependencies:
           - flake8-bugbear
           - flake8-implicit-str-concat
-        args: ["--ignore=ISC003,W503", --max-line-length, '120', src]
+        args: ["--ignore=ISC003,W503", --max-line-length, '120', "--exclude=_vendor,proto,*/_vendor/*,*/proto/*", "--per-file-ignores=tests/test_vendored_terra_sdk.py:E501", src]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.0.1
     hooks:

@@ -9,9 +9,9 @@ from chained_accounts import ChainedAccount
 from telliot_core.apps.core import RPCEndpoint
 from telliot_core.utils.response import error_status
 from telliot_core.utils.response import ResponseStatus
-from terra_sdk.client.lcd.api.tx import CreateTxOptions
-from terra_sdk.core.coins import Coin
 
+from telliot_feeds._vendor.terra_sdk.client.lcd.api.tx import CreateTxOptions
+from telliot_feeds._vendor.terra_sdk.core.coins import Coin
 from telliot_feeds.datafeed import DataFeed
 from telliot_feeds.feeds import CATALOG_FEEDS
 from telliot_feeds.reporters.layer.client import LCDClient  # type: ignore[attr-defined]
