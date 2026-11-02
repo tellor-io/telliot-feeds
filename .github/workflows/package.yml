@@ -31,7 +31,7 @@ jobs:
         run: uv lock --check
 
       - name: "Build wheel and sdist"
-        run: uv build --sdist --wheel --outdir dist/
+        run: uv build --sdist --wheel --out-dir dist/
 
       # Install the artifact the way a PyPI user would: plain pip, no uv, no
       # lock file, no [tool.uv] overrides. Catches metadata that only resolves
