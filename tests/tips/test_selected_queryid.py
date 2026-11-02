@@ -83,7 +83,7 @@ async def test_priceThreshold_gt_zero(autopay_contract_setup, chain):
 
 
 @pytest.mark.asyncio
-async def test_ousideof_window_pt0(autopay_contract_setup, chain):
+async def test_ousideof_window_pt0(autopay_contract_setup):
     """Test price threshold == 0 outside of window"""
     r = autopay_contract_setup
     interval = 20
@@ -100,9 +100,11 @@ async def test_ousideof_window_pt0(autopay_contract_setup, chain):
         _rewardIncreasePerSecond=0,
         _amount=int(5 * 10**18),
     )
-    chain.mine(2)
+    # Query the midpoint of the first round so the timestamp is deterministically 
+    # outside the window no matter how many blocks/seconds passed before this test ran.
+    outside_of_window_timestamp = start_time + interval // 2
     tip_amount = await fetch_feed_tip(
-        autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=chain.pending_timestamp
+        autopay=r.autopay, datafeed=matic_usd_median_feed, timestamp=outside_of_window_timestamp
     )
     assert tip_amount == 0
 
