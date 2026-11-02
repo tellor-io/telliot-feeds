@@ -14,32 +14,8 @@ from multidict import CIMultiDict
 
 from telliot_feeds._vendor.terra_sdk.client.lcd.api.auth import AsyncAuthAPI
 from telliot_feeds._vendor.terra_sdk.client.lcd.api.auth import AuthAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.authz import AsyncAuthzAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.authz import AuthzAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.bank import AsyncBankAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.bank import BankAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.distribution import AsyncDistributionAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.distribution import DistributionAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.feegrant import AsyncFeeGrantAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.feegrant import FeeGrantAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.gov import AsyncGovAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.gov import GovAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.ibc import AsyncIbcAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.ibc import IbcAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.ibc_transfer import AsyncIbcTransferAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.ibc_transfer import IbcTransferAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.mint import AsyncMintAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.mint import MintAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.slashing import AsyncSlashingAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.slashing import SlashingAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.staking import AsyncStakingAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.staking import StakingAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.tendermint import AsyncTendermintAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.api.tendermint import TendermintAPI
 from telliot_feeds._vendor.terra_sdk.client.lcd.api.tx import AsyncTxAPI
 from telliot_feeds._vendor.terra_sdk.client.lcd.api.tx import TxAPI
-from telliot_feeds._vendor.terra_sdk.client.lcd.lcdutils import AsyncLCDUtils
-from telliot_feeds._vendor.terra_sdk.client.lcd.lcdutils import LCDUtils
 from telliot_feeds._vendor.terra_sdk.client.lcd.params import APIParams
 from telliot_feeds._vendor.terra_sdk.client.lcd.wallet import AsyncWallet
 from telliot_feeds._vendor.terra_sdk.client.lcd.wallet import Wallet
@@ -75,20 +51,10 @@ class AsyncLCDClient:
         self.gas_prices = Coins(gas_prices) if gas_prices else Coins.from_str("0.000025loya")
         self.gas_adjustment = gas_adjustment if gas_adjustment else Numeric.parse(1.75)
 
+        # Only the LCD modules the layer reporter actually uses are wired up:
+        # auth (account number / sequence) and tx (fee estimation, broadcast).
         self.auth = AsyncAuthAPI(self)
-        self.bank = AsyncBankAPI(self)
-        self.distribution = AsyncDistributionAPI(self)
-        self.feegrant = AsyncFeeGrantAPI(self)
-        self.gov = AsyncGovAPI(self)
-        self.mint = AsyncMintAPI(self)
-        self.authz = AsyncAuthzAPI(self)
-        self.slashing = AsyncSlashingAPI(self)
-        self.staking = AsyncStakingAPI(self)
-        self.tendermint = AsyncTendermintAPI(self)
-        self.ibc = AsyncIbcAPI(self)
-        self.ibc_transfer = AsyncIbcTransferAPI(self)
         self.tx = AsyncTxAPI(self)
-        self.utils = AsyncLCDUtils(self)
 
     def wallet(self, key: Key) -> AsyncWallet:
         """Creates a :class:`AsyncWallet` object from a key.
@@ -184,41 +150,8 @@ class LCDClient(AsyncLCDClient):
     auth: AuthAPI
     """:class:`AuthAPI<terra_sdk.client.lcd.api.auth.AuthAPI>`."""
 
-    bank: BankAPI
-    """:class:`BankAPI<terra_sdk.client.lcd.api.bank.BankAPI>`."""
-
-    distribution: DistributionAPI
-    """:class:`DistributionAPI<terra_sdk.client.lcd.api.distribution.DistributionAPI>`."""
-
-    gov: GovAPI
-    """:class:`GovAPI<terra_sdk.client.lcd.api.gov.GovAPI>`."""
-
-    feegrant: FeeGrantAPI
-    """:class:`FeeGrant<terra_sdk.client.lcd.api.feegrant.FeeGrantAPI>`."""
-
-    mint: MintAPI
-    """:class:`MintAPI<terra_sdk.client.lcd.api.mint.MintAPI>`."""
-
-    authz: AuthzAPI
-    """:class:`AuthzAPI<terra_sdk.client.lcd.api.authz.AuthzAPI>`."""
-
-    slashing: SlashingAPI
-    """:class:`SlashingAPI<terra_sdk.client.lcd.api.slashing.SlashingAPI>`."""
-
-    staking: StakingAPI
-    """:class:`StakingAPI<terra_sdk.client.lcd.api.staking.StakingAPI>`."""
-
-    tendermint: TendermintAPI
-    """:class:`TendermintAPI<terra_sdk.client.lcd.api.tendermint.TendermintAPI>`."""
-
     tx: TxAPI
     """:class:`TxAPI<terra_sdk.client.lcd.api.tx.TxAPI>`."""
-
-    ibc: IbcAPI
-    """:class:`IbcAPI<terra_sdk.client.lcd.api.ibc.IbcAPI>`."""
-
-    ibc_transfer: IbcTransferAPI
-    """:class:`IbcTransferAPI<terra_sdk.client.lcd.api.ibc_transfer.IbcTransferAPI>`."""
 
     def __init__(
         self,
@@ -237,19 +170,7 @@ class LCDClient(AsyncLCDClient):
         )
 
         self.auth = AuthAPI(self)
-        self.bank = BankAPI(self)
-        self.distribution = DistributionAPI(self)
-        self.gov = GovAPI(self)
-        self.feegrant = FeeGrantAPI(self)
-        self.mint = MintAPI(self)
-        self.authz = AuthzAPI(self)
-        self.slashing = SlashingAPI(self)
-        self.staking = StakingAPI(self)
-        self.tendermint = TendermintAPI(self)
-        self.ibc = IbcAPI(self)
-        self.ibc_transfer = IbcTransferAPI(self)
         self.tx = TxAPI(self)
-        self.utils = LCDUtils(self)
 
     async def __aenter__(self):
         raise NotImplementedError("async context manager not implemented - you probably want AsyncLCDClient")

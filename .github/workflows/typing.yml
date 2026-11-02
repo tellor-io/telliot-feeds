@@ -27,7 +27,7 @@ jobs:
         run: uv sync --frozen
       - name: "Run mypy"
         run: >-
-          uv run mypy --strict --install-types --non-interactive src
+          uv run mypy --strict src
           --implicit-reexport --ignore-missing-imports
           --disable-error-code misc --exclude src/telliot_feeds/proto/
           --exclude src/telliot_feeds/_vendor/

@@ -22,4 +22,4 @@ async def test_morpho_usd_median_feed(mock_price_feed, caplog):
     print(source_prices)
 
     # Make sure error is less than decimal tolerance
-    assert (v - statistics.median(source_prices)) < 10**-6
+    assert abs(v - statistics.median(source_prices)) < 10**-6

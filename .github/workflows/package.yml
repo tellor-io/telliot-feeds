@@ -1,0 +1,48 @@
+---
+name: package
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  package:
+    name: "Lock check and wheel install on Python ${{ matrix.python-version }}"
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
+    steps:
+      - uses: "actions/checkout@v2"
+      - uses: "astral-sh/setup-uv@v10.3.2"
+      - uses: "actions/setup-python@v5"
+        with:
+          python-version: "${{ matrix.python-version }}"
+
+      # `uv sync --frozen` (used by every other job) installs whatever uv.lock
+      # says without comparing it to pyproject.toml. This fails the build if a
+      # dependency was edited without running `uv lock`.
+      - name: "Check uv.lock is in sync with pyproject.toml"
+        run: uv lock --check
+
+      - name: "Build wheel and sdist"
+        run: uv build --sdist --wheel --out-dir dist/
+
+      # Install the artifact the way a PyPI user would: plain pip, no uv, no
+      # lock file, no [tool.uv] overrides. Catches metadata that only resolves
+      # under uv, and packaging mistakes (missing package data, vendored code).
+      - name: "Install the wheel with plain pip in a clean venv"
+        run: |
+          python -m venv /tmp/wheel-venv
+          /tmp/wheel-venv/bin/python -m pip install --upgrade pip
+          /tmp/wheel-venv/bin/python -m pip install dist/*.whl
+
+      - name: "Smoke test the installed package"
+        run: |
+          /tmp/wheel-venv/bin/telliot --help
+          /tmp/wheel-venv/bin/python -c "import telliot_feeds.reporters.layer.layer_reporter"

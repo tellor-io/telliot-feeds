@@ -22,7 +22,7 @@ jobs:
         python-version: "3.12"
 
     - name: Build a binary wheel and a source tarball
-      run: uv build --sdist --wheel --outdir dist/
+      run: uv build --sdist --wheel --out-dir dist/
 
     - name: Publish telliot-feeds to Test PyPI
       if: "!github.event.release.prerelease"
