@@ -100,7 +100,7 @@ async def test_ousideof_window_pt0(autopay_contract_setup):
         _rewardIncreasePerSecond=0,
         _amount=int(5 * 10**18),
     )
-    # Query the midpoint of the first round so the timestamp is deterministically 
+    # Query the midpoint of the first round so the timestamp is deterministically
     # outside the window no matter how many blocks/seconds passed before this test ran.
     outside_of_window_timestamp = start_time + interval // 2
     tip_amount = await fetch_feed_tip(
