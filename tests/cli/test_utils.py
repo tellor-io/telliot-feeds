@@ -48,8 +48,12 @@ def test_build_query():
 
 
 @pytest.mark.asyncio
-async def test_call_oracle(tellor_360, caplog, chain, sepolia_test_key_name):
+async def test_call_oracle(tellor_360, caplog, chain, sepolia_test_key_name, monkeypatch):
     """Test calling the oracle."""
+    # In CI, the TEST_NODE_URL secret overrides the endpoint via telliot-core's
+    # override_test_config. Pin it to the local hardhat node the fixtures use so the
+    # test doesn't depend on that remote RPC being alive.
+    monkeypatch.setenv("NODE_URL", "http://127.0.0.1:8545")
     user_inputs = {
         "min_native_token_balance": 0.0,
         "gas_limit": 350000,

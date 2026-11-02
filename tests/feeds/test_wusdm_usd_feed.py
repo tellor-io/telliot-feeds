@@ -8,6 +8,8 @@ from telliot_feeds.feeds.wusdm_usd_feed import wusdm_usd_feed
 from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.coinpaprika import CoinpaprikaSpotPriceSource
 
+pytestmark = pytest.mark.live
+
 
 @pytest.mark.asyncio
 async def test_wusdm_usd_feed(caplog, mock_price_feed, monkeypatch):

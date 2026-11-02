@@ -1,4 +1,10 @@
 contracts_folder: ./contracts/
+ethereum:
+  local:
+    # Pin the default local provider for ape's `accounts`/`chain` fixtures so contract
+    # deploys land on the same hardhat node that tests/conftest.py's connected_provider
+    # uses (bare ape defaults to eth-tester, whose 16.7M gas cap breaks the deploys).
+    default_provider: hardhat
 hardhat:
   host: 127.0.0.1:8545
   hardhat_config_file: ./hardhat.config.js

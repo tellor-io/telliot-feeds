@@ -1,5 +1,17 @@
-FROM python:3.9
+FROM python:3.12-slim
 
-RUN pip install telliot-feeds==0.1.23
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-CMD echo "telliot image built"
+WORKDIR /app
+
+# Copy project metadata first for layer caching
+COPY pyproject.toml uv.lock README.md ./
+COPY src ./src
+COPY .python-version ./
+
+ENV UV_PROJECT_ENVIRONMENT=/app/.venv
+RUN uv sync --frozen --no-dev
+
+ENV PATH="/app/.venv/bin:$PATH"
+
+CMD ["telliot", "--help"]

@@ -9,6 +9,8 @@ from telliot_feeds.sources.price.spot.coingecko import CoinGeckoSpotPriceSource
 from telliot_feeds.sources.price.spot.coinpaprika import CoinpaprikaSpotPriceSource
 from telliot_feeds.sources.price.spot.curvefiprice import CurveFiUSDPriceSource
 
+pytestmark = pytest.mark.live
+
 
 @pytest.mark.asyncio
 async def test_sfrxusd_usd_feed(caplog, mock_price_feed, monkeypatch):

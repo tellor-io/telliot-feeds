@@ -14,7 +14,7 @@ jobs:
     runs-on: "ubuntu-latest"
     env:
       USING_COVERAGE: '3.12'
-      NODE_URL: ${{ secrets.TEST_NODE_URL }} 
+      NODE_URL: ${{ secrets.TEST_NODE_URL }}
       PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
       INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
 
@@ -24,7 +24,8 @@ jobs:
 
     steps:
       - uses: "actions/checkout@v2"
-      - uses: "actions/setup-python@v2"
+      - uses: "astral-sh/setup-uv@v10.3.2"
+      - uses: "actions/setup-python@v5"
         with:
           python-version: "${{ matrix.python-version }}"
 
@@ -33,22 +34,30 @@ jobs:
         with:
             node-version: '20'
             cache: 'npm'
-      
+
       - run: npm ci
 
-      - uses: ApeWorX/github-action@v3
-        with:
-          python-version: '3.12'
-          ape-plugins-list: 'hardhat solidity'
+      - name: "Start hardhat node"
+        run: |
+          npx hardhat node > /tmp/hardhat-node.log 2>&1 &
+          timeout 90 bash -c 'until curl -sf -o /dev/null -X POST -H "content-type: application/json" --data "{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1}" http://127.0.0.1:8545; do sleep 1; done'
 
       - name: "Install dependencies"
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade tox tox-gh-actions          
+        run: uv sync --frozen
 
-      - name: "Run tox targets for ${{ matrix.python-version }}"
-        run:
-          tox -e py312
+      - name: "Compile ape project"
+        run: |
+          uv run ape plugins install . --upgrade --yes
+          uv run ape compile
+
+      - name: "Run tests"
+        run: >-
+          uv run pytest --cov --cov-report xml
+          --reruns 3 --reruns-delay 2
+          --only-rerun "TimeoutError" --only-rerun "ConnectionError"
+          --only-rerun "RemoteDisconnected" --only-rerun "IncompleteRead"
+          --only-rerun "requests\.exceptions" --only-rerun "aiohttp"
+          --only-rerun "StatusError" --only-rerun "429|4(0|2)9|too many"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
