@@ -12,9 +12,17 @@ Install [uv](https://docs.astral.sh/uv/) — it manages the Python 3.12 interpre
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
+## Clone the repo
+
+```
+git clone https://github.com/tellor-io/telliot-feeds.git
+cd telliot-feeds
+```
+
 ## Install
 
 ```
+uv venv && source .venv/bin/activate
 uv sync
 ```
 
