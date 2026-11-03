@@ -6,15 +6,19 @@ This package contains reporting tools and datafeeds for Tellor oracles.
 
 ## Prerequisites
 
-Install [uv](https://docs.astral.sh/uv/) — it manages the Python 3.12 interpreter and the project venv for you:
+Install [uv](https://docs.astral.sh/uv/) — it manages the Python 3.12 interpreter and the project venv for you. See uv's [installation instructions](https://docs.astral.sh/uv/getting-started/installation/) for the supported install methods.
+
+## Clone the repo
 
 ```
-curl -LsSf https://astral.sh/uv/install.sh | sh
+git clone https://github.com/tellor-io/telliot-feeds.git
+cd telliot-feeds
 ```
 
 ## Install
 
 ```
+uv venv && source .venv/bin/activate
 uv sync
 ```
 
