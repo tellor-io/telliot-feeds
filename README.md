@@ -6,11 +6,7 @@ This package contains reporting tools and datafeeds for Tellor oracles.
 
 ## Prerequisites
 
-Install [uv](https://docs.astral.sh/uv/) — it manages the Python 3.12 interpreter and the project venv for you:
-
-```
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+Install [uv](https://docs.astral.sh/uv/) — it manages the Python 3.12 interpreter and the project venv for you. See uv's [installation instructions](https://docs.astral.sh/uv/getting-started/installation/) for the supported install methods.
 
 ## Clone the repo
 
