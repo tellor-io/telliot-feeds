@@ -2131,21 +2131,25 @@ wheels = [
 
 [[package]]
 name = "telliot-core"
-version = "0.4.2"
+version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "aiohttp" },
     { name = "attrs" },
     { name = "chained-accounts" },
     { name = "clamfig" },
     { name = "click" },
+    { name = "eth-typing" },
+    { name = "eth-utils" },
+    { name = "hexbytes" },
     { name = "protobuf" },
     { name = "pyyaml" },
     { name = "requests" },
     { name = "web3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/97/dc/778a33791fba9234c33d5130e1546c604e1e976a67ce67ef5718ea6ce79a/telliot_core-0.4.2.tar.gz", hash = "sha256:0239b3b6c60e98e1df32682409759462fe75c3f644699ba476a23c1f27d2364b", size = 263468, upload-time = "2026-04-03T17:41:08.911Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/34/f8/bb8726aebefdbadce53b392393df6e2fb3521383c28989c356da9e6fdd11/telliot_core-0.5.0.tar.gz", hash = "sha256:a677886eda9cb23414b4398bdcc41ae1715f9c5ef277b2a01b8d866eb248c179", size = 62375, upload-time = "2026-11-03T15:10:14.832Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/13/1a/987a76e6d0ab5a3863535ce33f802d1652d012445c06c97de287fd9ae667/telliot_core-0.4.2-py3-none-any.whl", hash = "sha256:4fa6eb5b8f4b2d642936564a44c31a9bd3b2ee49d7335faf5edd9a58bdf72795", size = 72249, upload-time = "2026-04-03T17:41:07.735Z" },
+    { url = "https://files.pythonhosted.org/packages/f9/e9/295f5eecdcb748a6ae303ac9a1cf48e8968175678a875658e1756d324aee/telliot_core-0.5.0-py3-none-any.whl", hash = "sha256:cd6ac6d66ea1da91f462fd4ff7e535391c2667d21d16925341dcc2126feb0e6b", size = 73372, upload-time = "2026-11-03T15:10:13.551Z" },
 ]
 
 [[package]]
@@ -2238,7 +2242,7 @@ requires-dist = [
     { name = "rlp", specifier = ">=4,<5" },
     { name = "setuptools", specifier = "<81" },
     { name = "simple-term-menu", specifier = ">=1.6.6" },
-    { name = "telliot-core", specifier = "==0.4.2" },
+    { name = "telliot-core", specifier = "==0.5.0" },
     { name = "terra-proto", specifier = "==4.0.2" },
     { name = "toolz", specifier = ">=1.0.0" },
     { name = "urllib3", specifier = ">=2.3.0" },
